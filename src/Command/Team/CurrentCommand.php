@@ -50,7 +50,7 @@ class CurrentCommand extends AbstractCommand
 
         $team = $team->only(['id', 'name']);
 
-        $output->writeln('<info>Your currently active team is:</info>');
+        $output->writeln("<info>Your currently active team is:</info>\n");
         $output->horizontalTable($team->keys()->all(), [$team->all()]);
     }
 }
