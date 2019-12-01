@@ -1,0 +1,46 @@
+parameters:
+  assets_directory: '%hidden_directory%/assets'
+  build_directory: '%hidden_directory%/build'
+  hidden_directory: '%working_directory%/.placeholder'
+  configuration_filepath: '%home_directory%/.placeholder/config.json'
+
+services:
+  _defaults:
+    autowire: true
+    public: false
+    bind:
+      iterable $commands: !tagged command
+      string $assetsDirectory: '%assets_directory%'
+      string $baseUrl: '%placeholder_api_url%'
+      string $buildDirectory: '%build_directory%'
+      string $projectDirectory: '%working_directory%'
+      string $configurationFilePath: '%configuration_filepath%'
+
+  _instanceof:
+    Symfony\Component\Console\Command\Command:
+      tags: ['command']
+
+  GuzzleHttp\:
+    resource: '../vendor/guzzlehttp/guzzle/src'
+    exclude:
+      - '../vendor/guzzlehttp/guzzle/src/functions.php'
+      - '../vendor/guzzlehttp/guzzle/src/functions_include.php'
+
+  Placeholder\Cli\:
+    lazy: true
+    resource: '../src'
+
+  Placeholder\Cli\Application:
+    public: true
+
+  Placeholder\Cli\Command\BuildCommand:
+    arguments:
+      - '@Placeholder\Cli\ApiClient'
+      - '@Placeholder\Cli\Configuration'
+      -
+        - '@Placeholder\Cli\Build\CopyWordPressFilesStep'
+        - '@Placeholder\Cli\Build\ExtractAssetFilesStep'
+        - '@Placeholder\Cli\Build\CompressBuildFilesStep'
+
+  Symfony\Component\Filesystem\:
+    resource: '../vendor/symfony/filesystem'

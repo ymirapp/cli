@@ -1,0 +1,18 @@
+parameters:
+  process_timeout: 120
+  tasks:
+    composer: ~
+    git_commit_message: ~
+    phpcpd:
+      directory: './src'
+    phpcsfixer2:
+      allow_risky: true
+      config: '.php_cs'
+    phplint: ~
+    phpmd:
+      ruleset: ['phpmd.xml']
+    phpstan:
+      level: max
+    phpunit:
+      always_execute: true
+

@@ -1,0 +1,26 @@
+#!/usr/bin/env php
+<?php
+
+use Placeholder\Cli\Application;
+use Symfony\Component\Config\FileLocator;
+use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
+
+require __DIR__.'/vendor/autoload.php';
+
+$container = new ContainerBuilder();
+
+// Load manual parameters
+$container->setParameter('home_directory', rtrim(getenv('HOME'), '/'));
+$container->setParameter('working_directory', rtrim(getcwd(), '/'));
+$container->setParameter('placeholder_api_url', getenv('PLACEHOLDER_API_URL') ?: 'https://wordpress-serverless.dev/api');
+
+// Load container configuration
+$loader = new YamlFileLoader($container, new FileLocator());
+$loader->load(__DIR__.'/config/services.yml');
+
+// Compile container
+$container->compile();
+
+// Start the console application.
+exit($container->get(Application::class)->run());
