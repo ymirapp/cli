@@ -44,7 +44,7 @@ class CurrentCommand extends AbstractCommand
     {
         $team = $this->apiClient->getTeam($this->getActiveTeamId());
 
-        if (!isset($team['name'])) {
+        if (!isset($team['id'], $team['name'])) {
             throw new RuntimeException('Unable to get the details on your currently active team');
         }
 
