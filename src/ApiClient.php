@@ -52,6 +52,16 @@ class ApiClient
     }
 
     /**
+     * Create a new team with the given name.
+     */
+    public function createTeam(string $name)
+    {
+        $this->request('post', '/teams', [
+            'name' => $name,
+        ]);
+    }
+
+    /**
      * Get an access token for the given email and password.
      */
     public function getAccessToken(string $email, string $password): string
