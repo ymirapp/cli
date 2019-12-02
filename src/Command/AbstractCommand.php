@@ -16,11 +16,11 @@ namespace Placeholder\Cli\Command;
 use Placeholder\Cli\ApiClient;
 use Placeholder\Cli\Command\Team\SelectCommand;
 use Placeholder\Cli\Configuration;
+use Placeholder\Cli\Console\OutputStyle;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Style\SymfonyStyle;
 
 abstract class AbstractCommand extends Command
 {
@@ -58,7 +58,7 @@ abstract class AbstractCommand extends Command
             throw new RuntimeException(sprintf('Please authenticate using the "%s" command before using this command', LoginCommand::NAME));
         }
 
-        $this->perform($input, new SymfonyStyle($input, $output));
+        $this->perform($input, new OutputStyle($input, $output));
     }
 
     /**
@@ -92,5 +92,5 @@ abstract class AbstractCommand extends Command
     /**
      * Perform the command.
      */
-    abstract protected function perform(InputInterface $input, SymfonyStyle $output);
+    abstract protected function perform(InputInterface $input, OutputStyle $output);
 }

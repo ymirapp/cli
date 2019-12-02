@@ -14,9 +14,9 @@ declare(strict_types=1);
 namespace Placeholder\Cli\Command\Team;
 
 use Placeholder\Cli\Command\AbstractCommand;
+use Placeholder\Cli\Console\OutputStyle;
 use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Style\SymfonyStyle;
 
 class CurrentCommand extends AbstractCommand
 {
@@ -40,7 +40,7 @@ class CurrentCommand extends AbstractCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(InputInterface $input, SymfonyStyle $output)
+    protected function perform(InputInterface $input, OutputStyle $output)
     {
         $team = $this->apiClient->getTeam($this->getActiveTeamId());
 

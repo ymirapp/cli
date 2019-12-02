@@ -13,9 +13,9 @@ declare(strict_types=1);
 
 namespace Placeholder\Cli\Command;
 
+use Placeholder\Cli\Console\OutputStyle;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Style\SymfonyStyle;
 
 class DeployCommand extends AbstractCommand
 {
@@ -40,7 +40,7 @@ class DeployCommand extends AbstractCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(InputInterface $input, SymfonyStyle $output)
+    protected function perform(InputInterface $input, OutputStyle $output)
     {
     }
 }

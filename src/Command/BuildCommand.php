@@ -16,9 +16,9 @@ namespace Placeholder\Cli\Command;
 use Placeholder\Cli\ApiClient;
 use Placeholder\Cli\Build\BuildStepInterface;
 use Placeholder\Cli\Configuration;
+use Placeholder\Cli\Console\OutputStyle;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Style\SymfonyStyle;
 
 class BuildCommand extends AbstractCommand
 {
@@ -62,7 +62,7 @@ class BuildCommand extends AbstractCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(InputInterface $input, SymfonyStyle $output)
+    protected function perform(InputInterface $input, OutputStyle $output)
     {
         $currentStep = 1;
         $totalSteps = count($this->buildSteps);
