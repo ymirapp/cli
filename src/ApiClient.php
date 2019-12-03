@@ -101,6 +101,14 @@ class ApiClient
     }
 
     /**
+     * Get the cloud providers for the given team ID.
+     */
+    public function getProviders(int $teamId): Collection
+    {
+        return $this->request('get', "/teams/{$teamId}/providers");
+    }
+
+    /**
      * Get the details on the given team.
      */
     public function getTeam($teamId): Collection
