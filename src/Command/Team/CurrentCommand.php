@@ -43,14 +43,23 @@ class CurrentCommand extends AbstractCommand
     protected function perform(InputInterface $input, OutputStyle $output)
     {
         $team = $this->apiClient->getTeam($this->getActiveTeamId());
+        $user = $this->apiClient->getUser();
 
         if (!isset($team['id'], $team['name'])) {
             throw new RuntimeException('Unable to get the details on your currently active team');
         }
 
-        $team = $team->only(['id', 'name']);
+        $team = $team->only(['id', 'name', 'owner'])->mapWithKeys(function ($value, $key) use ($user) {
+            if ('owner' == $key && $value['id'] === $user['id']) {
+                $value = 'You';
+            } elseif ('owner' == $key && $value['id'] !== $user['id']) {
+                $value = $value['name'];
+            }
+
+            return [$key => $value];
+        });
 
         $output->writeln("<info>Your currently active team is:</info>\n");
-        $output->horizontalTable(['Id', 'Name'], [$team->all()]);
+        $output->table(['Id', 'Name', 'Owner'], [$team->all()]);
     }
 }
