@@ -13,6 +13,7 @@ services:
       string $assetsDirectory: '%assets_directory%'
       string $baseUrl: '%placeholder_api_url%'
       string $buildDirectory: '%build_directory%'
+      string $homeDirectory: '%home_directory%'
       string $projectDirectory: '%working_directory%'
       string $configurationFilePath: '%configuration_filepath%'
 

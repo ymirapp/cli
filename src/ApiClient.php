@@ -53,6 +53,18 @@ class ApiClient
     }
 
     /**
+     * Create a new cloud provider with the given name and credentials.
+     */
+    public function createProvider(string $name, array $credentials, int $teamId)
+    {
+        $this->request('post', "/teams/{$teamId}/providers", [
+            'provider' => 'aws',
+            'name' => $name,
+            'credentials' => $credentials,
+        ]);
+    }
+
+    /**
      * Create a new team with the given name.
      */
     public function createTeam(string $name)
