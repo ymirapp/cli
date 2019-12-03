@@ -15,6 +15,7 @@ namespace Placeholder\Cli;
 
 use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Exception\ClientException;
+use Placeholder\Cli\Exception\ApiClientException;
 use Symfony\Component\Console\Exception\RuntimeException;
 use Tightenco\Collect\Support\Collection;
 
@@ -142,12 +143,15 @@ class ApiClient
             $headers['Authorization'] = 'Bearer '.$this->configuration->get('token');
         }
 
-        $response = $this->client->request($method, $uri, [
-            'base_uri' => $this->baseUrl,
-            'headers' => $headers,
-            'json' => $body,
-            'verify' => false,
-        ]);
+        try {
+            $response = $this->client->request($method, $uri, [
+                'base_uri' => $this->baseUrl,
+                'headers' => $headers,
+                'json' => $body,
+            ]);
+        } catch (ClientException $exception) {
+            throw new ApiClientException($exception);
+        }
 
         return new Collection(json_decode((string) $response->getBody(), true));
     }
