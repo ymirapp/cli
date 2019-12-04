@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Placeholder\Cli\Console;
 
 use Symfony\Component\Console\Style\SymfonyStyle;
+use Tightenco\Collect\Support\Collection;
 
 class OutputStyle extends SymfonyStyle
 {
@@ -28,5 +29,18 @@ class OutputStyle extends SymfonyStyle
         }
 
         return $this->askQuestion(new ChoiceQuestion($question, $choices, $default));
+    }
+
+    /**
+     * Ask a choice question using a Collection.
+     */
+    public function choiceCollection(string $question, Collection $collection): int
+    {
+        return (int) $this->choice(
+            $question,
+            $collection->mapWithKeys(function (array $item) {
+                return [$item['id'] => $item['name']];
+            })->all()
+        );
     }
 }

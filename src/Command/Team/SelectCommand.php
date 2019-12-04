@@ -48,12 +48,7 @@ class SelectCommand extends AbstractCommand
             throw new RuntimeException('You\'re not on any team');
         }
 
-        $teamId = (int) $output->choice(
-            'Which team would you like to switch to?',
-            $teams->sortBy->name->mapWithKeys(function (array $team) {
-                return [$team['id'] => $team['name']];
-            })->all()
-        );
+        $teamId = $output->choiceCollection('Which team would you like to switch to?', $teams->sortBy->name);
 
         $this->setActiveTeamId($teamId);
 
