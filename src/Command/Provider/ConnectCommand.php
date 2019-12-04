@@ -19,7 +19,7 @@ use Placeholder\Cli\Configuration;
 use Placeholder\Cli\Console\OutputStyle;
 use Symfony\Component\Console\Input\InputInterface;
 
-class ConnectAwsCommand extends AbstractCommand
+class ConnectCommand extends AbstractCommand
 {
     /**
      * The name of the command.
@@ -29,11 +29,11 @@ class ConnectAwsCommand extends AbstractCommand
     public const NAME = 'provider:connect';
 
     /**
-     * The path to the AWS credentials file.
+     * The path to the user's home directory.
      *
      * @var string
      */
-    private $credentialsFilePath;
+    private $homeDirectory;
 
     /**
      * Constructor.
@@ -42,11 +42,7 @@ class ConnectAwsCommand extends AbstractCommand
     {
         parent::__construct($apiClient, $configuration);
 
-        $credentialsFilePath = rtrim($homeDirectory, '/').'/.aws/credentials';
-
-        if (file_exists($credentialsFilePath)) {
-            $this->credentialsFilePath = $credentialsFilePath;
-        }
+        $this->homeDirectory = rtrim($homeDirectory, '/');
     }
 
     /**
@@ -56,7 +52,7 @@ class ConnectAwsCommand extends AbstractCommand
     {
         $this
             ->setName(self::NAME)
-            ->setDescription('Connect an AWS account to the team');
+            ->setDescription('Connect a cloud provider to the currently active team');
     }
 
     /**
@@ -64,20 +60,21 @@ class ConnectAwsCommand extends AbstractCommand
      */
     protected function perform(InputInterface $input, OutputStyle $output)
     {
-        $name = $output->ask('Please enter a name for the AWS account connection');
-        $credentials = $this->getCredentials($output);
+        $name = $output->ask('Please enter a name for the cloud provider connection');
+
+        $credentials = $this->getAwsCredentials($output);
 
         $this->apiClient->createProvider($name, $credentials, $this->getActiveTeamId());
 
-        $output->writeln('AWS account connected successfully');
+        $output->writeln('Cloud provider connected successfully');
     }
 
     /**
      * Get the AWS credentials.
      */
-    private function getCredentials(OutputStyle $output): array
+    private function getAwsCredentials(OutputStyle $output): array
     {
-        $credentials = $this->getCredentialsFromFile($output);
+        $credentials = $this->getAwsCredentialsFromFile($output);
 
         if (!empty($credentials)) {
             return $credentials;
@@ -92,15 +89,17 @@ class ConnectAwsCommand extends AbstractCommand
     /**
      * Get the AWS credentials from the credentials file.
      */
-    private function getCredentialsFromFile(OutputStyle $output): array
+    private function getAwsCredentialsFromFile(OutputStyle $output): array
     {
-        if (!is_string($this->credentialsFilePath)
+        $credentialsFilePath = $this->homeDirectory.'/.aws/credentials';
+
+        if (!is_file($credentialsFilePath)
             || !$output->confirm('Would you like to choose credentials from your AWS credentials file?')
         ) {
             return [];
         }
 
-        $parsedCredentials = collect(parse_ini_file($this->credentialsFilePath, true));
+        $parsedCredentials = collect(parse_ini_file($credentialsFilePath, true));
 
         if ($parsedCredentials->isEmpty()) {
             return [];
