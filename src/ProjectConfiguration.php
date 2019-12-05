@@ -71,6 +71,15 @@ class ProjectConfiguration
     public function createNew(Collection $project)
     {
         $this->configuration = $project->only(['id', 'name']);
+
+        $this->configuration['environments'] = [
+            'production' => [
+                'memory' => 256,
+            ],
+            'staging' => [
+                'memory' => 256,
+            ],
+        ];
     }
 
     /**
