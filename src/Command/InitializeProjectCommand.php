@@ -13,8 +13,11 @@ declare(strict_types=1);
 
 namespace Placeholder\Cli\Command;
 
+use Placeholder\Cli\ApiClient;
+use Placeholder\Cli\CliConfiguration;
 use Placeholder\Cli\Command\Provider\ConnectCommand;
 use Placeholder\Cli\Console\OutputStyle;
+use Placeholder\Cli\ProjectConfiguration;
 use Symfony\Component\Console\Input\InputInterface;
 
 class InitializeProjectCommand extends AbstractCommand
@@ -25,6 +28,23 @@ class InitializeProjectCommand extends AbstractCommand
      * @var string
      */
     public const NAME = 'init';
+
+    /**
+     * The placeholder project configuration.
+     *
+     * @var ProjectConfiguration
+     */
+    private $projectConfiguration;
+
+    /**
+     * Constructor.
+     */
+    public function __construct(ApiClient $apiClient, CliConfiguration $cliConfiguration, ProjectConfiguration $projectConfiguration)
+    {
+        parent::__construct($apiClient, $cliConfiguration);
+
+        $this->projectConfiguration = $projectConfiguration;
+    }
 
     /**
      * {@inheritdoc}
@@ -41,6 +61,12 @@ class InitializeProjectCommand extends AbstractCommand
      */
     protected function perform(InputInterface $input, OutputStyle $output)
     {
+        if ($this->projectConfiguration->loaded()
+            && !$output->confirm('A project already exists in this directory. Do you want to overwrite it?', false)
+        ) {
+            return;
+        }
+
         $teamId = $this->getActiveTeamId();
         $providers = $this->apiClient->getProviders($teamId);
 
@@ -56,7 +82,7 @@ class InitializeProjectCommand extends AbstractCommand
                     $output->choiceCollection('Enter the ID of the cloud provider that the project will use', $providers);
         $region = $output->choice('Enter the name of the region that the project will be in', $this->apiClient->getRegions($provider)->all());
 
-        $project = $this->apiClient->createProject($provider, $name, $region);
+        $this->projectConfiguration->createNew($this->apiClient->createProject($provider, $name, $region));
 
         $output->writeln(sprintf('"<info>%s</info>" project has been initialized in the "<info>%s</info>" region', $name, $region));
     }

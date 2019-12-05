@@ -1,8 +1,9 @@
 parameters:
   assets_directory: '%hidden_directory%/assets'
   build_directory: '%hidden_directory%/build'
+  cli_configuration_filepath: '%home_directory%/.placeholder/config.json'
   hidden_directory: '%working_directory%/.placeholder'
-  configuration_filepath: '%home_directory%/.placeholder/config.json'
+  project_configuration_filepath: '%working_directory%/placeholder.yml'
 
 services:
   _defaults:
@@ -15,7 +16,6 @@ services:
       string $buildDirectory: '%build_directory%'
       string $homeDirectory: '%home_directory%'
       string $projectDirectory: '%working_directory%'
-      string $configurationFilePath: '%configuration_filepath%'
 
   _instanceof:
     Symfony\Component\Console\Command\Command:
@@ -33,6 +33,14 @@ services:
 
   Placeholder\Cli\Application:
     public: true
+
+  Placeholder\Cli\CliConfiguration:
+    arguments:
+      $configurationFilePath: '%cli_configuration_filepath%'
+
+  Placeholder\Cli\ProjectConfiguration:
+    arguments:
+      $configurationFilePath: '%project_configuration_filepath%'
 
   Placeholder\Cli\Command\BuildCommand:
     arguments:
