@@ -15,7 +15,7 @@ namespace Placeholder\Cli\Command;
 
 use Placeholder\Cli\ApiClient;
 use Placeholder\Cli\Build\BuildStepInterface;
-use Placeholder\Cli\Configuration;
+use Placeholder\Cli\CliConfiguration;
 use Placeholder\Cli\Console\OutputStyle;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -39,9 +39,9 @@ class BuildCommand extends AbstractCommand
     /**
      * Constructor.
      */
-    public function __construct(ApiClient $apiClient, Configuration $configuration, iterable $buildSteps = [])
+    public function __construct(ApiClient $apiClient, CliConfiguration $cliConfiguration, iterable $buildSteps = [])
     {
-        parent::__construct($apiClient, $configuration);
+        parent::__construct($apiClient, $cliConfiguration);
 
         foreach ($buildSteps as $buildStep) {
             $this->addBuildStep($buildStep);

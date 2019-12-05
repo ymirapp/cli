@@ -14,8 +14,8 @@ declare(strict_types=1);
 namespace Placeholder\Cli\Command\Provider;
 
 use Placeholder\Cli\ApiClient;
+use Placeholder\Cli\CliConfiguration;
 use Placeholder\Cli\Command\AbstractCommand;
-use Placeholder\Cli\Configuration;
 use Placeholder\Cli\Console\OutputStyle;
 use Symfony\Component\Console\Input\InputInterface;
 
@@ -38,9 +38,9 @@ class ConnectCommand extends AbstractCommand
     /**
      * Constructor.
      */
-    public function __construct(ApiClient $apiClient, Configuration $configuration, string $homeDirectory)
+    public function __construct(ApiClient $apiClient, CliConfiguration $cliConfiguration, string $homeDirectory)
     {
-        parent::__construct($apiClient, $configuration);
+        parent::__construct($apiClient, $cliConfiguration);
 
         $this->homeDirectory = rtrim($homeDirectory, '/');
     }

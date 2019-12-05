@@ -14,8 +14,8 @@ declare(strict_types=1);
 namespace Placeholder\Cli\Command;
 
 use Placeholder\Cli\ApiClient;
+use Placeholder\Cli\CliConfiguration;
 use Placeholder\Cli\Command\Team\SelectCommand;
-use Placeholder\Cli\Configuration;
 use Placeholder\Cli\Console\OutputStyle;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Command\Command;
@@ -36,19 +36,19 @@ abstract class AbstractCommand extends Command
     /**
      * The global placeholder CLI configuration.
      *
-     * @var Configuration
+     * @var CliConfiguration
      */
-    private $configuration;
+    private $cliConfiguration;
 
     /**
      * Constructor.
      */
-    public function __construct(ApiClient $apiClient, Configuration $configuration)
+    public function __construct(ApiClient $apiClient, CliConfiguration $cliConfiguration)
     {
         parent::__construct();
 
         $this->apiClient = $apiClient;
-        $this->configuration = $configuration;
+        $this->cliConfiguration = $cliConfiguration;
     }
 
     /**
@@ -82,11 +82,11 @@ abstract class AbstractCommand extends Command
      */
     protected function getActiveTeamId(): int
     {
-        if (!$this->configuration->has('active_team')) {
+        if (!$this->cliConfiguration->has('active_team')) {
             throw new RuntimeException(sprintf('Please select a team using the "%s" command', SelectCommand::NAME));
         }
 
-        return (int) $this->configuration->get('active_team');
+        return (int) $this->cliConfiguration->get('active_team');
     }
 
     /**
@@ -94,7 +94,7 @@ abstract class AbstractCommand extends Command
      */
     protected function setAccessToken(string $token)
     {
-        $this->configuration->set('token', $token);
+        $this->cliConfiguration->set('token', $token);
     }
 
     /**
@@ -102,7 +102,7 @@ abstract class AbstractCommand extends Command
      */
     protected function setActiveTeamId(int $teamId)
     {
-        $this->configuration->set('active_team', $teamId);
+        $this->cliConfiguration->set('active_team', $teamId);
     }
 
     /**

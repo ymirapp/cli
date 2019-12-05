@@ -38,18 +38,18 @@ class ApiClient
     /**
      * The global placeholder CLI configuration.
      *
-     * @var Configuration
+     * @var CliConfiguration
      */
-    private $configuration;
+    private $cliConfiguration;
 
     /**
      * Constructor.
      */
-    public function __construct(string $baseUrl, ClientInterface $client, Configuration $configuration)
+    public function __construct(string $baseUrl, ClientInterface $client, CliConfiguration $cliConfiguration)
     {
         $this->baseUrl = rtrim($baseUrl, '/').'/';
         $this->client = $client;
-        $this->configuration = $configuration;
+        $this->cliConfiguration = $cliConfiguration;
     }
 
     /**
@@ -157,7 +157,7 @@ class ApiClient
     public function isAuthenticated(): bool
     {
         try {
-            return $this->configuration->has('token') && !empty($this->getUser());
+            return $this->cliConfiguration->has('token') && !empty($this->getUser());
         } catch (ApiClientException $exception) {
             if (401 === $exception->getCode()) {
                 return false;
@@ -178,8 +178,8 @@ class ApiClient
         ];
         $uri = ltrim($uri, '/');
 
-        if ($this->configuration->has('token')) {
-            $headers['Authorization'] = 'Bearer '.$this->configuration->get('token');
+        if ($this->cliConfiguration->has('token')) {
+            $headers['Authorization'] = 'Bearer '.$this->cliConfiguration->get('token');
         }
 
         try {

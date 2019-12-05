@@ -16,7 +16,7 @@ namespace Placeholder\Cli;
 use Symfony\Component\Filesystem\Filesystem;
 use Tightenco\Collect\Support\Collection;
 
-class Configuration
+class CliConfiguration
 {
     /**
      * The path to the configuration file.
@@ -86,12 +86,12 @@ class Configuration
      */
     private function load(string $configurationFilePath): Collection
     {
-        $config = [];
+        $configuration = [];
 
         if ($this->filesystem->exists($configurationFilePath)) {
-            $config = json_decode((string) file_get_contents($configurationFilePath), true);
+            $configuration = json_decode((string) file_get_contents($configurationFilePath), true);
         }
 
-        return new Collection($config);
+        return new Collection($configuration);
     }
 }
