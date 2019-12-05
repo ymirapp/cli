@@ -101,7 +101,7 @@ class ConnectCommand extends AbstractCommand
 
         $parsedCredentials = collect(parse_ini_file($credentialsFilePath, true));
 
-        if ($parsedCredentials->isEmpty()) {
+        if (empty($parsedCredentials)) {
             return [];
         }
 
