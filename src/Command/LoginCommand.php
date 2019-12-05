@@ -40,13 +40,9 @@ class LoginCommand extends AbstractCommand
      */
     protected function perform(InputInterface $input, OutputStyle $output)
     {
-        $output->writeln('Placeholder login');
-
         if ($this->apiClient->isAuthenticated()
             && !$output->confirm('You are already logged in. Do you want to log in again?', false)
         ) {
-            $output->writeln('Cancelled');
-
             return;
         }
 
