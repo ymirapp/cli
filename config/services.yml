@@ -44,9 +44,7 @@ services:
 
   Placeholder\Cli\Command\BuildCommand:
     arguments:
-      - '@Placeholder\Cli\ApiClient'
-      - '@Placeholder\Cli\Configuration'
-      -
+      $buildSteps:
         - '@Placeholder\Cli\Build\CopyWordPressFilesStep'
         - '@Placeholder\Cli\Build\ExtractAssetFilesStep'
         - '@Placeholder\Cli\Build\CompressBuildFilesStep'
