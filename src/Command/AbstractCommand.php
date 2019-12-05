@@ -17,8 +17,10 @@ use Placeholder\Cli\ApiClient;
 use Placeholder\Cli\Command\Team\SelectCommand;
 use Placeholder\Cli\Configuration;
 use Placeholder\Cli\Console\OutputStyle;
+use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Exception\RuntimeException;
+use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
@@ -47,6 +49,20 @@ abstract class AbstractCommand extends Command
 
         $this->apiClient = $apiClient;
         $this->configuration = $configuration;
+    }
+
+    /**
+     * Invoke another console command.
+     */
+    protected function invoke(OutputStyle $output, string $command, array $arguments = []): int
+    {
+        $application = $this->getApplication();
+
+        if (!$application instanceof Application) {
+            throw new RuntimeException('No Application instance found');
+        }
+
+        return $application->find($command)->run(new ArrayInput($arguments), $output);
     }
 
     /**

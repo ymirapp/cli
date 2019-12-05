@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Placeholder\Cli\Command;
 
+use Placeholder\Cli\Command\Provider\ConnectCommand;
 use Placeholder\Cli\Console\OutputStyle;
 use Symfony\Component\Console\Input\InputInterface;
 
@@ -40,5 +41,23 @@ class InitializeProjectCommand extends AbstractCommand
      */
     protected function perform(InputInterface $input, OutputStyle $output)
     {
+        $teamId = $this->getActiveTeamId();
+        $providers = $this->apiClient->getProviders($teamId);
+
+        if ($providers->isEmpty()) {
+            $output->writeln('Connecting to a cloud provider');
+            $this->invoke($output, ConnectCommand::NAME);
+            $providers = $this->apiClient->getProviders($teamId);
+        }
+
+        $name = $output->askSlug('What is the name of this project');
+        $provider = 1 === count($providers)
+                    ? $providers[0]['id'] :
+                    $output->choiceCollection('Which cloud provider should the project use?', $providers);
+        $region = $output->choice('Which region should the project be in?', $this->apiClient->getRegions($provider)->all());
+
+        $project = $this->apiClient->createProject($provider, $name, $region);
+
+        $output->writeln(sprintf('"<info>%s</info>" project has been initialized in the "<info>%s</info>" region', $name, $region));
     }
 }

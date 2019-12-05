@@ -19,6 +19,14 @@ use Tightenco\Collect\Support\Collection;
 class OutputStyle extends SymfonyStyle
 {
     /**
+     * Ask a question and return the answer as a slug.
+     */
+    public function askSlug(string $question, string $default = null): string
+    {
+        return (string) preg_replace('/[^a-z0-9]+/i', '-', trim($this->ask($question, $default)));
+    }
+
+    /**
      * {@inheritdoc}
      */
     public function choice($question, array $choices, $default = null)

@@ -53,6 +53,17 @@ class ApiClient
     }
 
     /**
+     * Create a new project with the given cloud provider.
+     */
+    public function createProject(int $providerId, string $name, string $region): Collection
+    {
+        return $this->request('post', "/providers/{$providerId}/projects", [
+            'name' => $name,
+            'region' => $region,
+        ]);
+    }
+
+    /**
      * Create a new cloud provider with the given name and credentials.
      */
     public function createProvider(string $name, array $credentials, int $teamId)
@@ -106,6 +117,14 @@ class ApiClient
     public function getProviders(int $teamId): Collection
     {
         return $this->request('get', "/teams/{$teamId}/providers");
+    }
+
+    /**
+     * Get the regions supported by the given cloud provider.
+     */
+    public function getRegions(int $providerId): Collection
+    {
+        return $this->request('get', "/providers/{$providerId}/regions");
     }
 
     /**
