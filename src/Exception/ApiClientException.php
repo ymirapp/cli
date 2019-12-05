@@ -43,7 +43,7 @@ class ApiClientException extends RuntimeException
             $message = $this->getValidationErrorMessage($exception);
         }
 
-        parent::__construct($message);
+        parent::__construct($message, $exception->getCode());
     }
 
     /**

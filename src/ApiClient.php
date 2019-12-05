@@ -139,7 +139,7 @@ class ApiClient
     {
         try {
             return $this->configuration->has('token') && !empty($this->getUser());
-        } catch (ClientException $exception) {
+        } catch (ApiClientException $exception) {
             if (401 === $exception->getCode()) {
                 return false;
             }
