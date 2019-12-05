@@ -94,7 +94,7 @@ class ConnectCommand extends AbstractCommand
         $credentialsFilePath = $this->homeDirectory.'/.aws/credentials';
 
         if (!is_file($credentialsFilePath)
-            || !$output->confirm('Would you like to choose credentials from your AWS credentials file?')
+            || !$output->confirm('Would you like to import credentials from your AWS credentials file?')
         ) {
             return [];
         }
@@ -106,7 +106,7 @@ class ConnectCommand extends AbstractCommand
         }
 
         $credentials = $output->choice(
-            'Which set of credentials would you like to use?',
+            'Enter the name of the credentials to import from your AWS credentials file',
             $parsedCredentials->mapWithKeys(function ($credentials, $key) {
                 return [$key => $key];
             })->all()

@@ -34,7 +34,7 @@ class SelectCommand extends AbstractCommand
     {
         $this
             ->setName(self::NAME)
-            ->setDescription('Select to a new currently active team');
+            ->setDescription('Select a new currently active team');
     }
 
     /**
@@ -48,7 +48,7 @@ class SelectCommand extends AbstractCommand
             throw new RuntimeException('You\'re not on any team');
         }
 
-        $teamId = $output->choiceCollection('Which team would you like to switch to?', $teams->sortBy->name);
+        $teamId = $output->choiceCollection('Enter the ID of the team that you want to switch to', $teams->sortBy->name);
 
         $this->setActiveTeamId($teamId);
 

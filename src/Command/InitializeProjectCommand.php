@@ -53,8 +53,8 @@ class InitializeProjectCommand extends AbstractCommand
         $name = $output->askSlug('What is the name of this project');
         $provider = 1 === count($providers)
                     ? $providers[0]['id'] :
-                    $output->choiceCollection('Which cloud provider should the project use?', $providers);
-        $region = $output->choice('Which region should the project be in?', $this->apiClient->getRegions($provider)->all());
+                    $output->choiceCollection('Enter the ID of the cloud provider that the project will use', $providers);
+        $region = $output->choice('Enter the name of the region that the project will be in', $this->apiClient->getRegions($provider)->all());
 
         $project = $this->apiClient->createProject($provider, $name, $region);
 
