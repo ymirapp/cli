@@ -83,6 +83,31 @@ class ProjectConfiguration
     }
 
     /**
+     * Delete the project configuration.
+     */
+    public function delete()
+    {
+        $this->configuration = new Collection();
+        $this->filesystem->remove($this->configurationFilePath);
+    }
+
+    /**
+     * Get the project ID.
+     */
+    public function getProjectId(): int
+    {
+        return (int) $this->configuration->get('id');
+    }
+
+    /**
+     * Get the project name.
+     */
+    public function getProjectName(): string
+    {
+        return (string) $this->configuration->get('name');
+    }
+
+    /**
      * Check if we have a loaded configuration.
      */
     public function loaded(): bool

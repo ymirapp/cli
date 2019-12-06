@@ -86,6 +86,14 @@ class ApiClient
     }
 
     /**
+     * Delete the given project.
+     */
+    public function deleteProject(int $projectId)
+    {
+        $this->request('delete', "/projects/{$projectId}");
+    }
+
+    /**
      * Get an access token for the given email and password.
      */
     public function getAccessToken(string $email, string $password): string
