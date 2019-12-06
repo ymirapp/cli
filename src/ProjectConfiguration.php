@@ -56,7 +56,7 @@ class ProjectConfiguration
      */
     public function __destruct()
     {
-        if (empty($this->configuration)) {
+        if ($this->configuration->isEmpty()) {
             return;
         }
 
