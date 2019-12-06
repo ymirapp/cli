@@ -36,7 +36,9 @@ class ApiClientException extends RuntimeException
         } elseif (404 === $exception->getCode()) {
             $message = 'The requested resource does not exist';
         } elseif (409 === $exception->getCode()) {
-            $message = 'This operation is already in progress. Please try again later';
+            $message = 'This operation is already in progress';
+        } elseif (410 === $exception->getCode()) {
+            $message = 'The requested resource is being deleted';
         } elseif (429 === $exception->getCode()) {
             $message = 'You are attempting this action too often';
         } elseif (in_array($exception->getCode(), [400, 422])) {
