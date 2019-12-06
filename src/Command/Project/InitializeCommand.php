@@ -11,23 +11,24 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace Placeholder\Cli\Command;
+namespace Placeholder\Cli\Command\Project;
 
 use Placeholder\Cli\ApiClient;
 use Placeholder\Cli\CliConfiguration;
+use Placeholder\Cli\Command\AbstractCommand;
 use Placeholder\Cli\Command\Provider\ConnectCommand;
 use Placeholder\Cli\Console\OutputStyle;
 use Placeholder\Cli\ProjectConfiguration;
 use Symfony\Component\Console\Input\InputInterface;
 
-class InitializeProjectCommand extends AbstractCommand
+class InitializeCommand extends AbstractCommand
 {
     /**
      * The name of the command.
      *
      * @var string
      */
-    public const NAME = 'init';
+    public const NAME = 'project:init';
 
     /**
      * The placeholder project configuration.
@@ -53,6 +54,7 @@ class InitializeProjectCommand extends AbstractCommand
     {
         $this
             ->setName(self::NAME)
+            ->setAliases(['init'])
             ->setDescription('Initialize a new project in the current directory');
     }
 
