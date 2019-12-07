@@ -1,6 +1,7 @@
 parameters:
   assets_directory: '%hidden_directory%/assets'
   build_directory: '%hidden_directory%/build'
+  build_filepath: '%hidden_directory%/build.zip'
   cli_configuration_filepath: '%home_directory%/.placeholder/config.json'
   hidden_directory: '%working_directory%/.placeholder'
   project_configuration_filepath: '%working_directory%/placeholder.yml'
@@ -14,6 +15,7 @@ services:
       string $assetsDirectory: '%assets_directory%'
       string $baseUrl: '%placeholder_api_url%'
       string $buildDirectory: '%build_directory%'
+      string $buildFilePath: '%build_filepath%'
       string $homeDirectory: '%home_directory%'
       string $projectDirectory: '%working_directory%'
 

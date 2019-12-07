@@ -27,11 +27,19 @@ class CompressBuildFilesStep implements BuildStepInterface
     private $buildDirectory;
 
     /**
+     * The path to the build artifact.
+     *
+     * @var string
+     */
+    private $buildFilePath;
+
+    /**
      * Constructor.
      */
-    public function __construct(string $buildDirectory)
+    public function __construct(string $buildDirectory, string $buildFilePath)
     {
         $this->buildDirectory = rtrim($buildDirectory, '/');
+        $this->buildFilePath = $buildFilePath;
     }
 
     /**
@@ -48,7 +56,7 @@ class CompressBuildFilesStep implements BuildStepInterface
     public function perform()
     {
         $archive = new \ZipArchive();
-        $archive->open($this->getArchivePath(), \ZipArchive::CREATE | \ZipArchive::OVERWRITE);
+        $archive->open($this->buildFilePath, \ZipArchive::CREATE | \ZipArchive::OVERWRITE);
 
         foreach ($this->getBuildFiles() as $file) {
             $this->addFileToArchive($archive, $file);
@@ -56,7 +64,7 @@ class CompressBuildFilesStep implements BuildStepInterface
 
         $archive->close();
 
-        $size = round(filesize($this->getArchivePath()) / 1048576, 1);
+        $size = round(filesize($this->buildFilePath) / 1048576, 1);
 
         if ($size > 45) {
             throw new RuntimeException(sprintf('Compressed build is greater than 45MB. Build is %sMB', $size));
@@ -75,14 +83,6 @@ class CompressBuildFilesStep implements BuildStepInterface
         $relativePathName = str_replace('\\', '/', $file->getRelativePathname());
         $archive->addFile($file->getRealPath(), $relativePathName);
         $archive->setExternalAttributesName($relativePathName, \ZipArchive::OPSYS_UNIX, (33060 & 0xffff) << 16);
-    }
-
-    /**
-     * Get the path to the archive file.
-     */
-    private function getArchivePath(): string
-    {
-        return $this->buildDirectory.'/build.zip';
     }
 
     /**
