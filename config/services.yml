@@ -51,5 +51,11 @@ services:
         - '@Placeholder\Cli\Build\ExtractAssetFilesStep'
         - '@Placeholder\Cli\Build\CompressBuildFilesStep'
 
+  Placeholder\Cli\Command\DeployCommand:
+    arguments:
+      $deploymentSteps:
+        - '@Placeholder\Cli\Deployment\UploadBuildStep'
+        - '@Placeholder\Cli\Deployment\ProcessAssetsStep'
+
   Symfony\Component\Filesystem\:
     resource: '../vendor/symfony/filesystem'

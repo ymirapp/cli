@@ -53,6 +53,16 @@ class ApiClient
     }
 
     /**
+     * Create a new deployment for the given project on the given environment.
+     */
+    public function createDeployment(int $projectId, string $environment, string $uuid = null): Collection
+    {
+        return $this->request('post', "/projects/{$projectId}/environments/{$environment}/deployments", [
+            'uuid' => $uuid,
+        ]);
+    }
+
+    /**
      * Create a new project with the given cloud provider.
      */
     public function createProject(int $providerId, string $name, string $region): Collection
@@ -117,6 +127,38 @@ class ApiClient
     public function getActiveTeam(): Collection
     {
         return $this->request('get', '/teams/active');
+    }
+
+    /**
+     * Get the upload URL for the artifact file.
+     */
+    public function getArtifactUploadUrl(int $deploymentId): string
+    {
+        $uploadUrl = (string) $this->request('get', "/deployments/{$deploymentId}/artifact")->get('upload_url');
+
+        if (empty($uploadUrl)) {
+            throw new RuntimeException('Unable to get an artifact upload URL from the placeholder API');
+        }
+
+        return $uploadUrl;
+    }
+
+    /**
+     * Get the upload URLs for the given asset files.
+     */
+    public function getAssetUploadUrls(int $deploymentId, array $assets): array
+    {
+        if (empty($assets)) {
+            return $assets;
+        }
+
+        $uploadUrls = $this->request('get', "/deployments/{$deploymentId}/authorize-assets", ['assets' => $assets])->all();
+
+        if (empty($uploadUrls)) {
+            throw new RuntimeException('Unable to get asset upload URLs from the placeholder API');
+        }
+
+        return $uploadUrls;
     }
 
     /**

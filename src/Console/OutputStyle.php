@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Placeholder\Cli\Console;
 
+use Placeholder\Cli\Build\BuildStepInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Tightenco\Collect\Support\Collection;
 
@@ -23,7 +24,7 @@ class OutputStyle extends SymfonyStyle
      */
     public function askSlug(string $question, string $default = null): string
     {
-        return (string) preg_replace('/[^a-z0-9]+/i', '-', trim($this->ask($question, $default)));
+        return (string) preg_replace('/[^a-z0-9]+/i', '-', strtolower(trim($this->ask($question, $default))));
     }
 
     /**
@@ -50,5 +51,29 @@ class OutputStyle extends SymfonyStyle
                 return [$item['id'] => $item['name']];
             })->all()
         );
+    }
+
+    /**
+     * Write out an informational message.
+     */
+    public function info(string $message, bool $newline = true)
+    {
+        $this->write("<info>{$message}</info>", $newline);
+    }
+
+    /**
+     * Write the build step message.
+     */
+    public function writeStep(BuildStepInterface $step)
+    {
+        $this->writeln(sprintf('  > %s', $step->getDescription()));
+    }
+
+    /**
+     * Write out an warning message.
+     */
+    public function warn(string $message, bool $newline = true)
+    {
+        $this->write("<comment>Warning: {$message}</comment>", $newline);
     }
 }

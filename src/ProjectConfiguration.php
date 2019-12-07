@@ -116,6 +116,14 @@ class ProjectConfiguration
     }
 
     /**
+     * Check if the given environment exists in the project configuration.
+     */
+    public function hasEnvironment(string $environment): bool
+    {
+        return isset($this->configuration['environments'][$environment]);
+    }
+
+    /**
      * Validates the loaded configuration file.
      */
     public function validate()

@@ -7,16 +7,14 @@
     xsi:noNamespaceSchemaLocation="http://pmd.sf.net/ruleset_xml_schema.xsd"
 >
     <rule ref="rulesets/cleancode.xml">
-        <exclude name="StaticAccess" />
+        <exclude name="BooleanArgumentFlag" />
         <exclude name="MissingImport" />
+        <exclude name="StaticAccess" />
     </rule>
     <rule ref="rulesets/codesize.xml">
         <exclude name="TooManyPublicMethods"/>
     </rule>
     <rule ref="rulesets/controversial.xml" />
-    <rule ref="rulesets/design.xml">
-        <exclude name="ExitExpression" />
-    </rule>
     <rule ref="rulesets/unusedcode.xml">
         <exclude name="UnusedLocalVariable" />
     </rule>
@@ -54,7 +52,7 @@
         <priority>3</priority>
         <properties>
             <property name="minimum" description="Minimum length for a variable, property or parameter name" value="3"/>
-            <property name="exceptions" value="id" />
+            <property name="exceptions" value="id,_,__" />
         </properties>
     </rule>
 </ruleset>

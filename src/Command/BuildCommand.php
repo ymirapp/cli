@@ -55,7 +55,7 @@ class BuildCommand extends AbstractCommand
     {
         $this
             ->setName(self::NAME)
-            ->setDescription('Build the project artifact')
+            ->setDescription('Build the project for deployment')
             ->addArgument('environment', InputArgument::OPTIONAL, 'The environment name', 'staging');
     }
 
@@ -64,16 +64,14 @@ class BuildCommand extends AbstractCommand
      */
     protected function perform(InputInterface $input, OutputStyle $output)
     {
-        $currentStep = 1;
-        $totalSteps = count($this->buildSteps);
-
-        $output->writeln('Building...');
+        $output->info('Building project');
 
         foreach ($this->buildSteps as $buildStep) {
-            $output->writeln(sprintf('%s/%s: %s', $currentStep, $totalSteps, $buildStep->getDescription()));
+            $output->writeStep($buildStep);
             $buildStep->perform();
-            ++$currentStep;
         }
+
+        $output->info('Project built successfully');
     }
 
     /**
