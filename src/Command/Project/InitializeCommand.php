@@ -63,7 +63,7 @@ class InitializeCommand extends AbstractCommand
      */
     protected function perform(InputInterface $input, OutputStyle $output)
     {
-        if ($this->projectConfiguration->loaded()
+        if ($this->projectConfiguration->exists()
             && !$output->confirm('A project already exists in this directory. Do you want to overwrite it?', false)
         ) {
             return;

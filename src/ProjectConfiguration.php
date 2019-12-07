@@ -92,6 +92,14 @@ class ProjectConfiguration
     }
 
     /**
+     * Checks if the project configuration file exists.
+     */
+    public function exists(): bool
+    {
+        return $this->filesystem->exists($this->configurationFilePath);
+    }
+
+    /**
      * Get the project ID.
      */
     public function getProjectId(): int
@@ -105,14 +113,6 @@ class ProjectConfiguration
     public function getProjectName(): string
     {
         return (string) $this->configuration->get('name');
-    }
-
-    /**
-     * Check if we have a loaded configuration.
-     */
-    public function loaded(): bool
-    {
-        return $this->configuration->has('id');
     }
 
     /**

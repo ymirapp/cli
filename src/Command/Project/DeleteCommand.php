@@ -62,8 +62,8 @@ class DeleteCommand extends AbstractCommand
      */
     protected function perform(InputInterface $input, OutputStyle $output)
     {
-        if (!$this->projectConfiguration->loaded()) {
-            throw new RuntimeException('No project configuration file detected');
+        if (!$this->projectConfiguration->exists()) {
+            throw new RuntimeException('No project configuration file found');
         } elseif (!$output->confirm('Are you sure you want to delete this project?', false)) {
             return;
         }
