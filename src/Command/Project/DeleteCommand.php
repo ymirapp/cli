@@ -68,6 +68,8 @@ class DeleteCommand extends AbstractCommand
             return;
         }
 
+        $this->projectConfiguration->validate();
+
         $this->apiClient->deleteProject($this->projectConfiguration->getProjectId());
 
         $output->writeln(sprintf('"<info>%s</info>" project deletion has begun (This takes several several minutes)', $this->projectConfiguration->getProjectName()));

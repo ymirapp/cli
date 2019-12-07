@@ -116,6 +116,16 @@ class ProjectConfiguration
     }
 
     /**
+     * Validates the loaded configuration file.
+     */
+    public function validate()
+    {
+        if (!$this->configuration->has('id')) {
+            throw new RuntimeException('The project configuration file must have an "id"');
+        }
+    }
+
+    /**
      * Load the options from the configuration file.
      */
     private function load(string $configurationFilePath): Collection
