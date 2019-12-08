@@ -47,7 +47,7 @@ class ExtractAssetFilesStep implements BuildStepInterface
     {
         $this->assetsDirectory = rtrim($assetsDirectory, '/');
         $this->buildDirectory = rtrim($buildDirectory, '/');
-        $this->filesystem = $filesystem ?? new Filesystem();
+        $this->filesystem = $filesystem;
     }
 
     /**
@@ -82,8 +82,7 @@ class ExtractAssetFilesStep implements BuildStepInterface
         return Finder::create()
             ->in($this->buildDirectory)
             ->files()
-            ->notName('.htaccess')
-            ->notName(['*.php'])
+            ->notName(['.htaccess', '*.php'])
             ->ignoreVcs(true)
             ->ignoreDotFiles(true);
     }

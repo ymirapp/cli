@@ -93,8 +93,8 @@ class CopyWordPressFilesStep implements BuildStepInterface
     {
         $finder = Finder::create()
             ->in($this->projectDirectory)
-            ->exclude('.idea')
-            ->exclude('.placeholder')
+            ->exclude(['.idea', '.placeholder'])
+            ->notName(['placeholder.yml'])
             ->ignoreVcs(true)
             ->ignoreDotFiles(false);
 
