@@ -11,11 +11,12 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace Placeholder\Cli\Command;
+namespace Placeholder\Cli\Command\Project;
 
 use Placeholder\Cli\ApiClient;
 use Placeholder\Cli\Build\BuildStepInterface;
 use Placeholder\Cli\CliConfiguration;
+use Placeholder\Cli\Command\AbstractCommand;
 use Placeholder\Cli\Console\OutputStyle;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -27,7 +28,7 @@ class BuildCommand extends AbstractCommand
      *
      * @var string
      */
-    public const NAME = 'build';
+    public const NAME = 'project:build';
 
     /**
      * The build steps to perform.
@@ -55,6 +56,7 @@ class BuildCommand extends AbstractCommand
     {
         $this
             ->setName(self::NAME)
+            ->setAliases(['build'])
             ->setDescription('Build the project for deployment')
             ->addArgument('environment', InputArgument::OPTIONAL, 'The environment name', 'staging');
     }

@@ -54,6 +54,7 @@ class DeleteCommand extends AbstractCommand
     {
         $this
             ->setName(self::NAME)
+            ->setAliases(['delete'])
             ->setDescription('Delete the project');
     }
 

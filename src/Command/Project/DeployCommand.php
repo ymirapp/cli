@@ -11,10 +11,11 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace Placeholder\Cli\Command;
+namespace Placeholder\Cli\Command\Project;
 
 use Placeholder\Cli\ApiClient;
 use Placeholder\Cli\CliConfiguration;
+use Placeholder\Cli\Command\AbstractCommand;
 use Placeholder\Cli\Console\OutputStyle;
 use Placeholder\Cli\Deployment\DeploymentStepInterface;
 use Placeholder\Cli\ProjectConfiguration;
@@ -30,7 +31,7 @@ class DeployCommand extends AbstractCommand
      *
      * @var string
      */
-    public const NAME = 'deploy';
+    public const NAME = 'project:deploy';
 
     /**
      * The deployment steps to perform.
@@ -68,6 +69,7 @@ class DeployCommand extends AbstractCommand
     {
         $this
             ->setName(self::NAME)
+            ->setAliases(['deploy'])
             ->setDescription('Deploy project to an environment')
             ->addArgument('environment', InputArgument::OPTIONAL, 'The environment name', 'staging');
     }
