@@ -95,10 +95,10 @@ class DeployCommand extends AbstractCommand
             throw new RuntimeException(sprintf('The "%s" environment isn\'t configured in your configuration', $environment));
         }
 
-        // TODO: Also validate configuration remotely
-
         $projectId = $this->projectConfiguration->getProjectId();
         $uuid = Uuid::uuid4()->toString();
+
+        $this->apiClient->validateProjectConfiguration($projectId, $environment, $this->projectConfiguration);
 
         $this->invoke($output, BuildCommand::NAME);
 

@@ -218,6 +218,16 @@ class ApiClient
     }
 
     /**
+     * Validates the project configuration. Returns nothing if no errors were found.
+     */
+    public function validateProjectConfiguration(int $projectId, string $environment, ProjectConfiguration $projectConfiguration)
+    {
+        $this->request('get', "/projects/{$projectId}/environments/{$environment}/validate", [
+            'configuration' => $projectConfiguration->toArray(),
+        ]);
+    }
+
+    /**
      * Send a request to the placeholder API.
      */
     private function request(string $method, string $uri, array $body = []): Collection

@@ -53,7 +53,7 @@ class ApiClientException extends RuntimeException
      */
     private function getValidationErrorMessage(ClientException $exception): string
     {
-        $message = 'There were some problems with your request';
+        $message = 'The placeholder API responded with errors';
         $response = $exception->getResponse();
 
         if (!$response instanceof ResponseInterface) {

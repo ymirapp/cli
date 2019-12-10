@@ -16,9 +16,10 @@ namespace Placeholder\Cli;
 use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Yaml\Yaml;
+use Tightenco\Collect\Contracts\Support\Arrayable;
 use Tightenco\Collect\Support\Collection;
 
-class ProjectConfiguration
+class ProjectConfiguration implements Arrayable
 {
     /**
      * The path to the configuration file.
@@ -121,6 +122,14 @@ class ProjectConfiguration
     public function hasEnvironment(string $environment): bool
     {
         return isset($this->configuration['environments'][$environment]);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function toArray()
+    {
+        return $this->configuration->toArray();
     }
 
     /**
