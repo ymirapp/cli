@@ -25,27 +25,56 @@ class ApiClientException extends RuntimeException
      */
     public function __construct(ClientException $exception)
     {
-        $message = $exception->getMessage();
+        $message = $this->getApiErrorMessage($exception);
 
-        if (401 === $exception->getCode()) {
-            $message = sprintf('Please authenticate using the "%s" command', LoginCommand::NAME);
-        } elseif (402 === $exception->getCode()) {
-            $message = 'An active subscription is required to perform this action';
-        } elseif (403 === $exception->getCode()) {
-            $message = 'You are not authorized to perform this action';
-        } elseif (404 === $exception->getCode()) {
-            $message = 'The requested resource does not exist';
-        } elseif (409 === $exception->getCode()) {
-            $message = 'This operation is already in progress';
-        } elseif (410 === $exception->getCode()) {
-            $message = 'The requested resource is being deleted';
-        } elseif (429 === $exception->getCode()) {
-            $message = 'You are attempting this action too often';
+        if (empty($message)) {
+            $message = $this->getDefaultMessage($exception->getCode());
         } elseif (in_array($exception->getCode(), [400, 422])) {
             $message = $this->getValidationErrorMessage($exception);
         }
 
         parent::__construct($message, $exception->getCode());
+    }
+
+    /**
+     * Get the default exception message based on the exception code.
+     */
+    private function getDefaultMessage(int $code): string
+    {
+        $message = '';
+
+        if (401 === $code) {
+            $message = sprintf('Please authenticate using the "%s" command', LoginCommand::NAME);
+        } elseif (402 === $code) {
+            $message = 'An active subscription is required to perform this action';
+        } elseif (403 === $code) {
+            $message = 'You are not authorized to perform this action';
+        } elseif (404 === $code) {
+            $message = 'The requested resource does not exist';
+        } elseif (409 === $code) {
+            $message = 'This operation is already in progress';
+        } elseif (410 === $code) {
+            $message = 'The requested resource is being deleted';
+        } elseif (429 === $code) {
+            $message = 'You are attempting this action too often';
+        }
+
+        return $message;
+    }
+
+    /**
+     * Get the placeholder API error message.
+     */
+    private function getApiErrorMessage(ClientException $exception): string
+    {
+        $message = '';
+        $response = $exception->getResponse();
+
+        if (!$response instanceof ResponseInterface) {
+            return $message;
+        }
+
+        return str_replace('"', '', (string) $response->getBody());
     }
 
     /**
