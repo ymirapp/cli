@@ -77,8 +77,7 @@ class ProcessAssetsStep implements DeploymentStepInterface
         $progressBar = new ProgressBar($output);
         $progressBar->setFormat('<info>%message%</info> (<comment>%current%/%max%</comment>)');
         $progressBar->setMessage('Uploading assets');
-        $progressBar->setMaxSteps(count($assetUploadUrls));
-        $progressBar->start();
+        $progressBar->start(count($assetUploadUrls));
 
         foreach ($assetUploadUrls as $relativeFilePath => $uploadUrl) {
             $this->uploader->uploadFile($assetFiles[$relativeFilePath], $uploadUrl, ['Cache-Control' => 'public, max-age=2628000']);

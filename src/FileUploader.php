@@ -51,8 +51,7 @@ class FileUploader
         }
 
         if ($progressBar instanceof ProgressBar) {
-            $progressBar->setMaxSteps((int) round(filesize($filePath) / 1024));
-            $progressBar->start();
+            $progressBar->start((int) round(filesize($filePath) / 1024));
 
             $progressCallback = function ($_, $__, $___, $uploaded) use ($progressBar) {
                 $progressBar->setProgress((int) round($uploaded / 1024));
