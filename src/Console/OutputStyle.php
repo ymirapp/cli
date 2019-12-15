@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace Placeholder\Cli\Console;
 
-use Placeholder\Cli\Build\BuildStepInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Tightenco\Collect\Support\Collection;
 
@@ -64,9 +63,9 @@ class OutputStyle extends SymfonyStyle
     /**
      * Write the build step message.
      */
-    public function writeStep(BuildStepInterface $step)
+    public function writeStep(string $step, bool $newline = true)
     {
-        $this->writeln(sprintf('  > %s', $step->getDescription()));
+        $this->write("  > $step", $newline);
     }
 
     /**

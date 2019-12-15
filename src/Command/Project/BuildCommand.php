@@ -69,7 +69,7 @@ class BuildCommand extends AbstractCommand
         $output->info('Building project');
 
         foreach ($this->buildSteps as $buildStep) {
-            $output->writeStep($buildStep);
+            $output->writeStep($buildStep->getDescription());
             $buildStep->perform();
         }
 

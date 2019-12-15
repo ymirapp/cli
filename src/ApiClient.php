@@ -55,9 +55,10 @@ class ApiClient
     /**
      * Create a new deployment for the given project on the given environment.
      */
-    public function createDeployment(int $projectId, string $environment, string $uuid = null): Collection
+    public function createDeployment(int $projectId, string $environment, ProjectConfiguration $projectConfiguration, string $uuid = null): Collection
     {
         return $this->request('post', "/projects/{$projectId}/environments/{$environment}/deployments", [
+            'configuration' => $projectConfiguration->toArray(),
             'uuid' => $uuid,
         ]);
     }
@@ -162,6 +163,14 @@ class ApiClient
     }
 
     /**
+     * Get the details on the given deployment.
+     */
+    public function getDeployment(int $deploymentId): Collection
+    {
+        return $this->request('get', "/deployments/{$deploymentId}");
+    }
+
+    /**
      * Get the cloud providers for the given team ID.
      */
     public function getProviders(int $teamId): Collection
@@ -215,6 +224,14 @@ class ApiClient
 
             throw $exception;
         }
+    }
+
+    /**
+     * Send signal to the placeholder API to start the deployment.
+     */
+    public function startDeployment(int $deploymentId)
+    {
+        $this->request('post', "/deployments/{$deploymentId}/start");
     }
 
     /**

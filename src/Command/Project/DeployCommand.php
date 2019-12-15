@@ -102,7 +102,7 @@ class DeployCommand extends AbstractCommand
 
         $this->invoke($output, BuildCommand::NAME);
 
-        $deployment = $this->apiClient->createDeployment($projectId, $environment, $uuid);
+        $deployment = $this->apiClient->createDeployment($projectId, $environment, $this->projectConfiguration, $uuid);
         $deploymentId = (int) $deployment->get('id');
 
         if (empty($deploymentId)) {
