@@ -157,6 +157,6 @@ class ProjectConfiguration implements Arrayable
             throw new RuntimeException('Error parsing project configuration file');
         }
 
-        return new Collection($configuration);
+        return collect($configuration);
     }
 }

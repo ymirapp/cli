@@ -265,6 +265,6 @@ class ApiClient
             throw new ApiClientException($exception);
         }
 
-        return new Collection(json_decode((string) $response->getBody(), true));
+        return collect(json_decode((string) $response->getBody(), true));
     }
 }

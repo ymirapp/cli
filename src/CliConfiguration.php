@@ -92,6 +92,6 @@ class CliConfiguration
             $configuration = json_decode((string) file_get_contents($configurationFilePath), true);
         }
 
-        return new Collection($configuration);
+        return collect($configuration);
     }
 }
