@@ -59,7 +59,7 @@ class StartAndMonitorDeploymentStep implements DeploymentStepInterface
      */
     private function getDeploymentSteps(int $deploymentId): Collection
     {
-        return collect($this->apiClient->getDeployment($deploymentId)->get('steps'));
+        return collect($this->apiClient->getDeployment($deploymentId)->get('steps'))->keyBy('id');
     }
 
     /**
