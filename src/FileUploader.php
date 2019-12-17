@@ -14,6 +14,8 @@ declare(strict_types=1);
 namespace Placeholder\Cli;
 
 use GuzzleHttp\ClientInterface;
+use GuzzleHttp\Pool;
+use GuzzleHttp\Psr7\Request;
 use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Helper\ProgressBar;
 
@@ -32,6 +34,33 @@ class FileUploader
     public function __construct(ClientInterface $client)
     {
         $this->client = $client;
+    }
+
+    /**
+     * Sends multiple requests concurrently.
+     */
+    public function batch(string $method, array $requests, array $defaultHeaders = [], ?ProgressBar $progressBar = null)
+    {
+        if ($progressBar instanceof ProgressBar) {
+            $progressBar->start(count($requests));
+        }
+
+        $requests = function () use ($method, $requests, $defaultHeaders, $progressBar) {
+            foreach ($requests as $request) {
+                if ($progressBar instanceof ProgressBar) {
+                    $progressBar->advance();
+                }
+
+                yield new Request($method, $request['uri'], array_merge($defaultHeaders, $request['headers']));
+            }
+        };
+
+        $pool = new Pool($this->client, $requests(), ['concurrency' => 10]);
+        $pool->promise()->wait();
+
+        if ($progressBar instanceof ProgressBar) {
+            $progressBar->finish();
+        }
     }
 
     /**

@@ -18,9 +18,17 @@ use Placeholder\Cli\Console\OutputStyle;
 use Placeholder\Cli\FileUploader;
 use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Finder\Finder;
+use Tightenco\Collect\Support\Collection;
 
 class ProcessAssetsStep implements DeploymentStepInterface
 {
+    /**
+     * The request headers to send with our asset requests.
+     *
+     * @var array
+     */
+    private const REQUEST_HEADERS = ['Cache-Control' => 'public, max-age=2628000'];
+
     /**
      * The API client that interacts with the placeholder API.
      *
@@ -67,31 +75,38 @@ class ProcessAssetsStep implements DeploymentStepInterface
     {
         $output->info('Processing assets');
 
+        $output->writeStep('Getting signed asset URLs');
         $assetFiles = $this->getAssetFiles();
-        $assetUploadUrls = $this->apiClient->getAssetUploadUrls($deploymentId, array_keys($assetFiles));
+        $signedAssetRequests = $this->apiClient->getSignedAssetRequests($deploymentId, $assetFiles->map(function (array $asset) {
+            return [
+                'path' => $asset['relative_path'],
+                'hash' => $asset['hash'],
+            ];
+        })->all());
 
-        if (!empty(array_diff_key($assetFiles, $assetUploadUrls))) {
+        if (count($assetFiles) !== count($signedAssetRequests)) {
             $output->warn('Not all asset files were processed successfully');
         }
 
-        $progressBar = new ProgressBar($output);
-        $progressBar->setFormat('<info>%message%</info> (<comment>%current%/%max%</comment>)');
-        $progressBar->setMessage('Uploading assets');
-        $progressBar->start(count($assetUploadUrls));
+        $signedAssetRequests = $signedAssetRequests->groupBy('command', true);
 
-        foreach ($assetUploadUrls as $relativeFilePath => $uploadUrl) {
-            $this->uploader->uploadFile($assetFiles[$relativeFilePath], $uploadUrl, ['Cache-Control' => 'public, max-age=2628000']);
-            $progressBar->advance();
-        }
+        $this->copyAssetFiles($assetFiles->filter(function (array $asset) use ($signedAssetRequests) {
+            return isset($signedAssetRequests['copy'][$asset['relative_path']]);
+        })->map(function (array $asset) use ($signedAssetRequests) {
+            return $signedAssetRequests['copy'][$asset['relative_path']];
+        })->all(), $output);
 
-        $output->newLine();
+        $this->uploadAssetFiles($assetFiles->filter(function (array $asset) use ($signedAssetRequests) {
+            return isset($signedAssetRequests['store'][$asset['relative_path']]);
+        })->mapWithKeys(function (array $asset) use ($signedAssetRequests) {
+            return [$asset['real_path'] => $signedAssetRequests['store'][$asset['relative_path']]];
+        })->all(), $output);
     }
 
     /**
-     * Get all the asset files as an associative array with the relative path as the key
-     * and real path as the value.
+     * Get all the asset files.
      */
-    private function getAssetFiles(): array
+    private function getAssetFiles(): Collection
     {
         $assetFiles = [];
         $finder = Finder::create()
@@ -99,9 +114,53 @@ class ProcessAssetsStep implements DeploymentStepInterface
             ->files();
 
         foreach ($finder as $assetFile) {
-            $assetFiles[$assetFile->getRelativePathname()] = $assetFile->getRealPath();
+            $assetFiles[] = [
+                'real_path' => $assetFile->getRealPath(),
+                'relative_path' => $assetFile->getRelativePathname(),
+                'hash' => md5_file((string) $assetFile->getRealPath()),
+            ];
         }
 
-        return $assetFiles;
+        return collect($assetFiles);
+    }
+
+    /**
+     * Send the given asset file copy requests.
+     */
+    private function copyAssetFiles(array $requests, OutputStyle $output)
+    {
+        if (empty($requests)) {
+            return;
+        }
+
+        $progressBar = new ProgressBar($output);
+        $progressBar->setFormat('  > %message% (<comment>%current%/%max%</comment>)');
+        $progressBar->setMessage('Copying unchanged asset files');
+
+        $this->uploader->batch('PUT', $requests, self::REQUEST_HEADERS, $progressBar);
+
+        $output->newLine();
+    }
+
+    /**
+     * Send the given asset file upload requests.
+     */
+    private function uploadAssetFiles(array $requests, OutputStyle $output)
+    {
+        if (empty($requests)) {
+            return;
+        }
+
+        $progressBar = new ProgressBar($output);
+        $progressBar->setFormat('  > %message% (<comment>%current%/%max%</comment>)');
+        $progressBar->setMessage('Uploading new asset files');
+        $progressBar->start(count($requests));
+
+        foreach ($requests as $realFilePath => $request) {
+            $this->uploader->uploadFile((string) $realFilePath, (string) $request['uri'], array_merge(self::REQUEST_HEADERS, $request['headers']));
+            $progressBar->advance();
+        }
+
+        $output->newLine();
     }
 }

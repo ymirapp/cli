@@ -145,21 +145,17 @@ class ApiClient
     }
 
     /**
-     * Get the upload URLs for the given asset files.
+     * Get the signed asset requests for the given asset files.
      */
-    public function getAssetUploadUrls(int $deploymentId, array $assets): array
+    public function getSignedAssetRequests(int $deploymentId, array $assets): Collection
     {
-        if (empty($assets)) {
-            return $assets;
+        $requests = $this->request('get', "/deployments/{$deploymentId}/signed-assets", ['assets' => $assets]);
+
+        if (!empty($assets) && empty($requests)) {
+            throw new RuntimeException('Unable to get authorized asset requests from the placeholder API');
         }
 
-        $uploadUrls = $this->request('get', "/deployments/{$deploymentId}/authorize-assets", ['assets' => $assets])->all();
-
-        if (empty($uploadUrls)) {
-            throw new RuntimeException('Unable to get asset upload URLs from the placeholder API');
-        }
-
-        return $uploadUrls;
+        return $requests;
     }
 
     /**
