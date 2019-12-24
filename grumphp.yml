@@ -2,7 +2,23 @@ parameters:
   process_timeout: 120
   tasks:
     composer: ~
-    git_commit_message: ~
+    git_commit_message:
+      enforce_capitalized_subject: false
+      type_scope_conventions:
+        - types:
+          - build
+          - ci
+          - chore
+          - docs
+          - feat
+          - fix
+          - perf
+          - refactor
+          - revert
+          - style
+          - test
+        - scopes:
+          - grumphp
     phpcpd:
       directory: './src'
     phpcsfixer2:
