@@ -19,7 +19,7 @@ use Placeholder\Cli\Command\AbstractCommand;
 use Placeholder\Cli\Console\OutputStyle;
 use Symfony\Component\Console\Input\InputInterface;
 
-class ConnectCommand extends AbstractCommand
+class ConnectProviderCommand extends AbstractCommand
 {
     /**
      * The name of the command.

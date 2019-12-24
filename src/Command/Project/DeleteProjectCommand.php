@@ -21,7 +21,7 @@ use Placeholder\Cli\ProjectConfiguration;
 use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Input\InputInterface;
 
-class DeleteCommand extends AbstractCommand
+class DeleteProjectCommand extends AbstractCommand
 {
     /**
      * The name of the command.

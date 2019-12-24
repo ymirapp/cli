@@ -11,20 +11,22 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace Placeholder\Cli\Command\Provider;
+namespace Placeholder\Cli\Command\Team;
 
 use Placeholder\Cli\Command\AbstractCommand;
 use Placeholder\Cli\Console\OutputStyle;
+use Symfony\Component\Console\Exception\RuntimeException;
+use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 
-class ListCommand extends AbstractCommand
+class CreateTeamCommand extends AbstractCommand
 {
     /**
      * The name of the command.
      *
      * @var string
      */
-    public const NAME = 'provider:list';
+    public const NAME = 'team:create';
 
     /**
      * {@inheritdoc}
@@ -33,7 +35,8 @@ class ListCommand extends AbstractCommand
     {
         $this
             ->setName(self::NAME)
-            ->setDescription('List the cloud provider accounts connected to the currently active team');
+            ->addArgument('name', InputArgument::REQUIRED, 'The name of the team')
+            ->setDescription('Create a new team');
     }
 
     /**
@@ -41,19 +44,14 @@ class ListCommand extends AbstractCommand
      */
     protected function perform(InputInterface $input, OutputStyle $output)
     {
-        $providers = $this->apiClient->getProviders($this->getActiveTeamId());
+        $name = $input->getArgument('name');
 
-        $output->writeln("<info>The following cloud providers are connect your team:</info>\n");
+        if (!is_string($name)) {
+            throw new RuntimeException('Invalid "name" argument given');
+        }
 
-        $output->table(
-            ['Id', 'Name', 'Provider'],
-            $providers->map(function (array $provider) {
-                return [
-                    $provider['id'],
-                    $provider['name'],
-                    $provider['provider'],
-                ];
-            })->all()
-        );
+        $this->apiClient->createTeam($name);
+
+        $output->writeln('Team created successfully');
     }
 }

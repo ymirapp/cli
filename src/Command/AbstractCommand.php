@@ -15,7 +15,7 @@ namespace Placeholder\Cli\Command;
 
 use Placeholder\Cli\ApiClient;
 use Placeholder\Cli\CliConfiguration;
-use Placeholder\Cli\Command\Team\SelectCommand;
+use Placeholder\Cli\Command\Team\SelectTeamCommand;
 use Placeholder\Cli\Console\OutputStyle;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Command\Command;
@@ -83,7 +83,7 @@ abstract class AbstractCommand extends Command
     protected function getActiveTeamId(): int
     {
         if (!$this->cliConfiguration->has('active_team')) {
-            throw new RuntimeException(sprintf('Please select a team using the "%s" command', SelectCommand::NAME));
+            throw new RuntimeException(sprintf('Please select a team using the "%s" command', SelectTeamCommand::NAME));
         }
 
         return (int) $this->cliConfiguration->get('active_team');

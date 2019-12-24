@@ -18,7 +18,7 @@ use Placeholder\Cli\Console\OutputStyle;
 use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Input\InputInterface;
 
-class SelectCommand extends AbstractCommand
+class SelectTeamCommand extends AbstractCommand
 {
     /**
      * The name of the command.

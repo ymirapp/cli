@@ -44,14 +44,14 @@ services:
     arguments:
       $configurationFilePath: '%project_configuration_filepath%'
 
-  Placeholder\Cli\Command\Project\BuildCommand:
+  Placeholder\Cli\Command\Project\BuildProjectCommand:
     arguments:
       $buildSteps:
         - '@Placeholder\Cli\Build\CopyWordPressFilesStep'
         - '@Placeholder\Cli\Build\ExtractAssetFilesStep'
         - '@Placeholder\Cli\Build\CompressBuildFilesStep'
 
-  Placeholder\Cli\Command\Project\DeployCommand:
+  Placeholder\Cli\Command\Project\DeployProjectCommand:
     arguments:
       $deploymentSteps:
         - '@Placeholder\Cli\Deployment\UploadBuildStep'

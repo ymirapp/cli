@@ -24,7 +24,7 @@ use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 
-class DeployCommand extends AbstractCommand
+class DeployProjectCommand extends AbstractCommand
 {
     /**
      * The name of the command.
@@ -100,7 +100,7 @@ class DeployCommand extends AbstractCommand
 
         $this->apiClient->validateProjectConfiguration($projectId, $environment, $this->projectConfiguration);
 
-        $this->invoke($output, BuildCommand::NAME);
+        $this->invoke($output, BuildProjectCommand::NAME);
 
         $deployment = $this->apiClient->createDeployment($projectId, $environment, $this->projectConfiguration, $uuid);
         $deploymentId = (int) $deployment->get('id');

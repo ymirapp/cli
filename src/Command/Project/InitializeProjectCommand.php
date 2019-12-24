@@ -16,12 +16,12 @@ namespace Placeholder\Cli\Command\Project;
 use Placeholder\Cli\ApiClient;
 use Placeholder\Cli\CliConfiguration;
 use Placeholder\Cli\Command\AbstractCommand;
-use Placeholder\Cli\Command\Provider\ConnectCommand;
+use Placeholder\Cli\Command\Provider\ConnectProviderCommand;
 use Placeholder\Cli\Console\OutputStyle;
 use Placeholder\Cli\ProjectConfiguration;
 use Symfony\Component\Console\Input\InputInterface;
 
-class InitializeCommand extends AbstractCommand
+class InitializeProjectCommand extends AbstractCommand
 {
     /**
      * The name of the command.
@@ -74,7 +74,7 @@ class InitializeCommand extends AbstractCommand
 
         if ($providers->isEmpty()) {
             $output->writeln('Connecting to a cloud provider');
-            $this->invoke($output, ConnectCommand::NAME);
+            $this->invoke($output, ConnectProviderCommand::NAME);
             $providers = $this->apiClient->getProviders($teamId);
         }
 

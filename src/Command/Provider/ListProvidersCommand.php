@@ -11,20 +11,20 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace Placeholder\Cli\Command\Team;
+namespace Placeholder\Cli\Command\Provider;
 
 use Placeholder\Cli\Command\AbstractCommand;
 use Placeholder\Cli\Console\OutputStyle;
 use Symfony\Component\Console\Input\InputInterface;
 
-class ListCommand extends AbstractCommand
+class ListProvidersCommand extends AbstractCommand
 {
     /**
      * The name of the command.
      *
      * @var string
      */
-    public const NAME = 'team:list';
+    public const NAME = 'provider:list';
 
     /**
      * {@inheritdoc}
@@ -33,7 +33,7 @@ class ListCommand extends AbstractCommand
     {
         $this
             ->setName(self::NAME)
-            ->setDescription('List all the teams that you\'re on');
+            ->setDescription('List the cloud provider accounts connected to the currently active team');
     }
 
     /**
@@ -41,18 +41,17 @@ class ListCommand extends AbstractCommand
      */
     protected function perform(InputInterface $input, OutputStyle $output)
     {
-        $teams = $this->apiClient->getTeams();
-        $user = $this->apiClient->getUser();
+        $providers = $this->apiClient->getProviders($this->getActiveTeamId());
 
-        $output->writeln("<info>You are on the following teams:</info>\n");
+        $output->writeln("<info>The following cloud providers are connect your team:</info>\n");
 
         $output->table(
-            ['Id', 'Name', 'Owner'],
-            $teams->map(function (array $team) use ($user) {
+            ['Id', 'Name', 'Provider'],
+            $providers->map(function (array $provider) {
                 return [
-                    $team['id'],
-                    $team['name'],
-                    $team['owner']['id'] === $user['id'] ? 'You' : $team['owner']['name'],
+                    $provider['id'],
+                    $provider['name'],
+                    $provider['provider'],
                 ];
             })->all()
         );

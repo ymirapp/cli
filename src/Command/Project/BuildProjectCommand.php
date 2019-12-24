@@ -21,7 +21,7 @@ use Placeholder\Cli\Console\OutputStyle;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 
-class BuildCommand extends AbstractCommand
+class BuildProjectCommand extends AbstractCommand
 {
     /**
      * The name of the command.

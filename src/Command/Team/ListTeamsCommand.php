@@ -15,18 +15,16 @@ namespace Placeholder\Cli\Command\Team;
 
 use Placeholder\Cli\Command\AbstractCommand;
 use Placeholder\Cli\Console\OutputStyle;
-use Symfony\Component\Console\Exception\RuntimeException;
-use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 
-class CreateCommand extends AbstractCommand
+class ListTeamsCommand extends AbstractCommand
 {
     /**
      * The name of the command.
      *
      * @var string
      */
-    public const NAME = 'team:create';
+    public const NAME = 'team:list';
 
     /**
      * {@inheritdoc}
@@ -35,8 +33,7 @@ class CreateCommand extends AbstractCommand
     {
         $this
             ->setName(self::NAME)
-            ->addArgument('name', InputArgument::REQUIRED, 'The name of the team')
-            ->setDescription('Create a new team');
+            ->setDescription('List all the teams that you\'re on');
     }
 
     /**
@@ -44,14 +41,20 @@ class CreateCommand extends AbstractCommand
      */
     protected function perform(InputInterface $input, OutputStyle $output)
     {
-        $name = $input->getArgument('name');
+        $teams = $this->apiClient->getTeams();
+        $user = $this->apiClient->getUser();
 
-        if (!is_string($name)) {
-            throw new RuntimeException('Invalid "name" argument given');
-        }
+        $output->writeln("<info>You are on the following teams:</info>\n");
 
-        $this->apiClient->createTeam($name);
-
-        $output->writeln('Team created successfully');
+        $output->table(
+            ['Id', 'Name', 'Owner'],
+            $teams->map(function (array $team) use ($user) {
+                return [
+                    $team['id'],
+                    $team['name'],
+                    $team['owner']['id'] === $user['id'] ? 'You' : $team['owner']['name'],
+                ];
+            })->all()
+        );
     }
 }
