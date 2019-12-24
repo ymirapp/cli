@@ -65,15 +65,24 @@ class DeleteCommand extends AbstractCommand
     {
         if (!$this->projectConfiguration->exists()) {
             throw new RuntimeException('No project configuration file found');
-        } elseif (!$output->confirm('Are you sure you want to delete this project?', false)) {
-            return;
         }
 
         $this->projectConfiguration->validate();
 
-        $this->apiClient->deleteProject($this->projectConfiguration->getProjectId());
+        if (!$output->confirm('Are you sure you want to delete this project?', false)) {
+            return;
+        }
 
-        $output->writeln(sprintf('"<info>%s</info>" project deletion has begun (This takes several several minutes)', $this->projectConfiguration->getProjectName()));
+        $deleteResources = (bool) $output->confirm('Do you want to delete all the project resources on the cloud provider?', false);
+
+        $this->apiClient->deleteProject($this->projectConfiguration->getProjectId(), $deleteResources);
+
+        $message = '"<info>%s</info>" project deletion has begun';
+        if ($deleteResources) {
+            $message .= ' (This takes several several minutes)';
+        }
+
+        $output->writeln(sprintf($message, $this->projectConfiguration->getProjectName()));
 
         $this->projectConfiguration->delete();
     }

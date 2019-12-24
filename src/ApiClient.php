@@ -99,9 +99,11 @@ class ApiClient
     /**
      * Delete the given project.
      */
-    public function deleteProject(int $projectId)
+    public function deleteProject(int $projectId, bool $deleteResources = false)
     {
-        $this->request('delete', "/projects/{$projectId}");
+        $this->request('delete', "/projects/{$projectId}", [
+            'delete_resources' => $deleteResources,
+        ]);
     }
 
     /**
