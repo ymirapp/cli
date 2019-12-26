@@ -147,20 +147,6 @@ class ApiClient
     }
 
     /**
-     * Get the signed asset requests for the given asset files.
-     */
-    public function getSignedAssetRequests(int $deploymentId, array $assets): Collection
-    {
-        $requests = $this->request('get', "/deployments/{$deploymentId}/signed-assets", ['assets' => $assets]);
-
-        if (!empty($assets) && empty($requests)) {
-            throw new RuntimeException('Unable to get authorized asset requests from the placeholder API');
-        }
-
-        return $requests;
-    }
-
-    /**
      * Get the details on the given deployment.
      */
     public function getDeployment(int $deploymentId): Collection
@@ -182,6 +168,20 @@ class ApiClient
     public function getRegions(int $providerId): Collection
     {
         return $this->request('get', "/providers/{$providerId}/regions");
+    }
+
+    /**
+     * Get the signed asset requests for the given asset files.
+     */
+    public function getSignedAssetRequests(int $deploymentId, array $assets): Collection
+    {
+        $requests = $this->request('get', "/deployments/{$deploymentId}/signed-assets", ['assets' => $assets]);
+
+        if (!empty($assets) && empty($requests)) {
+            throw new RuntimeException('Unable to get authorized asset requests from the placeholder API');
+        }
+
+        return $requests;
     }
 
     /**
