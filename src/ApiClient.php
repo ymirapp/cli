@@ -53,6 +53,19 @@ class ApiClient
     }
 
     /**
+     * Create a new database on the given network.
+     */
+    public function createDatabase(string $name, int $networkId, string $type, int $storage = 100, bool $public = false): Collection
+    {
+        return $this->request('post', "/networks/{$networkId}/databases", [
+            'name' => $name,
+            'publicly_accessible' => $public,
+            'storage' => $storage,
+            'type' => $type,
+        ]);
+    }
+
+    /**
      * Create a new deployment for the given project on the given environment.
      */
     public function createDeployment(int $projectId, string $environment, ProjectConfiguration $projectConfiguration, string $uuid = null): Collection
@@ -147,11 +160,27 @@ class ApiClient
     }
 
     /**
+     * Get the database types available on the given cloud provider.
+     */
+    public function getDatabaseTypes(int $providerId): Collection
+    {
+        return $this->request('get', "/providers/{$providerId}/databases/types");
+    }
+
+    /**
      * Get the details on the given deployment.
      */
     public function getDeployment(int $deploymentId): Collection
     {
         return $this->request('get', "/deployments/{$deploymentId}");
+    }
+
+    /**
+     * Get the networks that belong to the given team.
+     */
+    public function getNetworks(int $teamId): Collection
+    {
+        return $this->request('get', "/teams/{$teamId}/networks");
     }
 
     /**

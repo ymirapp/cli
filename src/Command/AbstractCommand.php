@@ -78,6 +78,54 @@ abstract class AbstractCommand extends Command
     }
 
     /**
+     * Get the value of a option that should be boolean.
+     */
+    protected function getBooleanOption(InputInterface $input, string $option): bool
+    {
+        return $input->hasOption($option) && $input->getOption($option);
+    }
+
+    /**
+     * Get the value of a option that should be numeric. Returns null if not present.
+     */
+    protected function getNumericOption(InputInterface $input, string $option): ?int
+    {
+        $value = null;
+
+        if ($input->hasOption($option)) {
+            $value = $input->getOption($option);
+        }
+
+        if (null === $value) {
+            return $value;
+        } elseif (!is_numeric($value)) {
+            throw new RuntimeException(sprintf('The "--%s" option must be a numeric value', $option));
+        }
+
+        return (int) $value;
+    }
+
+    /**
+     * Get the value of a option that should be a string. Returns null if not present.
+     */
+    protected function getStringOption(InputInterface $input, string $option): ?string
+    {
+        $value = null;
+
+        if ($input->hasOption($option)) {
+            $value = $input->getOption($option);
+        }
+
+        if (null === $value) {
+            return $value;
+        } elseif (!is_string($value)) {
+            throw new RuntimeException(sprintf('The "--%s" option must be a string value', $option));
+        }
+
+        return $value;
+    }
+
+    /**
      * Get the active team ID from the global configuration file.
      */
     protected function getActiveTeamId(): int
