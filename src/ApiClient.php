@@ -110,6 +110,14 @@ class ApiClient
     }
 
     /**
+     * Delete the given database.
+     */
+    public function deleteDatabase(int $databaseId)
+    {
+        $this->request('delete', "/databases/{$databaseId}");
+    }
+
+    /**
      * Delete the given project.
      */
     public function deleteProject(int $projectId, bool $deleteResources = false)
@@ -157,6 +165,14 @@ class ApiClient
         }
 
         return $uploadUrl;
+    }
+
+    /**
+     * Get the databases that belong to the given team.
+     */
+    public function getDatabases(int $teamId): Collection
+    {
+        return $this->request('get', "/teams/{$teamId}/databases");
     }
 
     /**
