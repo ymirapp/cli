@@ -21,7 +21,7 @@ parameters:
           - command
           - grumphp
     phpcpd:
-      directory: './src'
+      directory: ['./src']
     phpcsfixer2:
       allow_risky: true
       config: '.php_cs'
@@ -32,4 +32,3 @@ parameters:
       level: max
     phpunit:
       always_execute: true
-
