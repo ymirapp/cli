@@ -16,6 +16,7 @@ namespace Placeholder\Cli\Command\Database;
 use Placeholder\Cli\Command\AbstractCommand;
 use Placeholder\Cli\Console\OutputStyle;
 use Symfony\Component\Console\Exception\RuntimeException;
+use Symfony\Component\Console\Helper\TableSeparator;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -61,9 +62,14 @@ class CreateDatabaseCommand extends AbstractCommand
         $storage = $this->determineStorage($input, $output);
         $public = $this->determinePublic($input, $output);
 
-        $this->apiClient->createDatabase($name, (int) $network['id'], $type, $storage, $public);
+        $database = $this->apiClient->createDatabase($name, (int) $network['id'], $type, $storage, $public);
 
-        $output->writeln(sprintf('Creation of the "<info>%s</info>" database (<comment>%s</comment>) on the "<info>%s</info>" network has begun (This takes several several minutes)', $name, $type, $network['name']));
+        $output->horizontalTable(
+            ['Database', new TableSeparator(), 'Username', 'Password', new TableSeparator(), 'Type', 'Public', 'Storage (in GB)'],
+            [[$database['name'], new TableSeparator(), $database['username'], $database['password'], new TableSeparator(), $database['type'], $database['publicly_accessible'] ? 'Yes' : 'No', $database['storage']]]
+        );
+
+        $output->writeln(sprintf('Creation of the database has begun on the "<info>%s</info>" network (<comment>This takes several minutes</comment>)', $network['name']));
     }
 
     /**
