@@ -30,7 +30,7 @@
           externalInfoUrl="https://phpmd.org/rules/codesize.html#toomanypublicmethods">
         <priority>3</priority>
         <properties>
-            <property name="maxmethods" description="The method count reporting threshold" value="10"/>
+            <property name="maxmethods" description="The method count reporting threshold" value="15"/>
             <property name="ignorepattern" description="Ignore methods matching this regex" value="(^(add|set|get|is|has|with|test))i"/>
         </properties>
     </rule>

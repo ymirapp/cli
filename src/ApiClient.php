@@ -66,6 +66,16 @@ class ApiClient
     }
 
     /**
+     * Create a new user on the given database.
+     */
+    public function createDatabaseUser(int $databaseId, string $username): Collection
+    {
+        return $this->request('post', "/databases/{$databaseId}/users", [
+            'username' => $username,
+        ]);
+    }
+
+    /**
      * Create a new deployment for the given project on the given environment.
      */
     public function createDeployment(int $projectId, string $environment, ProjectConfiguration $projectConfiguration, string $uuid = null): Collection
