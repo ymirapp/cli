@@ -53,6 +53,14 @@ class ApiClient
     }
 
     /**
+     * Send signal to the placeholder API to cancel the deployment.
+     */
+    public function cancelDeployment(int $deploymentId)
+    {
+        $this->request('post', "/deployments/{$deploymentId}/cancel");
+    }
+
+    /**
      * Create a new database on the given network.
      */
     public function createDatabase(string $name, int $networkId, string $type, int $storage = 100, bool $public = false): Collection

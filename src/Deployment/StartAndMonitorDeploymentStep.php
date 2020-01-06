@@ -42,9 +42,11 @@ class StartAndMonitorDeploymentStep implements DeploymentStepInterface
     {
         $output->info('Deployment starting');
 
+        $this->registerCancellationHandler($deploymentId, $output);
+
         $this->apiClient->startDeployment($deploymentId);
 
-        $this->waitForDeploymentToStart($deploymentId);
+        $this->waitForDeploymentStatusChange($deploymentId, 'pending');
 
         $steps = $this->getDeploymentSteps($deploymentId);
 
@@ -68,19 +70,62 @@ class StartAndMonitorDeploymentStep implements DeploymentStepInterface
     private function getFormattedDeploymentStepName(string $jobName): string
     {
         return str_replace(
-            ['Ensure', 'Update'],
-            ['Ensuring', 'Updating'],
+            ['Create', 'Ensure', 'Set', 'Update'],
+            ['Creating', 'Ensuring', 'Setting', 'Updating'],
             ucfirst(strtolower((string) preg_replace(['/(.)(?=[A-Z])/u', '/Job$/'], ['$1 ', ''], $jobName)))
         );
     }
 
     /**
-     * Blocking method that constantly queries the placeholder API to see if the deployment step finished.
+     * Register a signal handler to handle deployment cancellation.
      */
-    private function waitForDeploymentStepToFinish(int $deploymentId, int $deploymentStepId)
+    private function registerCancellationHandler(int $deploymentId, OutputStyle $output)
+    {
+        if (!extension_loaded('pcntl')) {
+            return;
+        }
+
+        pcntl_async_signals(true);
+
+        pcntl_signal(SIGINT, function () use ($deploymentId, $output) {
+            $output->newLine();
+            $output->writeln('<comment>Attempting to cancel the deployment</comment>');
+
+            $this->apiClient->cancelDeployment($deploymentId);
+            $this->waitForDeploymentStatusChange($deploymentId, 'cancelling');
+
+            $output->info('Deployment cancelled successfully');
+
+            exit;
+        });
+    }
+
+    /**
+     * Blocking method that constantly queries the placeholder API to see if the deployment status
+     * changed from the given status.
+     */
+    private function waitForDeploymentStatusChange(int $deploymentId, string $status, int $timeout = 60)
     {
         $elapsed = 0;
-        $timeout = 240;
+
+        do {
+            if ($elapsed > $timeout) {
+                throw new RuntimeException('Timeout waiting for deployment status to change');
+            }
+
+            $deployment = $this->apiClient->getDeployment($deploymentId);
+
+            ++$elapsed;
+            sleep(1);
+        } while ($status === $deployment['status']);
+    }
+
+    /**
+     * Blocking method that constantly queries the placeholder API to see if the deployment step finished.
+     */
+    private function waitForDeploymentStepToFinish(int $deploymentId, int $deploymentStepId, int $timeout = 240)
+    {
+        $elapsed = 0;
 
         do {
             if ($elapsed > $timeout) {
@@ -98,25 +143,5 @@ class StartAndMonitorDeploymentStep implements DeploymentStepInterface
             ++$elapsed;
             sleep(1);
         } while ('finished' !== $step['status']);
-    }
-
-    /**
-     * Blocking method that constantly queries the placeholder API to see if the deployment started.
-     */
-    private function waitForDeploymentToStart(int $deploymentId)
-    {
-        $elapsed = 0;
-        $timeout = 60;
-
-        do {
-            if ($elapsed > $timeout) {
-                throw new RuntimeException('Timeout waiting for deployment to start');
-            }
-
-            $deployment = $this->apiClient->getDeployment($deploymentId);
-
-            ++$elapsed;
-            sleep(1);
-        } while ('pending' === $deployment['status']);
     }
 }
