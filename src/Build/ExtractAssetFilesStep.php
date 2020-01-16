@@ -97,6 +97,5 @@ class ExtractAssetFilesStep implements BuildStepInterface
         }
 
         $this->filesystem->copy($file->getRealPath(), $this->assetsDirectory.'/'.$file->getRelativePathname());
-        $this->filesystem->remove($file->getRealPath());
     }
 }
