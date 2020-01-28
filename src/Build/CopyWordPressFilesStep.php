@@ -95,6 +95,7 @@ class CopyWordPressFilesStep implements BuildStepInterface
             ->in($this->projectDirectory)
             ->exclude(['.idea', '.placeholder'])
             ->notName(['placeholder.yml'])
+            ->followLinks()
             ->ignoreVcs(true)
             ->ignoreDotFiles(false);
 
