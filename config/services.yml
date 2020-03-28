@@ -11,7 +11,6 @@ services:
     autowire: true
     public: false
     bind:
-      iterable $commands: !tagged command
       string $assetsDirectory: '%assets_directory%'
       string $baseUrl: '%placeholder_api_url%'
       string $buildDirectory: '%build_directory%'
@@ -35,6 +34,8 @@ services:
 
   Placeholder\Cli\Application:
     public: true
+    arguments:
+      - !tagged command
 
   Placeholder\Cli\CliConfiguration:
     arguments:
@@ -49,6 +50,7 @@ services:
       $buildSteps:
         - '@Placeholder\Cli\Build\CopyWordPressFilesStep'
         - '@Placeholder\Cli\Build\ExtractAssetFilesStep'
+        - '@Placeholder\Cli\Build\DownloadWpCliStep'
         - '@Placeholder\Cli\Build\CompressBuildFilesStep'
 
   Placeholder\Cli\Command\Project\DeployProjectCommand:
