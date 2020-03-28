@@ -325,6 +325,7 @@ class ApiClient
                 'base_uri' => $this->baseUrl,
                 'headers' => $headers,
                 'json' => $body,
+                'verify' => false,
             ]);
         } catch (ClientException $exception) {
             throw new ApiClientException($exception);
