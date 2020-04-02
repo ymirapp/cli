@@ -83,6 +83,7 @@ class ExtractAssetFilesStep implements BuildStepInterface
             ->in($this->buildDirectory)
             ->files()
             ->notName(['.htaccess', '*.php'])
+            ->followLinks()
             ->ignoreVcs(true)
             ->ignoreDotFiles(true);
     }
