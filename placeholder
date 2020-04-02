@@ -11,6 +11,7 @@ require __DIR__.'/vendor/autoload.php';
 $container = new ContainerBuilder();
 
 // Load manual parameters
+$container->setParameter('application_directory', __DIR__);
 $container->setParameter('home_directory', rtrim(getenv('HOME'), '/'));
 $container->setParameter('working_directory', rtrim(getcwd(), '/'));
 $container->setParameter('placeholder_api_url', getenv('PLACEHOLDER_API_URL') ?: 'https://wordpress-serverless.dev/api');

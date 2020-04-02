@@ -5,6 +5,7 @@ parameters:
   cli_configuration_filepath: '%home_directory%/.placeholder/config.json'
   hidden_directory: '%working_directory%/.placeholder'
   project_configuration_filepath: '%working_directory%/placeholder.yml'
+  stub_directory: '%application_directory%/stubs'
 
 services:
   _defaults:
@@ -17,6 +18,7 @@ services:
       string $buildFilePath: '%build_filepath%'
       string $homeDirectory: '%home_directory%'
       string $projectDirectory: '%working_directory%'
+      string $stubDirectory: '%stub_directory%'
 
   _instanceof:
     Symfony\Component\Console\Command\Command:
@@ -49,8 +51,10 @@ services:
     arguments:
       $buildSteps:
         - '@Placeholder\Cli\Build\CopyWordPressFilesStep'
+        - '@Placeholder\Cli\Build\ModifyWordPressConfigurationStep'
         - '@Placeholder\Cli\Build\ExtractAssetFilesStep'
         - '@Placeholder\Cli\Build\DownloadWpCliStep'
+        - '@Placeholder\Cli\Build\CopyPlaceholderFilesStep'
         - '@Placeholder\Cli\Build\CompressBuildFilesStep'
 
   Placeholder\Cli\Command\Project\DeployProjectCommand:
