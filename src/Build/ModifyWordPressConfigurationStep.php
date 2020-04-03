@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace Placeholder\Cli\Build;
 
-use Placeholder\Cli\ProjectConfiguration;
 use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Filesystem\Filesystem;
 
@@ -34,20 +33,20 @@ class ModifyWordPressConfigurationStep implements BuildStepInterface
     private $filesystem;
 
     /**
-     * The project configuration.
+     * The directory where the stub files are.
      *
-     * @var ProjectConfiguration
+     * @var string
      */
-    private $projectConfiguration;
+    private $stubDirectory;
 
     /**
      * Constructor.
      */
-    public function __construct(string $buildDirectory, Filesystem $filesystem, ProjectConfiguration $projectConfiguration)
+    public function __construct(string $buildDirectory, Filesystem $filesystem, string $stubDirectory)
     {
         $this->buildDirectory = rtrim($buildDirectory, '/');
         $this->filesystem = $filesystem;
-        $this->projectConfiguration = $projectConfiguration;
+        $this->stubDirectory = rtrim($stubDirectory, '/');
     }
 
     /**
@@ -90,5 +89,14 @@ class ModifyWordPressConfigurationStep implements BuildStepInterface
         }, $wpConfig);
 
         $this->filesystem->dumpFile($wpConfigFile, implode("\n", $wpConfig));
+
+        $configFile = 'placeholder-config.php';
+        $configStubPath = $this->stubDirectory.'/'.$configFile;
+
+        if (!$this->filesystem->exists($configStubPath)) {
+            throw new RuntimeException(sprintf('Cannot find "%s" stub file', $configFile));
+        }
+
+        $this->filesystem->copy($configStubPath, $this->buildDirectory.'/'.$configFile);
     }
 }

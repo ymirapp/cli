@@ -55,7 +55,6 @@ services:
         - '@Placeholder\Cli\Build\ExtractAssetFilesStep'
         - '@Placeholder\Cli\Build\DownloadWpCliStep'
         - '@Placeholder\Cli\Build\EnsurePluginIsInstalledStep'
-        - '@Placeholder\Cli\Build\CopyPlaceholderFilesStep'
         - '@Placeholder\Cli\Build\CompressBuildFilesStep'
 
   Placeholder\Cli\Command\Project\DeployProjectCommand:
