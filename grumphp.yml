@@ -29,6 +29,7 @@ parameters:
     phpmd:
       ruleset: ['phpmd.xml']
     phpstan:
+      ignore_patterns: ['/^stubs/']
       level: max
     phpunit:
       always_execute: true

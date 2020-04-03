@@ -54,6 +54,7 @@ services:
         - '@Placeholder\Cli\Build\ModifyWordPressConfigurationStep'
         - '@Placeholder\Cli\Build\ExtractAssetFilesStep'
         - '@Placeholder\Cli\Build\DownloadWpCliStep'
+        - '@Placeholder\Cli\Build\EnsurePluginIsInstalledStep'
         - '@Placeholder\Cli\Build\CopyPlaceholderFilesStep'
         - '@Placeholder\Cli\Build\CompressBuildFilesStep'
 
