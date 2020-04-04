@@ -82,7 +82,7 @@ class ModifyWordPressConfigurationStep implements BuildStepInterface
 
         $wpConfig = array_map(function (string $line) {
             if (preg_match('/require_once\s+ABSPATH\s*\.\s*\'wp-settings.php\';/', $line)) {
-                $line = "require_once ABSPATH.'placeholder-config.php'".PHP_EOL.$line;
+                $line = "require_once ABSPATH.'placeholder-config.php';".PHP_EOL.$line;
             }
 
             return $line;
