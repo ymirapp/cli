@@ -101,6 +101,18 @@ class ProjectConfiguration implements Arrayable
     }
 
     /**
+     * Get the configuration information for the given environment.
+     */
+    public function getEnvironment(string $environment): ?array
+    {
+        if (!array_key_exists($environment, $this->configuration['environments'])) {
+            throw new \InvalidArgumentException(sprintf('No "%s" environment found', $environment));
+        }
+
+        return $this->configuration['environments'][$environment];
+    }
+
+    /**
      * Get the environments in the project configuration.
      */
     public function getEnvironments(): array

@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Placeholder\Cli\Build;
 
+use Placeholder\Cli\ProjectConfiguration;
 use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Filesystem\Filesystem;
 
@@ -33,6 +34,13 @@ class ModifyWordPressConfigurationStep implements BuildStepInterface
     private $filesystem;
 
     /**
+     * The placeholder project configuration.
+     *
+     * @var ProjectConfiguration
+     */
+    private $projectConfiguration;
+
+    /**
      * The directory where the stub files are.
      *
      * @var string
@@ -42,10 +50,11 @@ class ModifyWordPressConfigurationStep implements BuildStepInterface
     /**
      * Constructor.
      */
-    public function __construct(string $buildDirectory, Filesystem $filesystem, string $stubDirectory)
+    public function __construct(string $buildDirectory, Filesystem $filesystem, ProjectConfiguration $projectConfiguration, string $stubDirectory)
     {
         $this->buildDirectory = rtrim($buildDirectory, '/');
         $this->filesystem = $filesystem;
+        $this->projectConfiguration = $projectConfiguration;
         $this->stubDirectory = rtrim($stubDirectory, '/');
     }
 
@@ -75,6 +84,11 @@ class ModifyWordPressConfigurationStep implements BuildStepInterface
         }
 
         $constants = ['WP_HOME', 'WP_SITEURL'];
+        $environment = $this->projectConfiguration->getEnvironment($environment);
+
+        if (!empty($environment['database'])) {
+            $constants = array_merge($constants, ['DB_HOST', 'DB_NAME', 'DB_USER', 'DB_PASSWORD']);
+        }
 
         $wpConfig = array_map(function (string $line) use ($constants) {
             return preg_replace('/('.implode('|', $constants).')/i', 'NULL_\1', $line);
