@@ -43,6 +43,14 @@ class DownloadWpCliStep implements BuildStepInterface
     /**
      * {@inheritdoc}
      */
+    public function getDescription(): string
+    {
+        return 'Downloading WP-CLI';
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function perform()
     {
         $wpCliPath = $this->binDirectory.'/wp';
@@ -53,13 +61,5 @@ class DownloadWpCliStep implements BuildStepInterface
 
         $this->filesystem->copy('https://github.com/wp-cli/wp-cli/releases/download/v2.4.0/wp-cli-2.4.0.phar', $wpCliPath, true);
         $this->filesystem->chmod($wpCliPath, 0755);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getDescription(): string
-    {
-        return 'Downloading WP-CLI';
     }
 }
