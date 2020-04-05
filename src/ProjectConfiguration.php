@@ -38,7 +38,7 @@ class ProjectConfiguration implements Arrayable
     /**
      * The parsed configuration.
      *
-     * @var Collection
+     * @var array
      */
     private $configuration;
 
@@ -57,11 +57,11 @@ class ProjectConfiguration implements Arrayable
      */
     public function __destruct()
     {
-        if ($this->configuration->isEmpty()) {
+        if (empty($this->configuration)) {
             return;
         }
 
-        $this->filesystem->dumpFile($this->configurationFilePath, Yaml::dump($this->configuration->all(), 20, 2));
+        $this->filesystem->dumpFile($this->configurationFilePath, Yaml::dump($this->configuration, 20, 2));
     }
 
     /**
@@ -71,7 +71,7 @@ class ProjectConfiguration implements Arrayable
      */
     public function createNew(Collection $project)
     {
-        $this->configuration = $project->only(['id', 'name']);
+        $this->configuration = $project->only(['id', 'name', 'type'])->all();
 
         $this->configuration['environments'] = [
             'production' => [
@@ -88,7 +88,7 @@ class ProjectConfiguration implements Arrayable
      */
     public function delete()
     {
-        $this->configuration = new Collection();
+        $this->configuration = [];
         $this->filesystem->remove($this->configurationFilePath);
     }
 
@@ -101,11 +101,23 @@ class ProjectConfiguration implements Arrayable
     }
 
     /**
+     * Get the environments in the project configuration.
+     */
+    public function getEnvironments(): array
+    {
+        return array_keys($this->configuration['environments']);
+    }
+
+    /**
      * Get the project ID.
      */
     public function getProjectId(): int
     {
-        return (int) $this->configuration->get('id');
+        if (empty($this->configuration['id'])) {
+            throw new RuntimeException('Project configuration file has no "id"');
+        }
+
+        return (int) $this->configuration['id'];
     }
 
     /**
@@ -113,15 +125,11 @@ class ProjectConfiguration implements Arrayable
      */
     public function getProjectName(): string
     {
-        return (string) $this->configuration->get('name');
-    }
+        if (empty($this->configuration['name'])) {
+            throw new RuntimeException('Project configuration file has no "name"');
+        }
 
-    /**
-     * Check if the given environment exists in the project configuration.
-     */
-    public function hasEnvironment(string $environment): bool
-    {
-        return isset($this->configuration['environments'][$environment]);
+        return (string) $this->configuration['name'];
     }
 
     /**
@@ -129,23 +137,37 @@ class ProjectConfiguration implements Arrayable
      */
     public function toArray()
     {
-        return $this->configuration->toArray();
+        return $this->configuration;
     }
 
     /**
      * Validates the loaded configuration file.
      */
-    public function validate()
+    public function validate($environments = null)
     {
-        if (!$this->configuration->has('id')) {
+        if (empty($this->configuration['id'])) {
             throw new RuntimeException('The project configuration file must have an "id"');
+        } elseif (empty($this->configuration['environments'])) {
+            throw new RuntimeException('The project configuration file must have at least one environment');
         }
+
+        if (empty($environments)) {
+            return;
+        }
+
+        $missingEnvironment = collect($environments)->diff(array_keys($this->configuration['environments']))->first();
+
+        if (empty($missingEnvironment)) {
+            return;
+        }
+
+        throw new RuntimeException(sprintf('The "%s" environment isn\'t configured in your project configuration', $missingEnvironment));
     }
 
     /**
      * Load the options from the configuration file.
      */
-    private function load(string $configurationFilePath): Collection
+    private function load(string $configurationFilePath): array
     {
         $configuration = [];
 
@@ -157,6 +179,6 @@ class ProjectConfiguration implements Arrayable
             throw new RuntimeException('Error parsing project configuration file');
         }
 
-        return collect($configuration);
+        return $configuration;
     }
 }

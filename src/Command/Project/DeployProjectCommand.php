@@ -79,31 +79,16 @@ class DeployProjectCommand extends AbstractCommand
      */
     protected function perform(InputInterface $input, OutputStyle $output)
     {
-        if (!$this->projectConfiguration->exists()) {
-            throw new RuntimeException('No project configuration file found');
-        }
-
-        $output->info('Validating project configuration');
-
-        $this->projectConfiguration->validate();
-
         $environment = $input->getArgument('environment');
 
         if (!is_string($environment)) {
             throw new RuntimeException('Invalid "environment" argument given');
-        } elseif (!$this->projectConfiguration->hasEnvironment($environment)) {
-            throw new RuntimeException(sprintf('The "%s" environment isn\'t configured in your configuration', $environment));
         }
 
-        $projectId = $this->projectConfiguration->getProjectId();
-        $uuid = Uuid::uuid4()->toString();
-
-        $this->apiClient->validateProjectConfiguration($projectId, $environment, $this->projectConfiguration);
-
+        $this->invoke($output, ValidateProjectCommand::NAME, ['environments' => $environment]);
         $this->invoke($output, BuildProjectCommand::NAME);
 
-        $deployment = $this->apiClient->createDeployment($projectId, $environment, $this->projectConfiguration, $uuid);
-        $deploymentId = (int) $deployment->get('id');
+        $deploymentId = (int) $this->apiClient->createDeployment($this->projectConfiguration->getProjectId(), $environment, $this->projectConfiguration, Uuid::uuid4()->toString())->get('id');
 
         if (empty($deploymentId)) {
             throw new RuntimeException('There was an error creating the deployment');
