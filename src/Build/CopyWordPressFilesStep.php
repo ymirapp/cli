@@ -61,7 +61,7 @@ class CopyWordPressFilesStep implements BuildStepInterface
     /**
      * {@inheritdoc}
      */
-    public function perform()
+    public function perform(string $environment)
     {
         if ($this->filesystem->exists($this->buildDirectory)) {
             $this->filesystem->remove($this->buildDirectory);

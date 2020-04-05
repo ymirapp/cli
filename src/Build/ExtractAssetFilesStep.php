@@ -61,7 +61,7 @@ class ExtractAssetFilesStep implements BuildStepInterface
     /**
      * {@inheritdoc}
      */
-    public function perform()
+    public function perform(string $environment)
     {
         if ($this->filesystem->exists($this->assetsDirectory)) {
             $this->filesystem->remove($this->assetsDirectory);

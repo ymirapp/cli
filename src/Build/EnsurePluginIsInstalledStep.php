@@ -61,7 +61,7 @@ class EnsurePluginIsInstalledStep implements BuildStepInterface
     /**
      * {@inheritdoc}
      */
-    public function perform()
+    public function perform(string $environment)
     {
         $process = Process::fromShellCommandline(sprintf('%s plugin list --fields=file --format=json', rtrim($this->buildDirectory, '/').'/bin/wp'));
         $process->run();

@@ -53,7 +53,7 @@ class CompressBuildFilesStep implements BuildStepInterface
     /**
      * {@inheritdoc}
      */
-    public function perform()
+    public function perform(string $environment)
     {
         $archive = new \ZipArchive();
         $archive->open($this->buildFilePath, \ZipArchive::CREATE | \ZipArchive::OVERWRITE);

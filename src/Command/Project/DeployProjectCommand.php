@@ -86,7 +86,7 @@ class DeployProjectCommand extends AbstractCommand
         }
 
         $this->invoke($output, ValidateProjectCommand::NAME, ['environments' => $environment]);
-        $this->invoke($output, BuildProjectCommand::NAME);
+        $this->invoke($output, BuildProjectCommand::NAME, ['environment' => $environment]);
 
         $deploymentId = (int) $this->apiClient->createDeployment($this->projectConfiguration->getProjectId(), $environment, $this->projectConfiguration, Uuid::uuid4()->toString())->get('id');
 

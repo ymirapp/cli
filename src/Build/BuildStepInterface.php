@@ -23,5 +23,5 @@ interface BuildStepInterface
     /**
      * Perform the build step.
      */
-    public function perform();
+    public function perform(string $environment);
 }

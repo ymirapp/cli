@@ -18,6 +18,7 @@ use Placeholder\Cli\Build\BuildStepInterface;
 use Placeholder\Cli\CliConfiguration;
 use Placeholder\Cli\Command\AbstractCommand;
 use Placeholder\Cli\Console\OutputStyle;
+use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 
@@ -66,11 +67,17 @@ class BuildProjectCommand extends AbstractCommand
      */
     protected function perform(InputInterface $input, OutputStyle $output)
     {
+        $environment = $input->getArgument('environment');
+
+        if (!is_string($environment)) {
+            throw new RuntimeException('Invalid "environment" argument given');
+        }
+
         $output->info('Building project');
 
         foreach ($this->buildSteps as $buildStep) {
             $output->writeStep($buildStep->getDescription());
-            $buildStep->perform();
+            $buildStep->perform($environment);
         }
 
         $output->info('Project built successfully');

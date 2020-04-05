@@ -51,7 +51,7 @@ class DownloadWpCliStep implements BuildStepInterface
     /**
      * {@inheritdoc}
      */
-    public function perform()
+    public function perform(string $environment)
     {
         $wpCliPath = $this->binDirectory.'/wp';
 

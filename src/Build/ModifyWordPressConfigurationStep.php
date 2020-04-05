@@ -60,7 +60,7 @@ class ModifyWordPressConfigurationStep implements BuildStepInterface
     /**
      * {@inheritdoc}
      */
-    public function perform()
+    public function perform(string $environment)
     {
         $wpConfigFile = $this->buildDirectory.'/wp-config.php';
 
