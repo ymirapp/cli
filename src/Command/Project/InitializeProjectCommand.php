@@ -20,6 +20,7 @@ use Placeholder\Cli\Command\Provider\ConnectProviderCommand;
 use Placeholder\Cli\Console\OutputStyle;
 use Placeholder\Cli\ProjectConfiguration;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Filesystem\Filesystem;
 
 class InitializeProjectCommand extends AbstractCommand
 {
@@ -31,6 +32,13 @@ class InitializeProjectCommand extends AbstractCommand
     public const NAME = 'project:init';
 
     /**
+     * The file system.
+     *
+     * @var Filesystem
+     */
+    private $filesystem;
+
+    /**
      * The placeholder project configuration.
      *
      * @var ProjectConfiguration
@@ -38,13 +46,22 @@ class InitializeProjectCommand extends AbstractCommand
     private $projectConfiguration;
 
     /**
+     * The project directory where the project files are copied from.
+     *
+     * @var string
+     */
+    private $projectDirectory;
+
+    /**
      * Constructor.
      */
-    public function __construct(ApiClient $apiClient, CliConfiguration $cliConfiguration, ProjectConfiguration $projectConfiguration)
+    public function __construct(ApiClient $apiClient, CliConfiguration $cliConfiguration, Filesystem $filesystem, ProjectConfiguration $projectConfiguration, string $projectDirectory)
     {
         parent::__construct($apiClient, $cliConfiguration);
 
+        $this->filesystem = $filesystem;
         $this->projectConfiguration = $projectConfiguration;
+        $this->projectDirectory = rtrim($projectDirectory, '/');
     }
 
     /**
@@ -71,6 +88,13 @@ class InitializeProjectCommand extends AbstractCommand
 
         $teamId = $this->getActiveTeamId();
         $providers = $this->apiClient->getProviders($teamId);
+        $projectType = $this->getProjectType();
+
+        if (empty($projectType)
+            && !$output->confirm('Couldn\'t detect a WordPress installation in this directory. Do you want to proceed?', false)
+        ) {
+            return;
+        }
 
         if ($providers->isEmpty()) {
             $output->writeln('Connecting to a cloud provider');
@@ -84,8 +108,30 @@ class InitializeProjectCommand extends AbstractCommand
                     $output->choiceCollection('Enter the ID of the cloud provider that the project will use', $providers);
         $region = $output->choice('Enter the name of the region that the project will be in', $this->apiClient->getRegions($provider)->all());
 
-        $this->projectConfiguration->createNew($this->apiClient->createProject($provider, $name, $region));
+        $project = $this->apiClient->createProject($provider, $name, $region);
+
+        $project['type'] = $projectType ?? 'wordpress';
+
+        $this->projectConfiguration->createNew($project);
 
         $output->writeln(sprintf('"<info>%s</info>" project has been initialized in the "<info>%s</info>" region', $name, $region));
+    }
+
+    /**
+     * Get the project type that we're initializing.
+     */
+    private function getProjectType(): string
+    {
+        $type = '';
+
+        if ($this->filesystem->exists($this->projectDirectory.'/wp-config.php')) {
+            $type = 'wordpress';
+        } elseif ($this->filesystem->exists($this->projectDirectory.'/composer.json')
+            && false !== strpos((string) file_get_contents($this->projectDirectory.'/composer.json'), 'roots/wordpress')
+        ) {
+            $type = 'bedrock';
+        }
+
+        return $type;
     }
 }
