@@ -74,12 +74,8 @@ class ProjectConfiguration implements Arrayable
         $this->configuration = $project->only(['id', 'name', 'type'])->all();
 
         $this->configuration['environments'] = [
-            'production' => [
-                'memory' => 256,
-            ],
-            'staging' => [
-                'memory' => 256,
-            ],
+            'production' => null,
+            'staging' => null,
         ];
     }
 
