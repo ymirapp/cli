@@ -77,10 +77,9 @@ class DeleteProjectCommand extends AbstractCommand
 
         $this->apiClient->deleteProject($this->projectConfiguration->getProjectId(), $deleteResources);
 
-        $message = '"<info>%s</info>" project deletion has begun';
-        if ($deleteResources) {
-            $message .= ' (This takes several several minutes)';
-        }
+        $message = '"<info>%s</info>" project ';
+
+        $message .= $deleteResources ? 'deletion has begun (This takes several several minutes)' : 'deleted';
 
         $output->writeln(sprintf($message, $this->projectConfiguration->getProjectName()));
 
