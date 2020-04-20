@@ -69,11 +69,18 @@ class StartAndMonitorDeploymentStep implements DeploymentStepInterface
      */
     private function getFormattedDeploymentStepName(string $jobName): string
     {
-        return str_replace(
-            ['Create', 'Ensure', 'Set', 'Update'],
-            ['Creating', 'Ensuring', 'Setting', 'Updating'],
-            ucfirst(strtolower((string) preg_replace(['/(.)(?=[A-Z])/u', '/Job$/'], ['$1 ', ''], $jobName)))
-        );
+        return ucfirst(strtr(strtolower((string) preg_replace(['/(.)(?=[A-Z])/u', '/Job$/'], ['$1 ', ''], $jobName)), [
+            'api' => 'API',
+            'assign' => 'assigning',
+            'create' => 'creating',
+            'configure' => 'configuring',
+            'cors' => 'CORS',
+            'ensure' => 'ensuring',
+            'rest' => 'REST',
+            'set' => 'setting',
+            'ssl' => 'SSL',
+            'update' => 'updating',
+        ]));
     }
 
     /**
