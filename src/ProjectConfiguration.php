@@ -61,7 +61,7 @@ class ProjectConfiguration implements Arrayable
             return;
         }
 
-        $this->filesystem->dumpFile($this->configurationFilePath, Yaml::dump($this->configuration, 20, 2));
+        $this->filesystem->dumpFile($this->configurationFilePath, Yaml::dump($this->configuration, 20, 2, Yaml::DUMP_NULL_AS_TILDE));
     }
 
     /**
