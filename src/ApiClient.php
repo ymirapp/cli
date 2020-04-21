@@ -210,6 +210,14 @@ class ApiClient
     }
 
     /**
+     * Get the project environment details.
+     */
+    public function getEnvironment(int $projectId, string $environment): Collection
+    {
+        return $this->request('get', "/projects/{$projectId}/environments/$environment");
+    }
+
+    /**
      * Get the networks that belong to the given team.
      */
     public function getNetworks(int $teamId): Collection

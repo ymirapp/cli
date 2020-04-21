@@ -16,6 +16,7 @@ namespace Placeholder\Cli\Command\Project;
 use Placeholder\Cli\ApiClient;
 use Placeholder\Cli\CliConfiguration;
 use Placeholder\Cli\Command\AbstractCommand;
+use Placeholder\Cli\Command\Environment\GetEnvironmentUrlCommand;
 use Placeholder\Cli\Console\OutputStyle;
 use Placeholder\Cli\Deployment\DeploymentStepInterface;
 use Placeholder\Cli\ProjectConfiguration;
@@ -99,6 +100,8 @@ class DeployProjectCommand extends AbstractCommand
         }
 
         $output->info('Project deployed successfully');
+
+        $this->invoke($output, GetEnvironmentUrlCommand::NAME, ['environment' => $environment]);
     }
 
     /**
