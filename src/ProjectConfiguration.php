@@ -151,7 +151,7 @@ class ProjectConfiguration implements Arrayable
     /**
      * Validates the loaded configuration file.
      */
-    public function validate($environments = null)
+    public function validate(array $environments = null)
     {
         if (empty($this->configuration['id'])) {
             throw new RuntimeException('The project configuration file must have an "id"');
