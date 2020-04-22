@@ -37,7 +37,7 @@ class CreateDatabaseCommand extends AbstractCommand
     {
         $this
             ->setName(self::NAME)
-            ->addArgument('name', InputArgument::REQUIRED, 'The name of the database')
+            ->addArgument('name', InputArgument::OPTIONAL, 'The name of the database')
             ->addOption('dev', null, InputOption::VALUE_NONE, 'Create a development database (overrides all other options)')
             ->addOption('network', null, InputOption::VALUE_REQUIRED, 'The ID of the network on which the database will be created')
             ->addOption('public', null, InputOption::VALUE_NONE, 'The created database should be publicly accessible')
@@ -53,8 +53,8 @@ class CreateDatabaseCommand extends AbstractCommand
     {
         $name = $input->getArgument('name');
 
-        if (null === $name || is_array($name)) {
-            throw new RuntimeException('The "name" argument must be a string value');
+        if (!is_string($name)) {
+            $name = $output->askSlug('What is the name of the database');
         }
 
         $network = $this->determineNetwork($input, $output);
