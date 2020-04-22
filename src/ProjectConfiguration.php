@@ -153,7 +153,9 @@ class ProjectConfiguration implements Arrayable
      */
     public function validate(array $environments = null)
     {
-        if (empty($this->configuration['id'])) {
+        if (!$this->exists()) {
+            throw new RuntimeException('No project configuration file found in current directory');
+        } elseif (empty($this->configuration['id'])) {
             throw new RuntimeException('The project configuration file must have an "id"');
         } elseif (empty($this->configuration['environments'])) {
             throw new RuntimeException('The project configuration file must have at least one environment');

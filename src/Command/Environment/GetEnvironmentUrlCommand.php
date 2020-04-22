@@ -71,6 +71,8 @@ class GetEnvironmentUrlCommand extends AbstractCommand
             throw new RuntimeException('Invalid "environment" argument given');
         }
 
+        $this->projectConfiguration->validate([$environment]);
+
         $environment = $this->apiClient->getEnvironment($this->projectConfiguration->getProjectId(), $environment);
 
         if (!$environment->has('vanity_domain')) {

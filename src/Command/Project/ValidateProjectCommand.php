@@ -18,7 +18,6 @@ use Placeholder\Cli\CliConfiguration;
 use Placeholder\Cli\Command\AbstractCommand;
 use Placeholder\Cli\Console\OutputStyle;
 use Placeholder\Cli\ProjectConfiguration;
-use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 
@@ -65,10 +64,6 @@ class ValidateProjectCommand extends AbstractCommand
      */
     protected function perform(InputInterface $input, OutputStyle $output)
     {
-        if (!$this->projectConfiguration->exists()) {
-            throw new RuntimeException('No project configuration file found');
-        }
-
         $environments = $input->getArgument('environments');
 
         if (!is_array($environments)) {
