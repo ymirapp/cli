@@ -85,7 +85,7 @@ class ProcessAssetsStep implements DeploymentStepInterface
         })->all());
 
         if (count($assetFiles) !== count($signedAssetRequests)) {
-            $output->warn('Not all asset files were processed successfully');
+            $output->warn('Warning: Not all asset files were processed successfully');
         }
 
         $signedAssetRequests = $signedAssetRequests->groupBy('command', true);

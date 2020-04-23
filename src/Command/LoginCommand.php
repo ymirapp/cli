@@ -57,6 +57,6 @@ class LoginCommand extends AbstractCommand
             $this->setActiveTeamId($team['id']);
         }
 
-        $output->writeln('Logged in successfully!');
+        $output->info('Logged in successfully!');
     }
 }

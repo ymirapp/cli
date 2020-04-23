@@ -99,7 +99,7 @@ class DeployProjectCommand extends AbstractCommand
             $deploymentStep->perform($deploymentId, $output);
         }
 
-        $output->info('Project deployed successfully');
+        $output->info(sprintf('Project deployed successfully to "<comment>%s</comment>" environment', $environment));
 
         $this->invoke($output, GetEnvironmentUrlCommand::NAME, ['environment' => $environment]);
     }

@@ -52,6 +52,6 @@ class CreateTeamCommand extends AbstractCommand
 
         $this->apiClient->createTeam($name);
 
-        $output->writeln('Team created successfully');
+        $output->info('Team created successfully');
     }
 }

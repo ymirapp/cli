@@ -59,7 +59,7 @@ class CurrentTeamCommand extends AbstractCommand
             return [$key => $value];
         });
 
-        $output->writeln("<info>Your currently active team is:</info>\n");
+        $output->info('Your currently active team is:');
         $output->table(['Id', 'Name', 'Owner'], [$team->all()]);
     }
 }

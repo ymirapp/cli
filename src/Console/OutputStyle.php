@@ -57,7 +57,37 @@ class OutputStyle extends SymfonyStyle
      */
     public function info(string $message, bool $newline = true)
     {
-        $this->write("<info>{$message}</info>", $newline);
+        $this->write(sprintf('<info>%s</info>', $message), $newline);
+    }
+
+    /**
+     * Write out an informational message with an accompanied warning about a delay.
+     */
+    public function infoWithDelayWarning(string $message, bool $newline = true)
+    {
+        $this->infoWithWarning($message, 'process takes several minutes to complete', $newline);
+    }
+
+    /**
+     * Write out an informational message followed by a value and an optional comment.
+     */
+    public function infoWithValue(string $message, string $value, string $comment = '', bool $newline = true)
+    {
+        $format = '<info>%s:</info> %s';
+
+        if (!empty($comment)) {
+            $format .= ' (%s)';
+        }
+
+        $this->write(sprintf($format, $message, $value, $comment), $newline);
+    }
+
+    /**
+     * Write out an informational message with an accompanied warning.
+     */
+    public function infoWithWarning(string $message, string $warning, bool $newline = true)
+    {
+        $this->write(sprintf('<info>%s</info> (<comment>%s</comment>)', $message, $warning), $newline);
     }
 
     /**
@@ -65,14 +95,14 @@ class OutputStyle extends SymfonyStyle
      */
     public function writeStep(string $step, bool $newline = true)
     {
-        $this->write("  > $step", $newline);
+        $this->write(sprintf('  > %s', $step), $newline);
     }
 
     /**
-     * Write out an warning message.
+     * Write out a warning message.
      */
     public function warn(string $message, bool $newline = true)
     {
-        $this->write("<comment>Warning: {$message}</comment>", $newline);
+        $this->write(sprintf('<comment>%s</comment>', $message), $newline);
     }
 }

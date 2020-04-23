@@ -76,7 +76,7 @@ class InitializeProjectCommand extends AbstractCommand
         $this
             ->setName(self::NAME)
             ->setAliases(['init'])
-            ->setDescription('Initialize a new project in the current directory')
+            ->setDescription('Creates a new project in the current directory')
             ->addOption('database', null, InputOption::VALUE_REQUIRED, 'The database used by the project');
     }
 
@@ -116,7 +116,7 @@ class InitializeProjectCommand extends AbstractCommand
 
         $this->projectConfiguration->createNew($project, $databaseName, $projectType);
 
-        $output->writeln(sprintf('"<info>%s</info>" project has been initialized in the "<info>%s</info>" region', $name, $region));
+        $output->infoWithDelayWarning('Project initialized');
     }
 
     /**
@@ -188,7 +188,7 @@ class InitializeProjectCommand extends AbstractCommand
         $providers = $this->apiClient->getProviders($this->getActiveTeamId());
 
         if ($providers->isEmpty()) {
-            $output->writeln('Connecting to a cloud provider');
+            $output->info('Connecting to a cloud provider');
             $this->invoke($output, ConnectProviderCommand::NAME);
             $providers = $this->apiClient->getProviders($this->getActiveTeamId());
         }

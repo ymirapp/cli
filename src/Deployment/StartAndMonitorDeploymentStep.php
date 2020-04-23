@@ -96,7 +96,7 @@ class StartAndMonitorDeploymentStep implements DeploymentStepInterface
 
         pcntl_signal(SIGINT, function () use ($deploymentId, $output) {
             $output->newLine();
-            $output->writeln('<comment>Attempting to cancel the deployment</comment>');
+            $output->warn('Attempting to cancel the deployment');
 
             $this->apiClient->cancelDeployment($deploymentId);
             $this->waitForDeploymentStatusChange($deploymentId, 'cancelling');

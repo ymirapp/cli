@@ -70,7 +70,7 @@ class CreateDatabaseUserCommand extends AbstractCommand
             [[$user['username'], $user['password']]]
         );
 
-        $output->writeln('Database user created successfully');
+        $output->info('Database user created');
     }
 
     /**

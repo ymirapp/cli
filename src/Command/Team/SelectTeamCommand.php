@@ -52,6 +52,6 @@ class SelectTeamCommand extends AbstractCommand
 
         $this->setActiveTeamId($teamId);
 
-        $output->writeln(sprintf('"%s" is now your active team', $teams->firstWhere('id', $teamId)['name']));
+        $output->infoWithValue('Your active team is now', $teams->firstWhere('id', $teamId)['name']);
     }
 }

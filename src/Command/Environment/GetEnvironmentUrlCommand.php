@@ -84,6 +84,6 @@ class GetEnvironmentUrlCommand extends AbstractCommand
 
         Process::fromShellCommandline(sprintf('echo %s | %s', $url, $clipboardCommand))->run();
 
-        $output->writeln(sprintf('<info>The "<comment>%s</comment>" environment URL is:</info> %s (<comment>copied to clipboard</comment>)', $environment->get('name'), $url));
+        $output->infoWithValue('Environment URL is', $url, 'copied to clipboard');
     }
 }

@@ -66,7 +66,7 @@ class DeleteDatabaseCommand extends AbstractCommand
 
         $this->apiClient->deleteDatabase((int) $database['id']);
 
-        $output->writeln(sprintf('Deletion of the database with the ID or name "<info>%s</info>" has begun (This takes several several minutes)', $idOrName));
+        $output->infoWithDelayWarning('Database deleted');
     }
 
     /**

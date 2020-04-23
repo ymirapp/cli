@@ -69,7 +69,7 @@ class CreateDatabaseCommand extends AbstractCommand
             [[$database['name'], new TableSeparator(), $database['username'], $database['password'], new TableSeparator(), $database['type'], $database['publicly_accessible'] ? 'Yes' : 'No', $database['storage']]]
         );
 
-        $output->writeln(sprintf('Creation of the database has begun on the "<info>%s</info>" network (<comment>This takes several minutes</comment>)', $network['name']));
+        $output->infoWithDelayWarning('Database created');
     }
 
     /**
