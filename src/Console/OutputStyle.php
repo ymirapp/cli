@@ -76,7 +76,7 @@ class OutputStyle extends SymfonyStyle
         $format = '<info>%s:</info> %s';
 
         if (!empty($comment)) {
-            $format .= ' (%s)';
+            $format .= ' (<comment>%s</comment>)';
         }
 
         $this->write(sprintf($format, $message, $value, $comment), $newline);
