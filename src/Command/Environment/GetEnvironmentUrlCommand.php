@@ -76,7 +76,7 @@ class GetEnvironmentUrlCommand extends AbstractCommand
         $environment = $this->apiClient->getEnvironment($this->projectConfiguration->getProjectId(), $environment);
 
         if (!$environment->has('vanity_domain')) {
-            throw new RuntimeException('Unable to get the environment URL');
+            throw new RuntimeException('Unable to get the environment domain');
         }
 
         $clipboardCommand = 'WIN' === strtoupper(substr(PHP_OS, 0, 3)) ? 'clip' : 'pbcopy';

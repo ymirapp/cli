@@ -103,7 +103,7 @@ class ProjectConfiguration implements Arrayable
     public function getEnvironment(string $environment): ?array
     {
         if (!array_key_exists($environment, $this->configuration['environments'])) {
-            throw new \InvalidArgumentException(sprintf('No "%s" environment found', $environment));
+            throw new \InvalidArgumentException(sprintf('Environment "%s" not found in placeholder.yml', $environment));
         }
 
         return $this->configuration['environments'][$environment];

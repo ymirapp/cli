@@ -218,6 +218,14 @@ class ApiClient
     }
 
     /**
+     * Get the project.
+     */
+    public function getProject(int $projectId): Collection
+    {
+        return $this->request('get', "/projects/{$projectId}");
+    }
+
+    /**
      * Get the networks that belong to the given team.
      */
     public function getNetworks(int $teamId): Collection
