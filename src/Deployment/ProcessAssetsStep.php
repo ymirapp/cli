@@ -63,14 +63,6 @@ class ProcessAssetsStep implements DeploymentStepInterface
     /**
      * {@inheritdoc}
      */
-    public function getDescription(): string
-    {
-        return 'Uploading build';
-    }
-
-    /**
-     * {@inheritdoc}
-     */
     public function perform(int $deploymentId, OutputStyle $output)
     {
         $output->info('Processing assets');
