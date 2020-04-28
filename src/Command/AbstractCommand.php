@@ -98,7 +98,7 @@ abstract class AbstractCommand extends Command
 
         if (null === $value) {
             return $value;
-        } elseif (!is_numeric($value)) {
+        } elseif (is_array($value) || is_numeric($value)) {
             throw new RuntimeException(sprintf('The "--%s" option must be a numeric value', $option));
         }
 
