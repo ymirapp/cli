@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace Ymir\Cli\Command\Project;
 
-use Ramsey\Uuid\Uuid;
 use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -89,7 +88,7 @@ class DeployProjectCommand extends AbstractCommand
         $this->invoke($output, ValidateProjectCommand::NAME, ['environments' => $environment]);
         $this->invoke($output, BuildProjectCommand::NAME, ['environment' => $environment]);
 
-        $deploymentId = (int) $this->apiClient->createDeployment($this->projectConfiguration->getProjectId(), $environment, $this->projectConfiguration, Uuid::uuid4()->toString())->get('id');
+        $deploymentId = (int) $this->apiClient->createDeployment($this->projectConfiguration->getProjectId(), $environment, $this->projectConfiguration)->get('id');
 
         if (empty($deploymentId)) {
             throw new RuntimeException('There was an error creating the deployment');

@@ -86,11 +86,10 @@ class ApiClient
     /**
      * Create a new deployment for the given project on the given environment.
      */
-    public function createDeployment(int $projectId, string $environment, ProjectConfiguration $projectConfiguration, string $uuid = null): Collection
+    public function createDeployment(int $projectId, string $environment, ProjectConfiguration $projectConfiguration): Collection
     {
         return $this->request('post', "/projects/{$projectId}/environments/{$environment}/deployments", [
             'configuration' => $projectConfiguration->toArray(),
-            'uuid' => $uuid,
         ]);
     }
 
