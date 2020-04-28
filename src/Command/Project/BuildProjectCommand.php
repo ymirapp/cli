@@ -3,24 +3,24 @@
 declare(strict_types=1);
 
 /*
- * This file is part of Placeholder command-line tool.
+ * This file is part of Ymir command-line tool.
  *
- * (c) Carl Alexander <contact@carlalexander.ca>
+ * (c) Carl Alexander <support@ymirapp.com>
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
 
-namespace Placeholder\Cli\Command\Project;
+namespace Ymir\Cli\Command\Project;
 
-use Placeholder\Cli\ApiClient;
-use Placeholder\Cli\Build\BuildStepInterface;
-use Placeholder\Cli\CliConfiguration;
-use Placeholder\Cli\Command\AbstractCommand;
-use Placeholder\Cli\Console\OutputStyle;
 use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
+use Ymir\Cli\ApiClient;
+use Ymir\Cli\Build\BuildStepInterface;
+use Ymir\Cli\CliConfiguration;
+use Ymir\Cli\Command\AbstractCommand;
+use Ymir\Cli\Console\OutputStyle;
 
 class BuildProjectCommand extends AbstractCommand
 {

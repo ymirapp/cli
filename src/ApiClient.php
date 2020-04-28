@@ -3,40 +3,40 @@
 declare(strict_types=1);
 
 /*
- * This file is part of Placeholder command-line tool.
+ * This file is part of Ymir command-line tool.
  *
- * (c) Carl Alexander <contact@carlalexander.ca>
+ * (c) Carl Alexander <support@ymirapp.com>
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
 
-namespace Placeholder\Cli;
+namespace Ymir\Cli;
 
 use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Exception\ClientException;
-use Placeholder\Cli\Exception\ApiClientException;
 use Symfony\Component\Console\Exception\RuntimeException;
 use Tightenco\Collect\Support\Collection;
+use Ymir\Cli\Exception\ApiClientException;
 
 class ApiClient
 {
     /**
-     * The base URL used to interact with the placeholder API.
+     * The base URL used to interact with the Ymir API.
      *
      * @var string
      */
     private $baseUrl;
 
     /**
-     * The global placeholder CLI configuration.
+     * The global Ymir CLI configuration.
      *
      * @var CliConfiguration
      */
     private $cliConfiguration;
 
     /**
-     * The HTTP client used to interact with the placeholder API.
+     * The HTTP client used to interact with the Ymir API.
      *
      * @var ClientInterface
      */
@@ -53,7 +53,7 @@ class ApiClient
     }
 
     /**
-     * Send signal to the placeholder API to cancel the deployment.
+     * Send signal to the Ymir API to cancel the deployment.
      */
     public function cancelDeployment(int $deploymentId)
     {
@@ -157,7 +157,7 @@ class ApiClient
         ]);
 
         if (empty($response['access_token'])) {
-            throw new RuntimeException('The placeholder API didn\'t return an access token');
+            throw new RuntimeException('The Ymir API didn\'t return an access token');
         }
 
         return $response['access_token'];
@@ -179,7 +179,7 @@ class ApiClient
         $uploadUrl = (string) $this->request('get', "/deployments/{$deploymentId}/artifact")->get('upload_url');
 
         if (empty($uploadUrl)) {
-            throw new RuntimeException('Unable to get an artifact upload URL from the placeholder API');
+            throw new RuntimeException('Unable to get an artifact upload URL from the Ymir API');
         }
 
         return $uploadUrl;
@@ -257,7 +257,7 @@ class ApiClient
         $requests = $this->request('get', "/deployments/{$deploymentId}/signed-assets", ['assets' => $assets]);
 
         if (!empty($assets) && empty($requests)) {
-            throw new RuntimeException('Unable to get authorized asset requests from the placeholder API');
+            throw new RuntimeException('Unable to get authorized asset requests from the Ymir API');
         }
 
         return $requests;
@@ -288,7 +288,7 @@ class ApiClient
     }
 
     /**
-     * Checks if the client is authenticated with the placeholder API.
+     * Checks if the client is authenticated with the Ymir API.
      */
     public function isAuthenticated(): bool
     {
@@ -304,7 +304,7 @@ class ApiClient
     }
 
     /**
-     * Send signal to the placeholder API to start the deployment.
+     * Send signal to the Ymir API to start the deployment.
      */
     public function startDeployment(int $deploymentId)
     {
@@ -322,7 +322,7 @@ class ApiClient
     }
 
     /**
-     * Send a request to the placeholder API.
+     * Send a request to the Ymir API.
      */
     private function request(string $method, string $uri, array $body = []): Collection
     {

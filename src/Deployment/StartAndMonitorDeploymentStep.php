@@ -3,25 +3,25 @@
 declare(strict_types=1);
 
 /*
- * This file is part of Placeholder command-line tool.
+ * This file is part of Ymir command-line tool.
  *
- * (c) Carl Alexander <contact@carlalexander.ca>
+ * (c) Carl Alexander <support@ymirapp.com>
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
 
-namespace Placeholder\Cli\Deployment;
+namespace Ymir\Cli\Deployment;
 
-use Placeholder\Cli\ApiClient;
-use Placeholder\Cli\Console\OutputStyle;
 use Symfony\Component\Console\Exception\RuntimeException;
 use Tightenco\Collect\Support\Collection;
+use Ymir\Cli\ApiClient;
+use Ymir\Cli\Console\OutputStyle;
 
 class StartAndMonitorDeploymentStep implements DeploymentStepInterface
 {
     /**
-     * The API client that interacts with the placeholder API.
+     * The API client that interacts with the Ymir API.
      *
      * @var ApiClient
      */
@@ -57,7 +57,7 @@ class StartAndMonitorDeploymentStep implements DeploymentStepInterface
     }
 
     /**
-     * Get the deployment steps for the given deployment from the placeholder API.
+     * Get the deployment steps for the given deployment from the Ymir API.
      */
     private function getDeploymentSteps(int $deploymentId): Collection
     {
@@ -108,7 +108,7 @@ class StartAndMonitorDeploymentStep implements DeploymentStepInterface
     }
 
     /**
-     * Blocking method that constantly queries the placeholder API to see if the deployment status
+     * Blocking method that constantly queries the Ymir API to see if the deployment status
      * changed from the given status.
      */
     private function waitForDeploymentStatusChange(int $deploymentId, string $status, int $timeout = 60)
@@ -128,7 +128,7 @@ class StartAndMonitorDeploymentStep implements DeploymentStepInterface
     }
 
     /**
-     * Blocking method that constantly queries the placeholder API to see if the deployment step finished.
+     * Blocking method that constantly queries the Ymir API to see if the deployment step finished.
      */
     private function waitForDeploymentStepToFinish(int $deploymentId, int $deploymentStepId, int $timeout = 240)
     {
@@ -142,7 +142,7 @@ class StartAndMonitorDeploymentStep implements DeploymentStepInterface
             $step = $this->getDeploymentSteps($deploymentId)->get($deploymentStepId);
 
             if (empty($step['status'])) {
-                throw new RuntimeException('Unable to get deployment status from placeholder API');
+                throw new RuntimeException('Unable to get deployment status from Ymir API');
             } elseif ('failed' === $step['status']) {
                 throw new RuntimeException('Deployment failed');
             }

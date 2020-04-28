@@ -3,38 +3,38 @@
 declare(strict_types=1);
 
 /*
- * This file is part of Placeholder command-line tool.
+ * This file is part of Ymir command-line tool.
  *
- * (c) Carl Alexander <contact@carlalexander.ca>
+ * (c) Carl Alexander <support@ymirapp.com>
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
 
-namespace Placeholder\Cli\Command;
+namespace Ymir\Cli\Command;
 
-use Placeholder\Cli\ApiClient;
-use Placeholder\Cli\CliConfiguration;
-use Placeholder\Cli\Command\Team\SelectTeamCommand;
-use Placeholder\Cli\Console\OutputStyle;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Ymir\Cli\ApiClient;
+use Ymir\Cli\CliConfiguration;
+use Ymir\Cli\Command\Team\SelectTeamCommand;
+use Ymir\Cli\Console\OutputStyle;
 
 abstract class AbstractCommand extends Command
 {
     /**
-     * The API client that interacts with the placeholder API.
+     * The API client that interacts with the Ymir API.
      *
      * @var ApiClient
      */
     protected $apiClient;
 
     /**
-     * The global placeholder CLI configuration.
+     * The global Ymir CLI configuration.
      *
      * @var CliConfiguration
      */

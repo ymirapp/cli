@@ -3,23 +3,23 @@
 declare(strict_types=1);
 
 /*
- * This file is part of Placeholder command-line tool.
+ * This file is part of Ymir command-line tool.
  *
- * (c) Carl Alexander <contact@carlalexander.ca>
+ * (c) Carl Alexander <support@ymirapp.com>
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
 
-namespace Placeholder\Cli\Command\Database;
+namespace Ymir\Cli\Command\Database;
 
-use Placeholder\Cli\Command\AbstractCommand;
-use Placeholder\Cli\Console\OutputStyle;
 use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Helper\TableSeparator;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
+use Ymir\Cli\Command\AbstractCommand;
+use Ymir\Cli\Console\OutputStyle;
 
 class CreateDatabaseCommand extends AbstractCommand
 {
@@ -138,13 +138,13 @@ class CreateDatabaseCommand extends AbstractCommand
     private function determineType(array $network, InputInterface $input, OutputStyle $output): string
     {
         if (!isset($network['provider']['id'])) {
-            throw new RuntimeException('The placeholder API failed to return information on the cloud provider');
+            throw new RuntimeException('The Ymir API failed to return information on the cloud provider');
         }
 
         $types = $this->apiClient->getDatabaseTypes((int) $network['provider']['id']);
 
         if ($types->isEmpty()) {
-            throw new RuntimeException('The placeholder API failed to return information on the database instance types');
+            throw new RuntimeException('The Ymir API failed to return information on the database instance types');
         } elseif ($this->getBooleanOption($input, 'dev')) {
             return $types->keys()->first();
         }

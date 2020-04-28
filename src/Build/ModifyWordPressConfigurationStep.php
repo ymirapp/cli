@@ -3,19 +3,19 @@
 declare(strict_types=1);
 
 /*
- * This file is part of Placeholder command-line tool.
+ * This file is part of Ymir command-line tool.
  *
- * (c) Carl Alexander <contact@carlalexander.ca>
+ * (c) Carl Alexander <support@ymirapp.com>
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
 
-namespace Placeholder\Cli\Build;
+namespace Ymir\Cli\Build;
 
-use Placeholder\Cli\ProjectConfiguration;
 use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Filesystem\Filesystem;
+use Ymir\Cli\ProjectConfiguration;
 
 class ModifyWordPressConfigurationStep implements BuildStepInterface
 {
@@ -34,7 +34,7 @@ class ModifyWordPressConfigurationStep implements BuildStepInterface
     private $filesystem;
 
     /**
-     * The placeholder project configuration.
+     * The Ymir project configuration.
      *
      * @var ProjectConfiguration
      */
@@ -96,7 +96,7 @@ class ModifyWordPressConfigurationStep implements BuildStepInterface
 
         $wpConfig = array_map(function (string $line) {
             if (preg_match('/require_once\s+ABSPATH\s*\.\s*\'wp-settings.php\';/', $line)) {
-                $line = "require_once ABSPATH.'placeholder-config.php';".PHP_EOL.$line;
+                $line = "require_once ABSPATH.'ymir-config.php';".PHP_EOL.$line;
             }
 
             return $line;
@@ -104,7 +104,7 @@ class ModifyWordPressConfigurationStep implements BuildStepInterface
 
         $this->filesystem->dumpFile($wpConfigFile, implode("\n", $wpConfig));
 
-        $configFile = 'placeholder-config.php';
+        $configFile = 'ymir-config.php';
         $configStubPath = $this->stubDirectory.'/'.$configFile;
 
         if (!$this->filesystem->exists($configStubPath)) {

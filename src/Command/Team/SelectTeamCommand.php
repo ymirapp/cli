@@ -3,20 +3,20 @@
 declare(strict_types=1);
 
 /*
- * This file is part of Placeholder command-line tool.
+ * This file is part of Ymir command-line tool.
  *
- * (c) Carl Alexander <contact@carlalexander.ca>
+ * (c) Carl Alexander <support@ymirapp.com>
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
 
-namespace Placeholder\Cli\Command\Team;
+namespace Ymir\Cli\Command\Team;
 
-use Placeholder\Cli\Command\AbstractCommand;
-use Placeholder\Cli\Console\OutputStyle;
 use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Input\InputInterface;
+use Ymir\Cli\Command\AbstractCommand;
+use Ymir\Cli\Console\OutputStyle;
 
 class SelectTeamCommand extends AbstractCommand
 {

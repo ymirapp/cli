@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Placeholder WordPress configuration
+ * Ymir WordPress configuration
  */
 
 if (!defined('DB_HOST')) {

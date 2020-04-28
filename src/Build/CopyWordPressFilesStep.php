@@ -3,15 +3,15 @@
 declare(strict_types=1);
 
 /*
- * This file is part of Placeholder command-line tool.
+ * This file is part of Ymir command-line tool.
  *
- * (c) Carl Alexander <contact@carlalexander.ca>
+ * (c) Carl Alexander <support@ymirapp.com>
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
 
-namespace Placeholder\Cli\Build;
+namespace Ymir\Cli\Build;
 
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
@@ -93,8 +93,8 @@ class CopyWordPressFilesStep implements BuildStepInterface
     {
         $finder = Finder::create()
             ->in($this->projectDirectory)
-            ->exclude(['.idea', '.placeholder'])
-            ->notName(['placeholder.yml'])
+            ->exclude(['.idea', '.ymir'])
+            ->notName(['ymir.yml'])
             ->followLinks()
             ->ignoreVcs(true)
             ->ignoreDotFiles(false);

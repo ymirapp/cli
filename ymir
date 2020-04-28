@@ -1,10 +1,19 @@
 #!/usr/bin/env php
 <?php
 
-use Placeholder\Cli\Application;
+/*
+ * This file is part of Ymir command-line tool.
+ *
+ * (c) Carl Alexander <support@ymirapp.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
+use Ymir\Cli\Application;
 
 require __DIR__.'/vendor/autoload.php';
 
@@ -14,7 +23,7 @@ $container = new ContainerBuilder();
 $container->setParameter('application_directory', __DIR__);
 $container->setParameter('home_directory', rtrim(getenv('HOME'), '/'));
 $container->setParameter('working_directory', rtrim(getcwd(), '/'));
-$container->setParameter('placeholder_api_url', getenv('PLACEHOLDER_API_URL') ?: 'https://wordpress-serverless.dev/api');
+$container->setParameter('ymir_api_url', getenv('YMIR_API_URL') ?: 'https://ymirapp.com/api');
 
 // Load container configuration
 $loader = new YamlFileLoader($container, new FileLocator());

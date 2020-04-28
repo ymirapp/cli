@@ -3,25 +3,25 @@
 declare(strict_types=1);
 
 /*
- * This file is part of Placeholder command-line tool.
+ * This file is part of Ymir command-line tool.
  *
- * (c) Carl Alexander <contact@carlalexander.ca>
+ * (c) Carl Alexander <support@ymirapp.com>
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
 
-namespace Placeholder\Cli\Deployment;
+namespace Ymir\Cli\Deployment;
 
-use Placeholder\Cli\ApiClient;
-use Placeholder\Cli\Console\OutputStyle;
-use Placeholder\Cli\FileUploader;
 use Symfony\Component\Console\Helper\ProgressBar;
+use Ymir\Cli\ApiClient;
+use Ymir\Cli\Console\OutputStyle;
+use Ymir\Cli\FileUploader;
 
 class UploadBuildStep implements DeploymentStepInterface
 {
     /**
-     * The API client that interacts with the placeholder API.
+     * The API client that interacts with the Ymir API.
      *
      * @var ApiClient
      */

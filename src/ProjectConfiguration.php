@@ -3,15 +3,15 @@
 declare(strict_types=1);
 
 /*
- * This file is part of Placeholder command-line tool.
+ * This file is part of Ymir command-line tool.
  *
- * (c) Carl Alexander <contact@carlalexander.ca>
+ * (c) Carl Alexander <support@ymirapp.com>
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
 
-namespace Placeholder\Cli;
+namespace Ymir\Cli;
 
 use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Filesystem\Filesystem;
@@ -103,7 +103,7 @@ class ProjectConfiguration implements Arrayable
     public function getEnvironment(string $environment): ?array
     {
         if (!array_key_exists($environment, $this->configuration['environments'])) {
-            throw new \InvalidArgumentException(sprintf('Environment "%s" not found in placeholder.yml', $environment));
+            throw new \InvalidArgumentException(sprintf('Environment "%s" not found in ymir.yml', $environment));
         }
 
         return $this->configuration['environments'][$environment];

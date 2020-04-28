@@ -2,9 +2,9 @@ parameters:
   assets_directory: '%hidden_directory%/assets'
   build_directory: '%hidden_directory%/build'
   build_filepath: '%hidden_directory%/build.zip'
-  cli_configuration_filepath: '%home_directory%/.placeholder/config.json'
-  hidden_directory: '%working_directory%/.placeholder'
-  project_configuration_filepath: '%working_directory%/placeholder.yml'
+  cli_configuration_filepath: '%home_directory%/.ymir/config.json'
+  hidden_directory: '%working_directory%/.ymir'
+  project_configuration_filepath: '%working_directory%/ymir.yml'
   stub_directory: '%application_directory%/stubs'
 
 services:
@@ -13,7 +13,7 @@ services:
     public: false
     bind:
       string $assetsDirectory: '%assets_directory%'
-      string $baseUrl: '%placeholder_api_url%'
+      string $baseUrl: '%ymir_api_url%'
       string $buildDirectory: '%build_directory%'
       string $buildFilePath: '%build_filepath%'
       string $homeDirectory: '%home_directory%'
@@ -30,39 +30,39 @@ services:
       - '../vendor/guzzlehttp/guzzle/src/functions.php'
       - '../vendor/guzzlehttp/guzzle/src/functions_include.php'
 
-  Placeholder\Cli\:
+  Ymir\Cli\:
     lazy: true
     resource: '../src'
 
-  Placeholder\Cli\Application:
+  Ymir\Cli\Application:
     public: true
     arguments:
       - !tagged command
 
-  Placeholder\Cli\CliConfiguration:
+  Ymir\Cli\CliConfiguration:
     arguments:
       $configurationFilePath: '%cli_configuration_filepath%'
 
-  Placeholder\Cli\ProjectConfiguration:
+  Ymir\Cli\ProjectConfiguration:
     arguments:
       $configurationFilePath: '%project_configuration_filepath%'
 
-  Placeholder\Cli\Command\Project\BuildProjectCommand:
+  Ymir\Cli\Command\Project\BuildProjectCommand:
     arguments:
       $buildSteps:
-        - '@Placeholder\Cli\Build\CopyWordPressFilesStep'
-        - '@Placeholder\Cli\Build\ModifyWordPressConfigurationStep'
-        - '@Placeholder\Cli\Build\ExtractAssetFilesStep'
-        - '@Placeholder\Cli\Build\DownloadWpCliStep'
-        - '@Placeholder\Cli\Build\EnsurePluginIsInstalledStep'
-        - '@Placeholder\Cli\Build\CompressBuildFilesStep'
+        - '@Ymir\Cli\Build\CopyWordPressFilesStep'
+        - '@Ymir\Cli\Build\ModifyWordPressConfigurationStep'
+        - '@Ymir\Cli\Build\ExtractAssetFilesStep'
+        - '@Ymir\Cli\Build\DownloadWpCliStep'
+        - '@Ymir\Cli\Build\EnsurePluginIsInstalledStep'
+        - '@Ymir\Cli\Build\CompressBuildFilesStep'
 
-  Placeholder\Cli\Command\Project\DeployProjectCommand:
+  Ymir\Cli\Command\Project\DeployProjectCommand:
     arguments:
       $deploymentSteps:
-        - '@Placeholder\Cli\Deployment\UploadBuildStep'
-        - '@Placeholder\Cli\Deployment\ProcessAssetsStep'
-        - '@Placeholder\Cli\Deployment\StartAndMonitorDeploymentStep'
+        - '@Ymir\Cli\Deployment\UploadBuildStep'
+        - '@Ymir\Cli\Deployment\ProcessAssetsStep'
+        - '@Ymir\Cli\Deployment\StartAndMonitorDeploymentStep'
 
   Symfony\Component\Filesystem\:
     resource: '../vendor/symfony/filesystem'

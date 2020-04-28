@@ -1,15 +1,15 @@
 {
-    "name": "carlalexander/cli",
-    "description": "Placeholder command-line tool",
+    "name": "ymirapp/cli",
+    "description": "Ymir command-line tool",
     "type" : "project",
+    "license": "MIT",
     "authors" : [
         {
             "name": "Carl Alexander",
-            "email": "contact@carlalexander.ca",
-            "homepage": "https://carlalexander.ca"
+            "email": "support@ymirapp.com",
+            "homepage": "https://ymirapp.com"
         }
     ],
-    "license": "MIT",
     "require": {
         "php": ">=7.1",
         "ext-json": "*",
@@ -42,12 +42,12 @@
     },
     "autoload": {
         "psr-4": {
-            "Placeholder\\Cli\\": "src"
+            "Ymir\\Cli\\": "src"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "Placeholder\\Cli\\Tests\\": "tests"
+            "Ymir\\Cli\\Tests\\": "tests"
         }
     }
 }

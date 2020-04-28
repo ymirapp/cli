@@ -3,15 +3,15 @@
 declare(strict_types=1);
 
 /*
- * This file is part of Placeholder command-line tool.
+ * This file is part of Ymir command-line tool.
  *
- * (c) Carl Alexander <contact@carlalexander.ca>
+ * (c) Carl Alexander <support@ymirapp.com>
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
 
-namespace Placeholder\Cli\Build;
+namespace Ymir\Cli\Build;
 
 use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Filesystem\Filesystem;
@@ -55,7 +55,7 @@ class EnsurePluginIsInstalledStep implements BuildStepInterface
      */
     public function getDescription(): string
     {
-        return 'Ensuring Placeholder plugin is installed';
+        return 'Ensuring Ymir plugin is installed';
     }
 
     /**
@@ -75,10 +75,10 @@ class EnsurePluginIsInstalledStep implements BuildStepInterface
         if (!$plugins->contains(function (\stdClass $plugin) {
             return !empty($plugin->file) && preg_match('/ymir\.php$/', $plugin->file);
         })) {
-            throw new RuntimeException('Placeholder plugin not found');
+            throw new RuntimeException('Ymir plugin not found');
         }
 
-        $mupluginStub = 'activate-placeholder-plugin.php';
+        $mupluginStub = 'activate-ymir-plugin.php';
         $mupluginStubPath = $this->stubDirectory.'/'.$mupluginStub;
 
         if (!$this->filesystem->exists($mupluginStubPath)) {

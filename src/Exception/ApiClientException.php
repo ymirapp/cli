@@ -3,20 +3,20 @@
 declare(strict_types=1);
 
 /*
- * This file is part of Placeholder command-line tool.
+ * This file is part of Ymir command-line tool.
  *
- * (c) Carl Alexander <contact@carlalexander.ca>
+ * (c) Carl Alexander <support@ymirapp.com>
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
 
-namespace Placeholder\Cli\Exception;
+namespace Ymir\Cli\Exception;
 
 use GuzzleHttp\Exception\ClientException;
-use Placeholder\Cli\Command\LoginCommand;
 use Psr\Http\Message\ResponseInterface;
 use Symfony\Component\Console\Exception\RuntimeException;
+use Ymir\Cli\Command\LoginCommand;
 
 class ApiClientException extends RuntimeException
 {
@@ -37,7 +37,7 @@ class ApiClientException extends RuntimeException
     }
 
     /**
-     * Get the placeholder API error message.
+     * Get the Ymir API error message.
      */
     private function getApiErrorMessage(ClientException $exception): string
     {
@@ -82,7 +82,7 @@ class ApiClientException extends RuntimeException
      */
     private function getValidationErrorMessage(ClientException $exception): string
     {
-        $message = 'The placeholder API responded with errors';
+        $message = 'The Ymir API responded with errors';
         $response = $exception->getResponse();
 
         if (!$response instanceof ResponseInterface) {
