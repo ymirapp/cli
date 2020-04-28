@@ -46,12 +46,6 @@ class DeleteDatabaseCommand extends AbstractCommand
      */
     protected function perform(InputInterface $input, OutputStyle $output)
     {
-        if (!$this->getBooleanOption($input, 'no-interaction')
-            && !$output->confirm('Are you sure you want to delete this database?', false)
-        ) {
-            return;
-        }
-
         $idOrName = $input->getArgument('database');
 
         if (null === $idOrName || is_array($idOrName)) {
@@ -62,6 +56,12 @@ class DeleteDatabaseCommand extends AbstractCommand
 
         if (isset($database['status']) && 'deleting' === $database['status']) {
             throw new RuntimeException(sprintf('The database with the ID or name "%s" is already being deleted', $idOrName));
+        }
+
+        if (!$this->getBooleanOption($input, 'no-interaction')
+            && !$output->confirm('Are you sure you want to delete this database?', false)
+        ) {
+            return;
         }
 
         $this->apiClient->deleteDatabase((int) $database['id']);
