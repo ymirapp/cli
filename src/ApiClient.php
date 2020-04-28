@@ -29,18 +29,18 @@ class ApiClient
     private $baseUrl;
 
     /**
-     * The HTTP client used to interact with the placeholder API.
-     *
-     * @var ClientInterface
-     */
-    private $client;
-
-    /**
      * The global placeholder CLI configuration.
      *
      * @var CliConfiguration
      */
     private $cliConfiguration;
+
+    /**
+     * The HTTP client used to interact with the placeholder API.
+     *
+     * @var ClientInterface
+     */
+    private $client;
 
     /**
      * Constructor.
@@ -218,19 +218,19 @@ class ApiClient
     }
 
     /**
-     * Get the project.
-     */
-    public function getProject(int $projectId): Collection
-    {
-        return $this->request('get', "/projects/{$projectId}");
-    }
-
-    /**
      * Get the networks that belong to the given team.
      */
     public function getNetworks(int $teamId): Collection
     {
         return $this->request('get', "/teams/{$teamId}/networks");
+    }
+
+    /**
+     * Get the project.
+     */
+    public function getProject(int $projectId): Collection
+    {
+        return $this->request('get', "/projects/{$projectId}");
     }
 
     /**

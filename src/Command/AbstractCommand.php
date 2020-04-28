@@ -52,20 +52,6 @@ abstract class AbstractCommand extends Command
     }
 
     /**
-     * Invoke another console command.
-     */
-    protected function invoke(OutputStyle $output, string $command, array $arguments = []): int
-    {
-        $application = $this->getApplication();
-
-        if (!$application instanceof Application) {
-            throw new RuntimeException('No Application instance found');
-        }
-
-        return $application->find($command)->run(new ArrayInput($arguments), $output);
-    }
-
-    /**
      * {@inheritdoc}
      */
     protected function execute(InputInterface $input, OutputInterface $output)
@@ -75,6 +61,18 @@ abstract class AbstractCommand extends Command
         }
 
         $this->perform($input, new OutputStyle($input, $output));
+    }
+
+    /**
+     * Get the active team ID from the global configuration file.
+     */
+    protected function getActiveTeamId(): int
+    {
+        if (!$this->cliConfiguration->has('active_team')) {
+            throw new RuntimeException(sprintf('Please select a team using the "%s" command', SelectTeamCommand::NAME));
+        }
+
+        return (int) $this->cliConfiguration->get('active_team');
     }
 
     /**
@@ -126,16 +124,23 @@ abstract class AbstractCommand extends Command
     }
 
     /**
-     * Get the active team ID from the global configuration file.
+     * Invoke another console command.
      */
-    protected function getActiveTeamId(): int
+    protected function invoke(OutputStyle $output, string $command, array $arguments = []): int
     {
-        if (!$this->cliConfiguration->has('active_team')) {
-            throw new RuntimeException(sprintf('Please select a team using the "%s" command', SelectTeamCommand::NAME));
+        $application = $this->getApplication();
+
+        if (!$application instanceof Application) {
+            throw new RuntimeException('No Application instance found');
         }
 
-        return (int) $this->cliConfiguration->get('active_team');
+        return $application->find($command)->run(new ArrayInput($arguments), $output);
     }
+
+    /**
+     * Perform the command.
+     */
+    abstract protected function perform(InputInterface $input, OutputStyle $output);
 
     /**
      * Set the access token in the global configuration file.
@@ -152,9 +157,4 @@ abstract class AbstractCommand extends Command
     {
         $this->cliConfiguration->set('active_team', $teamId);
     }
-
-    /**
-     * Perform the command.
-     */
-    abstract protected function perform(InputInterface $input, OutputStyle $output);
 }

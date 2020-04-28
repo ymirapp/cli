@@ -22,6 +22,13 @@ use Tightenco\Collect\Support\Collection;
 class ProjectConfiguration implements Arrayable
 {
     /**
+     * The parsed configuration.
+     *
+     * @var array
+     */
+    private $configuration;
+
+    /**
      * The path to the configuration file.
      *
      * @var string
@@ -34,13 +41,6 @@ class ProjectConfiguration implements Arrayable
      * @var Filesystem
      */
     private $filesystem;
-
-    /**
-     * The parsed configuration.
-     *
-     * @var array
-     */
-    private $configuration;
 
     /**
      * Constructor.

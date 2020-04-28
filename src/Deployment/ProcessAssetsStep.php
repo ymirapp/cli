@@ -104,6 +104,24 @@ class ProcessAssetsStep implements DeploymentStepInterface
     }
 
     /**
+     * Send the given asset file copy requests.
+     */
+    private function copyAssetFiles(array $requests, OutputStyle $output)
+    {
+        if (empty($requests)) {
+            return;
+        }
+
+        $progressBar = new ProgressBar($output);
+        $progressBar->setFormat('  > %message% (<comment>%current%/%max%</comment>)');
+        $progressBar->setMessage('Copying unchanged asset files');
+
+        $this->uploader->batch('PUT', $requests, self::REQUEST_HEADERS, $progressBar);
+
+        $output->newLine();
+    }
+
+    /**
      * Get all the asset files.
      */
     private function getAssetFiles(): Collection
@@ -122,24 +140,6 @@ class ProcessAssetsStep implements DeploymentStepInterface
         }
 
         return collect($assetFiles);
-    }
-
-    /**
-     * Send the given asset file copy requests.
-     */
-    private function copyAssetFiles(array $requests, OutputStyle $output)
-    {
-        if (empty($requests)) {
-            return;
-        }
-
-        $progressBar = new ProgressBar($output);
-        $progressBar->setFormat('  > %message% (<comment>%current%/%max%</comment>)');
-        $progressBar->setMessage('Copying unchanged asset files');
-
-        $this->uploader->batch('PUT', $requests, self::REQUEST_HEADERS, $progressBar);
-
-        $output->newLine();
     }
 
     /**

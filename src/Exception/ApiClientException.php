@@ -37,6 +37,21 @@ class ApiClientException extends RuntimeException
     }
 
     /**
+     * Get the placeholder API error message.
+     */
+    private function getApiErrorMessage(ClientException $exception): string
+    {
+        $message = '';
+        $response = $exception->getResponse();
+
+        if (!$response instanceof ResponseInterface) {
+            return $message;
+        }
+
+        return str_replace('"', '', (string) $response->getBody());
+    }
+
+    /**
      * Get the default exception message based on the exception code.
      */
     private function getDefaultMessage(int $code): string
@@ -60,21 +75,6 @@ class ApiClientException extends RuntimeException
         }
 
         return $message;
-    }
-
-    /**
-     * Get the placeholder API error message.
-     */
-    private function getApiErrorMessage(ClientException $exception): string
-    {
-        $message = '';
-        $response = $exception->getResponse();
-
-        if (!$response instanceof ResponseInterface) {
-            return $message;
-        }
-
-        return str_replace('"', '', (string) $response->getBody());
     }
 
     /**

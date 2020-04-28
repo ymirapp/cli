@@ -91,18 +91,18 @@ class OutputStyle extends SymfonyStyle
     }
 
     /**
-     * Write the build step message.
-     */
-    public function writeStep(string $step, bool $newline = true)
-    {
-        $this->write(sprintf('  > %s', $step), $newline);
-    }
-
-    /**
      * Write out a warning message.
      */
     public function warn(string $message, bool $newline = true)
     {
         $this->write(sprintf('<comment>%s</comment>', $message), $newline);
+    }
+
+    /**
+     * Write the build step message.
+     */
+    public function writeStep(string $step, bool $newline = true)
+    {
+        $this->write(sprintf('  > %s', $step), $newline);
     }
 }
