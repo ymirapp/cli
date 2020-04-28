@@ -32,7 +32,7 @@ class UploadBuildStep implements DeploymentStepInterface
      *
      * @var string
      */
-    private $buildFilePath;
+    private $buildArtifactPath;
 
     /**
      * The uploader used to upload all the build files.
@@ -44,10 +44,10 @@ class UploadBuildStep implements DeploymentStepInterface
     /**
      * Constructor.
      */
-    public function __construct(ApiClient $apiClient, string $buildFilePath, FileUploader $uploader)
+    public function __construct(ApiClient $apiClient, string $buildArtifactPath, FileUploader $uploader)
     {
         $this->apiClient = $apiClient;
-        $this->buildFilePath = $buildFilePath;
+        $this->buildArtifactPath = $buildArtifactPath;
         $this->uploader = $uploader;
     }
 
@@ -61,7 +61,7 @@ class UploadBuildStep implements DeploymentStepInterface
         $progressBar->setFormat('<info>%message%</info> (<comment>%percent%%</comment>)');
         $progressBar->setMessage('Uploading build');
 
-        $this->uploader->uploadFile($this->buildFilePath, $this->apiClient->getArtifactUploadUrl($deploymentId), [], $progressBar);
+        $this->uploader->uploadFile($this->buildArtifactPath, $this->apiClient->getArtifactUploadUrl($deploymentId), [], $progressBar);
 
         $output->newLine();
     }

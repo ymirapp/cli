@@ -20,6 +20,13 @@ use Symfony\Component\Finder\SplFileInfo;
 class CompressBuildFilesStep implements BuildStepInterface
 {
     /**
+     * The path to the build artifact.
+     *
+     * @var string
+     */
+    private $buildArtifactPath;
+
+    /**
      * The build directory where the project files are copied to.
      *
      * @var string
@@ -27,19 +34,12 @@ class CompressBuildFilesStep implements BuildStepInterface
     private $buildDirectory;
 
     /**
-     * The path to the build artifact.
-     *
-     * @var string
-     */
-    private $buildFilePath;
-
-    /**
      * Constructor.
      */
-    public function __construct(string $buildDirectory, string $buildFilePath)
+    public function __construct(string $buildArtifactPath, string $buildDirectory)
     {
+        $this->buildArtifactPath = $buildArtifactPath;
         $this->buildDirectory = rtrim($buildDirectory, '/');
-        $this->buildFilePath = $buildFilePath;
     }
 
     /**
@@ -56,7 +56,7 @@ class CompressBuildFilesStep implements BuildStepInterface
     public function perform(string $environment)
     {
         $archive = new \ZipArchive();
-        $archive->open($this->buildFilePath, \ZipArchive::CREATE | \ZipArchive::OVERWRITE);
+        $archive->open($this->buildArtifactPath, \ZipArchive::CREATE | \ZipArchive::OVERWRITE);
 
         foreach ($this->getBuildFiles() as $file) {
             $this->addFileToArchive($archive, $file);
@@ -64,7 +64,7 @@ class CompressBuildFilesStep implements BuildStepInterface
 
         $archive->close();
 
-        $size = round(filesize($this->buildFilePath) / 1048576, 1);
+        $size = round(filesize($this->buildArtifactPath) / 1048576, 1);
 
         if ($size > 45) {
             throw new RuntimeException(sprintf('Compressed build is greater than 45MB. Build is %sMB', $size));
