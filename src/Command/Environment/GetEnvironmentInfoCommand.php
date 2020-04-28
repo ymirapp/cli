@@ -55,7 +55,7 @@ class GetEnvironmentInfoCommand extends AbstractCommand
     {
         $this
             ->setName(self::NAME)
-            ->setDescription('Get the environment URL and copy it to the clipboard')
+            ->setDescription('Get information on the project environment(s)')
             ->addArgument('environment', InputArgument::OPTIONAL, 'The name of the environment');
     }
 
