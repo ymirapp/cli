@@ -44,7 +44,7 @@ class SelectTeamCommand extends AbstractCommand
     {
         $teams = $this->apiClient->getTeams();
 
-        if (empty($teams)) {
+        if ($teams->isEmpty()) {
             throw new RuntimeException('You\'re not on any team');
         }
 
