@@ -16,6 +16,7 @@ services:
       string $baseUrl: '%ymir_api_url%'
       string $buildDirectory: '%build_directory%'
       string $buildArtifactPath: '%build_artifact_path%'
+      string $hiddenDirectory: '%hidden_directory%'
       string $homeDirectory: '%home_directory%'
       string $projectDirectory: '%working_directory%'
       string $stubDirectory: '%stub_directory%'
@@ -63,6 +64,7 @@ services:
         - '@Ymir\Cli\Deployment\UploadBuildStep'
         - '@Ymir\Cli\Deployment\ProcessAssetsStep'
         - '@Ymir\Cli\Deployment\StartAndMonitorDeploymentStep'
+        - '@Ymir\Cli\Deployment\CleanupStep'
 
   Symfony\Component\Filesystem\:
     resource: '../vendor/symfony/filesystem'
