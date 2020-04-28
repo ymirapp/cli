@@ -61,6 +61,8 @@ abstract class AbstractCommand extends Command
         }
 
         $this->perform($input, new OutputStyle($input, $output));
+
+        return 0;
     }
 
     /**
