@@ -123,7 +123,7 @@ class CreateDatabaseCommand extends AbstractCommand
             return $storage;
         }
 
-        $storage = $output->ask('What should the maximum amount of storage (in GB) allocated to the database be?');
+        $storage = $output->ask('What should the maximum amount of storage (in GB) allocated to the database be?', '50');
 
         if (!is_numeric($storage)) {
             throw new RuntimeException('The maximum allocated storage needs to be a numeric value');
