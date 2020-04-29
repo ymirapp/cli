@@ -52,7 +52,7 @@ class ValidateProjectCommand extends AbstractCommand
         }
 
         foreach ($environments as $environment) {
-            $this->apiClient->validateProjectConfiguration($projectId, $environment, $this->projectConfiguration);
+            $this->apiClient->validateProjectConfiguration($environment, $this->projectConfiguration);
         }
 
         $output->info('Project <comment>ymir.yml</comment> file is valid');
