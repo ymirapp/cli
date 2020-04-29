@@ -55,7 +55,7 @@ class ValidateProjectCommand extends AbstractCommand
         $this
             ->setName(self::NAME)
             ->setAliases(['validate'])
-            ->setDescription('Validates the project configuration')
+            ->setDescription('Validates the project ymir.yml file')
             ->addArgument('environments', InputArgument::OPTIONAL, 'The environments to validate');
     }
 
@@ -82,6 +82,6 @@ class ValidateProjectCommand extends AbstractCommand
             $this->apiClient->validateProjectConfiguration($projectId, $environment, $this->projectConfiguration);
         }
 
-        $output->info('Project configuration is valid');
+        $output->info('Project <comment>ymir.yml</comment> file is valid');
     }
 }

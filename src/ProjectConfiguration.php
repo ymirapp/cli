@@ -103,7 +103,7 @@ class ProjectConfiguration implements Arrayable
     public function getEnvironment(string $environment): ?array
     {
         if (!array_key_exists($environment, $this->configuration['environments'])) {
-            throw new \InvalidArgumentException(sprintf('Environment "%s" not found in ymir.yml', $environment));
+            throw new \InvalidArgumentException(sprintf('Environment "%s" not found in ymir.yml file', $environment));
         }
 
         return $this->configuration['environments'][$environment];
@@ -123,7 +123,7 @@ class ProjectConfiguration implements Arrayable
     public function getProjectId(): int
     {
         if (empty($this->configuration['id'])) {
-            throw new RuntimeException('Project configuration file has no "id"');
+            throw new RuntimeException('No "id" found in ymir.yml file');
         }
 
         return (int) $this->configuration['id'];
@@ -135,7 +135,7 @@ class ProjectConfiguration implements Arrayable
     public function getProjectName(): string
     {
         if (empty($this->configuration['name'])) {
-            throw new RuntimeException('Project configuration file has no "name"');
+            throw new RuntimeException('No "name" found in ymir.yml file');
         }
 
         return (string) $this->configuration['name'];
@@ -155,11 +155,11 @@ class ProjectConfiguration implements Arrayable
     public function validate(array $environments = null)
     {
         if (!$this->exists()) {
-            throw new RuntimeException('No project configuration file found in current directory');
+            throw new RuntimeException('No ymir.yml file found in current directory');
         } elseif (empty($this->configuration['id'])) {
-            throw new RuntimeException('The project configuration file must have an "id"');
+            throw new RuntimeException('The ymir.yml file must have an "id"');
         } elseif (empty($this->configuration['environments'])) {
-            throw new RuntimeException('The project configuration file must have at least one environment');
+            throw new RuntimeException('The ymir.yml file must have at least one environment');
         }
 
         if (empty($environments)) {
@@ -187,7 +187,7 @@ class ProjectConfiguration implements Arrayable
         }
 
         if (!empty($configuration) && !is_array($configuration)) {
-            throw new RuntimeException('Error parsing project configuration file');
+            throw new RuntimeException('Error parsing ymir.yml file');
         }
 
         return $configuration;

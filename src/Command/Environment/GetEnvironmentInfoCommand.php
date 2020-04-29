@@ -71,7 +71,7 @@ class GetEnvironmentInfoCommand extends AbstractCommand
         }
 
         if (empty($environments)) {
-            $output->info('Listing information on all environments found in <comment>ymir.yml</comment>');
+            $output->info('Listing information on all environments found in <comment>ymir.yml</comment> file');
             $environments = $this->projectConfiguration->getEnvironments();
         }
 
