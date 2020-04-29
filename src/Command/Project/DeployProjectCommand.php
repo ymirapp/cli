@@ -41,21 +41,13 @@ class DeployProjectCommand extends AbstractCommand
     private $deploymentSteps;
 
     /**
-     * The Ymir project configuration.
-     *
-     * @var ProjectConfiguration
-     */
-    private $projectConfiguration;
-
-    /**
      * Constructor.
      */
     public function __construct(ApiClient $apiClient, CliConfiguration $cliConfiguration, ProjectConfiguration $projectConfiguration, array $deploymentSteps = [])
     {
-        parent::__construct($apiClient, $cliConfiguration);
+        parent::__construct($apiClient, $cliConfiguration, $projectConfiguration);
 
         $this->deploymentSteps = [];
-        $this->projectConfiguration = $projectConfiguration;
 
         foreach ($deploymentSteps as $deploymentStep) {
             $this->addDeploymentStep($deploymentStep);

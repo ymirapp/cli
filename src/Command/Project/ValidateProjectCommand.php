@@ -15,11 +15,8 @@ namespace Ymir\Cli\Command\Project;
 
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
-use Ymir\Cli\ApiClient;
-use Ymir\Cli\CliConfiguration;
 use Ymir\Cli\Command\AbstractCommand;
 use Ymir\Cli\Console\OutputStyle;
-use Ymir\Cli\ProjectConfiguration;
 
 class ValidateProjectCommand extends AbstractCommand
 {
@@ -29,23 +26,6 @@ class ValidateProjectCommand extends AbstractCommand
      * @var string
      */
     public const NAME = 'project:validate';
-
-    /**
-     * The Ymir project configuration.
-     *
-     * @var ProjectConfiguration
-     */
-    private $projectConfiguration;
-
-    /**
-     * Constructor.
-     */
-    public function __construct(ApiClient $apiClient, CliConfiguration $cliConfiguration, ProjectConfiguration $projectConfiguration)
-    {
-        parent::__construct($apiClient, $cliConfiguration);
-
-        $this->projectConfiguration = $projectConfiguration;
-    }
 
     /**
      * {@inheritdoc}
@@ -65,18 +45,11 @@ class ValidateProjectCommand extends AbstractCommand
     protected function perform(InputInterface $input, OutputStyle $output)
     {
         $environments = $input->getArgument('environments');
+        $projectId = $this->projectConfiguration->getProjectId();
 
         if (!is_array($environments)) {
             $environments = (array) $environments;
         }
-
-        $this->projectConfiguration->validate($environments);
-
-        if (empty($environments)) {
-            $environments = $this->projectConfiguration->getEnvironments();
-        }
-
-        $projectId = $this->projectConfiguration->getProjectId();
 
         foreach ($environments as $environment) {
             $this->apiClient->validateProjectConfiguration($projectId, $environment, $this->projectConfiguration);

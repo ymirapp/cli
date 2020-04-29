@@ -102,7 +102,7 @@ class ProjectConfiguration implements Arrayable
      */
     public function getEnvironment(string $environment): ?array
     {
-        if (!array_key_exists($environment, $this->configuration['environments'])) {
+        if (!$this->hasEnvironment($environment)) {
             throw new \InvalidArgumentException(sprintf('Environment "%s" not found in ymir.yml file', $environment));
         }
 
@@ -142,6 +142,14 @@ class ProjectConfiguration implements Arrayable
     }
 
     /**
+     * Check if the project configuration file has configuration information for the given environment.
+     */
+    public function hasEnvironment(string $environment): bool
+    {
+        return array_key_exists($environment, $this->configuration['environments']);
+    }
+
+    /**
      * {@inheritdoc}
      */
     public function toArray()
@@ -152,7 +160,7 @@ class ProjectConfiguration implements Arrayable
     /**
      * Validates the loaded configuration file.
      */
-    public function validate(array $environments = null)
+    public function validate()
     {
         if (!$this->exists()) {
             throw new RuntimeException('No ymir.yml file found in current directory');
@@ -161,18 +169,6 @@ class ProjectConfiguration implements Arrayable
         } elseif (empty($this->configuration['environments'])) {
             throw new RuntimeException('The ymir.yml file must have at least one environment');
         }
-
-        if (empty($environments)) {
-            return;
-        }
-
-        $missingEnvironment = collect($environments)->diff(array_keys($this->configuration['environments']))->first();
-
-        if (empty($missingEnvironment)) {
-            return;
-        }
-
-        throw new RuntimeException(sprintf('The "%s" environment isn\'t configured in your project configuration', $missingEnvironment));
     }
 
     /**

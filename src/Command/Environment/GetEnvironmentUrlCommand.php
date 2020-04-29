@@ -17,11 +17,8 @@ use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Process\Process;
-use Ymir\Cli\ApiClient;
-use Ymir\Cli\CliConfiguration;
 use Ymir\Cli\Command\AbstractCommand;
 use Ymir\Cli\Console\OutputStyle;
-use Ymir\Cli\ProjectConfiguration;
 
 class GetEnvironmentUrlCommand extends AbstractCommand
 {
@@ -31,23 +28,6 @@ class GetEnvironmentUrlCommand extends AbstractCommand
      * @var string
      */
     public const NAME = 'environment:url';
-
-    /**
-     * The Ymir project configuration.
-     *
-     * @var ProjectConfiguration
-     */
-    private $projectConfiguration;
-
-    /**
-     * Constructor.
-     */
-    public function __construct(ApiClient $apiClient, CliConfiguration $cliConfiguration, ProjectConfiguration $projectConfiguration)
-    {
-        parent::__construct($apiClient, $cliConfiguration);
-
-        $this->projectConfiguration = $projectConfiguration;
-    }
 
     /**
      * {@inheritdoc}
@@ -70,8 +50,6 @@ class GetEnvironmentUrlCommand extends AbstractCommand
         if (!is_string($environment)) {
             throw new RuntimeException('Invalid "environment" argument given');
         }
-
-        $this->projectConfiguration->validate([$environment]);
 
         $environment = $this->apiClient->getEnvironment($this->projectConfiguration->getProjectId(), $environment);
 

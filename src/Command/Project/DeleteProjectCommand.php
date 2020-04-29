@@ -14,11 +14,8 @@ declare(strict_types=1);
 namespace Ymir\Cli\Command\Project;
 
 use Symfony\Component\Console\Input\InputInterface;
-use Ymir\Cli\ApiClient;
-use Ymir\Cli\CliConfiguration;
 use Ymir\Cli\Command\AbstractCommand;
 use Ymir\Cli\Console\OutputStyle;
-use Ymir\Cli\ProjectConfiguration;
 
 class DeleteProjectCommand extends AbstractCommand
 {
@@ -28,23 +25,6 @@ class DeleteProjectCommand extends AbstractCommand
      * @var string
      */
     public const NAME = 'project:delete';
-
-    /**
-     * The Ymir project configuration.
-     *
-     * @var ProjectConfiguration
-     */
-    private $projectConfiguration;
-
-    /**
-     * Constructor.
-     */
-    public function __construct(ApiClient $apiClient, CliConfiguration $cliConfiguration, ProjectConfiguration $projectConfiguration)
-    {
-        parent::__construct($apiClient, $cliConfiguration);
-
-        $this->projectConfiguration = $projectConfiguration;
-    }
 
     /**
      * {@inheritdoc}

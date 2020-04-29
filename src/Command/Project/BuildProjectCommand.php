@@ -21,6 +21,7 @@ use Ymir\Cli\Build\BuildStepInterface;
 use Ymir\Cli\CliConfiguration;
 use Ymir\Cli\Command\AbstractCommand;
 use Ymir\Cli\Console\OutputStyle;
+use Ymir\Cli\ProjectConfiguration;
 
 class BuildProjectCommand extends AbstractCommand
 {
@@ -41,9 +42,9 @@ class BuildProjectCommand extends AbstractCommand
     /**
      * Constructor.
      */
-    public function __construct(ApiClient $apiClient, CliConfiguration $cliConfiguration, iterable $buildSteps = [])
+    public function __construct(ApiClient $apiClient, CliConfiguration $cliConfiguration, ProjectConfiguration $projectConfiguration, iterable $buildSteps = [])
     {
-        parent::__construct($apiClient, $cliConfiguration);
+        parent::__construct($apiClient, $cliConfiguration, $projectConfiguration);
 
         foreach ($buildSteps as $buildStep) {
             $this->addBuildStep($buildStep);

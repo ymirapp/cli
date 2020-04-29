@@ -43,13 +43,6 @@ class InitializeProjectCommand extends AbstractCommand
     private $filesystem;
 
     /**
-     * The Ymir project configuration.
-     *
-     * @var ProjectConfiguration
-     */
-    private $projectConfiguration;
-
-    /**
      * The project directory where the project files are copied from.
      *
      * @var string
@@ -61,10 +54,9 @@ class InitializeProjectCommand extends AbstractCommand
      */
     public function __construct(ApiClient $apiClient, CliConfiguration $cliConfiguration, Filesystem $filesystem, ProjectConfiguration $projectConfiguration, string $projectDirectory)
     {
-        parent::__construct($apiClient, $cliConfiguration);
+        parent::__construct($apiClient, $cliConfiguration, $projectConfiguration);
 
         $this->filesystem = $filesystem;
-        $this->projectConfiguration = $projectConfiguration;
         $this->projectDirectory = rtrim($projectDirectory, '/');
     }
 

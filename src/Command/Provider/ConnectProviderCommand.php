@@ -18,6 +18,7 @@ use Ymir\Cli\ApiClient;
 use Ymir\Cli\CliConfiguration;
 use Ymir\Cli\Command\AbstractCommand;
 use Ymir\Cli\Console\OutputStyle;
+use Ymir\Cli\ProjectConfiguration;
 
 class ConnectProviderCommand extends AbstractCommand
 {
@@ -38,9 +39,9 @@ class ConnectProviderCommand extends AbstractCommand
     /**
      * Constructor.
      */
-    public function __construct(ApiClient $apiClient, CliConfiguration $cliConfiguration, string $homeDirectory)
+    public function __construct(ApiClient $apiClient, CliConfiguration $cliConfiguration, ProjectConfiguration $projectConfiguration, string $homeDirectory)
     {
-        parent::__construct($apiClient, $cliConfiguration);
+        parent::__construct($apiClient, $cliConfiguration, $projectConfiguration);
 
         $this->homeDirectory = rtrim($homeDirectory, '/');
     }
