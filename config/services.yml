@@ -52,10 +52,10 @@ services:
     arguments:
       $buildSteps:
         - '@Ymir\Cli\Build\CopyWordPressFilesStep'
-        - '@Ymir\Cli\Build\ModifyWordPressConfigurationStep'
-        - '@Ymir\Cli\Build\ExtractAssetFilesStep'
         - '@Ymir\Cli\Build\DownloadWpCliStep'
         - '@Ymir\Cli\Build\EnsurePluginIsInstalledStep'
+        - '@Ymir\Cli\Build\ModifyWordPressConfigurationStep'
+        - '@Ymir\Cli\Build\ExtractAssetFilesStep'
         - '@Ymir\Cli\Build\CompressBuildFilesStep'
 
   Ymir\Cli\Command\Project\DeployProjectCommand:
