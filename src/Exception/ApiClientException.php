@@ -97,7 +97,7 @@ class ApiClientException extends RuntimeException
 
         $message .= ":\n";
 
-        foreach ($errors as $index => $error) {
+        foreach ($errors as $error) {
             $message .= "\n    * {$error}";
         }
 
