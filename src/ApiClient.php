@@ -313,10 +313,11 @@ class ApiClient
     /**
      * Validates the project configuration. Returns nothing if no errors were found.
      */
-    public function validateProjectConfiguration(string $environment, ProjectConfiguration $projectConfiguration)
+    public function validateProjectConfiguration(ProjectConfiguration $projectConfiguration, array $environments = [])
     {
-        $this->request('get', "/projects/{$projectConfiguration->getProjectId()}/environments/{$environment}/validate", [
+        $this->request('get', "/projects/{$projectConfiguration->getProjectId()}/validate-configuration", [
             'configuration' => $projectConfiguration->toArray(),
+            'environments' => $environments,
         ]);
     }
 
