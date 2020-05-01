@@ -79,7 +79,7 @@ class CreateDatabaseUserCommand extends AbstractCommand
     private function getDatabase(string $idOrName): array
     {
         $database = null;
-        $databases = $this->apiClient->getDatabases($this->getActiveTeamId());
+        $databases = $this->apiClient->getDatabases($this->cliConfiguration->getActiveTeamId());
 
         if (is_numeric($idOrName)) {
             $database = $databases->firstWhere('id', $idOrName);

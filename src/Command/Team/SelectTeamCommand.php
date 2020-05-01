@@ -50,7 +50,7 @@ class SelectTeamCommand extends AbstractCommand
 
         $teamId = $output->choiceCollection('Enter the ID of the team that you want to switch to', $teams->sortBy->name);
 
-        $this->setActiveTeamId($teamId);
+        $this->cliConfiguration->setActiveTeamId($teamId);
 
         $output->infoWithValue('Your active team is now', $teams->firstWhere('id', $teamId)['name']);
     }

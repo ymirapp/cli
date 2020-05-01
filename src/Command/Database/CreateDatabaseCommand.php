@@ -77,7 +77,7 @@ class CreateDatabaseCommand extends AbstractCommand
      */
     private function determineNetwork(InputInterface $input, OutputStyle $output): array
     {
-        $networks = $this->apiClient->getNetworks($this->getActiveTeamId())->filter(function (array $network) {
+        $networks = $this->apiClient->getNetworks($this->cliConfiguration->getActiveTeamId())->filter(function (array $network) {
             return 'available' === $network['status'];
         });
 

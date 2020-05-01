@@ -21,7 +21,6 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Ymir\Cli\ApiClient;
 use Ymir\Cli\CliConfiguration;
-use Ymir\Cli\Command\Team\SelectTeamCommand;
 use Ymir\Cli\Console\OutputStyle;
 
 abstract class AbstractCommand extends Command
@@ -63,18 +62,6 @@ abstract class AbstractCommand extends Command
         $this->perform($input, new OutputStyle($input, $output));
 
         return 0;
-    }
-
-    /**
-     * Get the active team ID from the global configuration file.
-     */
-    protected function getActiveTeamId(): int
-    {
-        if (!$this->cliConfiguration->has('active_team')) {
-            throw new RuntimeException(sprintf('Please select a team using the "%s" command', SelectTeamCommand::NAME));
-        }
-
-        return (int) $this->cliConfiguration->get('active_team');
     }
 
     /**
@@ -143,20 +130,4 @@ abstract class AbstractCommand extends Command
      * Perform the command.
      */
     abstract protected function perform(InputInterface $input, OutputStyle $output);
-
-    /**
-     * Set the access token in the global configuration file.
-     */
-    protected function setAccessToken(string $token)
-    {
-        $this->cliConfiguration->set('token', $token);
-    }
-
-    /**
-     * Set the active team ID in the global configuration file.
-     */
-    protected function setActiveTeamId(int $teamId)
-    {
-        $this->cliConfiguration->set('active_team', $teamId);
-    }
 }

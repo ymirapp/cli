@@ -292,7 +292,7 @@ class ApiClient
     public function isAuthenticated(): bool
     {
         try {
-            return $this->cliConfiguration->has('token') && !empty($this->getUser());
+            return $this->cliConfiguration->hasAccessToken() && !empty($this->getUser());
         } catch (ApiClientException $exception) {
             if (401 === $exception->getCode()) {
                 return false;
@@ -332,8 +332,8 @@ class ApiClient
         ];
         $uri = ltrim($uri, '/');
 
-        if ($this->cliConfiguration->has('token')) {
-            $headers['Authorization'] = 'Bearer '.$this->cliConfiguration->get('token');
+        if ($this->cliConfiguration->hasAccessToken()) {
+            $headers['Authorization'] = 'Bearer '.$this->cliConfiguration->getAccessToken();
         }
 
         try {

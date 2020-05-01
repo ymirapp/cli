@@ -117,7 +117,7 @@ class InitializeProjectCommand extends AbstractProjectCommand
     private function determineDatabaseName(OutputStyle $output): string
     {
         $databaseName = '';
-        $databases = $this->apiClient->getDatabases($this->getActiveTeamId());
+        $databases = $this->apiClient->getDatabases($this->cliConfiguration->getActiveTeamId());
 
         if (!$databases->isEmpty() && $output->confirm('Would you like to use an existing database for this project?')) {
             $databaseName = (string) $output->choice('Which database would you like to use?', $databases->pluck('name')->all());
@@ -126,7 +126,7 @@ class InitializeProjectCommand extends AbstractProjectCommand
             || ($databases->isEmpty() && $output->confirm('Your team doesn\'t have any configured databases. Would you like to create one for this project first?'))
         ) {
             $this->invoke($output, CreateDatabaseCommand::NAME);
-            $databaseName = (string) $this->apiClient->getDatabases($this->getActiveTeamId())->pluck('name')->last();
+            $databaseName = (string) $this->apiClient->getDatabases($this->cliConfiguration->getActiveTeamId())->pluck('name')->last();
         }
 
         return $databaseName;
@@ -145,7 +145,7 @@ class InitializeProjectCommand extends AbstractProjectCommand
             return $databaseName;
         }
 
-        $databases = $this->apiClient->getDatabases($this->getActiveTeamId());
+        $databases = $this->apiClient->getDatabases($this->cliConfiguration->getActiveTeamId());
 
         if (!$databases->contains(function (array $database) use ($databaseName) { return isset($database['name']) && $database['name'] === $databaseName; })) {
             throw new RuntimeException(sprintf('There is no "%s" database on your current team', $databaseName));
@@ -177,12 +177,12 @@ class InitializeProjectCommand extends AbstractProjectCommand
      */
     private function getProviders(OutputStyle $output): Collection
     {
-        $providers = $this->apiClient->getProviders($this->getActiveTeamId());
+        $providers = $this->apiClient->getProviders($this->cliConfiguration->getActiveTeamId());
 
         if ($providers->isEmpty()) {
             $output->info('Connecting to a cloud provider');
             $this->invoke($output, ConnectProviderCommand::NAME);
-            $providers = $this->apiClient->getProviders($this->getActiveTeamId());
+            $providers = $this->apiClient->getProviders($this->cliConfiguration->getActiveTeamId());
         }
 
         return $providers;

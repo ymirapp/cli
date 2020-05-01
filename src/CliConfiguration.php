@@ -13,8 +13,10 @@ declare(strict_types=1);
 
 namespace Ymir\Cli;
 
+use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Filesystem\Filesystem;
 use Tightenco\Collect\Support\Collection;
+use Ymir\Cli\Command\Team\SelectTeamCommand;
 
 class CliConfiguration
 {
@@ -58,9 +60,53 @@ class CliConfiguration
     }
 
     /**
+     * Get the access token from the global configuration file.
+     */
+    public function getAccessToken(): string
+    {
+        return $this->get('token');
+    }
+
+    /**
+     * Get the active team ID from the global configuration file.
+     */
+    public function getActiveTeamId(): int
+    {
+        if (!$this->has('active_team')) {
+            throw new RuntimeException(sprintf('Please select a team using the "%s" command', SelectTeamCommand::NAME));
+        }
+
+        return (int) $this->get('active_team');
+    }
+
+    /**
+     * Check if the global configuration has an access token.
+     */
+    public function hasAccessToken(): bool
+    {
+        return $this->has('token');
+    }
+
+    /**
+     * Set the access token in the global configuration file.
+     */
+    public function setAccessToken(string $token)
+    {
+        $this->set('token', $token);
+    }
+
+    /**
+     * Set the active team ID in the global configuration file.
+     */
+    public function setActiveTeamId(int $teamId)
+    {
+        $this->set('active_team', $teamId);
+    }
+
+    /**
      * Get the given configuration option or return the default.
      */
-    public function get(string $option, $default = null)
+    private function get(string $option, $default = null)
     {
         return $this->options->get($option, $default);
     }
@@ -68,17 +114,9 @@ class CliConfiguration
     /**
      * Checks if the configuration has the given option.
      */
-    public function has(string $option): bool
+    private function has(string $option): bool
     {
         return $this->options->has($option);
-    }
-
-    /**
-     * Set the configuration option.
-     */
-    public function set(string $option, $value)
-    {
-        $this->options[$option] = $value;
     }
 
     /**
@@ -93,5 +131,13 @@ class CliConfiguration
         }
 
         return collect($configuration);
+    }
+
+    /**
+     * Set the configuration option.
+     */
+    private function set(string $option, $value)
+    {
+        $this->options[$option] = $value;
     }
 }

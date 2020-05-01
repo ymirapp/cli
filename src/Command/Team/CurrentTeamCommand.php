@@ -42,7 +42,7 @@ class CurrentTeamCommand extends AbstractCommand
      */
     protected function perform(InputInterface $input, OutputStyle $output)
     {
-        $team = $this->apiClient->getTeam($this->getActiveTeamId());
+        $team = $this->apiClient->getTeam($this->cliConfiguration->getActiveTeamId());
         $user = $this->apiClient->getUser();
 
         if (!isset($team['id'], $team['name'])) {

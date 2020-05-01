@@ -49,12 +49,12 @@ class LoginCommand extends AbstractCommand
         $email = $output->ask('Email');
         $password = $output->askHidden('Password');
 
-        $this->setAccessToken($this->apiClient->getAccessToken($email, $password));
+        $this->cliConfiguration->setAccessToken($this->apiClient->getAccessToken($email, $password));
 
         $team = $this->apiClient->getActiveTeam();
 
         if (isset($team['id'])) {
-            $this->setActiveTeamId($team['id']);
+            $this->cliConfiguration->setActiveTeamId($team['id']);
         }
 
         $output->info('Logged in successfully!');

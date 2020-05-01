@@ -18,7 +18,6 @@ use Ymir\Cli\ApiClient;
 use Ymir\Cli\CliConfiguration;
 use Ymir\Cli\Command\AbstractCommand;
 use Ymir\Cli\Console\OutputStyle;
-use Ymir\Cli\ProjectConfiguration;
 
 class ConnectProviderCommand extends AbstractCommand
 {
@@ -39,9 +38,9 @@ class ConnectProviderCommand extends AbstractCommand
     /**
      * Constructor.
      */
-    public function __construct(ApiClient $apiClient, CliConfiguration $cliConfiguration, ProjectConfiguration $projectConfiguration, string $homeDirectory)
+    public function __construct(ApiClient $apiClient, CliConfiguration $cliConfiguration, string $homeDirectory)
     {
-        parent::__construct($apiClient, $cliConfiguration, $projectConfiguration);
+        parent::__construct($apiClient, $cliConfiguration);
 
         $this->homeDirectory = rtrim($homeDirectory, '/');
     }
@@ -65,7 +64,7 @@ class ConnectProviderCommand extends AbstractCommand
 
         $credentials = $this->getAwsCredentials($output);
 
-        $this->apiClient->createProvider($name, $credentials, $this->getActiveTeamId());
+        $this->apiClient->createProvider($name, $credentials, $this->cliConfiguration->getActiveTeamId());
 
         $output->info('Cloud provider connected successfully');
     }

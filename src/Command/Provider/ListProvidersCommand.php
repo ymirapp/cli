@@ -41,7 +41,7 @@ class ListProvidersCommand extends AbstractCommand
      */
     protected function perform(InputInterface $input, OutputStyle $output)
     {
-        $providers = $this->apiClient->getProviders($this->getActiveTeamId());
+        $providers = $this->apiClient->getProviders($this->cliConfiguration->getActiveTeamId());
 
         $output->info('The following cloud providers are connect your team:');
 
