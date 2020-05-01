@@ -17,6 +17,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Ymir\Cli\ApiClient;
 use Ymir\Cli\CliConfiguration;
+use Ymir\Cli\Command\Project\InitializeProjectCommand;
 use Ymir\Cli\ProjectConfiguration;
 
 /**
@@ -46,7 +47,9 @@ abstract class AbstractProjectCommand extends AbstractCommand
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $this->projectConfiguration->validate();
+        if (InitializeProjectCommand::NAME !== $this->getName()) {
+            $this->projectConfiguration->validate();
+        }
 
         return parent::execute($input, $output);
     }
