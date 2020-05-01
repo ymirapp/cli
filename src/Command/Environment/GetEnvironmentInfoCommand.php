@@ -16,10 +16,10 @@ namespace Ymir\Cli\Command\Environment;
 use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
-use Ymir\Cli\Command\AbstractCommand;
+use Ymir\Cli\Command\AbstractProjectCommand;
 use Ymir\Cli\Console\OutputStyle;
 
-class GetEnvironmentInfoCommand extends AbstractCommand
+class GetEnvironmentInfoCommand extends AbstractProjectCommand
 {
     /**
      * The name of the command.
@@ -105,7 +105,7 @@ class GetEnvironmentInfoCommand extends AbstractCommand
             return null;
         }
 
-        $database = $this->apiClient->getDatabases($this->getActiveTeamId())->firstWhere('name', $databaseName);
+        $database = $this->apiClient->getDatabases($this->cliConfiguration->getActiveTeamId())->firstWhere('name', $databaseName);
 
         if (!is_array($database)) {
             throw new RuntimeException(sprintf('There is no "%s" database on your current team', $databaseName));

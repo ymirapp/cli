@@ -14,10 +14,10 @@ declare(strict_types=1);
 namespace Ymir\Cli\Command\Project;
 
 use Symfony\Component\Console\Input\InputInterface;
-use Ymir\Cli\Command\AbstractCommand;
+use Ymir\Cli\Command\AbstractProjectCommand;
 use Ymir\Cli\Console\OutputStyle;
 
-class DeleteProjectCommand extends AbstractCommand
+class DeleteProjectCommand extends AbstractProjectCommand
 {
     /**
      * The name of the command.
@@ -42,8 +42,6 @@ class DeleteProjectCommand extends AbstractCommand
      */
     protected function perform(InputInterface $input, OutputStyle $output)
     {
-        $this->projectConfiguration->validate();
-
         if (!$output->confirm('Are you sure you want to delete this project?', false)) {
             return;
         }

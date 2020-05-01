@@ -18,13 +18,13 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Ymir\Cli\ApiClient;
 use Ymir\Cli\CliConfiguration;
-use Ymir\Cli\Command\AbstractCommand;
+use Ymir\Cli\Command\AbstractProjectCommand;
 use Ymir\Cli\Command\Environment\GetEnvironmentUrlCommand;
 use Ymir\Cli\Console\OutputStyle;
 use Ymir\Cli\Deployment\DeploymentStepInterface;
 use Ymir\Cli\ProjectConfiguration;
 
-class DeployProjectCommand extends AbstractCommand
+class DeployProjectCommand extends AbstractProjectCommand
 {
     /**
      * The name of the command.

@@ -17,10 +17,10 @@ use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Process\Process;
-use Ymir\Cli\Command\AbstractCommand;
+use Ymir\Cli\Command\AbstractProjectCommand;
 use Ymir\Cli\Console\OutputStyle;
 
-class GetEnvironmentUrlCommand extends AbstractCommand
+class GetEnvironmentUrlCommand extends AbstractProjectCommand
 {
     /**
      * The name of the command.

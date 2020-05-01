@@ -20,13 +20,13 @@ use Symfony\Component\Filesystem\Filesystem;
 use Tightenco\Collect\Support\Collection;
 use Ymir\Cli\ApiClient;
 use Ymir\Cli\CliConfiguration;
-use Ymir\Cli\Command\AbstractCommand;
+use Ymir\Cli\Command\AbstractProjectCommand;
 use Ymir\Cli\Command\Database\CreateDatabaseCommand;
 use Ymir\Cli\Command\Provider\ConnectProviderCommand;
 use Ymir\Cli\Console\OutputStyle;
 use Ymir\Cli\ProjectConfiguration;
 
-class InitializeProjectCommand extends AbstractCommand
+class InitializeProjectCommand extends AbstractProjectCommand
 {
     /**
      * The name of the command.

@@ -23,7 +23,6 @@ use Ymir\Cli\ApiClient;
 use Ymir\Cli\CliConfiguration;
 use Ymir\Cli\Command\Team\SelectTeamCommand;
 use Ymir\Cli\Console\OutputStyle;
-use Ymir\Cli\ProjectConfiguration;
 
 abstract class AbstractCommand extends Command
 {
@@ -35,29 +34,21 @@ abstract class AbstractCommand extends Command
     protected $apiClient;
 
     /**
-     * The Ymir project configuration.
-     *
-     * @var ProjectConfiguration
-     */
-    protected $projectConfiguration;
-
-    /**
      * The global Ymir CLI configuration.
      *
      * @var CliConfiguration
      */
-    private $cliConfiguration;
+    protected $cliConfiguration;
 
     /**
      * Constructor.
      */
-    public function __construct(ApiClient $apiClient, CliConfiguration $cliConfiguration, ProjectConfiguration $projectConfiguration)
+    public function __construct(ApiClient $apiClient, CliConfiguration $cliConfiguration)
     {
         parent::__construct();
 
         $this->apiClient = $apiClient;
         $this->cliConfiguration = $cliConfiguration;
-        $this->projectConfiguration = $projectConfiguration;
     }
 
     /**
@@ -67,8 +58,6 @@ abstract class AbstractCommand extends Command
     {
         if (LoginCommand::NAME !== $this->getName() && !$this->apiClient->isAuthenticated()) {
             throw new RuntimeException(sprintf('Please authenticate using the "%s" command before using this command', LoginCommand::NAME));
-        } elseif (LoginCommand::NAME !== $this->getName()) {
-            $this->projectConfiguration->validate();
         }
 
         $this->perform($input, new OutputStyle($input, $output));

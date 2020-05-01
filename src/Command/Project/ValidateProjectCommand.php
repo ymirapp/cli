@@ -15,10 +15,10 @@ namespace Ymir\Cli\Command\Project;
 
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
-use Ymir\Cli\Command\AbstractCommand;
+use Ymir\Cli\Command\AbstractProjectCommand;
 use Ymir\Cli\Console\OutputStyle;
 
-class ValidateProjectCommand extends AbstractCommand
+class ValidateProjectCommand extends AbstractProjectCommand
 {
     /**
      * The name of the command.
@@ -45,7 +45,6 @@ class ValidateProjectCommand extends AbstractCommand
     protected function perform(InputInterface $input, OutputStyle $output)
     {
         $environments = $input->getArgument('environments');
-        $projectId = $this->projectConfiguration->getProjectId();
 
         if (!is_array($environments)) {
             $environments = (array) $environments;
