@@ -37,7 +37,7 @@ class GetEnvironmentUrlCommand extends AbstractProjectCommand
         $this
             ->setName(self::NAME)
             ->setDescription('Get the environment URL and copy it to the clipboard')
-            ->addArgument('environment', InputArgument::REQUIRED, 'The name of the environment');
+            ->addArgument('environment', InputArgument::OPTIONAL, 'The environment name', 'staging');
     }
 
     /**
