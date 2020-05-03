@@ -61,7 +61,7 @@ class ProjectConfiguration implements Arrayable
             return;
         }
 
-        $this->filesystem->dumpFile($this->configurationFilePath, Yaml::dump($this->configuration, 20, 2, Yaml::DUMP_NULL_AS_TILDE));
+        $this->save();
     }
 
     /**
@@ -78,6 +78,8 @@ class ProjectConfiguration implements Arrayable
             'production' => null,
             'staging' => !empty($databaseName) ? ['database' => $databaseName] : null,
         ];
+
+        $this->save();
     }
 
     /**
@@ -187,5 +189,13 @@ class ProjectConfiguration implements Arrayable
         }
 
         return $configuration;
+    }
+
+    /**
+     * Save the configuration options to the configuration file.
+     */
+    private function save()
+    {
+        $this->filesystem->dumpFile($this->configurationFilePath, Yaml::dump($this->configuration, 20, 2, Yaml::DUMP_NULL_AS_TILDE));
     }
 }
