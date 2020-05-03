@@ -65,6 +65,24 @@ abstract class AbstractCommand extends Command
     }
 
     /**
+     * Get the value of a option that should be an array.
+     */
+    protected function getArrayOption(InputInterface $input, string $option): array
+    {
+        $value = [];
+
+        if ($input->hasOption($option)) {
+            $value = $input->getOption($option);
+        }
+
+        if (!is_array($value)) {
+            throw new RuntimeException(sprintf('The "--%s" option must be an array', $option));
+        }
+
+        return $value;
+    }
+
+    /**
      * Get the value of a option that should be boolean.
      */
     protected function getBooleanOption(InputInterface $input, string $option): bool

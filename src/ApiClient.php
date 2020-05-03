@@ -287,6 +287,16 @@ class ApiClient
     }
 
     /**
+     * Invalidate the content delivery network cache for the given project environment.
+     */
+    public function invalidateCache(int $projectId, string $environment, array $paths)
+    {
+        $this->request('post', "/projects/{$projectId}/environments/$environment/invalidate-cache", [
+            'paths' => $paths,
+        ]);
+    }
+
+    /**
      * Checks if the client is authenticated with the Ymir API.
      */
     public function isAuthenticated(): bool
