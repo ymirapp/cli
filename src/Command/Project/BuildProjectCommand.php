@@ -19,11 +19,11 @@ use Symfony\Component\Console\Input\InputInterface;
 use Ymir\Cli\ApiClient;
 use Ymir\Cli\Build\BuildStepInterface;
 use Ymir\Cli\CliConfiguration;
-use Ymir\Cli\Command\AbstractCommand;
+use Ymir\Cli\Command\AbstractProjectCommand;
 use Ymir\Cli\Console\OutputStyle;
 use Ymir\Cli\ProjectConfiguration;
 
-class BuildProjectCommand extends AbstractCommand
+class BuildProjectCommand extends AbstractProjectCommand
 {
     /**
      * The name of the command.
