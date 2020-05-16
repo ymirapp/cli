@@ -144,6 +144,18 @@ class ProjectConfiguration implements Arrayable
     }
 
     /**
+     * Get the project type.
+     */
+    public function getProjectType(): string
+    {
+        if (empty($this->configuration['type'])) {
+            throw new RuntimeException('No "type" found in ymir.yml file');
+        }
+
+        return (string) $this->configuration['type'];
+    }
+
+    /**
      * Check if the project configuration file has configuration information for the given environment.
      */
     public function hasEnvironment(string $environment): bool
