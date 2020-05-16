@@ -16,6 +16,7 @@ namespace Ymir\Cli\Build;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Finder\SplFileInfo;
+use Ymir\Cli\ProjectConfiguration;
 
 class CopyWordPressFilesStep implements BuildStepInterface
 {
@@ -34,6 +35,13 @@ class CopyWordPressFilesStep implements BuildStepInterface
     private $filesystem;
 
     /**
+     * The Ymir project configuration.
+     *
+     * @var ProjectConfiguration
+     */
+    private $projectConfiguration;
+
+    /**
      * The project directory where the project files are copied from.
      *
      * @var string
@@ -43,10 +51,11 @@ class CopyWordPressFilesStep implements BuildStepInterface
     /**
      * Constructor.
      */
-    public function __construct(string $buildDirectory, string $projectDirectory, Filesystem $filesystem)
+    public function __construct(string $buildDirectory, ProjectConfiguration $projectConfiguration, string $projectDirectory, Filesystem $filesystem)
     {
         $this->buildDirectory = rtrim($buildDirectory, '/');
         $this->filesystem = $filesystem;
+        $this->projectConfiguration = $projectConfiguration;
         $this->projectDirectory = rtrim($projectDirectory, '/');
     }
 
@@ -98,9 +107,14 @@ class CopyWordPressFilesStep implements BuildStepInterface
             ->followLinks()
             ->ignoreVcs(true)
             ->ignoreDotFiles(false);
+        $projectType = $this->projectConfiguration->getProjectType();
 
         if (is_readable($this->projectDirectory.'/.gitignore')) {
             $finder->ignoreVCSIgnored(true);
+        }
+
+        if ('wordpress' === $projectType) {
+            $finder->exclude('wp-content/uploads');
         }
 
         return $finder;
