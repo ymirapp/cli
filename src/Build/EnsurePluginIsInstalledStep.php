@@ -67,7 +67,7 @@ class EnsurePluginIsInstalledStep implements BuildStepInterface
         $process->run();
 
         if (!$process->isSuccessful()) {
-            throw new RuntimeException($process->getOutput());
+            throw new RuntimeException($process->getErrorOutput());
         }
 
         $plugins = collect(json_decode($process->getOutput()));
