@@ -15,7 +15,7 @@ namespace Ymir\Cli\Build;
 
 use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Filesystem\Filesystem;
-use Symfony\Component\Process\Process;
+use Ymir\Cli\WpCli;
 
 class EnsurePluginIsInstalledStep implements BuildStepInterface
 {
@@ -63,22 +63,7 @@ class EnsurePluginIsInstalledStep implements BuildStepInterface
      */
     public function perform(string $environment)
     {
-        $process = Process::fromShellCommandline(sprintf('%s plugin list --fields=file --format=json', rtrim($this->buildDirectory, '/').'/bin/wp'), $this->buildDirectory);
-        $process->run();
-
-        if (!$process->isSuccessful()) {
-            throw new RuntimeException($process->getErrorOutput());
-        }
-
-        $plugins = collect(json_decode($process->getOutput()));
-
-        if ($plugins->isEmpty()) {
-            throw new RuntimeException('Unable to get the list of installed plugins');
-        }
-
-        if (!$plugins->contains(function (\stdClass $plugin) {
-            return !empty($plugin->file) && preg_match('/ymir\.php$/', $plugin->file);
-        })) {
+        if (WpCli::isPluginInstalled('ymir', rtrim($this->buildDirectory, '/').'/bin/wp', $this->buildDirectory)) {
             throw new RuntimeException('Ymir plugin not found');
         }
     }
