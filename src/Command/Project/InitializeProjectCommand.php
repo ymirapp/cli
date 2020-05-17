@@ -22,9 +22,11 @@ use Ymir\Cli\ApiClient;
 use Ymir\Cli\CliConfiguration;
 use Ymir\Cli\Command\AbstractProjectCommand;
 use Ymir\Cli\Command\Database\CreateDatabaseCommand;
+use Ymir\Cli\Command\InstallPluginCommand;
 use Ymir\Cli\Command\Provider\ConnectProviderCommand;
 use Ymir\Cli\Console\OutputStyle;
 use Ymir\Cli\ProjectConfiguration;
+use Ymir\Cli\WpCli;
 
 class InitializeProjectCommand extends AbstractProjectCommand
 {
@@ -109,6 +111,10 @@ class InitializeProjectCommand extends AbstractProjectCommand
         $this->projectConfiguration->createNew($project, $databaseName, $projectType);
 
         $output->infoWithDelayWarning('Project initialized');
+
+        if (!$this->isPluginInstalled($projectType) && $output->confirm('Would you like to install the Ymir WordPress plugin?')) {
+            $this->invoke($output, InstallPluginCommand::NAME);
+        }
     }
 
     /**
@@ -186,5 +192,14 @@ class InitializeProjectCommand extends AbstractProjectCommand
         }
 
         return $providers;
+    }
+
+    /**
+     * Checks if the plugin is already installed.
+     */
+    private function isPluginInstalled(string $projectType): bool
+    {
+        return ('wordpress' === $projectType && WpCli::isInstalledGlobally() && WpCli::isPluginInstalled('ymir'))
+            || ('bedrock' === $projectType && false !== strpos((string) file_get_contents('./composer.json'), 'ymirapp/wordpress-plugin'));
     }
 }

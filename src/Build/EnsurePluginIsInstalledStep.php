@@ -14,40 +14,23 @@ declare(strict_types=1);
 namespace Ymir\Cli\Build;
 
 use Symfony\Component\Console\Exception\RuntimeException;
-use Symfony\Component\Filesystem\Filesystem;
 use Ymir\Cli\WpCli;
 
 class EnsurePluginIsInstalledStep implements BuildStepInterface
 {
     /**
-     * The build directory where the project files are copied to.
+     * The bin directory where the WP-CLI was installed.
      *
      * @var string
      */
-    private $buildDirectory;
-
-    /**
-     * The file system.
-     *
-     * @var Filesystem
-     */
-    private $filesystem;
-
-    /**
-     * The directory where the stub files are.
-     *
-     * @var string
-     */
-    private $stubDirectory;
+    private $binDirectory;
 
     /**
      * Constructor.
      */
-    public function __construct(string $buildDirectory, Filesystem $filesystem, string $stubDirectory)
+    public function __construct(string $buildDirectory)
     {
-        $this->buildDirectory = rtrim($buildDirectory, '/');
-        $this->filesystem = $filesystem;
-        $this->stubDirectory = rtrim($stubDirectory, '/');
+        $this->binDirectory = rtrim($buildDirectory, '/').'/bin';
     }
 
     /**
@@ -63,7 +46,7 @@ class EnsurePluginIsInstalledStep implements BuildStepInterface
      */
     public function perform(string $environment)
     {
-        if (WpCli::isPluginInstalled('ymir', rtrim($this->buildDirectory, '/').'/bin/wp', $this->buildDirectory)) {
+        if (!WpCli::isPluginInstalled('ymir', $this->binDirectory, 'wp')) {
             throw new RuntimeException('Ymir plugin not found');
         }
     }
