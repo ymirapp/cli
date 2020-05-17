@@ -55,6 +55,7 @@ services:
         - '@Ymir\Cli\Build\DownloadWpCliStep'
         - '@Ymir\Cli\Build\EnsurePluginIsInstalledStep'
         - '@Ymir\Cli\Build\CopyMustUsePluginStep'
+        - '@Ymir\Cli\Build\ExecuteBuildCommandsStep'
         - '@Ymir\Cli\Build\ModifyWordPressConfigurationStep'
         - '@Ymir\Cli\Build\ExtractAssetFilesStep'
         - '@Ymir\Cli\Build\CompressBuildFilesStep'
