@@ -94,6 +94,16 @@ class ApiClient
     }
 
     /**
+     * Create a new DNS zone on the given cloud provider.
+     */
+    public function createDnsZone(int $providerId, string $name)
+    {
+        return $this->request('post', "/providers/{$providerId}/zones", [
+            'name' => $name,
+        ]);
+    }
+
+    /**
      * Create a new project with the given cloud provider.
      */
     public function createProject(int $providerId, string $name, string $region): Collection
@@ -206,6 +216,14 @@ class ApiClient
     public function getDeployment(int $deploymentId): Collection
     {
         return $this->request('get', "/deployments/{$deploymentId}");
+    }
+
+    /**
+     * Get the DNS zone details.
+     */
+    public function getDnsZone(int $zoneId): Collection
+    {
+        return $this->request('get', "/zones/{$zoneId}");
     }
 
     /**
