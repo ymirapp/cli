@@ -227,6 +227,14 @@ class ApiClient
     }
 
     /**
+     * Get the DNS zones that belong to the given team.
+     */
+    public function getDnsZones(int $teamId): Collection
+    {
+        return $this->request('get', "/teams/{$teamId}/zones");
+    }
+
+    /**
      * Get the project environment details.
      */
     public function getEnvironment(int $projectId, string $environment): Collection
