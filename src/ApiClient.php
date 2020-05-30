@@ -145,6 +145,14 @@ class ApiClient
     }
 
     /**
+     * Delete the given DNS zone.
+     */
+    public function deleteDnsZone(int $zoneId)
+    {
+        $this->request('delete', "/zones/{$zoneId}");
+    }
+
+    /**
      * Delete the given project.
      */
     public function deleteProject(int $projectId, bool $deleteResources = false)
