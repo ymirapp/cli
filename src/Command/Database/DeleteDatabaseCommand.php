@@ -58,9 +58,7 @@ class DeleteDatabaseCommand extends AbstractCommand
             throw new RuntimeException(sprintf('The database with the ID or name "%s" is already being deleted', $idOrName));
         }
 
-        if (!$this->getBooleanOption($input, 'no-interaction')
-            && !$output->confirm('Are you sure you want to delete this database?', false)
-        ) {
+        if ($input->isInteractive() && !$output->confirm('Are you sure you want to delete this database?', false)) {
             return;
         }
 
