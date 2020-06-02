@@ -52,7 +52,7 @@
         <priority>3</priority>
         <properties>
             <property name="minimum" description="Minimum length for a variable, property or parameter name" value="3"/>
-            <property name="exceptions" value="id,_,__" />
+            <property name="exceptions" value="id" />
         </properties>
     </rule>
 </ruleset>
