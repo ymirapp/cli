@@ -61,6 +61,20 @@ class ApiClient
     }
 
     /**
+     * Change the value of the DNS record in the given DNS zone ID or name.
+     */
+    public function changeDnsRecord($zoneIdOrName, string $type, string $name, string $value)
+    {
+        $zone = $this->getDnsZone($zoneIdOrName);
+
+        $this->request('put', "/zones/{$zone['id']}/records", [
+            'type' => $type,
+            'name' => $name,
+            'value' => $value,
+        ]);
+    }
+
+    /**
      * Create a new database on the given network.
      */
     public function createDatabase(string $name, int $networkId, string $type, int $storage = 100, bool $public = false): Collection
