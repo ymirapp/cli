@@ -27,6 +27,7 @@ parameters:
       config: '.php_cs'
     phplint: ~
     phpmd:
+      exclude: ['ApiClient.php']
       ruleset: ['phpmd.xml']
     phpstan:
       ignore_patterns: ['/^stubs/']

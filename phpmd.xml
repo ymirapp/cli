@@ -31,7 +31,7 @@
         <priority>3</priority>
         <properties>
             <property name="maxmethods" description="The method count reporting threshold" value="15"/>
-            <property name="ignorepattern" description="Ignore methods matching this regex" value="(^(add|set|get|is|has|with|test))i"/>
+            <property name="ignorepattern" description="Ignore methods matching this regex" value="(^(add|change|set|get|is|has|with|test))i"/>
         </properties>
     </rule>
     <rule rf="rulesets/naming.xml/LongVariable"
