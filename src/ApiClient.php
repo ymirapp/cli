@@ -203,6 +203,27 @@ class ApiClient
     }
 
     /**
+     * Get the database information from the given database ID or name.
+     */
+    public function getDatabase($idOrName): array
+    {
+        $database = null;
+        $databases = $this->getDatabases($this->cliConfiguration->getActiveTeamId());
+
+        if (is_numeric($idOrName)) {
+            $database = $databases->firstWhere('id', $idOrName);
+        } elseif (is_string($idOrName)) {
+            $database = $databases->firstWhere('name', $idOrName);
+        }
+
+        if (!is_array($database) || !isset($database['id']) || !is_numeric($database['id'])) {
+            throw new RuntimeException(sprintf('Unable to find a database with "%s" as the ID or name', $idOrName));
+        }
+
+        return $database;
+    }
+
+    /**
      * Get the databases that belong to the given team.
      */
     public function getDatabases(int $teamId): Collection
@@ -227,11 +248,24 @@ class ApiClient
     }
 
     /**
-     * Get the DNS zone details.
+     * Get the DNS zone information from the given zone ID or name.
      */
-    public function getDnsZone(int $zoneId): Collection
+    public function getDnsZone($idOrName): array
     {
-        return $this->request('get', "/zones/{$zoneId}");
+        $zone = null;
+        $zones = $this->getDnsZones($this->cliConfiguration->getActiveTeamId());
+
+        if (is_numeric($idOrName)) {
+            $zone = $zones->firstWhere('id', $idOrName);
+        } elseif (is_string($idOrName)) {
+            $zone = $zones->firstWhere('name', $idOrName);
+        }
+
+        if (!is_array($zone) || !isset($zone['id']) || !is_numeric($zone['id'])) {
+            throw new RuntimeException(sprintf('Unable to find a DNS zone with "%s" as the ID or name', $idOrName));
+        }
+
+        return $zone;
     }
 
     /**

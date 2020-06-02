@@ -50,35 +50,14 @@ class DeleteDnsZoneCommand extends AbstractCommand
             throw new RuntimeException('The "zone" argument must be a string value');
         }
 
-        $zoneId = $this->getZoneId($idOrName);
+        $zone = $this->apiClient->getDnsZone($idOrName);
 
         if ($input->isInteractive() && !$output->confirm('Are you sure you want to delete this DNS zone?', false)) {
             return;
         }
 
-        $this->apiClient->deleteDnsZone($zoneId);
+        $this->apiClient->deleteDnsZone((int) $zone['id']);
 
         $output->info('DNS zone deleted successfully');
-    }
-
-    /**
-     * Get the DNS zone ID from the given DNS zone ID or name.
-     */
-    private function getZoneId(string $idOrName): int
-    {
-        $zone = null;
-        $zones = $this->apiClient->getDnsZones($this->cliConfiguration->getActiveTeamId());
-
-        if (is_numeric($idOrName)) {
-            $zone = $zones->firstWhere('id', $idOrName);
-        } elseif (is_string($idOrName)) {
-            $zone = $zones->firstWhere('name', $idOrName);
-        }
-
-        if (!is_array($zone) || !isset($zone['id']) || !is_numeric($zone['id'])) {
-            throw new RuntimeException(sprintf('Unable to find a DNS zone with "%s" as the ID or name', $idOrName));
-        }
-
-        return (int) $zone['id'];
     }
 }

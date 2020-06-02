@@ -52,7 +52,7 @@ class DeleteDatabaseCommand extends AbstractCommand
             throw new RuntimeException('The "database" argument must be a string value');
         }
 
-        $database = $this->getDatabase($idOrName);
+        $database = $this->apiClient->getDatabase($idOrName);
 
         if (isset($database['status']) && 'deleting' === $database['status']) {
             throw new RuntimeException(sprintf('The database with the ID or name "%s" is already being deleted', $idOrName));
@@ -65,26 +65,5 @@ class DeleteDatabaseCommand extends AbstractCommand
         $this->apiClient->deleteDatabase((int) $database['id']);
 
         $output->infoWithDelayWarning('Database deleted');
-    }
-
-    /**
-     * Get the database information from the given database ID or name.
-     */
-    private function getDatabase(string $idOrName): array
-    {
-        $database = null;
-        $databases = $this->apiClient->getDatabases($this->cliConfiguration->getActiveTeamId());
-
-        if (is_numeric($idOrName)) {
-            $database = $databases->firstWhere('id', $idOrName);
-        } elseif (is_string($idOrName)) {
-            $database = $databases->firstWhere('name', $idOrName);
-        }
-
-        if (!is_array($database) || !isset($database['id']) || !is_numeric($database['id'])) {
-            throw new RuntimeException(sprintf('Unable to find a database with "%s" as the ID or name', $idOrName));
-        }
-
-        return $database;
     }
 }
