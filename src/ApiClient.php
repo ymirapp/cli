@@ -262,6 +262,16 @@ class ApiClient
     }
 
     /**
+     * Get the DNS records belonging to the given DNS zone.
+     */
+    public function getDnsRecords($zoneIdOrName): Collection
+    {
+        $zone = $this->getDnsZone($zoneIdOrName);
+
+        return $this->request('get', "/zones/{$zone['id']}/records");
+    }
+
+    /**
      * Get the DNS zone information from the given zone ID or name.
      */
     public function getDnsZone($idOrName): array
