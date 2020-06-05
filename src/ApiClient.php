@@ -159,6 +159,14 @@ class ApiClient
     }
 
     /**
+     * Delete the given DNS record.
+     */
+    public function deleteDnsRecord(int $zoneId, int $recordId)
+    {
+        $this->request('delete', "/zones/{$zoneId}/records/{$recordId}");
+    }
+
+    /**
      * Delete the given DNS zone.
      */
     public function deleteDnsZone(int $zoneId)
