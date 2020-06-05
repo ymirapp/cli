@@ -66,7 +66,7 @@ class ConnectProviderCommand extends AbstractCommand
 
         $this->apiClient->createProvider($name, $credentials, $this->cliConfiguration->getActiveTeamId());
 
-        $output->info('Cloud provider connected successfully');
+        $output->info('Cloud provider connected');
     }
 
     /**

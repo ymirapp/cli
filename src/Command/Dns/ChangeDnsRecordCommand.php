@@ -64,6 +64,6 @@ class ChangeDnsRecordCommand extends AbstractCommand
 
         $this->apiClient->changeDnsRecord($zoneIdOrName, $type, $name, $value);
 
-        $output->info('DNS record change applied successfully');
+        $output->info('DNS record change applied');
     }
 }

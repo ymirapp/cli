@@ -101,7 +101,7 @@ class StartAndMonitorDeploymentStep implements DeploymentStepInterface
             $this->apiClient->cancelDeployment($deploymentId);
             $this->waitForDeploymentStatusChange($deploymentId, 'cancelling');
 
-            $output->info('Deployment cancelled successfully');
+            $output->info('Deployment cancelled');
 
             exit;
         });

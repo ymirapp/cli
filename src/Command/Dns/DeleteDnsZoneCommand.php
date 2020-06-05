@@ -58,6 +58,6 @@ class DeleteDnsZoneCommand extends AbstractCommand
 
         $this->apiClient->deleteDnsZone((int) $zone['id']);
 
-        $output->info('DNS zone deleted successfully');
+        $output->info('DNS zone deleted');
     }
 }
