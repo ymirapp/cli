@@ -225,6 +225,14 @@ class ApiClient
     }
 
     /**
+     * Get the DNS zones that belong to the given team.
+     */
+    public function getCertificates(int $teamId): Collection
+    {
+        return $this->request('get', "/teams/{$teamId}/certificates");
+    }
+
+    /**
      * Get the database information from the given database ID or name.
      */
     public function getDatabase($idOrName): array
