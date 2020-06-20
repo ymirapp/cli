@@ -151,6 +151,14 @@ class ApiClient
     }
 
     /**
+     * Delete the given SSL certificate.
+     */
+    public function deleteCertificate(int $certificateId)
+    {
+        $this->request('delete', "/certificates/{$certificateId}");
+    }
+
+    /**
      * Delete the given database.
      */
     public function deleteDatabase(int $databaseId)
