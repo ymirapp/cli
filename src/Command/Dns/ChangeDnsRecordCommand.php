@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace Ymir\Cli\Command\Dns;
 
-use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Ymir\Cli\Command\AbstractCommand;
@@ -47,22 +46,7 @@ class ChangeDnsRecordCommand extends AbstractCommand
      */
     protected function perform(InputInterface $input, OutputStyle $output)
     {
-        $name = $input->getArgument('name');
-        $type = $input->getArgument('type');
-        $value = $input->getArgument('value');
-        $zoneIdOrName = $input->getArgument('zone');
-
-        if (null === $name || is_array($name)) {
-            throw new RuntimeException('The "name" argument must be a string value');
-        } elseif (null === $type || is_array($type)) {
-            throw new RuntimeException('The "type" argument must be a string value');
-        } elseif (null === $value || is_array($value)) {
-            throw new RuntimeException('The "value" argument must be a string value');
-        } elseif (null === $zoneIdOrName || is_array($zoneIdOrName)) {
-            throw new RuntimeException('The "zone" argument must be a string value');
-        }
-
-        $this->apiClient->changeDnsRecord($zoneIdOrName, $type, $name, $value);
+        $this->apiClient->changeDnsRecord($this->getStringArgument($input, 'zone'), $this->getStringArgument($input, 'type'), $this->getStringArgument($input, 'name'), $this->getStringArgument($input, 'value'));
 
         $output->info('DNS record change applied');
     }

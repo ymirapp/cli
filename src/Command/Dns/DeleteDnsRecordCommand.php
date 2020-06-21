@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace Ymir\Cli\Command\Dns;
 
-use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -48,11 +47,9 @@ class DeleteDnsRecordCommand extends AbstractCommand
      */
     protected function perform(InputInterface $input, OutputStyle $output)
     {
-        $zoneIdOrName = $input->getArgument('zone');
+        $zoneIdOrName = $this->getStringArgument($input, 'zone');
 
-        if (null === $zoneIdOrName || is_array($zoneIdOrName)) {
-            throw new RuntimeException('The "zone" argument must be a string value');
-        } elseif ($input->isInteractive() && !$output->confirm('Are you sure you want to delete these DNS records?', false)) {
+        if ($input->isInteractive() && !$output->confirm('Are you sure you want to delete these DNS records?', false)) {
             return;
         }
 

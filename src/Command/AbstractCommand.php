@@ -15,6 +15,7 @@ namespace Ymir\Cli\Command;
 
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Exception\InvalidArgumentException;
 use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Input\InputInterface;
@@ -76,7 +77,7 @@ abstract class AbstractCommand extends Command
         }
 
         if (!is_array($value)) {
-            throw new RuntimeException(sprintf('The "--%s" option must be an array', $option));
+            throw new InvalidArgumentException(sprintf('The "--%s" option must be an array', $option));
         }
 
         return $value;
@@ -104,10 +105,24 @@ abstract class AbstractCommand extends Command
         if (null === $value) {
             return $value;
         } elseif (is_array($value) || is_numeric($value)) {
-            throw new RuntimeException(sprintf('The "--%s" option must be a numeric value', $option));
+            throw new InvalidArgumentException(sprintf('The "--%s" option must be a numeric value', $option));
         }
 
         return (int) $value;
+    }
+
+    /**
+     * Get the value of an argument that should be a string.
+     */
+    protected function getStringArgument(InputInterface $input, string $argument): string
+    {
+        $value = $input->getArgument($argument);
+
+        if (!is_string($value)) {
+            throw new InvalidArgumentException(sprintf('The "%s" argument must be a string value', $argument));
+        }
+
+        return $value;
     }
 
     /**
@@ -124,7 +139,7 @@ abstract class AbstractCommand extends Command
         if (null === $value) {
             return $value;
         } elseif (!is_string($value)) {
-            throw new RuntimeException(sprintf('The "--%s" option must be a string value', $option));
+            throw new InvalidArgumentException(sprintf('The "--%s" option must be a string value', $option));
         }
 
         return $value;

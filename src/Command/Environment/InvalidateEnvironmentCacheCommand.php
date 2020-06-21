@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace Ymir\Cli\Command\Environment;
 
-use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -46,12 +45,6 @@ class InvalidateEnvironmentCacheCommand extends AbstractProjectCommand
      */
     protected function perform(InputInterface $input, OutputStyle $output)
     {
-        $environment = $input->getArgument('environment');
-
-        if (!is_string($environment)) {
-            throw new RuntimeException('Invalid "environment" argument given');
-        }
-
-        $this->apiClient->invalidateCache($this->projectConfiguration->getProjectId(), $environment, $this->getArrayOption($input, 'path'));
+        $this->apiClient->invalidateCache($this->projectConfiguration->getProjectId(), $this->getStringArgument($input, 'environment'), $this->getArrayOption($input, 'path'));
     }
 }

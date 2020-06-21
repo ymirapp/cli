@@ -45,13 +45,7 @@ class GetEnvironmentUrlCommand extends AbstractProjectCommand
      */
     protected function perform(InputInterface $input, OutputStyle $output)
     {
-        $environment = $input->getArgument('environment');
-
-        if (!is_string($environment)) {
-            throw new RuntimeException('Invalid "environment" argument given');
-        }
-
-        $environment = $this->apiClient->getEnvironment($this->projectConfiguration->getProjectId(), $environment);
+        $environment = $this->apiClient->getEnvironment($this->projectConfiguration->getProjectId(), $this->getStringArgument($input, 'environment'));
 
         if (!$environment->has('vanity_domain')) {
             throw new RuntimeException('Unable to get the environment domain');

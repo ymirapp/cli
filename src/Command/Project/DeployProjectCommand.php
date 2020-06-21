@@ -71,11 +71,7 @@ class DeployProjectCommand extends AbstractProjectCommand
      */
     protected function perform(InputInterface $input, OutputStyle $output)
     {
-        $environment = $input->getArgument('environment');
-
-        if (!is_string($environment)) {
-            throw new RuntimeException('Invalid "environment" argument given');
-        }
+        $environment = $this->getStringArgument($input, 'environment');
 
         $this->invoke($output, ValidateProjectCommand::NAME, ['environments' => $environment]);
         $this->invoke($output, BuildProjectCommand::NAME, ['environment' => $environment]);

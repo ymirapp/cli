@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace Ymir\Cli\Command\Team;
 
-use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Ymir\Cli\Command\AbstractCommand;
@@ -44,13 +43,7 @@ class CreateTeamCommand extends AbstractCommand
      */
     protected function perform(InputInterface $input, OutputStyle $output)
     {
-        $name = $input->getArgument('name');
-
-        if (!is_string($name)) {
-            throw new RuntimeException('Invalid "name" argument given');
-        }
-
-        $this->apiClient->createTeam($name);
+        $this->apiClient->createTeam($this->getStringArgument($input, 'name'));
 
         $output->info('Team created');
     }

@@ -45,25 +45,14 @@ class CreateDatabaseUserCommand extends AbstractCommand
      */
     protected function perform(InputInterface $input, OutputStyle $output)
     {
-        $idOrName = $input->getArgument('database');
-
-        if (null === $idOrName || is_array($idOrName)) {
-            throw new RuntimeException('The "database" argument must be a string value');
-        }
-
-        $database = $this->apiClient->getDatabase($idOrName);
+        $databaseIdOrName = $this->getStringArgument($input, 'database');
+        $database = $this->apiClient->getDatabase($databaseIdOrName);
 
         if (isset($database['status']) && 'available' !== $database['status']) {
-            throw new RuntimeException(sprintf('The database with the ID or name "%s" is unavailable', $idOrName));
+            throw new RuntimeException(sprintf('The database with the ID or name "%s" is unavailable', $databaseIdOrName));
         }
 
-        $username = $input->getArgument('username');
-
-        if (null === $username || is_array($username)) {
-            throw new RuntimeException('The "username" argument must be a string value');
-        }
-
-        $user = $this->apiClient->createDatabaseUser((int) $database['id'], $username);
+        $user = $this->apiClient->createDatabaseUser((int) $database['id'], $this->getStringArgument($input, 'username'));
 
         $output->horizontalTable(
             ['Username', 'Password'],

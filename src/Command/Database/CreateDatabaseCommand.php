@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Ymir\Cli\Command\Database;
 
+use Symfony\Component\Console\Exception\InvalidArgumentException;
 use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Helper\TableSeparator;
 use Symfony\Component\Console\Input\InputArgument;
@@ -88,7 +89,7 @@ class CreateDatabaseCommand extends AbstractCommand
         $networkId = $this->getNumericOption($input, 'network');
 
         if (null !== $networkId && !$networks->contains('id', $networkId)) {
-            throw new RuntimeException('The given network ID doesn\'t belong to the currently active team');
+            throw new InvalidArgumentException('The given network ID doesn\'t belong to the currently active team');
         } elseif (null === $networkId && 1 === count($networks)) {
             $networkId = $networks[0]['id'];
         } elseif (null === $networkId && 1 !== count($networks)) {
@@ -126,7 +127,7 @@ class CreateDatabaseCommand extends AbstractCommand
         $storage = $output->ask('What should the maximum amount of storage (in GB) allocated to the database be?', '50');
 
         if (!is_numeric($storage)) {
-            throw new RuntimeException('The maximum allocated storage needs to be a numeric value');
+            throw new InvalidArgumentException('The maximum allocated storage needs to be a numeric value');
         }
 
         return (int) $storage;
@@ -152,7 +153,7 @@ class CreateDatabaseCommand extends AbstractCommand
         $type = $this->getStringOption($input, 'type');
 
         if (null !== $type && !$types->has($type)) {
-            throw new RuntimeException('The given type is not a valid database type');
+            throw new InvalidArgumentException('The given type is not a valid database type');
         } elseif (null === $type) {
             $type = (string) $output->choice('What type of database should it be?', $types->all());
         }

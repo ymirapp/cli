@@ -141,13 +141,11 @@ class InitializeProjectCommand extends AbstractProjectCommand
     /**
      * Get the database name from the console input.
      */
-    private function getDatabaseName(InputInterface $input): string
+    private function getDatabaseName(InputInterface $input): ?string
     {
-        $databaseName = $input->getOption('database') ?? '';
+        $databaseName = $this->getStringOption($input, 'database');
 
-        if (!is_string($databaseName)) {
-            throw new RuntimeException('Invalid "database" option given');
-        } elseif (empty($databaseName)) {
+        if (empty($databaseName)) {
             return $databaseName;
         }
 

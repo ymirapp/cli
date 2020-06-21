@@ -35,7 +35,7 @@ class CreateDnsZoneCommand extends AbstractCommand
     {
         $this
             ->setName(self::NAME)
-            ->addArgument('name', InputArgument::OPTIONAL, 'The name of the domain managed by the created DNS zone')
+            ->addArgument('name', InputArgument::REQUIRED, 'The name of the domain managed by the created DNS zone')
             ->setDescription('Create a new DNS zone');
     }
 
@@ -45,13 +45,7 @@ class CreateDnsZoneCommand extends AbstractCommand
     protected function perform(InputInterface $input, OutputStyle $output)
     {
         $attempts = 0;
-        $name = $input->getArgument('name');
-
-        if (!is_string($name)) {
-            $name = $output->askSlug('What is the name of the domain managed by the DNS zone?');
-        }
-
-        $zone = $this->apiClient->createDnsZone($this->determineCloudProvider($output), $name);
+        $zone = $this->apiClient->createDnsZone($this->determineCloudProvider($output), $this->getStringArgument($input, 'name'));
 
         while (empty($zone['name_servers']) && $attempts < 10) {
             $zone = $this->apiClient->getDnsZone($zone['id']);

@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace Ymir\Cli\Command\Dns;
 
-use Symfony\Component\Console\Exception\RuntimeException;
+use Symfony\Component\Console\Exception\InvalidArgumentException;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Ymir\Cli\Command\AbstractCommand;
@@ -46,8 +46,8 @@ class ListDnsRecordsCommand extends AbstractCommand
     {
         $idOrName = $input->getArgument('zone');
 
-        if (null === $idOrName || is_array($idOrName)) {
-            throw new RuntimeException('The "zone" argument must be a string value');
+        if (!is_string($idOrName)) {
+            throw new InvalidArgumentException('The "zone" argument must be a string value');
         }
 
         $records = $this->apiClient->getDnsRecords($idOrName);

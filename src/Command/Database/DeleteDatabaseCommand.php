@@ -46,16 +46,11 @@ class DeleteDatabaseCommand extends AbstractCommand
      */
     protected function perform(InputInterface $input, OutputStyle $output)
     {
-        $idOrName = $input->getArgument('database');
-
-        if (null === $idOrName || is_array($idOrName)) {
-            throw new RuntimeException('The "database" argument must be a string value');
-        }
-
-        $database = $this->apiClient->getDatabase($idOrName);
+        $databaseIdOrName = $this->getStringArgument($input, 'database');
+        $database = $this->apiClient->getDatabase($databaseIdOrName);
 
         if (isset($database['status']) && 'deleting' === $database['status']) {
-            throw new RuntimeException(sprintf('The database with the ID or name "%s" is already being deleted', $idOrName));
+            throw new RuntimeException(sprintf('The database with the ID or name "%s" is already being deleted', $databaseIdOrName));
         }
 
         if ($input->isInteractive() && !$output->confirm('Are you sure you want to delete this database?', false)) {

@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace Ymir\Cli\Command\Project;
 
-use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Ymir\Cli\ApiClient;
@@ -68,11 +67,7 @@ class BuildProjectCommand extends AbstractProjectCommand
      */
     protected function perform(InputInterface $input, OutputStyle $output)
     {
-        $environment = $input->getArgument('environment');
-
-        if (!is_string($environment)) {
-            throw new RuntimeException('Invalid "environment" argument given');
-        }
+        $environment = $this->getStringArgument($input, 'environment');
 
         $output->info('Building project');
 

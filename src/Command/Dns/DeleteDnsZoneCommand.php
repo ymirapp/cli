@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace Ymir\Cli\Command\Dns;
 
-use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Ymir\Cli\Command\AbstractCommand;
@@ -44,13 +43,7 @@ class DeleteDnsZoneCommand extends AbstractCommand
      */
     protected function perform(InputInterface $input, OutputStyle $output)
     {
-        $idOrName = $input->getArgument('zone');
-
-        if (null === $idOrName || is_array($idOrName)) {
-            throw new RuntimeException('The "zone" argument must be a string value');
-        }
-
-        $zone = $this->apiClient->getDnsZone($idOrName);
+        $zone = $this->apiClient->getDnsZone($this->getStringArgument($input, 'zone'));
 
         if ($input->isInteractive() && !$output->confirm('Are you sure you want to delete this DNS zone?', false)) {
             return;
