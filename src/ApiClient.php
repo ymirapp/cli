@@ -110,7 +110,7 @@ class ApiClient
     /**
      * Create a new DNS zone on the given cloud provider.
      */
-    public function createDnsZone(int $providerId, string $name)
+    public function createDnsZone(int $providerId, string $name): Collection
     {
         return $this->request('post', "/providers/{$providerId}/zones", [
             'name' => $name,
@@ -131,9 +131,9 @@ class ApiClient
     /**
      * Create a new cloud provider with the given name and credentials.
      */
-    public function createProvider(string $name, array $credentials, int $teamId)
+    public function createProvider(string $name, array $credentials, int $teamId): Collection
     {
-        $this->request('post', "/teams/{$teamId}/providers", [
+        return $this->request('post', "/teams/{$teamId}/providers", [
             'provider' => 'aws',
             'name' => $name,
             'credentials' => $credentials,
@@ -143,9 +143,9 @@ class ApiClient
     /**
      * Create a new team with the given name.
      */
-    public function createTeam(string $name)
+    public function createTeam(string $name): Collection
     {
-        $this->request('post', '/teams', [
+        return $this->request('post', '/teams', [
             'name' => $name,
         ]);
     }
