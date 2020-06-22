@@ -16,6 +16,7 @@ namespace Ymir\Cli\Command\Dns;
 use Symfony\Component\Console\Helper\TableSeparator;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Ymir\Cli\Command\AbstractCommand;
 use Ymir\Cli\Console\OutputStyle;
 
@@ -36,6 +37,7 @@ class CreateDnsZoneCommand extends AbstractCommand
         $this
             ->setName(self::NAME)
             ->addArgument('name', InputArgument::REQUIRED, 'The name of the domain managed by the created DNS zone')
+            ->addOption('provider', null, InputOption::VALUE_REQUIRED, 'The cloud provider region where the DNS zone will created')
             ->setDescription('Create a new DNS zone');
     }
 
@@ -45,7 +47,7 @@ class CreateDnsZoneCommand extends AbstractCommand
     protected function perform(InputInterface $input, OutputStyle $output)
     {
         $attempts = 0;
-        $zone = $this->apiClient->createDnsZone($this->determineCloudProvider($output), $this->getStringArgument($input, 'name'));
+        $zone = $this->apiClient->createDnsZone($this->determineCloudProvider($input, $output, 'Enter the ID of the cloud provider where the DNS zone will be created'), $this->getStringArgument($input, 'name'));
 
         while (empty($zone['name_servers']) && $attempts < 10) {
             $zone = $this->apiClient->getDnsZone($zone['id']);
@@ -58,15 +60,5 @@ class CreateDnsZoneCommand extends AbstractCommand
         }
 
         $output->info('DNS zone created');
-    }
-
-    /**
-     * Determine the cloud provider to use.
-     */
-    private function determineCloudProvider(OutputStyle $output): int
-    {
-        $providers = $this->apiClient->getProviders($this->cliConfiguration->getActiveTeamId());
-
-        return 1 === count($providers) ? $providers[0]['id'] : $output->choiceCollection('Enter the ID of the cloud provider that the project will use', $providers);
     }
 }

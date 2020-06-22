@@ -52,6 +52,46 @@ abstract class AbstractCommand extends Command
     }
 
     /**
+     * Determine the cloud provider to use.
+     */
+    protected function determineCloudProvider(InputInterface $input, OutputStyle $output, string $question): int
+    {
+        $providerId = $this->getStringOption($input, 'provider');
+        $providers = $this->apiClient->getProviders($this->cliConfiguration->getActiveTeamId());
+
+        if (is_numeric($providerId) && $providers->contains('id', $providerId)) {
+            return (int) $providerId;
+        } elseif (is_numeric($providerId) && $providers->contains('id', $providerId)) {
+            throw new InvalidArgumentException('The given "provider" isn\'t available to currently active team');
+        } elseif (!$input->isInteractive()) {
+            throw new InvalidArgumentException('You must use the "--provider" option when running in non-interactive mode');
+        }
+
+        return 1 === count($providers) ? $providers[0]['id'] : $output->choiceCollection($question, $providers);
+    }
+
+    /**
+     * Determine the cloud provider region to use.
+     */
+    protected function determineRegion(InputInterface $input, OutputStyle $output, int $providerId, string $question): string
+    {
+        $region = $this->getStringOption($input, 'region');
+        $regions = $this->apiClient->getRegions($providerId);
+
+        if ($regions->isEmpty()) {
+            throw new RuntimeException('The Ymir API failed to return the cloud provider regions');
+        } elseif (!empty($region) && $regions->contains($region)) {
+            return $region;
+        } elseif (!empty($region) && !$regions->contains($region)) {
+            throw new InvalidArgumentException('The given "region" isn\'t a valid cloud provider region');
+        } elseif (!$input->isInteractive()) {
+            throw new InvalidArgumentException('You must use the "--region" option when running in non-interactive mode');
+        }
+
+        return (string) $output->choice($question, $regions->all());
+    }
+
+    /**
      * {@inheritdoc}
      */
     protected function execute(InputInterface $input, OutputInterface $output)

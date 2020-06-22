@@ -17,7 +17,6 @@ use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Filesystem\Filesystem;
-use Tightenco\Collect\Support\Collection;
 use Ymir\Cli\ApiClient;
 use Ymir\Cli\CliConfiguration;
 use Ymir\Cli\Command\AbstractProjectCommand;
@@ -77,6 +76,21 @@ class InitializeProjectCommand extends AbstractProjectCommand
     /**
      * {@inheritdoc}
      */
+    protected function determineCloudProvider(InputInterface $input, OutputStyle $output, string $question): int
+    {
+        $providers = $this->apiClient->getProviders($this->cliConfiguration->getActiveTeamId());
+
+        if ($providers->isEmpty()) {
+            $output->info('Connecting to a cloud provider');
+            $this->invoke($output, ConnectProviderCommand::NAME);
+        }
+
+        return parent::determineCloudProvider($input, $output, $question);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     protected function perform(InputInterface $input, OutputStyle $output)
     {
         $databaseName = $this->getDatabaseName($input);
@@ -94,19 +108,15 @@ class InitializeProjectCommand extends AbstractProjectCommand
             return;
         }
 
-        $providers = $this->getProviders($output);
-
         $name = $output->askSlug('What is the name of the project');
-        $provider = 1 === count($providers)
-                    ? $providers[0]['id'] :
-                    $output->choiceCollection('Enter the ID of the cloud provider that the project will use', $providers);
-        $region = $output->choice('Enter the name of the region that the project will be in', $this->apiClient->getRegions($provider)->all());
+        $providerId = $this->determineCloudProvider($input, $output, 'Enter the ID of the cloud provider that the project will use');
+        $region = $this->determineRegion($input, $output, $providerId, 'Enter the name of the region that the project will be in');
 
         if (empty($databaseName)) {
             $databaseName = $this->determineDatabaseName($output);
         }
 
-        $project = $this->apiClient->createProject($provider, $name, $region);
+        $project = $this->apiClient->createProject($providerId, $name, $region);
 
         $this->projectConfiguration->createNew($project, $databaseName, $projectType);
 
@@ -174,22 +184,6 @@ class InitializeProjectCommand extends AbstractProjectCommand
         }
 
         return $type;
-    }
-
-    /**
-     * Get the cloud providers.
-     */
-    private function getProviders(OutputStyle $output): Collection
-    {
-        $providers = $this->apiClient->getProviders($this->cliConfiguration->getActiveTeamId());
-
-        if ($providers->isEmpty()) {
-            $output->info('Connecting to a cloud provider');
-            $this->invoke($output, ConnectProviderCommand::NAME);
-            $providers = $this->apiClient->getProviders($this->cliConfiguration->getActiveTeamId());
-        }
-
-        return $providers;
     }
 
     /**
