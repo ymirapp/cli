@@ -44,9 +44,9 @@ class ListCertificatesCommand extends AbstractCommand
         $certificates = $this->apiClient->getCertificates($this->cliConfiguration->getActiveTeamId());
 
         $output->table(
-            ['Id', 'Provider', 'Region', 'Domains', 'Status'],
+            ['Id', 'Provider', 'Region', 'Domains', 'Status', 'In Use'],
             $certificates->map(function (array $certificate) {
-                return [$certificate['id'], $certificate['provider']['name'], $certificate['region'], implode(PHP_EOL, collect($certificate['domains'])->pluck('name')->all()), $certificate['status']];
+                return [$certificate['id'], $certificate['provider']['name'], $certificate['region'], implode(PHP_EOL, collect($certificate['domains'])->pluck('name')->all()), $certificate['status'], $certificate['in_use'] ? 'yes' : 'no'];
             })->all()
         );
     }
