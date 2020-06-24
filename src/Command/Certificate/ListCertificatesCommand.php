@@ -14,10 +14,9 @@ declare(strict_types=1);
 namespace Ymir\Cli\Command\Certificate;
 
 use Symfony\Component\Console\Input\InputInterface;
-use Ymir\Cli\Command\AbstractCommand;
 use Ymir\Cli\Console\OutputStyle;
 
-class ListCertificatesCommand extends AbstractCommand
+class ListCertificatesCommand extends AbstractCertificateCommand
 {
     /**
      * The name of the command.
@@ -46,7 +45,7 @@ class ListCertificatesCommand extends AbstractCommand
         $output->table(
             ['Id', 'Provider', 'Region', 'Domains', 'Status', 'In Use'],
             $certificates->map(function (array $certificate) {
-                return [$certificate['id'], $certificate['provider']['name'], $certificate['region'], implode(PHP_EOL, collect($certificate['domains'])->pluck('name')->all()), $certificate['status'], $certificate['in_use'] ? 'yes' : 'no'];
+                return [$certificate['id'], $certificate['provider']['name'], $certificate['region'], $this->getDomainsList($certificate), $certificate['status'], $certificate['in_use'] ? 'yes' : 'no'];
             })->all()
         );
     }
