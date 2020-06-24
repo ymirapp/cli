@@ -56,7 +56,10 @@ class CreateDnsZoneCommand extends AbstractCommand
         }
 
         if (!empty($zone['name_servers'])) {
-            $output->horizontalTable(['Domain Name', new TableSeparator(), 'Name Servers'], [[$zone['name'], new TableSeparator(), implode(PHP_EOL, $zone['name_servers'])]]);
+            $output->horizontalTable(
+                ['Domain Name', new TableSeparator(), 'Name Servers'],
+                [[$zone['name'], new TableSeparator(), implode(PHP_EOL, $zone['name_servers'])]]
+            );
         }
 
         $output->info('DNS zone created');
