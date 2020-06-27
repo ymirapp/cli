@@ -75,6 +75,17 @@ class ApiClient
     }
 
     /**
+     * Create a new SSL certificate.
+     */
+    public function createCertificate(int $providerId, string $domain, string $region): Collection
+    {
+        return $this->request('post', "/providers/{$providerId}/certificates", [
+            'domain' => $domain,
+            'region' => $region,
+        ]);
+    }
+
+    /**
      * Create a new database on the given network.
      */
     public function createDatabase(string $name, int $networkId, string $type, int $storage = 100, bool $public = false): Collection
@@ -233,7 +244,15 @@ class ApiClient
     }
 
     /**
-     * Get the DNS zones that belong to the given team.
+     * Get the SSL certificates with the given ID.
+     */
+    public function getCertificate(int $certificateId): Collection
+    {
+        return $this->request('get', "/certificates/{$certificateId}");
+    }
+
+    /**
+     * Get the SSL certificates that belong to the given team.
      */
     public function getCertificates(int $teamId): Collection
     {
