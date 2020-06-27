@@ -54,7 +54,7 @@ class GetCertificateInfoCommand extends AbstractCertificateCommand
 
         $output->horizontalTable(
             ['Domains', new TableSeparator(), 'Status', 'Region', 'In Use'],
-            [[implode(PHP_EOL, collect($certificate['domains'])->pluck('name')->all()), new TableSeparator(), $certificate['status'], $certificate['region'], $certificate['in_use'] ? 'yes' : 'no']]
+            [[implode(PHP_EOL, $this->getDomainNames($certificate['domains'])), new TableSeparator(), $certificate['status'], $certificate['region'], $certificate['in_use'] ? 'yes' : 'no']]
         );
 
         $validationRecords = $this->parseCertificateValidationRecords($certificate);
@@ -69,5 +69,15 @@ class GetCertificateInfoCommand extends AbstractCertificateCommand
             );
             $output->warn('The SSL certificate won\'t be issued or renewed if these DNS record(s) don\'t exist.');
         }
+    }
+
+    /**
+     * Get the formatted domain names for a certificate.
+     */
+    private function getDomainNames(array $certificateDomains): array
+    {
+        return collect($certificateDomains)->map(function (array $domain) {
+            return sprintf('%s (%s)', $domain['name'], $domain['validated'] ? '<fg=green>validated</>' : '<fg=red>not validated</>');
+        })->all();
     }
 }
