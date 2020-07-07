@@ -207,6 +207,14 @@ class ApiClient
     }
 
     /**
+     * Delete the given email identity.
+     */
+    public function deleteEmailIdentity(int $identityId)
+    {
+        $this->request('delete', "/email-identities/{$identityId}");
+    }
+
+    /**
      * Delete the given project.
      */
     public function deleteProject(int $projectId, bool $deleteResources = false)
