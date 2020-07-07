@@ -53,8 +53,8 @@ class GetCertificateInfoCommand extends AbstractCertificateCommand
         $certificate = $this->apiClient->getCertificate((int) $certificateId);
 
         $output->horizontalTable(
-            ['Domains', new TableSeparator(), 'Status', 'Region', 'In Use'],
-            [[implode(PHP_EOL, $this->getDomainNames($certificate['domains'])), new TableSeparator(), $certificate['status'], $certificate['region'], $certificate['in_use'] ? 'yes' : 'no']]
+            ['Domains', new TableSeparator(), 'Provider', 'Region', new TableSeparator(), 'Status', 'In Use'],
+            [[implode(PHP_EOL, $this->getDomainNames($certificate['domains'])), new TableSeparator(), $certificate['provider']['name'], $certificate['region'], new TableSeparator(), $certificate['status'], $certificate['in_use'] ? 'yes' : 'no']]
         );
 
         $validationRecords = $this->parseCertificateValidationRecords($certificate);

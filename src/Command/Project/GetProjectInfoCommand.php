@@ -46,8 +46,8 @@ class GetProjectInfoCommand extends AbstractProjectCommand
         $project = $this->apiClient->getProject($this->projectConfiguration->getProjectId());
 
         $output->horizontalTable(
-            ['Name', 'Region'],
-            [[$project['name'], $project['region']]]
+            ['Name', 'Provider', 'Region'],
+            [[$project['name'], $project['provider']['name'], $project['region']]]
         );
 
         $this->invoke($output, GetEnvironmentInfoCommand::NAME);
