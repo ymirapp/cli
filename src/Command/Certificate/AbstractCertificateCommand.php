@@ -18,14 +18,6 @@ use Ymir\Cli\Command\AbstractCommand;
 abstract class AbstractCertificateCommand extends AbstractCommand
 {
     /**
-     * Get the list of domains from the certificate.
-     */
-    protected function getDomainsList($certificate): string
-    {
-        return !empty($certificate['domains']) ? implode(PHP_EOL, collect($certificate['domains'])->pluck('name')->all()) : '';
-    }
-
-    /**
      * Parse the certificate details for the certificate validation DNS records.
      */
     protected function parseCertificateValidationRecords($certificate): array
