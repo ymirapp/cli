@@ -278,12 +278,11 @@ class ApiClient
     public function getDatabase($idOrName): array
     {
         $database = null;
-        $databases = $this->getDatabases($this->cliConfiguration->getActiveTeamId());
 
         if (is_numeric($idOrName)) {
-            $database = $databases->firstWhere('id', $idOrName);
+            $database = $this->request('get', "/databases/{$idOrName}")->toArray();
         } elseif (is_string($idOrName)) {
-            $database = $databases->firstWhere('name', $idOrName);
+            $database = $this->getDatabases($this->cliConfiguration->getActiveTeamId())->firstWhere('name', $idOrName);
         }
 
         if (!is_array($database) || !isset($database['id']) || !is_numeric($database['id'])) {
@@ -333,12 +332,11 @@ class ApiClient
     public function getDnsZone($idOrName): array
     {
         $zone = null;
-        $zones = $this->getDnsZones($this->cliConfiguration->getActiveTeamId());
 
         if (is_numeric($idOrName)) {
-            $zone = $zones->firstWhere('id', $idOrName);
+            $zone = $this->request('get', "/zones/{$idOrName}")->toArray();
         } elseif (is_string($idOrName)) {
-            $zone = $zones->firstWhere('name', $idOrName);
+            $zone = $this->getDnsZones($this->cliConfiguration->getActiveTeamId())->firstWhere('name', $idOrName);
         }
 
         if (!is_array($zone) || !isset($zone['id']) || !is_numeric($zone['id'])) {
