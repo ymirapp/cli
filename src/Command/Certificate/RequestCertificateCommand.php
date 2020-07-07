@@ -35,7 +35,7 @@ class RequestCertificateCommand extends AbstractCertificateCommand
         $this
             ->setName(self::NAME)
             ->addArgument('domain', InputArgument::REQUIRED, 'The domain secured by the SSL certificate')
-            ->addOption('provider', null, InputOption::VALUE_REQUIRED, 'The cloud provider region where the certificate will be located')
+            ->addOption('provider', null, InputOption::VALUE_REQUIRED, 'The cloud provider where the certificate will be created')
             ->addOption('region', null, InputOption::VALUE_REQUIRED, 'The cloud provider region where the certificate will be located')
             ->setDescription('Request a new SSL certificate');
     }
@@ -69,7 +69,7 @@ class RequestCertificateCommand extends AbstractCertificateCommand
                 ['Name', 'Value'],
                 $validationRecords
             );
-            $output->warn('The SSL certificate won\'t be issued until these DNS record(s) are added.');
+            $output->warn('The SSL certificate won\'t be issued until these DNS record(s) are added');
         }
     }
 
