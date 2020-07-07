@@ -56,7 +56,9 @@ class RequestCertificateCommand extends AbstractCertificateCommand
         $validationRecords = [];
 
         if (collect($certificate['domains'])->contains('managed', false)) {
-            $validationRecords = $this->getManualValidationRecords($certificate['id']);
+            $validationRecords = $this->wait(function () use ($certificate) {
+                return $this->parseCertificateValidationRecords($this->apiClient->getCertificate($certificate['id']));
+            });
         }
 
         $output->info('SSL certificate requested');
@@ -71,21 +73,5 @@ class RequestCertificateCommand extends AbstractCertificateCommand
             );
             $output->warn('The SSL certificate won\'t be issued until these DNS record(s) are added');
         }
-    }
-
-    /**
-     * Get the validation DNS records that need to be manually created for the given certificate.
-     */
-    private function getManualValidationRecords(int $certificateId): array
-    {
-        $attempts = 0;
-
-        do {
-            sleep(1);
-            $validationRecords = $this->parseCertificateValidationRecords($this->apiClient->getCertificate($certificateId));
-            ++$attempts;
-        } while (empty($validationRecords) && $attempts < 20);
-
-        return $validationRecords;
     }
 }

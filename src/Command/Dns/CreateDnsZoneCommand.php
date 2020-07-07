@@ -46,19 +46,16 @@ class CreateDnsZoneCommand extends AbstractCommand
      */
     protected function perform(InputInterface $input, OutputStyle $output)
     {
-        $attempts = 0;
         $zone = $this->apiClient->createDnsZone($this->determineCloudProvider($input, $output, 'Enter the ID of the cloud provider where the DNS zone will be created'), $this->getStringArgument($input, 'name'));
 
-        while (empty($zone['name_servers']) && $attempts < 10) {
-            $zone = $this->apiClient->getDnsZone($zone['id']);
-            ++$attempts;
-            sleep(1);
-        }
+        $nameServers = $this->wait(function () use ($zone) {
+            return $this->apiClient->getDnsZone($zone['id'])['name_servers'] ?? [];
+        });
 
-        if (!empty($zone['name_servers'])) {
+        if (!empty($nameServers)) {
             $output->horizontalTable(
                 ['Domain Name', new TableSeparator(), 'Name Servers'],
-                [[$zone['name'], new TableSeparator(), implode(PHP_EOL, $zone['name_servers'])]]
+                [[$zone['name'], new TableSeparator(), implode(PHP_EOL, $nameServers)]]
             );
         }
 

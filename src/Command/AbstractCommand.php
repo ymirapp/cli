@@ -203,4 +203,20 @@ abstract class AbstractCommand extends Command
      * Perform the command.
      */
     abstract protected function perform(InputInterface $input, OutputStyle $output);
+
+    /**
+     * Wait for the given callable to complete.
+     */
+    protected function wait(callable $callable, $maxAttempts = 20, $sleep = 1)
+    {
+        $attempts = 0;
+
+        do {
+            $result = $callable();
+            sleep($sleep);
+            ++$attempts;
+        } while (empty($result) && $attempts < $maxAttempts);
+
+        return $result;
+    }
 }
