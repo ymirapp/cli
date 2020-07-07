@@ -64,7 +64,7 @@ class CreateEmailIdentityCommand extends AbstractCommand
     /**
      * Show the warning for adding DNS record manually.
      */
-    protected function showValidationRecord(int $identityId, OutputStyle $output)
+    private function showValidationRecord(int $identityId, OutputStyle $output)
     {
         $validationRecord = $this->wait(function () use ($identityId) {
             $identity = $this->apiClient->getEmailIdentity($identityId);
