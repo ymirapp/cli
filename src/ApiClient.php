@@ -129,6 +129,19 @@ class ApiClient
     }
 
     /**
+     * Create a new email identity on the given cloud provider.
+     */
+    public function createEmailIdentity(int $providerId, string $name, string $region): Collection
+    {
+        $type = filter_var($name, FILTER_VALIDATE_EMAIL) ? 'email' : 'domain';
+
+        return $this->request('post', "/providers/{$providerId}/email-identities", [
+            $type => $name,
+            'region' => $region,
+        ]);
+    }
+
+    /**
      * Create a new project with the given cloud provider.
      */
     public function createProject(int $providerId, string $name, string $region): Collection
@@ -341,6 +354,14 @@ class ApiClient
     public function getDnsZones(int $teamId): Collection
     {
         return $this->request('get', "/teams/{$teamId}/zones");
+    }
+
+    /**
+     * Get the email identity details.
+     */
+    public function getEmailIdentity(int $identityId): Collection
+    {
+        return $this->request('get', "/email-identities/$identityId");
     }
 
     /**
