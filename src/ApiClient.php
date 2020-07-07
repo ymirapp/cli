@@ -355,11 +355,31 @@ class ApiClient
     }
 
     /**
-     * Get the email identity details.
+     * Get the email identities that belong to the given team.
      */
-    public function getEmailIdentity(int $identityId): Collection
+    public function getEmailIdentities(int $teamId): Collection
     {
-        return $this->request('get', "/email-identities/$identityId");
+        return $this->request('get', "/teams/{$teamId}/email-identities");
+    }
+
+    /**
+     * Get the email identity information from the given zone ID or name.
+     */
+    public function getEmailIdentity($idOrName): array
+    {
+        $identity = null;
+
+        if (is_numeric($idOrName)) {
+            $identity = $this->request('get', "/email-identities/$idOrName")->toArray();
+        } elseif (is_string($idOrName)) {
+            $identity = $this->getEmailIdentities($this->cliConfiguration->getActiveTeamId())->firstWhere('name', $idOrName);
+        }
+
+        if (!is_array($identity) || !isset($identity['id']) || !is_numeric($identity['id'])) {
+            throw new RuntimeException(sprintf('Unable to find a email identity with "%s" as the ID or name', $idOrName));
+        }
+
+        return $identity;
     }
 
     /**
