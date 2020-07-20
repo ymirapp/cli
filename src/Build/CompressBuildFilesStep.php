@@ -16,6 +16,7 @@ namespace Ymir\Cli\Build;
 use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Finder\SplFileInfo;
+use Ymir\Cli\ProjectConfiguration;
 
 class CompressBuildFilesStep implements BuildStepInterface
 {
@@ -53,7 +54,7 @@ class CompressBuildFilesStep implements BuildStepInterface
     /**
      * {@inheritdoc}
      */
-    public function perform(string $environment)
+    public function perform(string $environment, ProjectConfiguration $projectConfiguration)
     {
         $archive = new \ZipArchive();
         $archive->open($this->buildArtifactPath, \ZipArchive::CREATE | \ZipArchive::OVERWRITE);

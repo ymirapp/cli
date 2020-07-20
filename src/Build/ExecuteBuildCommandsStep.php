@@ -27,19 +27,11 @@ class ExecuteBuildCommandsStep implements BuildStepInterface
     private $buildDirectory;
 
     /**
-     * The Ymir project configuration.
-     *
-     * @var ProjectConfiguration
-     */
-    private $projectConfiguration;
-
-    /**
      * Constructor.
      */
-    public function __construct(string $buildDirectory, ProjectConfiguration $projectConfiguration)
+    public function __construct(string $buildDirectory)
     {
         $this->buildDirectory = rtrim($buildDirectory, '/');
-        $this->projectConfiguration = $projectConfiguration;
     }
 
     /**
@@ -53,9 +45,9 @@ class ExecuteBuildCommandsStep implements BuildStepInterface
     /**
      * {@inheritdoc}
      */
-    public function perform(string $environment)
+    public function perform(string $environment, ProjectConfiguration $projectConfiguration)
     {
-        $environment = $this->projectConfiguration->getEnvironment($environment);
+        $environment = $projectConfiguration->getEnvironment($environment);
 
         if (empty($environment['build']) || !is_array($environment)) {
             return;

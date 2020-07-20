@@ -13,6 +13,8 @@ declare(strict_types=1);
 
 namespace Ymir\Cli\Build;
 
+use Ymir\Cli\ProjectConfiguration;
+
 interface BuildStepInterface
 {
     /**
@@ -23,5 +25,5 @@ interface BuildStepInterface
     /**
      * Perform the build step.
      */
-    public function perform(string $environment);
+    public function perform(string $environment, ProjectConfiguration $projectConfiguration);
 }

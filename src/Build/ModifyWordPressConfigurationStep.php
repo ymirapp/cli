@@ -34,13 +34,6 @@ class ModifyWordPressConfigurationStep implements BuildStepInterface
     private $filesystem;
 
     /**
-     * The Ymir project configuration.
-     *
-     * @var ProjectConfiguration
-     */
-    private $projectConfiguration;
-
-    /**
      * The directory where the stub files are.
      *
      * @var string
@@ -50,11 +43,10 @@ class ModifyWordPressConfigurationStep implements BuildStepInterface
     /**
      * Constructor.
      */
-    public function __construct(string $buildDirectory, Filesystem $filesystem, ProjectConfiguration $projectConfiguration, string $stubDirectory)
+    public function __construct(string $buildDirectory, Filesystem $filesystem, string $stubDirectory)
     {
         $this->buildDirectory = rtrim($buildDirectory, '/');
         $this->filesystem = $filesystem;
-        $this->projectConfiguration = $projectConfiguration;
         $this->stubDirectory = rtrim($stubDirectory, '/');
     }
 
@@ -69,7 +61,21 @@ class ModifyWordPressConfigurationStep implements BuildStepInterface
     /**
      * {@inheritdoc}
      */
-    public function perform(string $environment)
+    public function perform(string $environment, ProjectConfiguration $projectConfiguration)
+    {
+        $projectType = $projectConfiguration->getProjectType();
+
+        if ('wordpress' === $projectType) {
+            $this->modifyWordPressConfig((array) $projectConfiguration->getEnvironment($environment));
+        } elseif ('bedrock' === $projectType) {
+            $this->filesystem->remove($this->buildDirectory.'/.env');
+        }
+    }
+
+    /**
+     * Modify WordPress configuration to use environment variables.
+     */
+    private function modifyWordPressConfig(array $environment)
     {
         $wpConfigFile = $this->buildDirectory.'/wp-config.php';
 
@@ -84,7 +90,6 @@ class ModifyWordPressConfigurationStep implements BuildStepInterface
         }
 
         $constants = ['WP_HOME', 'WP_SITEURL'];
-        $environment = $this->projectConfiguration->getEnvironment($environment);
 
         if (!empty($environment['database'])) {
             $constants = array_merge($constants, ['DB_HOST', 'DB_NAME', 'DB_USER', 'DB_PASSWORD']);
@@ -96,13 +101,13 @@ class ModifyWordPressConfigurationStep implements BuildStepInterface
 
         $wpConfig = array_map(function (string $line) {
             if (preg_match('/require_once\s+ABSPATH\s*\.\s*\'wp-settings.php\';/', $line)) {
-                $line = "require_once ABSPATH.'ymir-config.php';".PHP_EOL.$line;
+                $line = 'require_once ABSPATH.\'ymir-config.php\';'.PHP_EOL.$line;
             }
 
             return $line;
         }, $wpConfig);
 
-        $this->filesystem->dumpFile($wpConfigFile, implode("\n", $wpConfig));
+        $this->filesystem->dumpFile($wpConfigFile, implode(PHP_EOL, $wpConfig));
 
         $configFile = 'ymir-config.php';
         $configStubPath = $this->stubDirectory.'/'.$configFile;

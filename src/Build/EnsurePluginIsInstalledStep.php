@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Ymir\Cli\Build;
 
 use Symfony\Component\Console\Exception\RuntimeException;
+use Ymir\Cli\ProjectConfiguration;
 use Ymir\Cli\WpCli;
 
 class EnsurePluginIsInstalledStep implements BuildStepInterface
@@ -44,7 +45,7 @@ class EnsurePluginIsInstalledStep implements BuildStepInterface
     /**
      * {@inheritdoc}
      */
-    public function perform(string $environment)
+    public function perform(string $environment, ProjectConfiguration $projectConfiguration)
     {
         if (!WpCli::isPluginInstalled('ymir', $this->binDirectory, 'wp')) {
             throw new RuntimeException('Ymir plugin not found');

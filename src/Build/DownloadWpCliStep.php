@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Ymir\Cli\Build;
 
 use Symfony\Component\Filesystem\Filesystem;
+use Ymir\Cli\ProjectConfiguration;
 
 class DownloadWpCliStep implements BuildStepInterface
 {
@@ -51,7 +52,7 @@ class DownloadWpCliStep implements BuildStepInterface
     /**
      * {@inheritdoc}
      */
-    public function perform(string $environment)
+    public function perform(string $environment, ProjectConfiguration $projectConfiguration)
     {
         $wpCliPath = $this->binDirectory.'/wp';
 

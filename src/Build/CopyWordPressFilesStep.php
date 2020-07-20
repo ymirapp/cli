@@ -35,13 +35,6 @@ class CopyWordPressFilesStep implements BuildStepInterface
     private $filesystem;
 
     /**
-     * The Ymir project configuration.
-     *
-     * @var ProjectConfiguration
-     */
-    private $projectConfiguration;
-
-    /**
      * The project directory where the project files are copied from.
      *
      * @var string
@@ -51,12 +44,42 @@ class CopyWordPressFilesStep implements BuildStepInterface
     /**
      * Constructor.
      */
-    public function __construct(string $buildDirectory, ProjectConfiguration $projectConfiguration, string $projectDirectory, Filesystem $filesystem)
+    public function __construct(string $buildDirectory, Filesystem $filesystem, string $projectDirectory)
     {
         $this->buildDirectory = rtrim($buildDirectory, '/');
         $this->filesystem = $filesystem;
-        $this->projectConfiguration = $projectConfiguration;
         $this->projectDirectory = rtrim($projectDirectory, '/');
+    }
+
+    /**
+     * List of files we need to append manually because they're in the default Bedrock .gitignore file.
+     */
+    public function getBedrockFilesToAppend(): array
+    {
+        // Need the .env file for WP-CLI to work during the build
+        $files = [new SplFileInfo($this->projectDirectory.'/.env', $this->projectDirectory, '/.env')];
+
+        // Finder can't seem to honor the .gitignore path ignoring child folders in the mu-plugins
+        // folder while keeping the files at the root of the mu-plugins folder.
+        $finder = Finder::create()->in($this->projectDirectory)
+            ->path('/^web\/app\/mu-plugins/')
+            ->depth('== 3')
+            ->files();
+
+        foreach ($finder as $file) {
+            $files[] = $file;
+        }
+
+        // TODO: Remove once we can install with Composer
+        $finder = Finder::create()->in($this->projectDirectory)
+            ->path('/^web\/app\/plugins\/ymir/')
+            ->files();
+
+        foreach ($finder as $file) {
+            $files[] = $file;
+        }
+
+        return $files;
     }
 
     /**
@@ -70,7 +93,7 @@ class CopyWordPressFilesStep implements BuildStepInterface
     /**
      * {@inheritdoc}
      */
-    public function perform(string $environment)
+    public function perform(string $environment, ProjectConfiguration $projectConfiguration)
     {
         if ($this->filesystem->exists($this->buildDirectory)) {
             $this->filesystem->remove($this->buildDirectory);
@@ -78,7 +101,7 @@ class CopyWordPressFilesStep implements BuildStepInterface
 
         $this->filesystem->mkdir($this->buildDirectory, 0755);
 
-        foreach ($this->getProjectFiles() as $file) {
+        foreach ($this->getProjectFiles($projectConfiguration->getProjectType()) as $file) {
             $this->copyFile($file);
         }
     }
@@ -98,7 +121,7 @@ class CopyWordPressFilesStep implements BuildStepInterface
     /**
      * Get the Finder object for finding all the project files.
      */
-    private function getProjectFiles(): Finder
+    private function getProjectFiles(string $projectType): Finder
     {
         $finder = Finder::create()
             ->in($this->projectDirectory)
@@ -107,7 +130,6 @@ class CopyWordPressFilesStep implements BuildStepInterface
             ->followLinks()
             ->ignoreVcs(true)
             ->ignoreDotFiles(false);
-        $projectType = $this->projectConfiguration->getProjectType();
 
         if (is_readable($this->projectDirectory.'/.gitignore')) {
             $finder->ignoreVCSIgnored(true);
@@ -115,6 +137,9 @@ class CopyWordPressFilesStep implements BuildStepInterface
 
         if ('wordpress' === $projectType) {
             $finder->exclude('wp-content/uploads');
+        } elseif ('bedrock' === $projectType) {
+            $finder->exclude('web/app/uploads');
+            $finder->append($this->getBedrockFilesToAppend());
         }
 
         return $finder;

@@ -74,10 +74,16 @@ class ProjectConfiguration implements Arrayable
         $this->configuration = $project->only(['id', 'name'])->all();
         $this->configuration['type'] = $type ?: 'wordpress';
 
+        $baseEnvironment = 'bedrock' === $type ? ['build' => ['composer install --classmap-authoritative']] : null;
+
         $this->configuration['environments'] = [
-            'production' => null,
-            'staging' => !empty($databaseName) ? ['database' => $databaseName] : null,
+            'production' => $baseEnvironment,
+            'staging' => $baseEnvironment,
         ];
+
+        if (!empty($databaseName)) {
+            $this->configuration['environments']['staging']['database'] = $databaseName;
+        }
 
         $this->save();
     }

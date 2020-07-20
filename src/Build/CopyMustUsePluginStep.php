@@ -15,6 +15,7 @@ namespace Ymir\Cli\Build;
 
 use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Filesystem\Filesystem;
+use Ymir\Cli\ProjectConfiguration;
 
 class CopyMustUsePluginStep implements BuildStepInterface
 {
@@ -60,7 +61,7 @@ class CopyMustUsePluginStep implements BuildStepInterface
     /**
      * {@inheritdoc}
      */
-    public function perform(string $environment)
+    public function perform(string $environment, ProjectConfiguration $projectConfiguration)
     {
         $mupluginStub = 'activate-ymir-plugin.php';
         $mupluginStubPath = $this->stubDirectory.'/'.$mupluginStub;
@@ -69,7 +70,7 @@ class CopyMustUsePluginStep implements BuildStepInterface
             throw new RuntimeException(sprintf('Cannot find "%s" stub file', $mupluginStub));
         }
 
-        $mupluginsDirectory = $this->buildDirectory.'/wp-content/mu-plugins';
+        $mupluginsDirectory = 'bedrock' === $projectConfiguration->getProjectType() ? $this->buildDirectory.'/web/app/mu-plugins' : $this->buildDirectory.'/wp-content/mu-plugins';
 
         if (!$this->filesystem->exists($mupluginsDirectory)) {
             $this->filesystem->mkdir($mupluginsDirectory);

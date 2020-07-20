@@ -16,23 +16,10 @@ namespace Ymir\Cli\Build;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Finder\SplFileInfo;
+use Ymir\Cli\ProjectConfiguration;
 
 class ExtractAssetFilesStep implements BuildStepInterface
 {
-    /**
-     * The assets directory where the asset files are copied to.
-     *
-     * @var string
-     */
-    private $assetsDirectory;
-
-    /**
-     * The build directory where the asset files are extracted from.
-     *
-     * @var string
-     */
-    private $buildDirectory;
-
     /**
      * The file system.
      *
@@ -41,12 +28,26 @@ class ExtractAssetFilesStep implements BuildStepInterface
     private $filesystem;
 
     /**
+     * The build directory where the asset files are extracted from.
+     *
+     * @var string
+     */
+    private $fromDirectory;
+
+    /**
+     * The assets directory where the asset files are copied to.
+     *
+     * @var string
+     */
+    private $toDirectory;
+
+    /**
      * Constructor.
      */
     public function __construct(string $assetsDirectory, string $buildDirectory, Filesystem $filesystem)
     {
-        $this->assetsDirectory = rtrim($assetsDirectory, '/');
-        $this->buildDirectory = rtrim($buildDirectory, '/');
+        $this->toDirectory = rtrim($assetsDirectory, '/');
+        $this->fromDirectory = rtrim($buildDirectory, '/');
         $this->filesystem = $filesystem;
     }
 
@@ -61,15 +62,21 @@ class ExtractAssetFilesStep implements BuildStepInterface
     /**
      * {@inheritdoc}
      */
-    public function perform(string $environment)
+    public function perform(string $environment, ProjectConfiguration $projectConfiguration)
     {
-        if ($this->filesystem->exists($this->assetsDirectory)) {
-            $this->filesystem->remove($this->assetsDirectory);
+        if ($this->filesystem->exists($this->toDirectory)) {
+            $this->filesystem->remove($this->toDirectory);
         }
 
-        $this->filesystem->mkdir($this->buildDirectory, 0755);
+        $this->filesystem->mkdir($this->toDirectory, 0755);
 
-        foreach ($this->getAssetFiles() as $file) {
+        $fromDirectory = $this->fromDirectory;
+
+        if ('bedrock' === $projectConfiguration->getProjectType()) {
+            $fromDirectory .= '/web';
+        }
+
+        foreach ($this->getAssetFiles($fromDirectory) as $file) {
             $this->moveAssetFile($file);
         }
     }
@@ -77,12 +84,12 @@ class ExtractAssetFilesStep implements BuildStepInterface
     /**
      * Get the asset files that we want to extract.
      */
-    private function getAssetFiles(): Finder
+    private function getAssetFiles(string $fromDirectory): Finder
     {
         return Finder::create()
-            ->in($this->buildDirectory)
+            ->in($fromDirectory)
             ->files()
-            ->notName(['.htaccess', '*.php'])
+            ->notName(['*.php'])
             ->followLinks()
             ->ignoreVcs(true)
             ->ignoreDotFiles(true);
@@ -97,6 +104,6 @@ class ExtractAssetFilesStep implements BuildStepInterface
             return;
         }
 
-        $this->filesystem->copy($file->getRealPath(), $this->assetsDirectory.'/'.$file->getRelativePathname());
+        $this->filesystem->copy($file->getRealPath(), $this->toDirectory.'/'.$file->getRelativePathname());
     }
 }

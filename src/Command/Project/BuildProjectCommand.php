@@ -73,7 +73,7 @@ class BuildProjectCommand extends AbstractProjectCommand
 
         foreach ($this->buildSteps as $buildStep) {
             $output->writeStep($buildStep->getDescription());
-            $buildStep->perform($environment);
+            $buildStep->perform($environment, $this->projectConfiguration);
         }
 
         $output->info('Project built successfully');
