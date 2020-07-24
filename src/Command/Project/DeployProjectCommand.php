@@ -89,6 +89,11 @@ class DeployProjectCommand extends AbstractProjectCommand
         $output->info(sprintf('Project deployed successfully to "<comment>%s</comment>" environment', $environment));
 
         $this->invoke($output, GetEnvironmentUrlCommand::NAME, ['environment' => $environment]);
+
+        if ($this->apiClient->getEmailIdentities($this->cliConfiguration->getActiveTeamId())->isEmpty()) {
+            $output->newLine();
+            $output->writeln('<comment>Note:</comment> You cannot send emails using the "<comment>ymirsites.com</comment>" domain. Please use the "<comment>email:identity:create</comment>" command to add an email address or domain to use for sending emails.');
+        }
     }
 
     /**
