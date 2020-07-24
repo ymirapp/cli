@@ -89,7 +89,7 @@ class ModifyWordPressConfigurationStep implements BuildStepInterface
             throw new RuntimeException('Unable to read wp-config.php');
         }
 
-        $constants = ['WP_HOME', 'WP_SITEURL'];
+        $constants = ['AUTH_KEY', 'SECURE_AUTH_KEY', 'LOGGED_IN_KEY', 'NONCE_KEY', 'AUTH_SALT', 'SECURE_AUTH_SALT', 'LOGGED_IN_SALT', 'NONCE_SALT', 'WP_HOME', 'WP_SITEURL'];
 
         if (!empty($environment['database'])) {
             $constants = array_merge($constants, ['DB_HOST', 'DB_NAME', 'DB_USER', 'DB_PASSWORD']);
