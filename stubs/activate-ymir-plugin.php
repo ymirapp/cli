@@ -7,7 +7,7 @@ function activate_ymir_plugin() {
 
     foreach (get_plugins() as $file => $plugin) {
         if (preg_match('/ymir\.php$/', $file)) {
-            activate_plugin($file);
+            activate_plugin($file, '', defined('MULTISITE') ? MULTISITE : false);
         }
     }
 }
