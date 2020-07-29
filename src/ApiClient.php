@@ -142,6 +142,16 @@ class ApiClient
     }
 
     /**
+     * Create a new function invocation for the given project on the given environment.
+     */
+    public function createInvocation(int $projectId, string $environment, array $payload): Collection
+    {
+        return $this->request('post', "/projects/{$projectId}/environments/{$environment}/invocations", [
+            'payload' => $payload,
+        ]);
+    }
+
+    /**
      * Create a new project with the given cloud provider.
      */
     public function createProject(int $providerId, string $name, string $region): Collection
@@ -396,6 +406,14 @@ class ApiClient
     public function getEnvironment(int $projectId, string $environment): Collection
     {
         return $this->request('get', "/projects/{$projectId}/environments/$environment");
+    }
+
+    /**
+     * Get the function invocation with the given ID.
+     */
+    public function getInvocation(int $invocationId): Collection
+    {
+        return $this->request('get', "/invocations/{$invocationId}");
     }
 
     /**

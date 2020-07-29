@@ -100,9 +100,7 @@ abstract class AbstractCommand extends Command
             throw new RuntimeException(sprintf('Please authenticate using the "%s" command before using this command', LoginCommand::NAME));
         }
 
-        $this->perform($input, new OutputStyle($input, $output));
-
-        return 0;
+        return $this->perform($input, new OutputStyle($input, $output)) ?? 0;
     }
 
     /**
@@ -156,7 +154,7 @@ abstract class AbstractCommand extends Command
      */
     protected function getStringArgument(InputInterface $input, string $argument): string
     {
-        $value = $input->getArgument($argument);
+        $value = $input->getArgument($argument) ?? '';
 
         if (!is_string($value)) {
             throw new InvalidArgumentException(sprintf('The "%s" argument must be a string value', $argument));
