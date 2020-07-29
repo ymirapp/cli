@@ -27,7 +27,7 @@ abstract class AbstractInvocationCommand extends AbstractProjectCommand
     {
         $invocation = $this->apiClient->createInvocation($this->projectConfiguration->getProjectId(), $environment, $payload);
 
-        while (empty($invocation['status']) || 'finished' !== $invocation['status']) {
+        while (empty($invocation['status']) || in_array($invocation['status'], ['pending', 'running'])) {
             sleep(1);
 
             $invocation = $this->apiClient->getInvocation($invocation['id']);
