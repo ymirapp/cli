@@ -34,7 +34,7 @@ class PhpVersionCommand extends AbstractInvocationCommand
     {
         $this
             ->setName(self::NAME)
-            ->setDescription('Get information about PHP version on the cloud provider')
+            ->setDescription('Get PHP version information on the cloud provider')
             ->addOption('environment', null, InputOption::VALUE_REQUIRED, 'The environment name', 'staging');
     }
 
@@ -45,7 +45,7 @@ class PhpVersionCommand extends AbstractInvocationCommand
     {
         $environment = (string) $this->getStringOption($input, 'environment');
 
-        $output->info(sprintf('Get information about the PHP version from the "<comment>%s</comment>" environment', $environment));
+        $output->info(sprintf('Getting PHP version information from the "<comment>%s</comment>" environment', $environment));
 
         $result = $this->invokeEnvironmentFunction($environment, [
             'php' => '--version',
