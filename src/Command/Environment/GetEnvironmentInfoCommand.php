@@ -70,12 +70,12 @@ class GetEnvironmentInfoCommand extends AbstractProjectCommand
         $headers = ['Name', 'Domain', 'API', 'CDN'];
         $row = $environment->only(['name', 'vanity_domain'])->values()->all();
 
-        $row[] = $environment['api']['domain'] ?? '<error>Unavailable</error>';
+        $row[] = $environment['api']['domain_name'] ?? '<fg=red>Unavailable</>';
 
         if (empty($environment['content_delivery_network'])) {
-            $row[] = '<error>Unavailable</error>';
-        } elseif (!empty($environment['content_delivery_network']['domain'])) {
-            $row[] = $environment['content_delivery_network']['domain'];
+            $row[] = '<fg=red>Unavailable</>';
+        } elseif (!empty($environment['content_delivery_network']['domain_name'])) {
+            $row[] = $environment['content_delivery_network']['domain_name'];
         } elseif (!empty($environment['content_delivery_network']['status'])) {
             $row[] = sprintf('<comment>%s</comment>', ucfirst($environment['content_delivery_network']['status']));
         }
@@ -115,6 +115,6 @@ class GetEnvironmentInfoCommand extends AbstractProjectCommand
             return sprintf('<comment>%s</comment>', ucfirst($database['status']));
         }
 
-        return $database['endpoint'] ?? '<error>Unavailable</error>';
+        return $database['endpoint'] ?? '<fg=red>Unavailable</>';
     }
 }
