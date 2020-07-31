@@ -55,6 +55,10 @@ class WpCliCommand extends AbstractInvocationCommand
             throw new InvalidArgumentException('You must specify the WP-CLI command to run when running in non-interactive mode');
         }
 
+        if ('wp ' === substr($command, 0, 3)) {
+            $command = substr($command, 3);
+        }
+
         if (in_array($command, ['shell'])) {
             throw new RuntimeException(sprintf('The "wp %s" command isn\'t available remotely', $command));
         }
