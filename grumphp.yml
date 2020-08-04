@@ -27,7 +27,9 @@ parameters:
       config: '.php_cs'
     phplint: ~
     phpmd:
-      exclude: ['ApiClient.php']
+      exclude:
+        - 'ApiClient.php'
+        - 'activate-ymir-plugin.php'
       ruleset: ['phpmd.xml']
     phpstan:
       ignore_patterns: ['/^stubs/']
