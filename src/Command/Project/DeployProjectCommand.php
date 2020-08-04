@@ -19,6 +19,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Ymir\Cli\ApiClient;
 use Ymir\Cli\CliConfiguration;
 use Ymir\Cli\Command\AbstractProjectCommand;
+use Ymir\Cli\Command\Email\CreateEmailIdentityCommand;
 use Ymir\Cli\Command\Environment\GetEnvironmentUrlCommand;
 use Ymir\Cli\Console\OutputStyle;
 use Ymir\Cli\Deployment\DeploymentStepInterface;
@@ -92,7 +93,7 @@ class DeployProjectCommand extends AbstractProjectCommand
 
         if ($this->apiClient->getEmailIdentities($this->cliConfiguration->getActiveTeamId())->isEmpty()) {
             $output->newLine();
-            $output->writeln('<comment>Note:</comment> You cannot send emails using the "<comment>ymirsites.com</comment>" domain. Please use the "<comment>email:identity:create</comment>" command to add an email address or domain to use for sending emails.');
+            $output->writeln(sprintf('<comment>Note:</comment> You cannot send emails using the "<comment>ymirsites.com</comment>" domain. Please use the "<comment>%s</comment>" command to add an email address or domain for sending emails.', CreateEmailIdentityCommand::NAME));
         }
     }
 
