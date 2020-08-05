@@ -131,7 +131,7 @@ class StartAndMonitorDeploymentStep implements DeploymentStepInterface
     /**
      * Blocking method that constantly queries the Ymir API to see if the deployment step finished.
      */
-    private function waitForDeploymentStepToFinish(int $deploymentId, int $deploymentStepId, int $timeout = 240)
+    private function waitForDeploymentStepToFinish(int $deploymentId, int $deploymentStepId, int $timeout = 600)
     {
         $elapsed = 0;
 
