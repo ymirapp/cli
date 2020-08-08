@@ -21,3 +21,37 @@ function activate_ymir_plugin() {
     }
 }
 add_action('plugins_loaded', 'activate_ymir_plugin');
+
+/**
+ * Ensures that the plugin is always the first one to be loaded per site.
+ */
+function ensure_ymir_plugin_loaded_first(array $active_plugins): array
+{
+    foreach ($active_plugins as $key => $basename) {
+        if (1 === preg_match('/ymir\.php$/', $basename)) {
+            array_splice($active_plugins, $key, 1);
+            array_unshift($active_plugins, $basename);
+        }
+    }
+
+    return $active_plugins;
+}
+add_filter('pre_update_option_active_plugins', 'ensure_ymir_plugin_loaded_first', 9999);
+
+/**
+ * Ensures that the plugin is always the first one to be loaded for the network.
+ */
+function ensure_ymir_plugin_loaded_first_on_network(array $active_plugins): array
+{
+    $active_plugins = array_keys($active_plugins);
+
+    foreach ($active_plugins as $index => $plugin) {
+        if (1 === preg_match('/ymir\.php$/', $plugin)) {
+            array_splice($active_plugins, $index, 1);
+            array_unshift($active_plugins, $plugin);
+        }
+    }
+
+    return array_fill_keys($active_plugins, time());
+}
+add_filter('pre_update_site_option_active_sitewide_plugins', 'ensure_ymir_plugin_loaded_first_on_network', 9999);
