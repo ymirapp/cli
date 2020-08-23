@@ -55,6 +55,6 @@ class ListCertificatesCommand extends AbstractCertificateCommand
      */
     private function getDomainsList($certificate): string
     {
-        return !empty($certificate['domains']) ? implode(PHP_EOL, collect($certificate['domains'])->pluck('name')->all()) : '';
+        return !empty($certificate['domains']) ? implode(PHP_EOL, collect($certificate['domains'])->pluck('domain_name')->all()) : '';
     }
 }

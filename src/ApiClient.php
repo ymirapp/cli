@@ -124,7 +124,7 @@ class ApiClient
     public function createDnsZone(int $providerId, string $name): Collection
     {
         return $this->request('post', "/providers/{$providerId}/zones", [
-            'name' => $name,
+            'domain_name' => $name,
         ]);
     }
 
@@ -354,7 +354,7 @@ class ApiClient
         if (is_numeric($idOrName)) {
             $zone = $this->request('get', "/zones/{$idOrName}")->toArray();
         } elseif (is_string($idOrName)) {
-            $zone = $this->getDnsZones($this->cliConfiguration->getActiveTeamId())->firstWhere('name', $idOrName);
+            $zone = $this->getDnsZones($this->cliConfiguration->getActiveTeamId())->firstWhere('domain_name', $idOrName);
         }
 
         if (!is_array($zone) || !isset($zone['id']) || !is_numeric($zone['id'])) {

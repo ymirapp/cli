@@ -68,7 +68,7 @@ class GetEnvironmentInfoCommand extends AbstractProjectCommand
         $database = $this->getEnvironmentDatabase($environment);
         $environment = $this->apiClient->getEnvironment($this->projectConfiguration->getProjectId(), $environment);
         $headers = ['Name', 'Domain', 'API', 'CDN'];
-        $row = $environment->only(['name', 'vanity_domain'])->values()->all();
+        $row = $environment->only(['name', 'vanity_domain_name'])->values()->all();
 
         $row[] = $environment['api']['domain_name'] ?? '<fg=red>Unavailable</>';
 

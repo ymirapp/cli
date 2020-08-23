@@ -47,12 +47,12 @@ class GetEnvironmentUrlCommand extends AbstractProjectCommand
     {
         $environment = $this->apiClient->getEnvironment($this->projectConfiguration->getProjectId(), $this->getStringArgument($input, 'environment'));
 
-        if (!$environment->has('vanity_domain')) {
+        if (!$environment->has('vanity_domain_name')) {
             throw new RuntimeException('Unable to get the environment domain');
         }
 
         $clipboardCommand = 'WIN' === strtoupper(substr(PHP_OS, 0, 3)) ? 'clip' : 'pbcopy';
-        $url = 'https://'.$environment->get('vanity_domain');
+        $url = 'https://'.$environment->get('vanity_domain_name');
 
         Process::fromShellCommandline(sprintf('echo %s | %s', $url, $clipboardCommand))->run();
 
