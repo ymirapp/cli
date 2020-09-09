@@ -46,7 +46,13 @@ class CreateDnsZoneCommand extends AbstractCommand
      */
     protected function perform(InputInterface $input, OutputStyle $output)
     {
-        $zone = $this->apiClient->createDnsZone($this->determineCloudProvider($input, $output, 'Enter the ID of the cloud provider where the DNS zone will be created'), $this->getStringArgument($input, 'name'));
+        $providerId = $this->determineCloudProvider($input, $output, 'Enter the ID of the cloud provider where the DNS zone will be created');
+
+        if (!$output->confirm('A DNS Zone will cost $0.50/month if it isn\'t deleted in the next 12 hours. Would you like to proceed?', true)) {
+            return;
+        }
+
+        $zone = $this->apiClient->createDnsZone($providerId, $this->getStringArgument($input, 'name'));
 
         $nameServers = $this->wait(function () use ($zone) {
             return $this->apiClient->getDnsZone($zone['id'])['name_servers'] ?? [];
