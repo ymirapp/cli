@@ -45,7 +45,7 @@ class DeleteEmailIdentityCommand extends AbstractCommand
     {
         $identity = $this->apiClient->getEmailIdentity($this->getStringArgument($input, 'identity'));
 
-        if ($input->isInteractive() && !$output->confirm('Are you sure you want to delete this email identity?', false)) {
+        if (!$output->confirm('Are you sure you want to delete this email identity?', false)) {
             return;
         }
 

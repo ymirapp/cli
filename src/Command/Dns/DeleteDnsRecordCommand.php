@@ -49,7 +49,7 @@ class DeleteDnsRecordCommand extends AbstractCommand
     {
         $zoneIdOrName = $this->getStringArgument($input, 'zone');
 
-        if ($input->isInteractive() && !$output->confirm('Are you sure you want to delete these DNS records?', false)) {
+        if (!$output->confirm('Are you sure you want to delete these DNS records?', false)) {
             return;
         }
 

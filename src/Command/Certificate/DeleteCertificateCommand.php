@@ -48,7 +48,7 @@ class DeleteCertificateCommand extends AbstractCommand
 
         if (!is_numeric($certificateId)) {
             throw new InvalidArgumentException('The "certificate" argument must be the ID of the SSL certificate');
-        } elseif ($input->isInteractive() && !$output->confirm('Are you sure you want to delete this SSL certificate?', false)) {
+        } elseif (!$output->confirm('Are you sure you want to delete this SSL certificate?', false)) {
             return;
         }
 

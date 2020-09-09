@@ -45,7 +45,7 @@ class DeleteDnsZoneCommand extends AbstractCommand
     {
         $zone = $this->apiClient->getDnsZone($this->getStringArgument($input, 'zone'));
 
-        if ($input->isInteractive() && !$output->confirm('Are you sure you want to delete this DNS zone?', false)) {
+        if (!$output->confirm('Are you sure you want to delete this DNS zone?', false)) {
             return;
         }
 
