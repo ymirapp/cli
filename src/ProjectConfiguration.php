@@ -78,7 +78,7 @@ class ProjectConfiguration implements Arrayable
 
         $this->configuration['environments'] = [
             'production' => $baseEnvironment,
-            'staging' => $baseEnvironment,
+            'staging' => array_merge((array) $baseEnvironment, ['cron' => false, 'warmup' => false]),
         ];
 
         if (!empty($databaseName)) {
