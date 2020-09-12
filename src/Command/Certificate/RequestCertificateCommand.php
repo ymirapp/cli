@@ -53,9 +53,10 @@ class RequestCertificateCommand extends AbstractCertificateCommand
 
         $providerId = $this->determineCloudProvider($input, $output, 'Enter the ID of the cloud provider where the SSL certificate will be created');
         $certificate = $this->apiClient->createCertificate($providerId, $domain, $this->determineRegion($input, $output, $providerId, 'Enter the name of the region where the SSL certificate will be created'));
+        $isManaged = collect($certificate['domains'])->contains('managed', true);
         $validationRecords = [];
 
-        if (collect($certificate['domains'])->contains('managed', false)) {
+        if (!$isManaged) {
             $validationRecords = $this->wait(function () use ($certificate) {
                 return $this->parseCertificateValidationRecords($this->apiClient->getCertificate($certificate['id']));
             });
@@ -63,7 +64,7 @@ class RequestCertificateCommand extends AbstractCertificateCommand
 
         $output->info('SSL certificate requested');
 
-        if (!empty($validationRecords)) {
+        if (!$isManaged && !empty($validationRecords)) {
             $output->newLine();
             $output->warn('The following DNS record(s) need to be manually added to your DNS server to validate the SSL certificate:');
             $output->newLine();
@@ -72,6 +73,9 @@ class RequestCertificateCommand extends AbstractCertificateCommand
                 $validationRecords
             );
             $output->warn('The SSL certificate won\'t be issued until these DNS record(s) are added');
+        } elseif (!$isManaged && empty($validationRecords)) {
+            $output->newLine();
+            $output->warn(sprintf('Unable to fetch the DNS record(s) to your DNS server to validate the SSL certificate. You can run the "%s" command to get them.', GetCertificateInfoCommand::NAME));
         }
     }
 }
