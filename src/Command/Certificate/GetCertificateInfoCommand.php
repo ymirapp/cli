@@ -77,7 +77,7 @@ class GetCertificateInfoCommand extends AbstractCertificateCommand
     private function getDomainNames(array $certificateDomains): array
     {
         return collect($certificateDomains)->map(function (array $domain) {
-            return sprintf('%s (%s)', $domain['name'], $domain['validated'] ? '<fg=green>validated</>' : '<fg=red>not validated</>');
+            return sprintf('%s (%s)', $domain['domain_name'], $domain['validated'] ? '<fg=green>validated</>' : '<fg=red>not validated</>');
         })->all();
     }
 }
