@@ -11,11 +11,11 @@
         }
     ],
     "require": {
-        "php": ">=7.1",
+        "php": "^7.2.5",
         "ext-json": "*",
         "ext-pcntl": "*",
         "ext-zip": "*",
-        "guzzlehttp/guzzle": "^6.4",
+        "guzzlehttp/guzzle": "^7.0",
         "symfony/config": "^4.4",
         "symfony/console": "^4.4",
         "symfony/dependency-injection": "^4.4",
