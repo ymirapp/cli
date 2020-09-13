@@ -30,6 +30,9 @@ abstract class AbstractCertificateCommand extends AbstractCommand
                 ->unique(function (array $validationRecord) {
                     return $validationRecord['name'].$validationRecord['value'];
                 })
+                ->map(function (array $validationRecord) {
+                    return ['CNAME', $validationRecord['name'], $validationRecord['value']];
+                })
                 ->all()
              : [];
     }

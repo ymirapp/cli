@@ -69,7 +69,7 @@ class RequestCertificateCommand extends AbstractCertificateCommand
             $output->warn('The following DNS record(s) need to be manually added to your DNS server to validate the SSL certificate:');
             $output->newLine();
             $output->table(
-                ['Name', 'Value'],
+                ['Type', 'Name', 'Value'],
                 $validationRecords
             );
             $output->warn('The SSL certificate won\'t be issued until these DNS record(s) are added');
