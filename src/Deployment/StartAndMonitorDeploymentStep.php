@@ -51,7 +51,7 @@ class StartAndMonitorDeploymentStep implements DeploymentStepInterface
         $steps = $this->getDeploymentSteps($deploymentId);
 
         foreach ($steps as $step) {
-            $output->writeStep($this->getFormattedDeploymentStepName($step['job']));
+            $output->writeStep($this->getFormattedDeploymentStepName($step['task']));
             $this->waitForDeploymentStepToFinish($deploymentId, $step['id']);
         }
     }
@@ -69,7 +69,7 @@ class StartAndMonitorDeploymentStep implements DeploymentStepInterface
      */
     private function getFormattedDeploymentStepName(string $jobName): string
     {
-        return ucfirst(strtr(strtolower((string) preg_replace(['/(.)(?=[A-Z])/u', '/Job$/'], ['$1 ', ''], $jobName)), [
+        return ucfirst(strtr(strtolower((string) preg_replace(['/(.)(?=[A-Z])/u', '/(Job|Task)$/'], ['$1 ', ''], $jobName)), [
             'api' => 'API',
             'assign' => 'assigning',
             'create' => 'creating',
@@ -82,6 +82,7 @@ class StartAndMonitorDeploymentStep implements DeploymentStepInterface
             'set' => 'setting',
             'ssl' => 'SSL',
             'update' => 'updating',
+            'warm' => 'warming',
         ]));
     }
 
