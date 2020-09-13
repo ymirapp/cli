@@ -13,10 +13,8 @@ declare(strict_types=1);
 
 namespace Ymir\Cli\Command\Environment;
 
-use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Process\Process;
 use Ymir\Cli\Command\AbstractProjectCommand;
 use Ymir\Cli\Console\OutputStyle;
 
@@ -45,17 +43,6 @@ class GetEnvironmentUrlCommand extends AbstractProjectCommand
      */
     protected function perform(InputInterface $input, OutputStyle $output)
     {
-        $environment = $this->apiClient->getEnvironment($this->projectConfiguration->getProjectId(), $this->getStringArgument($input, 'environment'));
-
-        if (!$environment->has('vanity_domain_name')) {
-            throw new RuntimeException('Unable to get the environment domain');
-        }
-
-        $clipboardCommand = 'WIN' === strtoupper(substr(PHP_OS, 0, 3)) ? 'clip' : 'pbcopy';
-        $url = 'https://'.$environment->get('vanity_domain_name');
-
-        Process::fromShellCommandline(sprintf('echo %s | %s', $url, $clipboardCommand))->run();
-
-        $output->infoWithValue('Environment URL is', $url, 'copied to clipboard');
+        $this->displayEnvironmentUrlAndCopyToClipboard($output, $this->apiClient->getEnvironmentVanityDomainName($this->projectConfiguration->getProjectId(), $this->getStringArgument($input, 'environment')));
     }
 }

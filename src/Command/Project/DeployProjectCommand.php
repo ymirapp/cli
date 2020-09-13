@@ -20,7 +20,6 @@ use Ymir\Cli\ApiClient;
 use Ymir\Cli\CliConfiguration;
 use Ymir\Cli\Command\AbstractProjectCommand;
 use Ymir\Cli\Command\Email\CreateEmailIdentityCommand;
-use Ymir\Cli\Command\Environment\GetEnvironmentUrlCommand;
 use Ymir\Cli\Console\OutputStyle;
 use Ymir\Cli\Deployment\DeploymentStepInterface;
 use Ymir\Cli\ProjectConfiguration;
@@ -73,11 +72,12 @@ class DeployProjectCommand extends AbstractProjectCommand
     protected function perform(InputInterface $input, OutputStyle $output)
     {
         $environment = $this->getStringArgument($input, 'environment');
+        $projectId = $this->projectConfiguration->getProjectId();
 
         $this->invoke($output, ValidateProjectCommand::NAME, ['environments' => $environment]);
         $this->invoke($output, BuildProjectCommand::NAME, ['environment' => $environment]);
 
-        $deploymentId = (int) $this->apiClient->createDeployment($this->projectConfiguration->getProjectId(), $environment, $this->projectConfiguration)->get('id');
+        $deploymentId = (int) $this->apiClient->createDeployment($projectId, $environment, $this->projectConfiguration)->get('id');
 
         if (empty($deploymentId)) {
             throw new RuntimeException('There was an error creating the deployment');
@@ -89,7 +89,22 @@ class DeployProjectCommand extends AbstractProjectCommand
 
         $output->info(sprintf('Project deployed successfully to "<comment>%s</comment>" environment', $environment));
 
-        $this->invoke($output, GetEnvironmentUrlCommand::NAME, ['environment' => $environment]);
+        $unmanagedDomains = (array) $this->apiClient->getDeployment($deploymentId)->get('unmanaged_domains');
+        $vanityDomainName = $this->apiClient->getEnvironmentVanityDomainName($projectId, $environment);
+
+        $this->displayEnvironmentUrlAndCopyToClipboard($output, $vanityDomainName);
+
+        if (!empty($unmanagedDomains)) {
+            $output->newLine();
+            $output->warn('Not all domains in this project are managed by Ymir. The following DNS record(s) need to be manually added to your DNS server for these domains to work:');
+            $output->newLine();
+            $output->table(
+                ['Type', 'Name', 'Value'],
+                array_map(function (string $unmanagedDomain) use ($vanityDomainName) {
+                    return ['CNAME', $unmanagedDomain, $vanityDomainName];
+                }, $unmanagedDomains)
+            );
+        }
 
         if ($this->apiClient->getEmailIdentities($this->cliConfiguration->getActiveTeamId())->isEmpty()) {
             $output->newLine();

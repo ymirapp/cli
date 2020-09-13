@@ -409,6 +409,20 @@ class ApiClient
     }
 
     /**
+     * Get the project environment's vanity domain name.
+     */
+    public function getEnvironmentVanityDomainName(int $projectId, string $environment): string
+    {
+        $environment = $this->getEnvironment($projectId, $environment);
+
+        if (!$environment->has('vanity_domain_name')) {
+            throw new RuntimeException('Unable to get the environment vanity domain name');
+        }
+
+        return (string) $environment->get('vanity_domain_name');
+    }
+
+    /**
      * Get the function invocation with the given ID.
      */
     public function getInvocation(int $invocationId): Collection
