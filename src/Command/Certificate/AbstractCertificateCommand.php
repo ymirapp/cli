@@ -24,8 +24,8 @@ abstract class AbstractCertificateCommand extends AbstractCommand
     {
         return !empty($certificate['domains'])
              ? collect($certificate['domains'])
-                ->pluck('validation_record')
                 ->where('managed', false)
+                ->pluck('validation_record')
                 ->filter()
                 ->unique(function (array $validationRecord) {
                     return $validationRecord['name'].$validationRecord['value'];
