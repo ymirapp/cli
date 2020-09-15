@@ -168,7 +168,6 @@ class ApiClient
     public function createProvider(string $name, array $credentials, int $teamId): Collection
     {
         return $this->request('post', "/teams/{$teamId}/providers", [
-            'provider' => 'aws',
             'name' => $name,
             'credentials' => $credentials,
         ]);
