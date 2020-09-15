@@ -106,7 +106,7 @@ class DeployProjectCommand extends AbstractProjectCommand
             );
         }
 
-        if ($this->apiClient->getEmailIdentities($this->cliConfiguration->getActiveTeamId())->isEmpty()) {
+        if (!array_key_exists('domain', (array) $this->projectConfiguration->getEnvironment($environment))) {
             $output->newLine();
             $output->writeln(sprintf('<comment>Note:</comment> You cannot send emails using the "<comment>ymirsites.com</comment>" domain. Please use the "<comment>%s</comment>" command to add an email address or domain for sending emails.', CreateEmailIdentityCommand::NAME));
         }
