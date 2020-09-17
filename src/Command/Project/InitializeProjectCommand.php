@@ -160,7 +160,7 @@ class InitializeProjectCommand extends AbstractProjectCommand
         if (empty($name) && !$input->isInteractive()) {
             throw new InvalidArgumentException('You must use the "--name" option when running in non-interactive mode');
         } elseif (empty($name) && $input->isInteractive()) {
-            $name = $output->askSlug('What is the name of the project');
+            $name = $output->askSlug('What is the name of the project', basename(getcwd() ?: '') ?: null);
         }
 
         return (string) $name;
