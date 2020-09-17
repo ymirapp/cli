@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Ymir\Cli\Command\Project;
 
+use Symfony\Component\Console\Exception\InvalidArgumentException;
 use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -70,7 +71,8 @@ class InitializeProjectCommand extends AbstractProjectCommand
             ->setName(self::NAME)
             ->setAliases(['init'])
             ->setDescription('Creates a new project in the current directory')
-            ->addOption('database', null, InputOption::VALUE_REQUIRED, 'The database used by the project');
+            ->addOption('database', null, InputOption::VALUE_REQUIRED, 'The database used by the project')
+            ->addOption('name', null, InputOption::VALUE_REQUIRED, 'The name of the project');
     }
 
     /**
@@ -108,7 +110,7 @@ class InitializeProjectCommand extends AbstractProjectCommand
             return;
         }
 
-        $name = $output->askSlug('What is the name of the project');
+        $name = $this->determineName($input, $output);
         $providerId = $this->determineCloudProvider($input, $output, 'Enter the ID of the cloud provider that the project will use');
         $region = $this->determineRegion($input, $output, $providerId, 'Enter the name of the region that the project will be in');
 
@@ -146,6 +148,22 @@ class InitializeProjectCommand extends AbstractProjectCommand
         }
 
         return $databaseName;
+    }
+
+    /**
+     * Determine the name of the project.
+     */
+    private function determineName(InputInterface $input, OutputStyle $output): string
+    {
+        $name = $this->getStringOption($input, 'name');
+
+        if (empty($name) && !$input->isInteractive()) {
+            throw new InvalidArgumentException('You must use the "--name" option when running in non-interactive mode');
+        } elseif (empty($name) && $input->isInteractive()) {
+            $name = $output->askSlug('What is the name of the project');
+        }
+
+        return (string) $name;
     }
 
     /**
