@@ -103,14 +103,8 @@ class InitializeProjectCommand extends AbstractProjectCommand
             return;
         }
 
-        $projectType = $this->getProjectType();
-
-        if (empty($projectType)
-            && !$output->confirm('No WordPress installation detected in this directory. Do you want to proceed?', false)) {
-            return;
-        }
-
         $name = $this->determineName($input, $output);
+        $projectType = $this->determineProjectType($output);
         $providerId = $this->determineCloudProvider($input, $output, 'Enter the ID of the cloud provider that the project will use');
         $region = $this->determineRegion($input, $output, $providerId, 'Enter the name of the region that the project will be in');
 
@@ -138,6 +132,7 @@ class InitializeProjectCommand extends AbstractProjectCommand
         $databases = $this->apiClient->getDatabases($this->cliConfiguration->getActiveTeamId());
 
         if (!$databases->isEmpty() && $output->confirm('Would you like to use an existing database for this project?')) {
+            // TODO: This looks ugly. Add more info.
             $databaseName = (string) $output->choice('Which database would you like to use?', $databases->pluck('name')->all());
         } elseif (
             (!$databases->isEmpty() && $output->confirm('Would you like to create a new one for this project instead?'))
@@ -167,6 +162,28 @@ class InitializeProjectCommand extends AbstractProjectCommand
     }
 
     /**
+     * Determine the type of project being initialized.
+     */
+    private function determineProjectType(OutputStyle $output): string
+    {
+        $type = '';
+
+        if ($this->filesystem->exists($this->projectDirectory.'/wp-config.php')) {
+            $type = 'wordpress';
+        } elseif ($this->filesystem->exists(array_map(function (string $path) {
+            return $this->projectDirectory.$path;
+        }, ['/web/app/', '/web/wp-config.php', '/config/application.php']))) {
+            $type = 'bedrock';
+        }
+
+        if (empty($type)) {
+            $type = strtolower($output->choice('Please select the type of project to initialize', ['Bedrock', 'WordPress']));
+        }
+
+        return $type;
+    }
+
+    /**
      * Get the database name from the console input.
      */
     private function getDatabaseName(InputInterface $input): ?string
@@ -184,24 +201,6 @@ class InitializeProjectCommand extends AbstractProjectCommand
         }
 
         return $databaseName;
-    }
-
-    /**
-     * Get the project type that we're initializing.
-     */
-    private function getProjectType(): string
-    {
-        $type = '';
-
-        if ($this->filesystem->exists($this->projectDirectory.'/wp-config.php')) {
-            $type = 'wordpress';
-        } elseif ($this->filesystem->exists($this->projectDirectory.'/composer.json')
-            && false !== strpos((string) file_get_contents($this->projectDirectory.'/composer.json'), 'roots/wordpress')
-        ) {
-            $type = 'bedrock';
-        }
-
-        return $type;
     }
 
     /**
