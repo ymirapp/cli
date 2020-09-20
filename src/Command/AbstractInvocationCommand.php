@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Ymir\Cli\Command;
 
 use Symfony\Component\Console\Exception\RuntimeException;
+use Tightenco\Collect\Support\Arr;
 
 /**
  * Base command for invoking a project function.
@@ -25,19 +26,23 @@ abstract class AbstractInvocationCommand extends AbstractProjectCommand
      */
     protected function invokeEnvironmentFunction(string $environment, array $payload): array
     {
-        $invocation = $this->apiClient->createInvocation($this->projectConfiguration->getProjectId(), $environment, $payload);
+        $invocationId = $this->apiClient->createInvocation($this->projectConfiguration->getProjectId(), $environment, $payload)->get('id');
 
-        while (empty($invocation['status']) || in_array($invocation['status'], ['pending', 'running'])) {
-            sleep(1);
-
-            $invocation = $this->apiClient->getInvocation($invocation['id']);
+        if (!is_int($invocationId)) {
+            throw new \RuntimeException('Unable to create command invocation');
         }
+
+        $invocation = $this->wait(function () use ($invocationId) {
+            $invocation = $this->apiClient->getInvocation($invocationId);
+
+            return !in_array($invocation->get('status'), ['pending', 'running']) ? $invocation : [];
+        }, 60);
 
         if ('failed' === $invocation['status']) {
             throw new RuntimeException('Running the command failed');
         }
 
-        if (!isset($invocation['result']['exitCode'], $invocation['result']['output'])) {
+        if (!Arr::has($invocation, ['result.exitCode', 'result.output'])) {
             throw new RuntimeException('Unable to get the result of the command from the Ymir API');
         }
 
