@@ -68,5 +68,10 @@ services:
         - '@Ymir\Cli\Deployment\StartAndMonitorDeploymentStep'
         - '@Ymir\Cli\Deployment\CleanupStep'
 
+  Ymir\Cli\Command\Project\RedeployProjectCommand:
+    arguments:
+      $deploymentSteps:
+        - '@Ymir\Cli\Deployment\StartAndMonitorDeploymentStep'
+
   Symfony\Component\Filesystem\:
     resource: '../vendor/symfony/filesystem'

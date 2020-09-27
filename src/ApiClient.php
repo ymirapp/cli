@@ -174,6 +174,14 @@ class ApiClient
     }
 
     /**
+     * Create a new deployment redeploying the given project on the given environment.
+     */
+    public function createRedeployment(int $projectId, string $environment): Collection
+    {
+        return $this->request('post', "/projects/{$projectId}/environments/{$environment}/redeployments");
+    }
+
+    /**
      * Create a new team with the given name.
      */
     public function createTeam(string $name): Collection
