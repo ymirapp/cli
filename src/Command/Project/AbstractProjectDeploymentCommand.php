@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Ymir\Cli\Command\Project;
 
 use Symfony\Component\Console\Input\InputInterface;
+use Tightenco\Collect\Support\Collection;
 use Ymir\Cli\ApiClient;
 use Ymir\Cli\CliConfiguration;
 use Ymir\Cli\Command\AbstractProjectCommand;
@@ -48,7 +49,7 @@ abstract class AbstractProjectDeploymentCommand extends AbstractProjectCommand
     /**
      * Create the deployment and return its ID.
      */
-    abstract protected function createDeployment(InputInterface $input, OutputStyle $output): int;
+    abstract protected function createDeployment(InputInterface $input, OutputStyle $output): Collection;
 
     /**
      * Get the message to display when a deployment was successful.
@@ -60,17 +61,17 @@ abstract class AbstractProjectDeploymentCommand extends AbstractProjectCommand
      */
     protected function perform(InputInterface $input, OutputStyle $output)
     {
-        $deploymentId = $this->createDeployment($input, $output);
+        $deployment = $this->createDeployment($input, $output);
         $environment = $this->getStringArgument($input, 'environment');
         $projectId = $this->projectConfiguration->getProjectId();
 
         foreach ($this->deploymentSteps as $deploymentStep) {
-            $deploymentStep->perform($deploymentId, $output);
+            $deploymentStep->perform($deployment, $output);
         }
 
         $output->info($this->getSuccessMessage($environment));
 
-        $unmanagedDomains = (array) $this->apiClient->getDeployment($deploymentId)->get('unmanaged_domains');
+        $unmanagedDomains = (array) $this->apiClient->getDeployment($deployment->get('id'))->get('unmanaged_domains');
         $vanityDomainName = $this->apiClient->getEnvironmentVanityDomainName($projectId, $environment);
 
         $this->displayEnvironmentUrlAndCopyToClipboard($output, $vanityDomainName);

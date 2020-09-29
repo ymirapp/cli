@@ -182,6 +182,16 @@ class ApiClient
     }
 
     /**
+     * Create a new deployment to rollback to the given deployment.
+     */
+    public function createRollback(int $projectId, string $environment, int $deploymentId): Collection
+    {
+        return $this->request('post', "/projects/{$projectId}/environments/{$environment}/rollbacks", [
+            'deployment' => $deploymentId,
+        ]);
+    }
+
+    /**
      * Create a new team with the given name.
      */
     public function createTeam(string $name): Collection
@@ -339,6 +349,14 @@ class ApiClient
     public function getDeployment(int $deploymentId): Collection
     {
         return $this->request('get', "/deployments/{$deploymentId}");
+    }
+
+    /**
+     * Get all the deployments for the given project on the given environment.
+     */
+    public function getDeployments(int $projectId, string $environment): Collection
+    {
+        return $this->request('get', "/projects/{$projectId}/environments/{$environment}/deployments");
     }
 
     /**

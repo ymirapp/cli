@@ -16,6 +16,7 @@ namespace Ymir\Cli\Command\Project;
 use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
+use Tightenco\Collect\Support\Collection;
 use Ymir\Cli\Console\OutputStyle;
 
 class DeployProjectCommand extends AbstractProjectDeploymentCommand
@@ -42,7 +43,7 @@ class DeployProjectCommand extends AbstractProjectDeploymentCommand
     /**
      * {@inheritdoc}
      */
-    protected function createDeployment(InputInterface $input, OutputStyle $output): int
+    protected function createDeployment(InputInterface $input, OutputStyle $output): Collection
     {
         $environment = $this->getStringArgument($input, 'environment');
         $projectId = $this->projectConfiguration->getProjectId();
@@ -50,13 +51,13 @@ class DeployProjectCommand extends AbstractProjectDeploymentCommand
         $this->invoke($output, ValidateProjectCommand::NAME, ['environments' => $environment]);
         $this->invoke($output, BuildProjectCommand::NAME, ['environment' => $environment]);
 
-        $deploymentId = (int) $this->apiClient->createDeployment($projectId, $environment, $this->projectConfiguration)->get('id');
+        $deployment = $this->apiClient->createDeployment($projectId, $environment, $this->projectConfiguration);
 
-        if (empty($deploymentId)) {
+        if (!$deployment->has('id')) {
             throw new RuntimeException('There was an error creating the deployment');
         }
 
-        return $deploymentId;
+        return $deployment;
     }
 
     /**

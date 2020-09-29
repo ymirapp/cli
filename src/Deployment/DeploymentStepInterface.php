@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Ymir\Cli\Deployment;
 
+use Tightenco\Collect\Support\Collection;
 use Ymir\Cli\Console\OutputStyle;
 
 interface DeploymentStepInterface
@@ -20,5 +21,5 @@ interface DeploymentStepInterface
     /**
      * Perform the deployment step and generate the console output.
      */
-    public function perform(int $deploymentId, OutputStyle $output);
+    public function perform(Collection $deployment, OutputStyle $output);
 }

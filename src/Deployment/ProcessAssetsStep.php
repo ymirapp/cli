@@ -63,13 +63,13 @@ class ProcessAssetsStep implements DeploymentStepInterface
     /**
      * {@inheritdoc}
      */
-    public function perform(int $deploymentId, OutputStyle $output)
+    public function perform(Collection $deployment, OutputStyle $output)
     {
         $output->info('Processing assets');
 
         $output->writeStep('Getting signed asset URLs');
         $assetFiles = $this->getAssetFiles();
-        $signedAssetRequests = $this->apiClient->getSignedAssetRequests($deploymentId, $assetFiles->map(function (array $asset) {
+        $signedAssetRequests = $this->apiClient->getSignedAssetRequests($deployment->get('id'), $assetFiles->map(function (array $asset) {
             return [
                 'path' => $asset['relative_path'],
                 'hash' => $asset['hash'],

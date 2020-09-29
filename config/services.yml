@@ -73,5 +73,10 @@ services:
       $deploymentSteps:
         - '@Ymir\Cli\Deployment\StartAndMonitorDeploymentStep'
 
+  Ymir\Cli\Command\Project\RollbackProjectCommand:
+    arguments:
+      $deploymentSteps:
+        - '@Ymir\Cli\Deployment\StartAndMonitorDeploymentStep'
+
   Symfony\Component\Filesystem\:
     resource: '../vendor/symfony/filesystem'

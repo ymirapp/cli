@@ -16,6 +16,7 @@ namespace Ymir\Cli\Command\Project;
 use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
+use Tightenco\Collect\Support\Collection;
 use Ymir\Cli\Console\OutputStyle;
 
 class RedeployProjectCommand extends AbstractProjectDeploymentCommand
@@ -42,15 +43,15 @@ class RedeployProjectCommand extends AbstractProjectDeploymentCommand
     /**
      * {@inheritdoc}
      */
-    protected function createDeployment(InputInterface $input, OutputStyle $output): int
+    protected function createDeployment(InputInterface $input, OutputStyle $output): Collection
     {
-        $deploymentId = (int) $this->apiClient->createRedeployment($this->projectConfiguration->getProjectId(), $this->getStringArgument($input, 'environment'))->get('id');
+        $redeployment = $this->apiClient->createRedeployment($this->projectConfiguration->getProjectId(), $this->getStringArgument($input, 'environment'));
 
-        if (empty($deploymentId)) {
+        if (!$redeployment->has('id')) {
             throw new RuntimeException('There was an error creating the redeployment');
         }
 
-        return $deploymentId;
+        return $redeployment;
     }
 
     /**

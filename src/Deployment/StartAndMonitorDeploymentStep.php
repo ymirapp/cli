@@ -38,22 +38,20 @@ class StartAndMonitorDeploymentStep implements DeploymentStepInterface
     /**
      * {@inheritdoc}
      */
-    public function perform(int $deploymentId, OutputStyle $output)
+    public function perform(Collection $deployment, OutputStyle $output)
     {
-        $output->info('Deployment starting');
+        $output->info(sprintf('%s starting', ucfirst($deployment->get('type', 'deployment'))));
 
-        $this->registerCancellationHandler($deploymentId, $output);
+        $this->registerCancellationHandler($deployment, $output);
 
-        $this->apiClient->startDeployment($deploymentId);
+        $this->apiClient->startDeployment($deployment->get('id'));
 
-        $this->waitForDeploymentStatusChange($deploymentId, 'pending');
+        $this->waitForDeploymentStatusChange($deployment->get('id'), 'pending');
 
-        $steps = $this->getDeploymentSteps($deploymentId);
-
-        foreach ($steps as $step) {
+        $this->getDeploymentSteps($deployment->get('id'))->each(function (array $step) use ($deployment, $output) {
             $output->writeStep($this->getFormattedDeploymentStepName($step['task']));
-            $this->waitForDeploymentStepToFinish($deploymentId, $step['id']);
-        }
+            $this->waitForDeploymentStepToFinish($deployment->get('id'), $step['id']);
+        });
     }
 
     /**
@@ -89,7 +87,7 @@ class StartAndMonitorDeploymentStep implements DeploymentStepInterface
     /**
      * Register a signal handler to handle deployment cancellation.
      */
-    private function registerCancellationHandler(int $deploymentId, OutputStyle $output)
+    private function registerCancellationHandler(Collection $deployment, OutputStyle $output)
     {
         if (!extension_loaded('pcntl')) {
             return;
@@ -97,14 +95,14 @@ class StartAndMonitorDeploymentStep implements DeploymentStepInterface
 
         pcntl_async_signals(true);
 
-        pcntl_signal(SIGINT, function () use ($deploymentId, $output) {
+        pcntl_signal(SIGINT, function () use ($deployment, $output) {
             $output->newLine();
-            $output->warn('Attempting to cancel the deployment');
+            $output->warn(sprintf('Attempting to cancel the %s', $deployment->get('type', 'deployment')));
 
-            $this->apiClient->cancelDeployment($deploymentId);
-            $this->waitForDeploymentStatusChange($deploymentId, 'cancelling');
+            $this->apiClient->cancelDeployment($deployment->get('id'));
+            $this->waitForDeploymentStatusChange($deployment->get('id'), 'cancelling');
 
-            $output->info('Deployment cancelled');
+            $output->info(sprintf('%s cancelled', ucfirst($deployment->get('type', 'deployment'))));
 
             exit;
         });

@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Ymir\Cli\Deployment;
 
 use Symfony\Component\Console\Helper\ProgressBar;
+use Tightenco\Collect\Support\Collection;
 use Ymir\Cli\ApiClient;
 use Ymir\Cli\Console\OutputStyle;
 use Ymir\Cli\FileUploader;
@@ -54,14 +55,14 @@ class UploadBuildStep implements DeploymentStepInterface
     /**
      * {@inheritdoc}
      */
-    public function perform(int $deploymentId, OutputStyle $output)
+    public function perform(Collection $deployment, OutputStyle $output)
     {
         $progressBar = new ProgressBar($output);
 
         $progressBar->setFormat('<info>%message%</info> (<comment>%percent%%</comment>)');
         $progressBar->setMessage('Uploading build');
 
-        $this->uploader->uploadFile($this->buildArtifactPath, $this->apiClient->getArtifactUploadUrl($deploymentId), [], $progressBar);
+        $this->uploader->uploadFile($this->buildArtifactPath, $this->apiClient->getArtifactUploadUrl($deployment->get('id')), [], $progressBar);
 
         $output->newLine();
     }

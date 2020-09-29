@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Ymir\Cli\Deployment;
 
 use Symfony\Component\Filesystem\Filesystem;
+use Tightenco\Collect\Support\Collection;
 use Ymir\Cli\Console\OutputStyle;
 
 class CleanupStep implements DeploymentStepInterface
@@ -44,7 +45,7 @@ class CleanupStep implements DeploymentStepInterface
     /**
      * {@inheritdoc}
      */
-    public function perform(int $deploymentId, OutputStyle $output)
+    public function perform(Collection $deployment, OutputStyle $output)
     {
         $output->info('Cleaning up deployment files');
 
