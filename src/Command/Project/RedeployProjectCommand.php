@@ -22,6 +22,13 @@ use Ymir\Cli\Console\OutputStyle;
 class RedeployProjectCommand extends AbstractProjectDeploymentCommand
 {
     /**
+     * The alias of the command.
+     *
+     * @var string
+     */
+    public const ALIAS = 'redeploy';
+
+    /**
      * The name of the command.
      *
      * @var string
@@ -36,7 +43,7 @@ class RedeployProjectCommand extends AbstractProjectDeploymentCommand
         $this
             ->setName(self::NAME)
             ->setDescription('Redeploy project to an environment')
-            ->setAliases(['redeploy'])
+            ->setAliases([self::ALIAS])
             ->addArgument('environment', InputArgument::OPTIONAL, 'The environment name', 'staging');
     }
 

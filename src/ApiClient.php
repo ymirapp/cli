@@ -75,6 +75,17 @@ class ApiClient
     }
 
     /**
+     * Change the value of the given secret for the given project environment.
+     */
+    public function changeSecret(int $projectId, string $environment, string $name, string $value): Collection
+    {
+        return $this->request('put', "/projects/{$projectId}/environments/{$environment}/secrets", [
+            'name' => $name,
+            'value' => $value,
+        ]);
+    }
+
+    /**
      * Create a new SSL certificate.
      */
     public function createCertificate(int $providerId, string $domain, string $region): Collection
@@ -249,6 +260,14 @@ class ApiClient
         $this->request('delete', "/projects/{$projectId}", [
             'delete_resources' => $deleteResources,
         ]);
+    }
+
+    /**
+     * Delete the given secret.
+     */
+    public function deleteSecret($secretId)
+    {
+        $this->request('delete', "/secrets/{$secretId}");
     }
 
     /**
@@ -485,6 +504,14 @@ class ApiClient
     public function getRegions(int $providerId): Collection
     {
         return $this->request('get', "/providers/{$providerId}/regions");
+    }
+
+    /**
+     * Get all the secrets for the given project on the given environment.
+     */
+    public function getSecrets(int $projectId, string $environment): Collection
+    {
+        return $this->request('get', "/projects/{$projectId}/environments/{$environment}/secrets");
     }
 
     /**

@@ -22,6 +22,13 @@ use Ymir\Cli\Console\OutputStyle;
 class DeployProjectCommand extends AbstractProjectDeploymentCommand
 {
     /**
+     * The alias of the command.
+     *
+     * @var string
+     */
+    public const ALIAS = 'deploy';
+
+    /**
      * The name of the command.
      *
      * @var string
@@ -36,7 +43,7 @@ class DeployProjectCommand extends AbstractProjectDeploymentCommand
         $this
             ->setName(self::NAME)
             ->setDescription('Deploy project to an environment')
-            ->setAliases(['deploy'])
+            ->setAliases([self::ALIAS])
             ->addArgument('environment', InputArgument::OPTIONAL, 'The environment name', 'staging');
     }
 
