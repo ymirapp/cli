@@ -97,11 +97,21 @@ class ApiClient
     }
 
     /**
+     * Create a new database on the given database server.
+     */
+    public function createDatabase(int $databaseId, string $name): Collection
+    {
+        return $this->request('post', "/database-servers/{$databaseId}/databases", [
+            'name' => $name,
+        ]);
+    }
+
+    /**
      * Create a new database on the given network.
      */
-    public function createDatabase(string $name, int $networkId, string $type, int $storage = 100, bool $public = false): Collection
+    public function createDatabaseServer(string $name, int $networkId, string $type, int $storage = 100, bool $public = false): Collection
     {
-        return $this->request('post', "/networks/{$networkId}/databases", [
+        return $this->request('post', "/networks/{$networkId}/database-servers", [
             'name' => $name,
             'publicly_accessible' => $public,
             'storage' => $storage,
@@ -110,11 +120,11 @@ class ApiClient
     }
 
     /**
-     * Create a new user on the given database.
+     * Create a new user on the given database server.
      */
     public function createDatabaseUser(int $databaseId, string $username): Collection
     {
-        return $this->request('post', "/databases/{$databaseId}/users", [
+        return $this->request('post', "/database-servers/{$databaseId}/users", [
             'username' => $username,
         ]);
     }
@@ -221,11 +231,27 @@ class ApiClient
     }
 
     /**
-     * Delete the given database.
+     * Delete a the given database on the given database server.
      */
-    public function deleteDatabase(int $databaseId)
+    public function deleteDatabase(int $databaseId, string $name): Collection
     {
-        $this->request('delete', "/databases/{$databaseId}");
+        return $this->request('delete', "/database-servers/{$databaseId}/databases/{$name}");
+    }
+
+    /**
+     * Delete the given database server.
+     */
+    public function deleteDatabaseServer(int $databaseId)
+    {
+        $this->request('delete', "/database-servers/{$databaseId}");
+    }
+
+    /**
+     * Delete a the given database user on the given database server.
+     */
+    public function deleteDatabaseUser(int $databaseId, int $userId): Collection
+    {
+        return $this->request('delete', "/database-servers/{$databaseId}/users/{$userId}");
     }
 
     /**
@@ -327,39 +353,61 @@ class ApiClient
     }
 
     /**
-     * Get the database information from the given database ID or name.
+     * Get the list of databases on the given database server.
      */
-    public function getDatabase($idOrName): array
+    public function getDatabases(int $databaseId): Collection
+    {
+        return $this->request('get', "/database-servers/{$databaseId}/databases");
+    }
+
+    /**
+     * Get the information on the database server with the given database ID or name.
+     */
+    public function getDatabaseServer($idOrName): array
     {
         $database = null;
 
         if (is_numeric($idOrName)) {
-            $database = $this->request('get', "/databases/{$idOrName}")->toArray();
+            $database = $this->request('get', "/database-servers/{$idOrName}")->toArray();
         } elseif (is_string($idOrName)) {
-            $database = $this->getDatabases($this->cliConfiguration->getActiveTeamId())->firstWhere('name', $idOrName);
+            $database = $this->getDatabaseServers($this->cliConfiguration->getActiveTeamId())->firstWhere('name', $idOrName);
         }
 
         if (!is_array($database) || !isset($database['id']) || !is_numeric($database['id'])) {
-            throw new RuntimeException(sprintf('Unable to find a database with "%s" as the ID or name', $idOrName));
+            throw new RuntimeException(sprintf('Unable to find a database server with "%s" as the ID or name', $idOrName));
         }
 
         return $database;
     }
 
     /**
-     * Get the databases that belong to the given team.
+     * Get the database servers that belong to the given team.
      */
-    public function getDatabases(int $teamId): Collection
+    public function getDatabaseServers(int $teamId): Collection
     {
-        return $this->request('get', "/teams/{$teamId}/databases");
+        return $this->request('get', "/teams/{$teamId}/database-servers");
     }
 
     /**
-     * Get the database types available on the given cloud provider.
+     * Get the types of database server available on the given cloud provider.
      */
-    public function getDatabaseTypes(int $providerId): Collection
+    public function getDatabaseServerTypes(int $providerId): Collection
     {
-        return $this->request('get', "/providers/{$providerId}/databases/types");
+        $types = $this->request('get', "/providers/{$providerId}/database-servers/types");
+
+        if ($types->isEmpty()) {
+            throw new RuntimeException('The Ymir API failed to return information on the database instance types');
+        }
+
+        return $types;
+    }
+
+    /**
+     * Get the list of database users on the given database server.
+     */
+    public function getDatabaseUsers(int $databaseId): Collection
+    {
+        return $this->request('get', "/database-servers/{$databaseId}/users");
     }
 
     /**
@@ -537,6 +585,14 @@ class ApiClient
     }
 
     /**
+     * Get the database servers that the team has access to.
+     */
+    public function getTeamDatabaseServers($teamId): Collection
+    {
+        return $this->request('get', "/teams/{$teamId}/database-servers");
+    }
+
+    /**
      * Get the teams the user is a member of.
      */
     public function getTeams(): Collection
@@ -584,6 +640,17 @@ class ApiClient
     public function startDeployment(int $deploymentId)
     {
         $this->request('post', "/deployments/{$deploymentId}/start");
+    }
+
+    /**
+     * Update the give database server.
+     */
+    public function updateDatabaseServer(int $databaseId, int $storage, string $type)
+    {
+        $this->request('put', "/database-servers/{$databaseId}", [
+            'storage' => $storage,
+            'type' => $type,
+        ]);
     }
 
     /**

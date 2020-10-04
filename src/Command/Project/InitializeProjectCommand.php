@@ -21,7 +21,7 @@ use Symfony\Component\Filesystem\Filesystem;
 use Ymir\Cli\ApiClient;
 use Ymir\Cli\CliConfiguration;
 use Ymir\Cli\Command\AbstractProjectCommand;
-use Ymir\Cli\Command\Database\CreateDatabaseCommand;
+use Ymir\Cli\Command\Database\CreateDatabaseServerCommand;
 use Ymir\Cli\Command\InstallPluginCommand;
 use Ymir\Cli\Command\Provider\ConnectProviderCommand;
 use Ymir\Cli\Console\OutputStyle;
@@ -129,17 +129,17 @@ class InitializeProjectCommand extends AbstractProjectCommand
     private function determineDatabaseName(OutputStyle $output): string
     {
         $databaseName = '';
-        $databases = $this->apiClient->getDatabases($this->cliConfiguration->getActiveTeamId());
+        $databases = $this->apiClient->getDatabaseServers($this->cliConfiguration->getActiveTeamId());
 
-        if (!$databases->isEmpty() && $output->confirm('Would you like to use an existing database for this project?')) {
+        if (!$databases->isEmpty() && $output->confirm('Would you like to use an existing database server for this project?')) {
             // TODO: This looks ugly. Add more info.
-            $databaseName = (string) $output->choice('Which database would you like to use?', $databases->pluck('name')->all());
+            $databaseName = (string) $output->choice('Which database server would you like to use?', $databases->pluck('name')->all());
         } elseif (
             (!$databases->isEmpty() && $output->confirm('Would you like to create a new one for this project instead?'))
-            || ($databases->isEmpty() && $output->confirm('Your team doesn\'t have any configured databases. Would you like to create one for this project first?'))
+            || ($databases->isEmpty() && $output->confirm('Your team doesn\'t have any configured database servers. Would you like to create one for this project first?'))
         ) {
-            $this->invoke($output, CreateDatabaseCommand::NAME);
-            $databaseName = (string) $this->apiClient->getDatabases($this->cliConfiguration->getActiveTeamId())->pluck('name')->last();
+            $this->invoke($output, CreateDatabaseServerCommand::NAME);
+            $databaseName = (string) $this->apiClient->getDatabaseServers($this->cliConfiguration->getActiveTeamId())->pluck('name')->last();
         }
 
         return $databaseName;
@@ -194,10 +194,10 @@ class InitializeProjectCommand extends AbstractProjectCommand
             return $databaseName;
         }
 
-        $databases = $this->apiClient->getDatabases($this->cliConfiguration->getActiveTeamId());
+        $databases = $this->apiClient->getDatabaseServers($this->cliConfiguration->getActiveTeamId());
 
         if (!$databases->contains(function (array $database) use ($databaseName) { return isset($database['name']) && $database['name'] === $databaseName; })) {
-            throw new RuntimeException(sprintf('There is no "%s" database on your current team', $databaseName));
+            throw new RuntimeException(sprintf('There is no "%s" database server on your current team', $databaseName));
         }
 
         return $databaseName;

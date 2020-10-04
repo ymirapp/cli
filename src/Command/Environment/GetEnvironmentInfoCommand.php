@@ -105,7 +105,7 @@ class GetEnvironmentInfoCommand extends AbstractProjectCommand
             return null;
         }
 
-        $database = $this->apiClient->getDatabases($this->cliConfiguration->getActiveTeamId())->firstWhere('name', $databaseName);
+        $database = $this->apiClient->getDatabaseServers($this->cliConfiguration->getActiveTeamId())->firstWhere('name', $databaseName);
 
         if (!is_array($database)) {
             throw new RuntimeException(sprintf('There is no "%s" database on your current team', $databaseName));

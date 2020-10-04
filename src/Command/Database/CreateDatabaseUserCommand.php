@@ -13,13 +13,12 @@ declare(strict_types=1);
 
 namespace Ymir\Cli\Command\Database;
 
-use Symfony\Component\Console\Exception\RuntimeException;
+use Symfony\Component\Console\Exception\InvalidArgumentException;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
-use Ymir\Cli\Command\AbstractCommand;
 use Ymir\Cli\Console\OutputStyle;
 
-class CreateDatabaseUserCommand extends AbstractCommand
+class CreateDatabaseUserCommand extends AbstractDatabaseCommand
 {
     /**
      * The name of the command.
@@ -35,9 +34,9 @@ class CreateDatabaseUserCommand extends AbstractCommand
     {
         $this
             ->setName(self::NAME)
-            ->addArgument('database', InputArgument::REQUIRED, 'The ID or name of the database to delete')
-            ->addArgument('username', InputArgument::REQUIRED, 'The username of the new database user')
-            ->setDescription('Create a new user on a database');
+            ->setDescription('Create a new user on a database server')
+            ->addArgument('database', InputArgument::OPTIONAL, 'The ID or name of the database server where the user will be created')
+            ->addArgument('username', InputArgument::OPTIONAL, 'The username of the new database user');
     }
 
     /**
@@ -45,14 +44,16 @@ class CreateDatabaseUserCommand extends AbstractCommand
      */
     protected function perform(InputInterface $input, OutputStyle $output)
     {
-        $databaseIdOrName = $this->getStringArgument($input, 'database');
-        $database = $this->apiClient->getDatabase($databaseIdOrName);
+        $database = $this->determineDatabaseServer('On which database server would you like to create the new database user?', $input, $output);
+        $username = $this->getStringArgument($input, 'username');
 
-        if (isset($database['status']) && 'available' !== $database['status']) {
-            throw new RuntimeException(sprintf('The database with the ID or name "%s" is unavailable', $databaseIdOrName));
+        if (empty($username) && $input->isInteractive()) {
+            $username = $output->ask('What is the username of the new database user');
+        } elseif (empty($username) && !$input->isInteractive()) {
+            throw new InvalidArgumentException('You must pass a "username" argument when running in non-interactive mode');
         }
 
-        $user = $this->apiClient->createDatabaseUser((int) $database['id'], $this->getStringArgument($input, 'username'));
+        $user = $this->apiClient->createDatabaseUser((int) $database['id'], $username);
 
         $output->horizontalTable(
             ['Username', 'Password'],
