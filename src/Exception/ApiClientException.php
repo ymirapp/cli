@@ -48,7 +48,10 @@ class ApiClientException extends RuntimeException
             return $message;
         }
 
-        return str_replace('"', '', (string) $response->getBody());
+        $body = (string) $response->getBody();
+        $decodedBody = json_decode($body, true);
+
+        return JSON_ERROR_NONE === json_last_error() && !empty($decodedBody['message']) ? $decodedBody['message'] : str_replace('"', '', $body);
     }
 
     /**
