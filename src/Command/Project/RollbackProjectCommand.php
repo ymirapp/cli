@@ -20,10 +20,17 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Tightenco\Collect\Support\Arr;
 use Tightenco\Collect\Support\Collection;
-use Ymir\Cli\Console\OutputStyle;
+use Ymir\Cli\Console\ConsoleOutput;
 
 class RollbackProjectCommand extends AbstractProjectDeploymentCommand
 {
+    /**
+     * The alias of the command.
+     *
+     * @var string
+     */
+    public const ALIAS = 'rollback';
+
     /**
      * The name of the command.
      *
@@ -39,7 +46,7 @@ class RollbackProjectCommand extends AbstractProjectDeploymentCommand
         $this
             ->setName(self::NAME)
             ->setDescription('Rollback project environment to a previous deployment')
-            ->setAliases(['rollback'])
+            ->setAliases([self::ALIAS])
             ->addArgument('environment', InputArgument::OPTIONAL, 'The environment name', 'staging')
             ->addOption('select', null, InputOption::VALUE_NONE, 'Select the deployment to rollback to');
     }
@@ -47,7 +54,7 @@ class RollbackProjectCommand extends AbstractProjectDeploymentCommand
     /**
      * {@inheritdoc}
      */
-    protected function createDeployment(InputInterface $input, OutputStyle $output): Collection
+    protected function createDeployment(InputInterface $input, ConsoleOutput $output): Collection
     {
         $environment = $this->getStringArgument($input, 'environment');
         $projectId = $this->projectConfiguration->getProjectId();

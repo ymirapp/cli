@@ -17,7 +17,7 @@ use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Tightenco\Collect\Support\Collection;
-use Ymir\Cli\Console\OutputStyle;
+use Ymir\Cli\Console\ConsoleOutput;
 
 class DeployProjectCommand extends AbstractProjectDeploymentCommand
 {
@@ -50,7 +50,7 @@ class DeployProjectCommand extends AbstractProjectDeploymentCommand
     /**
      * {@inheritdoc}
      */
-    protected function createDeployment(InputInterface $input, OutputStyle $output): Collection
+    protected function createDeployment(InputInterface $input, ConsoleOutput $output): Collection
     {
         $environment = $this->getStringArgument($input, 'environment');
         $projectId = $this->projectConfiguration->getProjectId();

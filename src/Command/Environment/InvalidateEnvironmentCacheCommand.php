@@ -17,7 +17,7 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Ymir\Cli\Command\AbstractProjectCommand;
-use Ymir\Cli\Console\OutputStyle;
+use Ymir\Cli\Console\ConsoleOutput;
 
 class InvalidateEnvironmentCacheCommand extends AbstractProjectCommand
 {
@@ -43,7 +43,7 @@ class InvalidateEnvironmentCacheCommand extends AbstractProjectCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(InputInterface $input, OutputStyle $output)
+    protected function perform(InputInterface $input, ConsoleOutput $output)
     {
         $this->apiClient->invalidateCache($this->projectConfiguration->getProjectId(), $this->getStringArgument($input, 'environment'), $this->getArrayOption($input, 'path'));
     }

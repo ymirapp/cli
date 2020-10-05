@@ -16,7 +16,7 @@ namespace Ymir\Cli\Command;
 use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Process\Process;
-use Ymir\Cli\Console\OutputStyle;
+use Ymir\Cli\Console\ConsoleOutput;
 
 class InstallPluginCommand extends AbstractProjectCommand
 {
@@ -40,7 +40,7 @@ class InstallPluginCommand extends AbstractProjectCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(InputInterface $input, OutputStyle $output)
+    protected function perform(InputInterface $input, ConsoleOutput $output)
     {
         $command = null;
         $message = 'Installing Ymir plugin ';

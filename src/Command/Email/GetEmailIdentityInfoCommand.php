@@ -16,10 +16,9 @@ namespace Ymir\Cli\Command\Email;
 use Symfony\Component\Console\Helper\TableSeparator;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
-use Ymir\Cli\Command\AbstractCommand;
-use Ymir\Cli\Console\OutputStyle;
+use Ymir\Cli\Console\ConsoleOutput;
 
-class GetEmailIdentityInfoCommand extends AbstractCommand
+class GetEmailIdentityInfoCommand extends AbstractEmailIdentityCommand
 {
     /**
      * The name of the command.
@@ -35,16 +34,16 @@ class GetEmailIdentityInfoCommand extends AbstractCommand
     {
         $this
             ->setName(self::NAME)
-            ->addArgument('identity', InputArgument::REQUIRED, 'The ID or name of the email identity to fetch')
-            ->setDescription('Get the information on an email identity');
+            ->setDescription('Get the information on an email identity')
+            ->addArgument('identity', InputArgument::OPTIONAL, 'The ID or name of the email identity to fetch');
     }
 
     /**
      * {@inheritdoc}
      */
-    protected function perform(InputInterface $input, OutputStyle $output)
+    protected function perform(InputInterface $input, ConsoleOutput $output)
     {
-        $identity = $this->apiClient->getEmailIdentity($this->getStringArgument($input, 'identity'));
+        $identity = $this->determineEmailIdentity('Which email identity would you like to get information about', $input, $output);
 
         $output->horizontalTable(
             ['Name', new TableSeparator(), 'Provider', 'Region', new TableSeparator(), 'Type', 'Status', 'Managed'],

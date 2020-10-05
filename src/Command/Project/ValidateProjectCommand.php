@@ -16,10 +16,17 @@ namespace Ymir\Cli\Command\Project;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Ymir\Cli\Command\AbstractProjectCommand;
-use Ymir\Cli\Console\OutputStyle;
+use Ymir\Cli\Console\ConsoleOutput;
 
 class ValidateProjectCommand extends AbstractProjectCommand
 {
+    /**
+     * The alias of the command.
+     *
+     * @var string
+     */
+    public const ALIAS = 'validate';
+
     /**
      * The name of the command.
      *
@@ -34,15 +41,15 @@ class ValidateProjectCommand extends AbstractProjectCommand
     {
         $this
             ->setName(self::NAME)
-            ->setAliases(['validate'])
             ->setDescription('Validates the project ymir.yml file')
+            ->setAliases([self::ALIAS])
             ->addArgument('environments', InputArgument::OPTIONAL, 'The environments to validate');
     }
 
     /**
      * {@inheritdoc}
      */
-    protected function perform(InputInterface $input, OutputStyle $output)
+    protected function perform(InputInterface $input, ConsoleOutput $output)
     {
         $environments = $input->getArgument('environments');
 

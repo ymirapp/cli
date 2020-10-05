@@ -15,7 +15,7 @@ namespace Ymir\Cli\Command\Database;
 
 use Symfony\Component\Console\Input\InputInterface;
 use Ymir\Cli\Command\AbstractCommand;
-use Ymir\Cli\Console\OutputStyle;
+use Ymir\Cli\Console\ConsoleOutput;
 
 class ListDatabaseServersCommand extends AbstractCommand
 {
@@ -39,15 +39,15 @@ class ListDatabaseServersCommand extends AbstractCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(InputInterface $input, OutputStyle $output)
+    protected function perform(InputInterface $input, ConsoleOutput $output)
     {
         $output->table(
             ['Id', 'Name', 'Status', 'Provider', 'Network', 'Region', 'Type', 'Storage'],
-            $this->apiClient->getTeamDatabaseServers($this->cliConfiguration->getActiveTeamId())->map(function (array $database) {
+            $this->apiClient->getTeamDatabaseServers($this->cliConfiguration->getActiveTeamId())->map(function (array $database) use ($output) {
                 return [
                     $database['id'],
                     $database['name'],
-                    $this->formatStatus($database['status']),
+                    $output->formatStatus($database['status']),
                     $database['network']['provider']['name'],
                     $database['network']['name'],
                     $database['region'],
@@ -56,21 +56,5 @@ class ListDatabaseServersCommand extends AbstractCommand
                 ];
             })->all()
         );
-    }
-
-    /**
-     * Format the database server status for display.
-     */
-    private function formatStatus(string $status): string
-    {
-        $format = '<comment>%s</comment>';
-
-        if (in_array($status, ['deleting', 'failed'])) {
-            $format = '<fg=red>%s</>';
-        } elseif ('available' === $status) {
-            $format = '<info>%s</info>';
-        }
-
-        return sprintf($format, $status);
     }
 }

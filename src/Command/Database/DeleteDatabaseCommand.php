@@ -15,7 +15,7 @@ namespace Ymir\Cli\Command\Database;
 
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
-use Ymir\Cli\Console\OutputStyle;
+use Ymir\Cli\Console\ConsoleOutput;
 
 class DeleteDatabaseCommand extends AbstractDatabaseCommand
 {
@@ -41,13 +41,13 @@ class DeleteDatabaseCommand extends AbstractDatabaseCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(InputInterface $input, OutputStyle $output)
+    protected function perform(InputInterface $input, ConsoleOutput $output)
     {
-        $database = $this->determineDatabaseServer('On which database server would you like to delete a database?', $input, $output);
+        $databaseId = $this->determineDatabaseServer('On which database server would you like to delete a database?', $input, $output);
         $name = $this->getStringArgument($input, 'name');
 
         if (empty($name) && $input->isInteractive()) {
-            $name = (string) $output->choice('What database would you like to delete', $this->apiClient->getDatabases($database['id'])->filter(function (string $name) {
+            $name = (string) $output->choice('Which database would you like to delete', $this->apiClient->getDatabases($databaseId)->filter(function (string $name) {
                 return !in_array($name, ['information_schema', 'innodb', 'mysql', 'performance_schema', 'sys']);
             })->values()->all());
         }
@@ -56,7 +56,7 @@ class DeleteDatabaseCommand extends AbstractDatabaseCommand
             return;
         }
 
-        $this->apiClient->deleteDatabase((int) $database['id'], $name);
+        $this->apiClient->deleteDatabase($databaseId, $name);
 
         $output->info('Database deleted');
     }

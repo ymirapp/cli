@@ -19,7 +19,8 @@ use Ymir\Cli\ApiClient;
 use Ymir\Cli\CliConfiguration;
 use Ymir\Cli\Command\AbstractProjectCommand;
 use Ymir\Cli\Command\Email\CreateEmailIdentityCommand;
-use Ymir\Cli\Console\OutputStyle;
+use Ymir\Cli\Command\Environment\GetEnvironmentUrlCommand;
+use Ymir\Cli\Console\ConsoleOutput;
 use Ymir\Cli\Deployment\DeploymentStepInterface;
 use Ymir\Cli\ProjectConfiguration;
 
@@ -49,7 +50,7 @@ abstract class AbstractProjectDeploymentCommand extends AbstractProjectCommand
     /**
      * Create the deployment and return its ID.
      */
-    abstract protected function createDeployment(InputInterface $input, OutputStyle $output): Collection;
+    abstract protected function createDeployment(InputInterface $input, ConsoleOutput $output): Collection;
 
     /**
      * Get the message to display when a deployment was successful.
@@ -59,7 +60,7 @@ abstract class AbstractProjectDeploymentCommand extends AbstractProjectCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(InputInterface $input, OutputStyle $output)
+    protected function perform(InputInterface $input, ConsoleOutput $output)
     {
         $deployment = $this->createDeployment($input, $output);
         $environment = $this->getStringArgument($input, 'environment');
@@ -74,7 +75,7 @@ abstract class AbstractProjectDeploymentCommand extends AbstractProjectCommand
         $unmanagedDomains = (array) $this->apiClient->getDeployment($deployment->get('id'))->get('unmanaged_domains');
         $vanityDomainName = $this->apiClient->getEnvironmentVanityDomainName($projectId, $environment);
 
-        $this->displayEnvironmentUrlAndCopyToClipboard($output, $vanityDomainName);
+        $this->invoke($output, GetEnvironmentUrlCommand::NAME, ['environment' => $environment]);
 
         if (!empty($unmanagedDomains)) {
             $output->newLine();

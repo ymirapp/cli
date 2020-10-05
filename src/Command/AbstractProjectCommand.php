@@ -15,11 +15,9 @@ namespace Ymir\Cli\Command;
 
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Process\Process;
 use Ymir\Cli\ApiClient;
 use Ymir\Cli\CliConfiguration;
 use Ymir\Cli\Command\Project\InitializeProjectCommand;
-use Ymir\Cli\Console\OutputStyle;
 use Ymir\Cli\ProjectConfiguration;
 
 /**
@@ -42,19 +40,6 @@ abstract class AbstractProjectCommand extends AbstractCommand
         parent::__construct($apiClient, $cliConfiguration);
 
         $this->projectConfiguration = $projectConfiguration;
-    }
-
-    /**
-     * Generate the environment URL, copy it to the clipboard and then displays it in the console.
-     */
-    protected function displayEnvironmentUrlAndCopyToClipboard(OutputStyle $output, string $domainName)
-    {
-        $clipboardCommand = 'WIN' === strtoupper(substr(PHP_OS, 0, 3)) ? 'clip' : 'pbcopy';
-        $url = 'https://'.$domainName;
-
-        Process::fromShellCommandline(sprintf('echo %s | %s', $url, $clipboardCommand))->run();
-
-        $output->infoWithValue('Environment URL is', $url, 'copied to clipboard');
     }
 
     /**

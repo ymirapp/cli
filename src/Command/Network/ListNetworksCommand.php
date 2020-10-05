@@ -11,20 +11,20 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace Ymir\Cli\Command\Provider;
+namespace Ymir\Cli\Command\Network;
 
 use Symfony\Component\Console\Input\InputInterface;
 use Ymir\Cli\Command\AbstractCommand;
 use Ymir\Cli\Console\ConsoleOutput;
 
-class ListProvidersCommand extends AbstractCommand
+class ListNetworksCommand extends AbstractCommand
 {
     /**
      * The name of the command.
      *
      * @var string
      */
-    public const NAME = 'provider:list';
+    public const NAME = 'network:list';
 
     /**
      * {@inheritdoc}
@@ -33,7 +33,7 @@ class ListProvidersCommand extends AbstractCommand
     {
         $this
             ->setName(self::NAME)
-            ->setDescription('List the cloud provider accounts connected to the currently active team');
+            ->setDescription('List the networks that belong to the currently active team');
     }
 
     /**
@@ -41,18 +41,12 @@ class ListProvidersCommand extends AbstractCommand
      */
     protected function perform(InputInterface $input, ConsoleOutput $output)
     {
-        $providers = $this->apiClient->getProviders($this->cliConfiguration->getActiveTeamId());
-
-        $output->info('The following cloud providers are connect your team:');
+        $networks = $this->apiClient->getTeamNetworks($this->cliConfiguration->getActiveTeamId());
 
         $output->table(
-            ['Id', 'Name', 'Provider'],
-            $providers->map(function (array $provider) {
-                return [
-                    $provider['id'],
-                    $provider['name'],
-                    $provider['provider'],
-                ];
+            ['Id', 'Name', 'Provider', 'Region', 'Status'],
+            $networks->map(function (array $network) use ($output) {
+                return [$network['id'], $network['name'], $network['provider']['name'], $network['region'], $output->formatStatus($network['status'])];
             })->all()
         );
     }

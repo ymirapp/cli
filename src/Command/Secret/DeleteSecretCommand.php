@@ -19,7 +19,7 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Ymir\Cli\Command\AbstractProjectCommand;
-use Ymir\Cli\Console\OutputStyle;
+use Ymir\Cli\Console\ConsoleOutput;
 
 class DeleteSecretCommand extends AbstractProjectCommand
 {
@@ -45,20 +45,25 @@ class DeleteSecretCommand extends AbstractProjectCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(InputInterface $input, OutputStyle $output)
+    protected function perform(InputInterface $input, ConsoleOutput $output)
     {
         $environment = (string) $this->getStringOption($input, 'environment');
-        $idOrName = $this->getStringArgument($input, 'secret');
         $secrets = $this->apiClient->getSecrets($this->projectConfiguration->getProjectId(), $environment);
 
         if ($secrets->isEmpty()) {
             throw new RuntimeException(sprintf('The "%s" environment has no secrets', $environment));
         }
 
-        $secret = is_numeric($idOrName) ? $secrets->firstWhere('id', $idOrName) : $secrets->firstWhere('name', $idOrName);
+        $secretIdOrName = $this->getStringArgument($input, 'secret');
+
+        if (empty($secretIdOrName)) {
+            $secretIdOrName = (string) $output->choice('Which secret would you like to delete', $secrets->pluck('name')->all());
+        }
+
+        $secret = is_numeric($secretIdOrName) ? $secrets->firstWhere('id', $secretIdOrName) : $secrets->firstWhere('name', $secretIdOrName);
 
         if (!is_array($secret) || empty($secret['id'])) {
-            throw new InvalidArgumentException(sprintf('Unable to find a secret with the ID or name "%s"', $idOrName));
+            throw new InvalidArgumentException(sprintf('Unable to find a secret with "%s" as the ID or name', $secretIdOrName));
         } elseif (!$output->confirm('Are you sure you want to delete this secret?', false)) {
             return;
         }

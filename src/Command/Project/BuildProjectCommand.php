@@ -19,11 +19,18 @@ use Ymir\Cli\ApiClient;
 use Ymir\Cli\Build\BuildStepInterface;
 use Ymir\Cli\CliConfiguration;
 use Ymir\Cli\Command\AbstractProjectCommand;
-use Ymir\Cli\Console\OutputStyle;
+use Ymir\Cli\Console\ConsoleOutput;
 use Ymir\Cli\ProjectConfiguration;
 
 class BuildProjectCommand extends AbstractProjectCommand
 {
+    /**
+     * The alias of the command.
+     *
+     * @var string
+     */
+    public const ALIAS = 'build';
+
     /**
      * The name of the command.
      *
@@ -57,15 +64,15 @@ class BuildProjectCommand extends AbstractProjectCommand
     {
         $this
             ->setName(self::NAME)
-            ->setAliases(['build'])
             ->setDescription('Build the project for deployment')
+            ->setAliases([self::ALIAS])
             ->addArgument('environment', InputArgument::OPTIONAL, 'The environment name', 'staging');
     }
 
     /**
      * {@inheritdoc}
      */
-    protected function perform(InputInterface $input, OutputStyle $output)
+    protected function perform(InputInterface $input, ConsoleOutput $output)
     {
         $environment = $this->getStringArgument($input, 'environment');
 

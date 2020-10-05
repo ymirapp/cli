@@ -15,7 +15,7 @@ namespace Ymir\Cli\Command\Dns;
 
 use Symfony\Component\Console\Input\InputInterface;
 use Ymir\Cli\Command\AbstractCommand;
-use Ymir\Cli\Console\OutputStyle;
+use Ymir\Cli\Console\ConsoleOutput;
 
 class ListDnsZonesCommand extends AbstractCommand
 {
@@ -39,13 +39,11 @@ class ListDnsZonesCommand extends AbstractCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(InputInterface $input, OutputStyle $output)
+    protected function perform(InputInterface $input, ConsoleOutput $output)
     {
-        $zones = $this->apiClient->getDnsZones($this->cliConfiguration->getActiveTeamId());
-
         $output->table(
             ['Id', 'Provider', 'Domain Name', 'Name Servers'],
-            $zones->map(function (array $zone) {
+            $this->apiClient->getDnsZones($this->cliConfiguration->getActiveTeamId())->map(function (array $zone) {
                 return [$zone['id'], $zone['provider']['name'], $zone['name'], implode(PHP_EOL, $zone['name_servers'])];
             })->all()
         );

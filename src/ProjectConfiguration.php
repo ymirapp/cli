@@ -69,7 +69,7 @@ class ProjectConfiguration implements Arrayable
      *
      * Overwrites the existing project configuration.
      */
-    public function createNew(Collection $project, string $databaseName = '', string $type = '')
+    public function createNew(Collection $project, string $databaseName = '', string $databaseServer = '', string $type = '')
     {
         $this->configuration = $project->only(['id', 'name'])->all();
         $this->configuration['type'] = $type ?: 'wordpress';
@@ -78,11 +78,17 @@ class ProjectConfiguration implements Arrayable
 
         $this->configuration['environments'] = [
             'production' => $baseEnvironment,
-            'staging' => array_merge((array) $baseEnvironment, ['cron' => false, 'warmup' => false]),
+            'staging' => array_merge((array) $baseEnvironment, ['cdn' => ['caching' => 'assets'], 'cron' => false, 'warmup' => false]),
         ];
 
-        if (!empty($databaseName)) {
-            $this->configuration['environments']['staging']['database'] = $databaseName;
+        if (!empty($databaseServer) && !empty($databaseName)) {
+            $this->configuration['environments']['staging']['database'] = [
+                'server' => $databaseServer,
+                'name' => $databaseName,
+            ];
+        }
+        if (!empty($databaseServer)) {
+            $this->configuration['environments']['staging']['database'] = $databaseServer;
         }
 
         $this->save();

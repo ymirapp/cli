@@ -17,7 +17,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Ymir\Cli\ApiClient;
 use Ymir\Cli\CliConfiguration;
 use Ymir\Cli\Command\AbstractCommand;
-use Ymir\Cli\Console\OutputStyle;
+use Ymir\Cli\Console\ConsoleOutput;
 
 class ConnectProviderCommand extends AbstractCommand
 {
@@ -58,7 +58,7 @@ class ConnectProviderCommand extends AbstractCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(InputInterface $input, OutputStyle $output)
+    protected function perform(InputInterface $input, ConsoleOutput $output)
     {
         $name = $output->ask('Please enter a name for the cloud provider connection');
 
@@ -72,15 +72,11 @@ class ConnectProviderCommand extends AbstractCommand
     /**
      * Get the AWS credentials.
      */
-    private function getAwsCredentials(OutputStyle $output): array
+    private function getAwsCredentials(ConsoleOutput $output): array
     {
         $credentials = $this->getAwsCredentialsFromFile($output);
 
-        if (!empty($credentials)) {
-            return $credentials;
-        }
-
-        return [
+        return !empty($credentials) ? $credentials : [
             'key' => $output->ask('Please enter your AWS user key'),
             'secret' => $output->ask('Please enter your AWS user secret'),
         ];
@@ -89,7 +85,7 @@ class ConnectProviderCommand extends AbstractCommand
     /**
      * Get the AWS credentials from the credentials file.
      */
-    private function getAwsCredentialsFromFile(OutputStyle $output): array
+    private function getAwsCredentialsFromFile(ConsoleOutput $output): array
     {
         $credentialsFilePath = $this->homeDirectory.'/.aws/credentials';
 

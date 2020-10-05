@@ -13,13 +13,11 @@ declare(strict_types=1);
 
 namespace Ymir\Cli\Command\Dns;
 
-use Symfony\Component\Console\Exception\InvalidArgumentException;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
-use Ymir\Cli\Command\AbstractCommand;
-use Ymir\Cli\Console\OutputStyle;
+use Ymir\Cli\Console\ConsoleOutput;
 
-class ListDnsRecordsCommand extends AbstractCommand
+class ListDnsRecordsCommand extends AbstractDnsCommand
 {
     /**
      * The name of the command.
@@ -35,26 +33,20 @@ class ListDnsRecordsCommand extends AbstractCommand
     {
         $this
             ->setName(self::NAME)
-            ->addArgument('zone', InputArgument::REQUIRED, 'The ID or name of the DNS zone to list DNS records from')
-            ->setDescription('List the DNS records belonging to a DNS zone');
+            ->setDescription('List the DNS records belonging to a DNS zone')
+            ->addArgument('zone', InputArgument::OPTIONAL, 'The ID or name of the DNS zone to list DNS records from');
     }
 
     /**
      * {@inheritdoc}
      */
-    protected function perform(InputInterface $input, OutputStyle $output)
+    protected function perform(InputInterface $input, ConsoleOutput $output)
     {
-        $idOrName = $input->getArgument('zone');
-
-        if (!is_string($idOrName)) {
-            throw new InvalidArgumentException('The "zone" argument must be a string value');
-        }
-
-        $records = $this->apiClient->getDnsRecords($idOrName);
+        $zone = $this->determineDnsZone('Which DNS zone would you like to list DNS records from', $input, $output);
 
         $output->table(
             ['Id', 'Domain Name', 'Type', 'Value'],
-            $records->map(function (array $record) {
+            $this->apiClient->getDnsRecords($zone['id'])->map(function (array $record) {
                 return [$record['id'], $record['name'], $record['type'], $record['value']];
             })->all()
         );

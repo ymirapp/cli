@@ -15,10 +15,9 @@ namespace Ymir\Cli\Command\Dns;
 
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
-use Ymir\Cli\Command\AbstractCommand;
-use Ymir\Cli\Console\OutputStyle;
+use Ymir\Cli\Console\ConsoleOutput;
 
-class ChangeDnsRecordCommand extends AbstractCommand
+class ChangeDnsRecordCommand extends AbstractDnsCommand
 {
     /**
      * The name of the command.
@@ -34,17 +33,17 @@ class ChangeDnsRecordCommand extends AbstractCommand
     {
         $this
             ->setName(self::NAME)
+            ->setDescription('Change the value of a DNS record (Will overwrite existing DNS record if it already exists)')
             ->addArgument('zone', InputArgument::REQUIRED, 'The name of the DNS zone that the DNS record belongs to')
             ->addArgument('type', InputArgument::REQUIRED, 'The DNS record type')
             ->addArgument('name', InputArgument::REQUIRED, 'The name of the DNS record without the domain')
-            ->addArgument('value', InputArgument::REQUIRED, 'The value of the DNS record')
-            ->setDescription('Change the value of a DNS record (Will overwrite existing DNS record if it already exists)');
+            ->addArgument('value', InputArgument::REQUIRED, 'The value of the DNS record');
     }
 
     /**
      * {@inheritdoc}
      */
-    protected function perform(InputInterface $input, OutputStyle $output)
+    protected function perform(InputInterface $input, ConsoleOutput $output)
     {
         $this->apiClient->changeDnsRecord($this->getStringArgument($input, 'zone'), $this->getStringArgument($input, 'type'), $this->getStringArgument($input, 'name'), $this->getStringArgument($input, 'value'));
 

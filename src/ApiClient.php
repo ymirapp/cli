@@ -173,6 +173,17 @@ class ApiClient
     }
 
     /**
+     * Create a new network.
+     */
+    public function createNetwork(int $providerId, string $name, string $region): Collection
+    {
+        return $this->request('post', "/providers/{$providerId}/networks", [
+            'name' => $name,
+            'region' => $region,
+        ]);
+    }
+
+    /**
      * Create a new project with the given cloud provider.
      */
     public function createProject(int $providerId, string $name, string $region): Collection
@@ -279,6 +290,14 @@ class ApiClient
     }
 
     /**
+     * Delete the given network.
+     */
+    public function deleteNetwork(int $networkId)
+    {
+        $this->request('delete', "/networks/{$networkId}");
+    }
+
+    /**
      * Delete the given project.
      */
     public function deleteProject(int $projectId, bool $deleteResources = false)
@@ -363,21 +382,9 @@ class ApiClient
     /**
      * Get the information on the database server with the given database ID or name.
      */
-    public function getDatabaseServer($idOrName): array
+    public function getDatabaseServer(int $databaseId): Collection
     {
-        $database = null;
-
-        if (is_numeric($idOrName)) {
-            $database = $this->request('get', "/database-servers/{$idOrName}")->toArray();
-        } elseif (is_string($idOrName)) {
-            $database = $this->getDatabaseServers($this->cliConfiguration->getActiveTeamId())->firstWhere('name', $idOrName);
-        }
-
-        if (!is_array($database) || !isset($database['id']) || !is_numeric($database['id'])) {
-            throw new RuntimeException(sprintf('Unable to find a database server with "%s" as the ID or name', $idOrName));
-        }
-
-        return $database;
+        return $this->request('get', "/database-servers/{$databaseId}");
     }
 
     /**
@@ -439,6 +446,7 @@ class ApiClient
     /**
      * Get the DNS zone information from the given zone ID or name.
      */
+    // TODO: Change return values to collection
     public function getDnsZone($idOrName): array
     {
         $zone = null;
@@ -523,14 +531,6 @@ class ApiClient
     }
 
     /**
-     * Get the networks that belong to the given team.
-     */
-    public function getNetworks(int $teamId): Collection
-    {
-        return $this->request('get', "/teams/{$teamId}/networks");
-    }
-
-    /**
      * Get the project.
      */
     public function getProject(int $projectId): Collection
@@ -590,6 +590,14 @@ class ApiClient
     public function getTeamDatabaseServers($teamId): Collection
     {
         return $this->request('get', "/teams/{$teamId}/database-servers");
+    }
+
+    /**
+     * Get the networks that belong to the given team.
+     */
+    public function getTeamNetworks(int $teamId): Collection
+    {
+        return $this->request('get', "/teams/{$teamId}/networks");
     }
 
     /**

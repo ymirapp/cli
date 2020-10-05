@@ -16,7 +16,7 @@ namespace Ymir\Cli\Deployment;
 use Symfony\Component\Console\Helper\ProgressBar;
 use Tightenco\Collect\Support\Collection;
 use Ymir\Cli\ApiClient;
-use Ymir\Cli\Console\OutputStyle;
+use Ymir\Cli\Console\ConsoleOutput;
 use Ymir\Cli\FileUploader;
 
 class UploadBuildStep implements DeploymentStepInterface
@@ -55,7 +55,7 @@ class UploadBuildStep implements DeploymentStepInterface
     /**
      * {@inheritdoc}
      */
-    public function perform(Collection $deployment, OutputStyle $output)
+    public function perform(Collection $deployment, ConsoleOutput $output)
     {
         $progressBar = new ProgressBar($output);
 

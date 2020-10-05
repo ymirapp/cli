@@ -16,7 +16,7 @@ namespace Ymir\Cli\Command\Team;
 use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Input\InputInterface;
 use Ymir\Cli\Command\AbstractCommand;
-use Ymir\Cli\Console\OutputStyle;
+use Ymir\Cli\Console\ConsoleOutput;
 
 class SelectTeamCommand extends AbstractCommand
 {
@@ -40,7 +40,7 @@ class SelectTeamCommand extends AbstractCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(InputInterface $input, OutputStyle $output)
+    protected function perform(InputInterface $input, ConsoleOutput $output)
     {
         $teams = $this->apiClient->getTeams();
 
@@ -48,7 +48,7 @@ class SelectTeamCommand extends AbstractCommand
             throw new RuntimeException('You\'re not on any team');
         }
 
-        $teamId = $output->choiceCollection('Enter the ID of the team that you want to switch to', $teams->sortBy->name);
+        $teamId = $output->choiceWithId('Enter the ID of the team that you want to switch to', $teams);
 
         $this->cliConfiguration->setActiveTeamId($teamId);
 

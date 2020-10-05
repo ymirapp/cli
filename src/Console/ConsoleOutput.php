@@ -16,7 +16,7 @@ namespace Ymir\Cli\Console;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Tightenco\Collect\Support\Collection;
 
-class OutputStyle extends SymfonyStyle
+class ConsoleOutput extends SymfonyStyle
 {
     /**
      * Ask a question and return the answer as a slug.
@@ -40,9 +40,9 @@ class OutputStyle extends SymfonyStyle
     }
 
     /**
-     * Ask a choice question using a Collection.
+     * Ask a choice question that uses the ID for answers.
      */
-    public function choiceCollection(string $question, Collection $collection): int
+    public function choiceWithId(string $question, Collection $collection): int
     {
         return (int) $this->choice(
             $question,
@@ -50,6 +50,32 @@ class OutputStyle extends SymfonyStyle
                 return [$item['id'] => $item['name']];
             })->all()
         );
+    }
+
+    /**
+     * Ask a choice question with the resource details.
+     */
+    public function choiceWithResourceDetails(string $question, Collection $collection): string
+    {
+        return (string) preg_replace('/^([^ ]*) .*/', '$1', (string) $this->choice($question, $collection->map(function (array $resource) {
+            return sprintf('%s (%s) [%s]', $resource['name'], $resource['region'], $this->formatStatus($resource['status']));
+        })->all()));
+    }
+
+    /**
+     * Format the resource for display.
+     */
+    public function formatStatus(string $status): string
+    {
+        $format = '<comment>%s</comment>';
+
+        if (in_array($status, ['deleting', 'failed'])) {
+            $format = '<fg=red>%s</>';
+        } elseif ('available' === $status) {
+            $format = '<info>%s</info>';
+        }
+
+        return sprintf($format, $status);
     }
 
     /**

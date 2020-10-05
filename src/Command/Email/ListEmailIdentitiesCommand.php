@@ -14,10 +14,9 @@ declare(strict_types=1);
 namespace Ymir\Cli\Command\Email;
 
 use Symfony\Component\Console\Input\InputInterface;
-use Ymir\Cli\Command\AbstractCommand;
-use Ymir\Cli\Console\OutputStyle;
+use Ymir\Cli\Console\ConsoleOutput;
 
-class ListEmailIdentitiesCommand extends AbstractCommand
+class ListEmailIdentitiesCommand extends AbstractEmailIdentityCommand
 {
     /**
      * The name of the command.
@@ -39,13 +38,11 @@ class ListEmailIdentitiesCommand extends AbstractCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(InputInterface $input, OutputStyle $output)
+    protected function perform(InputInterface $input, ConsoleOutput $output)
     {
-        $identities = $this->apiClient->getEmailIdentities($this->cliConfiguration->getActiveTeamId());
-
         $output->table(
             ['Id', 'Name', 'Type', 'Provider', 'Region', 'Status', 'Managed'],
-            $identities->map(function (array $identity) {
+            $this->apiClient->getEmailIdentities($this->cliConfiguration->getActiveTeamId())->map(function (array $identity) {
                 return [$identity['id'], $identity['name'], $identity['type'], $identity['provider']['name'], $identity['region'], $identity['status'], $identity['managed'] ? 'yes' : 'no'];
             })->all()
         );

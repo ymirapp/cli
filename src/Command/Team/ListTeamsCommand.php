@@ -15,7 +15,7 @@ namespace Ymir\Cli\Command\Team;
 
 use Symfony\Component\Console\Input\InputInterface;
 use Ymir\Cli\Command\AbstractCommand;
-use Ymir\Cli\Console\OutputStyle;
+use Ymir\Cli\Console\ConsoleOutput;
 
 class ListTeamsCommand extends AbstractCommand
 {
@@ -39,16 +39,15 @@ class ListTeamsCommand extends AbstractCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(InputInterface $input, OutputStyle $output)
+    protected function perform(InputInterface $input, ConsoleOutput $output)
     {
-        $teams = $this->apiClient->getTeams();
-        $user = $this->apiClient->getUser();
-
         $output->info('You are on the following teams:');
+
+        $user = $this->apiClient->getUser();
 
         $output->table(
             ['Id', 'Name', 'Owner'],
-            $teams->map(function (array $team) use ($user) {
+            $this->apiClient->getTeams()->map(function (array $team) use ($user) {
                 return [
                     $team['id'],
                     $team['name'],

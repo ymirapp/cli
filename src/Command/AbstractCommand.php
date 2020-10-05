@@ -22,7 +22,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Ymir\Cli\ApiClient;
 use Ymir\Cli\CliConfiguration;
-use Ymir\Cli\Console\OutputStyle;
+use Ymir\Cli\Console\ConsoleOutput;
 
 abstract class AbstractCommand extends Command
 {
@@ -54,28 +54,26 @@ abstract class AbstractCommand extends Command
     /**
      * Determine the cloud provider to use.
      */
-    protected function determineCloudProvider(InputInterface $input, OutputStyle $output, string $question): int
+    protected function determineCloudProvider(string $question, InputInterface $input, ConsoleOutput $output): int
     {
-        $providerId = $this->getStringOption($input, 'provider');
+        $providerId = $this->getStringOption($input, 'provider', true);
         $providers = $this->apiClient->getProviders($this->cliConfiguration->getActiveTeamId());
 
         if (is_numeric($providerId) && $providers->contains('id', $providerId)) {
             return (int) $providerId;
         } elseif (is_numeric($providerId) && $providers->contains('id', $providerId)) {
             throw new InvalidArgumentException('The given "provider" isn\'t available to currently active team');
-        } elseif (!$input->isInteractive()) {
-            throw new InvalidArgumentException('You must use the "--provider" option when running in non-interactive mode');
         }
 
-        return 1 === count($providers) ? $providers[0]['id'] : $output->choiceCollection($question, $providers);
+        return 1 === count($providers) ? $providers[0]['id'] : $output->choiceWithId($question, $providers);
     }
 
     /**
      * Determine the cloud provider region to use.
      */
-    protected function determineRegion(InputInterface $input, OutputStyle $output, int $providerId, string $question): string
+    protected function determineRegion(string $question, int $providerId, InputInterface $input, ConsoleOutput $output): string
     {
-        $region = $this->getStringOption($input, 'region');
+        $region = $this->getStringOption($input, 'region', true);
         $regions = $this->apiClient->getRegions($providerId);
 
         if ($regions->isEmpty()) {
@@ -84,8 +82,6 @@ abstract class AbstractCommand extends Command
             return $region;
         } elseif (!empty($region) && !$regions->contains($region)) {
             throw new InvalidArgumentException('The given "region" isn\'t a valid cloud provider region');
-        } elseif (!$input->isInteractive()) {
-            throw new InvalidArgumentException('You must use the "--region" option when running in non-interactive mode');
         }
 
         return (string) $output->choice($question, $regions->all());
@@ -100,7 +96,7 @@ abstract class AbstractCommand extends Command
             throw new RuntimeException(sprintf('Please authenticate using the "%s" command before using this command', LoginCommand::NAME));
         }
 
-        return $this->perform($input, new OutputStyle($input, $output)) ?? 0;
+        return $this->perform($input, new ConsoleOutput($input, $output)) ?? 0;
     }
 
     /**
@@ -152,11 +148,11 @@ abstract class AbstractCommand extends Command
     /**
      * Get the value of an argument that should be a string.
      */
-    protected function getStringArgument(InputInterface $input, string $argument, bool $requireNonInteractive = true): string
+    protected function getStringArgument(InputInterface $input, string $argument, bool $requiredNonInteractive = true): string
     {
         $value = $input->getArgument($argument);
 
-        if (null === $value && $requireNonInteractive && !$input->isInteractive()) {
+        if (null === $value && $requiredNonInteractive && !$input->isInteractive()) {
             throw new InvalidArgumentException(sprintf('You must pass a "%s" argument when running in non-interactive mode', $argument));
         } elseif (null !== $value && !is_string($value)) {
             throw new InvalidArgumentException(sprintf('The "%s" argument must be a string value', $argument));
@@ -168,7 +164,7 @@ abstract class AbstractCommand extends Command
     /**
      * Get the value of a option that should be a string. Returns null if not present.
      */
-    protected function getStringOption(InputInterface $input, string $option): ?string
+    protected function getStringOption(InputInterface $input, string $option, bool $requiredNonInteractive = false): ?string
     {
         $value = null;
 
@@ -176,7 +172,9 @@ abstract class AbstractCommand extends Command
             $value = $input->getOption($option);
         }
 
-        if (null === $value) {
+        if (null === $value && $requiredNonInteractive && !$input->isInteractive()) {
+            throw new InvalidArgumentException(sprintf('You must use the "--%s" option when running in non-interactive mode', $option));
+        } elseif (null === $value) {
             return $value;
         } elseif (!is_string($value)) {
             throw new InvalidArgumentException(sprintf('The "--%s" option must be a string value', $option));
@@ -188,7 +186,7 @@ abstract class AbstractCommand extends Command
     /**
      * Invoke another console command.
      */
-    protected function invoke(OutputStyle $output, string $command, array $arguments = []): int
+    protected function invoke(ConsoleOutput $output, string $command, array $arguments = []): int
     {
         $application = $this->getApplication();
 
@@ -202,7 +200,7 @@ abstract class AbstractCommand extends Command
     /**
      * Perform the command.
      */
-    abstract protected function perform(InputInterface $input, OutputStyle $output);
+    abstract protected function perform(InputInterface $input, ConsoleOutput $output);
 
     /**
      * Wait for the given callable to complete.

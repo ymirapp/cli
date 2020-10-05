@@ -15,7 +15,7 @@ namespace Ymir\Cli\Command\Database;
 
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
-use Ymir\Cli\Console\OutputStyle;
+use Ymir\Cli\Console\ConsoleOutput;
 
 class DeleteDatabaseServerCommand extends AbstractDatabaseCommand
 {
@@ -40,15 +40,15 @@ class DeleteDatabaseServerCommand extends AbstractDatabaseCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(InputInterface $input, OutputStyle $output)
+    protected function perform(InputInterface $input, ConsoleOutput $output)
     {
-        $database = $this->determineDatabaseServer('Which database server would you like to delete', $input, $output);
+        $databaseId = $this->determineDatabaseServer('Which database server would you like to delete', $input, $output);
 
         if (!$output->confirm('Are you sure you want to delete this database server?', false)) {
             return;
         }
 
-        $this->apiClient->deleteDatabaseServer((int) $database['id']);
+        $this->apiClient->deleteDatabaseServer($databaseId);
 
         $output->infoWithDelayWarning('Database deleted');
     }

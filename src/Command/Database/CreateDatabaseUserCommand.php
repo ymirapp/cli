@@ -15,7 +15,7 @@ namespace Ymir\Cli\Command\Database;
 
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
-use Ymir\Cli\Console\OutputStyle;
+use Ymir\Cli\Console\ConsoleOutput;
 
 class CreateDatabaseUserCommand extends AbstractDatabaseCommand
 {
@@ -41,16 +41,16 @@ class CreateDatabaseUserCommand extends AbstractDatabaseCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(InputInterface $input, OutputStyle $output)
+    protected function perform(InputInterface $input, ConsoleOutput $output)
     {
-        $database = $this->determineDatabaseServer('On which database server would you like to create the new database user?', $input, $output);
+        $databaseId = $this->determineDatabaseServer('On which database server would you like to create the new database user?', $input, $output);
         $username = $this->getStringArgument($input, 'username');
 
         if (empty($username) && $input->isInteractive()) {
             $username = $output->ask('What is the username of the new database user');
         }
 
-        $user = $this->apiClient->createDatabaseUser((int) $database['id'], $username);
+        $user = $this->apiClient->createDatabaseUser($databaseId, $username);
 
         $output->horizontalTable(
             ['Username', 'Password'],

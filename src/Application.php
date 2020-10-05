@@ -14,6 +14,8 @@ declare(strict_types=1);
 namespace Ymir\Cli;
 
 use Symfony\Component\Console\Application as BaseApplication;
+use Symfony\Component\Console\Output\OutputInterface;
+use Ymir\Cli\Exception\CommandCancelledException;
 
 class Application extends BaseApplication
 {
@@ -27,5 +29,17 @@ class Application extends BaseApplication
         foreach ($commands as $command) {
             $this->add($command);
         }
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function renderThrowable(\Throwable $exception, OutputInterface $output): void
+    {
+        if ($exception instanceof CommandCancelledException) {
+            return;
+        }
+
+        parent::renderThrowable($exception, $output);
     }
 }

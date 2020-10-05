@@ -16,14 +16,14 @@ namespace Ymir\Cli\Command\Database;
 use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Input\InputInterface;
 use Ymir\Cli\Command\AbstractCommand;
-use Ymir\Cli\Console\OutputStyle;
+use Ymir\Cli\Console\ConsoleOutput;
 
 abstract class AbstractDatabaseCommand extends AbstractCommand
 {
     /**
      * Determine the database server that the command is interacting with.
      */
-    protected function determineDatabaseServer(string $question, InputInterface $input, OutputStyle $output): array
+    protected function determineDatabaseServer(string $question, InputInterface $input, ConsoleOutput $output): int
     {
         $database = null;
         $databases = $this->apiClient->getDatabaseServers($this->cliConfiguration->getActiveTeamId());
@@ -31,30 +31,18 @@ abstract class AbstractDatabaseCommand extends AbstractCommand
 
         if ($databases->isEmpty()) {
             throw new RuntimeException(sprintf('The currently active team has no database servers. You can create one with the "%s" command.', CreateDatabaseServerCommand::NAME));
+        } elseif (empty($databaseIdOrName)) {
+            $databaseIdOrName = $output->choiceWithResourceDetails($question, $databases);
         }
 
-        $availableDatabases = $databases->where('status', 'available');
+        $database = $databases->firstWhere('id', $databaseIdOrName) ?? $databases->firstWhere('name', $databaseIdOrName);
 
-        if ($availableDatabases->isEmpty()) {
-            throw new RuntimeException(sprintf('The currently active team has no available database servers. You can either create a new one with the "%s" command or wait for a database server to become available.', CreateDatabaseServerCommand::NAME));
-        } elseif (empty($databaseIdOrName) && 1 === $availableDatabases->count()) {
-            $databaseIdOrName = (string) $availableDatabases->pluck('id')->first();
-        } elseif (empty($databaseIdOrName) && 1 < $availableDatabases->count()) {
-            $databaseIdOrName = (string) $output->choice($question, $availableDatabases->pluck('name')->all());
-        }
-
-        if (is_numeric($databaseIdOrName)) {
-            $database = $databases->firstWhere('id', $databaseIdOrName);
-        } elseif (is_string($databaseIdOrName)) {
-            $database = $databases->firstWhere('name', $databaseIdOrName);
-        }
-
-        if (empty($database['id'])) {
+        if (1 < $databases->where('name', $databaseIdOrName)->count()) {
+            throw new RuntimeException(sprintf('Unable to select a database server because more than one database server has the name "%s"', $databaseIdOrName));
+        } elseif (empty($database['id'])) {
             throw new RuntimeException(sprintf('Unable to find a database server with "%s" as the ID or name', $databaseIdOrName));
-        } elseif (isset($database['status']) && 'available' !== $database['status']) {
-            throw new RuntimeException(sprintf('The database server with the ID or name "%s" is\'t available', $databaseIdOrName));
         }
 
-        return $database;
+        return (int) $database['id'];
     }
 }

@@ -13,23 +13,29 @@ declare(strict_types=1);
 
 namespace Ymir\Cli\Command\Project;
 
-use Symfony\Component\Console\Exception\InvalidArgumentException;
-use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Filesystem\Filesystem;
 use Ymir\Cli\ApiClient;
 use Ymir\Cli\CliConfiguration;
 use Ymir\Cli\Command\AbstractProjectCommand;
+use Ymir\Cli\Command\Database\CreateDatabaseCommand;
 use Ymir\Cli\Command\Database\CreateDatabaseServerCommand;
 use Ymir\Cli\Command\InstallPluginCommand;
 use Ymir\Cli\Command\Provider\ConnectProviderCommand;
-use Ymir\Cli\Console\OutputStyle;
+use Ymir\Cli\Console\ConsoleOutput;
 use Ymir\Cli\ProjectConfiguration;
 use Ymir\Cli\WpCli;
 
 class InitializeProjectCommand extends AbstractProjectCommand
 {
+    /**
+     * The alias of the command.
+     *
+     * @var string
+     */
+    public const ALIAS = 'init';
+
     /**
      * The name of the command.
      *
@@ -69,16 +75,18 @@ class InitializeProjectCommand extends AbstractProjectCommand
     {
         $this
             ->setName(self::NAME)
-            ->setAliases(['init'])
             ->setDescription('Creates a new project in the current directory')
-            ->addOption('database', null, InputOption::VALUE_REQUIRED, 'The database used by the project')
-            ->addOption('name', null, InputOption::VALUE_REQUIRED, 'The name of the project');
+            ->setAliases([self::ALIAS])
+            ->addOption('name', null, InputOption::VALUE_REQUIRED, 'The name of the project')
+            ->addOption('provider', null, InputOption::VALUE_REQUIRED, 'The cloud provider where the project will be created')
+            ->addOption('region', null, InputOption::VALUE_REQUIRED, 'The cloud provider region where the project will be located')
+            ->addOption('type', null, InputOption::VALUE_REQUIRED, 'The type of project being created');
     }
 
     /**
      * {@inheritdoc}
      */
-    protected function determineCloudProvider(InputInterface $input, OutputStyle $output, string $question): int
+    protected function determineCloudProvider(string $question, InputInterface $input, ConsoleOutput $output): int
     {
         $providers = $this->apiClient->getProviders($this->cliConfiguration->getActiveTeamId());
 
@@ -87,34 +95,33 @@ class InitializeProjectCommand extends AbstractProjectCommand
             $this->invoke($output, ConnectProviderCommand::NAME);
         }
 
-        return parent::determineCloudProvider($input, $output, $question);
+        return parent::determineCloudProvider($question, $input, $output);
     }
 
     /**
      * {@inheritdoc}
      */
-    protected function perform(InputInterface $input, OutputStyle $output)
+    protected function perform(InputInterface $input, ConsoleOutput $output)
     {
-        $databaseName = $this->getDatabaseName($input);
-
         if ($this->projectConfiguration->exists()
             && !$output->confirm('A project already exists in this directory. Do you want to overwrite it?', false)
         ) {
             return;
         }
 
-        $name = $this->determineName($input, $output);
-        $projectType = $this->determineProjectType($output);
-        $providerId = $this->determineCloudProvider($input, $output, 'Enter the ID of the cloud provider that the project will use');
-        $region = $this->determineRegion($input, $output, $providerId, 'Enter the name of the region that the project will be in');
+        $databaseName = '';
+        $projectName = $this->determineProjectName($input, $output);
+        $projectType = $this->determineProjectType($input, $output);
+        $providerId = $this->determineCloudProvider('Enter the ID of the cloud provider that the project will use', $input, $output);
+        $region = $this->determineRegion('Enter the name of the region that the project will be in', $providerId, $input, $output);
 
-        if (empty($databaseName)) {
-            $databaseName = $this->determineDatabaseName($output);
+        $databaseServer = $this->determineDatabaseServer($output, $region);
+
+        if (!empty($databaseServer)) {
+            $databaseName = $this->determineDatabaseName($databaseServer, $projectName, $output);
         }
 
-        $project = $this->apiClient->createProject($providerId, $name, $region);
-
-        $this->projectConfiguration->createNew($project, $databaseName, $projectType);
+        $this->projectConfiguration->createNew($this->apiClient->createProject($providerId, $projectName, $region), $databaseName, $databaseServer['name'] ?? '', $projectType);
 
         $output->infoWithDelayWarning('Project initialized');
 
@@ -124,37 +131,57 @@ class InitializeProjectCommand extends AbstractProjectCommand
     }
 
     /**
-     * Determine the database to use for this project.
+     * Determine the name of the database to use for this project.
      */
-    private function determineDatabaseName(OutputStyle $output): string
+    private function determineDatabaseName(array $databaseServer, string $projectName, ConsoleOutput $output): string
     {
         $databaseName = '';
-        $databases = $this->apiClient->getDatabaseServers($this->cliConfiguration->getActiveTeamId());
+        $databaseServer = $this->apiClient->getDatabaseServers($this->cliConfiguration->getActiveTeamId())->firstWhere('name', $databaseServer);
 
-        if (!$databases->isEmpty() && $output->confirm('Would you like to use an existing database server for this project?')) {
-            // TODO: This looks ugly. Add more info.
-            $databaseName = (string) $output->choice('Which database server would you like to use?', $databases->pluck('name')->all());
-        } elseif (
-            (!$databases->isEmpty() && $output->confirm('Would you like to create a new one for this project instead?'))
-            || ($databases->isEmpty() && $output->confirm('Your team doesn\'t have any configured database servers. Would you like to create one for this project first?'))
+        if (!isset($databaseServer['name'], $databaseServer['status'])
+            || 'available' !== $databaseServer['status']
+            || !$output->confirm(sprintf('Would you like to create a new database for your project on the "<comment>%s</comment>" database server? Otherwise, the default "wordpress" database will be used.', $databaseServer['name']))
         ) {
-            $this->invoke($output, CreateDatabaseServerCommand::NAME);
-            $databaseName = (string) $this->apiClient->getDatabaseServers($this->cliConfiguration->getActiveTeamId())->pluck('name')->last();
+            return $databaseName;
         }
+
+        $databaseName = $output->askSlug('What is the name of the new database that you would like to create for this project', $projectName);
+
+        $this->invoke($output, CreateDatabaseCommand::NAME, ['database' => $databaseServer['name'], 'name' => $databaseName]);
 
         return $databaseName;
     }
 
     /**
+     * Determine the database server to use for this project.
+     */
+    private function determineDatabaseServer(ConsoleOutput $output, string $region): ?array
+    {
+        $database = null;
+        $databases = $this->apiClient->getDatabaseServers($this->cliConfiguration->getActiveTeamId())->where('region', $region)->whereNotIn('status', 'deleting');
+
+        if (!$databases->isEmpty() && $output->confirm('Would you like to use an existing database server for this project?')) {
+            $database = (string) $output->choiceWithResourceDetails('Which database server would you like to use?', $databases);
+        } elseif (
+            (!$databases->isEmpty() && $output->confirm('Would you like to create a new one for this project instead?'))
+            || ($databases->isEmpty() && $output->confirm('Your team doesn\'t have any configured database servers. Would you like to create one for this project first?'))
+        ) {
+            $this->invoke($output, CreateDatabaseServerCommand::NAME);
+
+            return $this->apiClient->getDatabaseServers($this->cliConfiguration->getActiveTeamId())->last();
+        }
+
+        return $databases->firstWhere('name', $database);
+    }
+
+    /**
      * Determine the name of the project.
      */
-    private function determineName(InputInterface $input, OutputStyle $output): string
+    private function determineProjectName(InputInterface $input, ConsoleOutput $output): string
     {
-        $name = $this->getStringOption($input, 'name');
+        $name = $this->getStringOption($input, 'name', true);
 
-        if (empty($name) && !$input->isInteractive()) {
-            throw new InvalidArgumentException('You must use the "--name" option when running in non-interactive mode');
-        } elseif (empty($name) && $input->isInteractive()) {
+        if (empty($name) && $input->isInteractive()) {
             $name = $output->askSlug('What is the name of the project', basename(getcwd() ?: '') ?: null);
         }
 
@@ -164,9 +191,9 @@ class InitializeProjectCommand extends AbstractProjectCommand
     /**
      * Determine the type of project being initialized.
      */
-    private function determineProjectType(OutputStyle $output): string
+    private function determineProjectType(InputInterface $input, ConsoleOutput $output): string
     {
-        $type = '';
+        $type = $this->getStringOption($input, 'type');
 
         if ($this->filesystem->exists($this->projectDirectory.'/wp-config.php')) {
             $type = 'wordpress';
@@ -177,30 +204,10 @@ class InitializeProjectCommand extends AbstractProjectCommand
         }
 
         if (empty($type)) {
-            $type = strtolower($output->choice('Please select the type of project to initialize', ['Bedrock', 'WordPress']));
+            $type = $output->choice('Please select the type of project to initialize', ['Bedrock', 'WordPress'], 'wordpress');
         }
 
-        return $type;
-    }
-
-    /**
-     * Get the database name from the console input.
-     */
-    private function getDatabaseName(InputInterface $input): ?string
-    {
-        $databaseName = $this->getStringOption($input, 'database');
-
-        if (empty($databaseName)) {
-            return $databaseName;
-        }
-
-        $databases = $this->apiClient->getDatabaseServers($this->cliConfiguration->getActiveTeamId());
-
-        if (!$databases->contains(function (array $database) use ($databaseName) { return isset($database['name']) && $database['name'] === $databaseName; })) {
-            throw new RuntimeException(sprintf('There is no "%s" database server on your current team', $databaseName));
-        }
-
-        return $databaseName;
+        return strtolower($type);
     }
 
     /**

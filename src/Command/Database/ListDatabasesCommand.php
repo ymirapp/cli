@@ -15,7 +15,7 @@ namespace Ymir\Cli\Command\Database;
 
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
-use Ymir\Cli\Console\OutputStyle;
+use Ymir\Cli\Console\ConsoleOutput;
 
 class ListDatabasesCommand extends AbstractDatabaseCommand
 {
@@ -40,13 +40,11 @@ class ListDatabasesCommand extends AbstractDatabaseCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(InputInterface $input, OutputStyle $output)
+    protected function perform(InputInterface $input, ConsoleOutput $output)
     {
-        $database = $this->determineDatabaseServer('Which database server would you like to list databases from', $input, $output);
-
         $output->table(
             ['Name'],
-            $this->apiClient->getDatabases($database['id'])->map(function (string $name) {
+            $this->apiClient->getDatabases($this->determineDatabaseServer('Which database server would you like to list databases from', $input, $output))->map(function (string $name) {
                 return [$name];
             })->all()
         );

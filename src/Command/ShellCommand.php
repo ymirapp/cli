@@ -11,21 +11,20 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace Ymir\Cli\Command\Php;
+namespace Ymir\Cli\Command;
 
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
-use Ymir\Cli\Command\AbstractInvocationCommand;
 use Ymir\Cli\Console\ConsoleOutput;
 
-class PhpVersionCommand extends AbstractInvocationCommand
+class ShellCommand extends AbstractInvocationCommand
 {
     /**
      * The name of the command.
      *
      * @var string
      */
-    public const NAME = 'php:version';
+    public const NAME = 'shell';
 
     /**
      * {@inheritdoc}
@@ -34,7 +33,7 @@ class PhpVersionCommand extends AbstractInvocationCommand
     {
         $this
             ->setName(self::NAME)
-            ->setDescription('Get PHP version information on the cloud provider')
+            ->setDescription('Opens an interactive console for running commands on the cloud provider')
             ->addOption('environment', null, InputOption::VALUE_REQUIRED, 'The environment name', 'staging');
     }
 
@@ -44,16 +43,5 @@ class PhpVersionCommand extends AbstractInvocationCommand
     protected function perform(InputInterface $input, ConsoleOutput $output)
     {
         $environment = (string) $this->getStringOption($input, 'environment');
-
-        $output->info(sprintf('Getting PHP version information from the "<comment>%s</comment>" environment', $environment));
-
-        $result = $this->invokeEnvironmentFunction($environment, [
-            'php' => '--version',
-        ]);
-
-        $output->newLine();
-        $output->write("${result['output']}");
-
-        return $result['exitCode'];
     }
 }

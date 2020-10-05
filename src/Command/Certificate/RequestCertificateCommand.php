@@ -16,7 +16,7 @@ namespace Ymir\Cli\Command\Certificate;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
-use Ymir\Cli\Console\OutputStyle;
+use Ymir\Cli\Console\ConsoleOutput;
 
 class RequestCertificateCommand extends AbstractCertificateCommand
 {
@@ -34,25 +34,29 @@ class RequestCertificateCommand extends AbstractCertificateCommand
     {
         $this
             ->setName(self::NAME)
-            ->addArgument('domain', InputArgument::REQUIRED, 'The domain secured by the SSL certificate')
+            ->setDescription('Request a new SSL certificate')
+            ->addArgument('domain', InputArgument::OPTIONAL, 'The domain secured by the SSL certificate')
             ->addOption('provider', null, InputOption::VALUE_REQUIRED, 'The cloud provider where the certificate will be created')
-            ->addOption('region', null, InputOption::VALUE_REQUIRED, 'The cloud provider region where the certificate will be located')
-            ->setDescription('Request a new SSL certificate');
+            ->addOption('region', null, InputOption::VALUE_REQUIRED, 'The cloud provider region where the certificate will be located');
     }
 
     /**
      * {@inheritdoc}
      */
-    protected function perform(InputInterface $input, OutputStyle $output)
+    protected function perform(InputInterface $input, ConsoleOutput $output)
     {
         $domain = $this->getStringArgument($input, 'domain');
+
+        if (empty($domain) && $input->isInteractive()) {
+            $domain = $output->ask('What domain is the certificate for');
+        }
 
         if (0 === stripos($domain, '*.')) {
             $domain = substr($domain, 2);
         }
 
-        $providerId = $this->determineCloudProvider($input, $output, 'Enter the ID of the cloud provider where the SSL certificate will be created');
-        $certificate = $this->apiClient->createCertificate($providerId, $domain, $this->determineRegion($input, $output, $providerId, 'Enter the name of the region where the SSL certificate will be created'));
+        $providerId = $this->determineCloudProvider('Enter the ID of the cloud provider where the SSL certificate will be created', $input, $output);
+        $certificate = $this->apiClient->createCertificate($providerId, $domain, $this->determineRegion('Enter the name of the region where the SSL certificate will be created', $providerId, $input, $output));
         $isManaged = collect($certificate['domains'])->contains('managed', true);
         $validationRecords = [];
 

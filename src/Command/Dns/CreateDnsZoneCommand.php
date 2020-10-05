@@ -17,10 +17,9 @@ use Symfony\Component\Console\Helper\TableSeparator;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
-use Ymir\Cli\Command\AbstractCommand;
-use Ymir\Cli\Console\OutputStyle;
+use Ymir\Cli\Console\ConsoleOutput;
 
-class CreateDnsZoneCommand extends AbstractCommand
+class CreateDnsZoneCommand extends AbstractDnsCommand
 {
     /**
      * The name of the command.
@@ -36,23 +35,29 @@ class CreateDnsZoneCommand extends AbstractCommand
     {
         $this
             ->setName(self::NAME)
-            ->addArgument('name', InputArgument::REQUIRED, 'The name of the domain managed by the created DNS zone')
-            ->addOption('provider', null, InputOption::VALUE_REQUIRED, 'The cloud provider region where the DNS zone will created')
-            ->setDescription('Create a new DNS zone');
+            ->setDescription('Create a new DNS zone')
+            ->addArgument('name', InputArgument::OPTIONAL, 'The name of the domain managed by the created DNS zone')
+            ->addOption('provider', null, InputOption::VALUE_REQUIRED, 'The cloud provider region where the DNS zone will created');
     }
 
     /**
      * {@inheritdoc}
      */
-    protected function perform(InputInterface $input, OutputStyle $output)
+    protected function perform(InputInterface $input, ConsoleOutput $output)
     {
-        $providerId = $this->determineCloudProvider($input, $output, 'Enter the ID of the cloud provider where the DNS zone will be created');
+        $name = $this->getStringArgument($input, 'name');
 
-        if (!$output->confirm('A DNS Zone will cost $0.50/month if it isn\'t deleted in the next 12 hours. Would you like to proceed?', true)) {
+        if (empty($name) && $input->isInteractive()) {
+            $name = $output->ask('What is the name of the domain that the DNS zone will manage');
+        }
+
+        $providerId = $this->determineCloudProvider('Enter the ID of the cloud provider where the DNS zone will be created', $input, $output);
+
+        if (!$output->confirm('A DNS zone will cost $0.50/month if it isn\'t deleted in the next 12 hours. Would you like to proceed?', true)) {
             return;
         }
 
-        $zone = $this->apiClient->createDnsZone($providerId, $this->getStringArgument($input, 'name'));
+        $zone = $this->apiClient->createDnsZone($providerId, $name);
 
         $nameServers = $this->wait(function () use ($zone) {
             return $this->apiClient->getDnsZone($zone['id'])['name_servers'] ?? [];

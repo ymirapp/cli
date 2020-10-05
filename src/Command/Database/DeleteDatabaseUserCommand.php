@@ -16,7 +16,7 @@ namespace Ymir\Cli\Command\Database;
 use Symfony\Component\Console\Exception\InvalidArgumentException;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
-use Ymir\Cli\Console\OutputStyle;
+use Ymir\Cli\Console\ConsoleOutput;
 
 class DeleteDatabaseUserCommand extends AbstractDatabaseCommand
 {
@@ -42,16 +42,16 @@ class DeleteDatabaseUserCommand extends AbstractDatabaseCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(InputInterface $input, OutputStyle $output)
+    protected function perform(InputInterface $input, ConsoleOutput $output)
     {
-        $database = $this->determineDatabaseServer('On which database server would you like to delete a database user?', $input, $output);
+        $databaseId = $this->determineDatabaseServer('On which database server would you like to delete a database user?', $input, $output);
         $username = $this->getStringArgument($input, 'username');
-        $users = $this->apiClient->getDatabaseUsers($database['id']);
+        $users = $this->apiClient->getDatabaseUsers($databaseId);
 
         if ($users->isEmpty()) {
-            throw new InvalidArgumentException(sprintf('The "%s" database server doesn\'t have any managed database users', $database['name']));
+            throw new InvalidArgumentException('The database server doesn\'t have any managed database users');
         } elseif (empty($username) && $input->isInteractive()) {
-            $username = (string) $output->choice('What database user would you like to delete', $users->pluck('username')->all());
+            $username = (string) $output->choice('Which database user would you like to delete', $users->pluck('username')->all());
         }
 
         $user = $users->firstWhere('username', $username);
@@ -64,7 +64,7 @@ class DeleteDatabaseUserCommand extends AbstractDatabaseCommand
             return;
         }
 
-        $this->apiClient->deleteDatabaseUser($database['id'], $user['id']);
+        $this->apiClient->deleteDatabaseUser($databaseId, $user['id']);
 
         $output->info('Database user deleted');
     }

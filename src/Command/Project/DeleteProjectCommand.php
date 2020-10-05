@@ -15,10 +15,17 @@ namespace Ymir\Cli\Command\Project;
 
 use Symfony\Component\Console\Input\InputInterface;
 use Ymir\Cli\Command\AbstractProjectCommand;
-use Ymir\Cli\Console\OutputStyle;
+use Ymir\Cli\Console\ConsoleOutput;
 
 class DeleteProjectCommand extends AbstractProjectCommand
 {
+    /**
+     * The alias of the command.
+     *
+     * @var string
+     */
+    public const ALIAS = 'delete';
+
     /**
      * The name of the command.
      *
@@ -33,14 +40,14 @@ class DeleteProjectCommand extends AbstractProjectCommand
     {
         $this
             ->setName(self::NAME)
-            ->setAliases(['delete'])
-            ->setDescription('Delete the project');
+            ->setDescription('Delete the project')
+            ->setAliases([self::ALIAS]);
     }
 
     /**
      * {@inheritdoc}
      */
-    protected function perform(InputInterface $input, OutputStyle $output)
+    protected function perform(InputInterface $input, ConsoleOutput $output)
     {
         if (!$output->confirm('Are you sure you want to delete this project?', false)) {
             return;

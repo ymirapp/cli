@@ -13,13 +13,11 @@ declare(strict_types=1);
 
 namespace Ymir\Cli\Command\Certificate;
 
-use Symfony\Component\Console\Exception\InvalidArgumentException;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
-use Ymir\Cli\Command\AbstractCommand;
-use Ymir\Cli\Console\OutputStyle;
+use Ymir\Cli\Console\ConsoleOutput;
 
-class DeleteCertificateCommand extends AbstractCommand
+class DeleteCertificateCommand extends AbstractCertificateCommand
 {
     /**
      * The name of the command.
@@ -35,24 +33,22 @@ class DeleteCertificateCommand extends AbstractCommand
     {
         $this
             ->setName(self::NAME)
-            ->addArgument('certificate', InputArgument::REQUIRED, 'The ID of the SSL certificate to delete')
-            ->setDescription('Delete an existing SSL certificate');
+            ->setDescription('Delete an existing SSL certificate')
+            ->addArgument('certificate', InputArgument::REQUIRED, 'The ID of the SSL certificate to delete');
     }
 
     /**
      * {@inheritdoc}
      */
-    protected function perform(InputInterface $input, OutputStyle $output)
+    protected function perform(InputInterface $input, ConsoleOutput $output)
     {
-        $certificateId = $this->getStringArgument($input, 'certificate');
+        $certificateId = $this->getCertificateArgument($input);
 
-        if (!is_numeric($certificateId)) {
-            throw new InvalidArgumentException('The "certificate" argument must be the ID of the SSL certificate');
-        } elseif (!$output->confirm('Are you sure you want to delete this SSL certificate?', false)) {
+        if (!$output->confirm('Are you sure you want to delete this SSL certificate?', false)) {
             return;
         }
 
-        $this->apiClient->deleteCertificate((int) $certificateId);
+        $this->apiClient->deleteCertificate($certificateId);
 
         $output->info('SSL certificate deleted');
     }

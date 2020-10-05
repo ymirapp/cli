@@ -13,11 +13,10 @@ declare(strict_types=1);
 
 namespace Ymir\Cli\Command\Certificate;
 
-use Symfony\Component\Console\Exception\InvalidArgumentException;
 use Symfony\Component\Console\Helper\TableSeparator;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
-use Ymir\Cli\Console\OutputStyle;
+use Ymir\Cli\Console\ConsoleOutput;
 
 class GetCertificateInfoCommand extends AbstractCertificateCommand
 {
@@ -35,22 +34,16 @@ class GetCertificateInfoCommand extends AbstractCertificateCommand
     {
         $this
             ->setName(self::NAME)
-            ->addArgument('certificate', InputArgument::REQUIRED, 'The ID of the SSL certificate to fetch')
-            ->setDescription('Get the information on an SSL certificate');
+            ->setDescription('Get the information on an SSL certificate')
+            ->addArgument('certificate', InputArgument::REQUIRED, 'The ID of the SSL certificate to fetch');
     }
 
     /**
      * {@inheritdoc}
      */
-    protected function perform(InputInterface $input, OutputStyle $output)
+    protected function perform(InputInterface $input, ConsoleOutput $output)
     {
-        $certificateId = $this->getStringArgument($input, 'certificate');
-
-        if (!is_numeric($certificateId)) {
-            throw new InvalidArgumentException('The "certificate" argument must be the ID of the SSL certificate');
-        }
-
-        $certificate = $this->apiClient->getCertificate((int) $certificateId);
+        $certificate = $this->apiClient->getCertificate($this->getCertificateArgument($input));
 
         $output->horizontalTable(
             ['Domains', new TableSeparator(), 'Provider', 'Region', new TableSeparator(), 'Status', 'In Use'],
