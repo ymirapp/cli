@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace Ymir\Cli\Command;
 
-use Symfony\Component\Console\Exception\InvalidArgumentException;
 use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -51,8 +50,6 @@ class WpCliCommand extends AbstractInvocationCommand
 
         if (empty($command) && $input->isInteractive()) {
             $command = $output->ask('Please enter the WP-CLI command to run');
-        } elseif (empty($command) && !$input->isInteractive()) {
-            throw new InvalidArgumentException('You must specify the WP-CLI command to run when running in non-interactive mode');
         }
 
         if ('wp ' === substr($command, 0, 3)) {

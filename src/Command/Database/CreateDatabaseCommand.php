@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace Ymir\Cli\Command\Database;
 
-use Symfony\Component\Console\Exception\InvalidArgumentException;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Ymir\Cli\Console\OutputStyle;
@@ -49,8 +48,6 @@ class CreateDatabaseCommand extends AbstractDatabaseCommand
 
         if (empty($name) && $input->isInteractive()) {
             $name = $output->ask('What is the name of the database');
-        } elseif (empty($name) && !$input->isInteractive()) {
-            throw new InvalidArgumentException('You must pass a "name" argument when running in non-interactive mode');
         }
 
         $this->apiClient->createDatabase((int) $database['id'], $name);

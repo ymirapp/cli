@@ -52,8 +52,6 @@ class DeleteDatabaseUserCommand extends AbstractDatabaseCommand
             throw new InvalidArgumentException(sprintf('The "%s" database server doesn\'t have any managed database users', $database['name']));
         } elseif (empty($username) && $input->isInteractive()) {
             $username = (string) $output->choice('What database user would you like to delete', $users->pluck('username')->all());
-        } elseif (empty($username) && !$input->isInteractive()) {
-            throw new InvalidArgumentException('You must pass a "username" argument when running in non-interactive mode');
         }
 
         $user = $users->firstWhere('username', $username);

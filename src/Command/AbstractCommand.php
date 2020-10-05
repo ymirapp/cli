@@ -152,15 +152,17 @@ abstract class AbstractCommand extends Command
     /**
      * Get the value of an argument that should be a string.
      */
-    protected function getStringArgument(InputInterface $input, string $argument): string
+    protected function getStringArgument(InputInterface $input, string $argument, bool $requireNonInteractive = true): string
     {
-        $value = $input->getArgument($argument) ?? '';
+        $value = $input->getArgument($argument);
 
-        if (!is_string($value)) {
+        if (null === $value && $requireNonInteractive && !$input->isInteractive()) {
+            throw new InvalidArgumentException(sprintf('You must pass a "%s" argument when running in non-interactive mode', $argument));
+        } elseif (null !== $value && !is_string($value)) {
             throw new InvalidArgumentException(sprintf('The "%s" argument must be a string value', $argument));
         }
 
-        return $value;
+        return (string) $value;
     }
 
     /**

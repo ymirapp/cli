@@ -56,8 +56,6 @@ class CreateDatabaseServerCommand extends AbstractCommand
 
         if (empty($name) && $input->isInteractive()) {
             $name = $output->askSlug('What is the name of the database server');
-        } elseif (empty($name) && !$input->isInteractive()) {
-            throw new InvalidArgumentException('You must pass a "name" argument when running in non-interactive mode');
         }
 
         $network = $this->determineNetwork($input, $output);

@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace Ymir\Cli\Command\Secret;
 
-use Symfony\Component\Console\Exception\InvalidArgumentException;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -53,16 +52,12 @@ class ChangeSecretCommand extends AbstractProjectCommand
         $name = $this->getStringArgument($input, 'name');
         $value = $this->getStringArgument($input, 'value');
 
-        if (empty($name) && !$input->isInteractive()) {
-            throw new InvalidArgumentException('You must pass a "name" argument when running in non-interactive mode');
-        } elseif (empty($name) && $input->isInteractive()) {
-            $name = $output->askSlug('What is the name of the secret');
+        if (empty($name) && $input->isInteractive()) {
+            $name = $output->ask('What is the name of the secret');
         }
 
-        if (empty($value) && !$input->isInteractive()) {
-            throw new InvalidArgumentException('You must pass a "name" argument when running in non-interactive mode');
-        } elseif (empty($value) && $input->isInteractive()) {
-            $value = $output->askSlug('What is the secret value');
+        if (empty($value) && $input->isInteractive()) {
+            $value = $output->ask('What is the secret value');
         }
 
         $this->apiClient->changeSecret($this->projectConfiguration->getProjectId(), $environment, $name, $value);
