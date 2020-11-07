@@ -163,6 +163,16 @@ class ApiClient
     }
 
     /**
+     * Create a new environment with the given name for the given project.
+     */
+    public function createEnvironment(int $projectId, string $name): Collection
+    {
+        return $this->request('post', "/projects/{$projectId}/environments", [
+            'name' => $name,
+        ]);
+    }
+
+    /**
      * Create a new function invocation for the given project on the given environment.
      */
     public function createInvocation(int $projectId, string $environment, array $payload): Collection
@@ -287,6 +297,16 @@ class ApiClient
     public function deleteEmailIdentity(int $identityId)
     {
         $this->request('delete', "/email-identities/{$identityId}");
+    }
+
+    /**
+     * Delete the given environment on the given project.
+     */
+    public function deleteEnvironment(int $projectId, string $environment, bool $deleteResources = false)
+    {
+        $this->request('delete', "/projects/{$projectId}/environments/{$environment}", [
+            'delete_resources' => $deleteResources,
+        ]);
     }
 
     /**
@@ -506,6 +526,14 @@ class ApiClient
     public function getEnvironment(int $projectId, string $environment): Collection
     {
         return $this->request('get', "/projects/{$projectId}/environments/$environment");
+    }
+
+    /**
+     * Get the details on the project's environments.
+     */
+    public function getEnvironments(int $projectId): Collection
+    {
+        return $this->request('get', "/projects/{$projectId}/environments");
     }
 
     /**

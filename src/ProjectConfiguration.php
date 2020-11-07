@@ -65,6 +65,18 @@ class ProjectConfiguration implements Arrayable
     }
 
     /**
+     * Add a new environment node to the project configuration.
+     */
+    public function addEnvironment(string $name, ?array $options = null)
+    {
+        if ('bedrock' === $this->configuration['type']) {
+            $options = array_merge(['build' => ['composer install --classmap-authoritative']], (array) $options);
+        }
+
+        $this->configuration['environments'][$name] = $options;
+    }
+
+    /**
      * Creates a new configuration from the given project.
      *
      * Overwrites the existing project configuration.
@@ -74,12 +86,8 @@ class ProjectConfiguration implements Arrayable
         $this->configuration = $project->only(['id', 'name'])->all();
         $this->configuration['type'] = $type ?: 'wordpress';
 
-        $baseEnvironment = 'bedrock' === $type ? ['build' => ['composer install --classmap-authoritative']] : null;
-
-        $this->configuration['environments'] = [
-            'production' => $baseEnvironment,
-            'staging' => array_merge((array) $baseEnvironment, ['cdn' => ['caching' => 'assets'], 'cron' => false, 'warmup' => false]),
-        ];
+        $this->addEnvironment('production');
+        $this->addEnvironment('staging', ['cdn' => ['caching' => 'assets'], 'cron' => false, 'warmup' => false]);
 
         if (!empty($databaseServer) && !empty($databaseName)) {
             $this->configuration['environments']['staging']['database'] = [
@@ -101,6 +109,16 @@ class ProjectConfiguration implements Arrayable
     {
         $this->configuration = [];
         $this->filesystem->remove($this->configurationFilePath);
+    }
+
+    /**
+     * Delete the given project environment.
+     */
+    public function deleteEnvironment(string $environment)
+    {
+        if ($this->hasEnvironment($environment)) {
+            unset($this->configuration['environments'][$environment]);
+        }
     }
 
     /**
