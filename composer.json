@@ -30,10 +30,10 @@
         "friendsofphp/php-cs-fixer": "^2.16",
         "php-parallel-lint/php-parallel-lint": "^1.1",
         "phpmd/phpmd": "^2.7",
-        "phpro/grumphp": "^0.18.0",
+        "phpro/grumphp": "^1.0",
         "phpstan/phpstan": "^0.12.0",
-        "phpunit/phpunit": "^9.0",
-        "sebastian/phpcpd": "^5.0"
+        "phpunit/phpunit": "^9.3",
+        "sebastian/phpcpd": "^6.0"
     },
     "config": {
         "optimize-autoloader": true,
