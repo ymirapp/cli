@@ -24,6 +24,8 @@ services:
   _instanceof:
     Symfony\Component\Console\Command\Command:
       tags: ['command']
+    Symfony\Component\EventDispatcher\EventSubscriberInterface:
+      tags: ['subscriber']
 
   GuzzleHttp\:
     resource: '../vendor/guzzlehttp/guzzle/src'
@@ -39,10 +41,16 @@ services:
     public: true
     arguments:
       - !tagged command
+    calls:
+      - setDispatcher: ['@Ymir\Cli\EventDispatcher\AutowiredEventDispatcher']
 
   Ymir\Cli\CliConfiguration:
     arguments:
       $configurationFilePath: '%cli_configuration_filepath%'
+
+  Ymir\Cli\EventDispatcher\AutowiredEventDispatcher:
+    arguments:
+      - !tagged subscriber
 
   Ymir\Cli\ProjectConfiguration:
     arguments:
@@ -66,7 +74,6 @@ services:
         - '@Ymir\Cli\Deployment\UploadBuildStep'
         - '@Ymir\Cli\Deployment\ProcessAssetsStep'
         - '@Ymir\Cli\Deployment\StartAndMonitorDeploymentStep'
-        - '@Ymir\Cli\Deployment\CleanupStep'
 
   Ymir\Cli\Command\Project\RedeployProjectCommand:
     arguments:

@@ -11,13 +11,16 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace Ymir\Cli\Deployment;
+namespace Ymir\Cli\EventListener;
 
+use Symfony\Component\Console\ConsoleEvents;
+use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\Filesystem\Filesystem;
-use Tightenco\Collect\Support\Collection;
-use Ymir\Cli\Console\ConsoleOutput;
 
-class CleanupStep implements DeploymentStepInterface
+/**
+ * Event subscriber that cleans up project folder when command terminates.
+ */
+class CleanupSubscriber implements EventSubscriberInterface
 {
     /**
      * The file system.
@@ -45,10 +48,18 @@ class CleanupStep implements DeploymentStepInterface
     /**
      * {@inheritdoc}
      */
-    public function perform(Collection $deployment, ConsoleOutput $output)
+    public static function getSubscribedEvents()
     {
-        $output->info('Cleaning up deployment files');
+        return [
+            ConsoleEvents::TERMINATE => 'onConsoleTerminate',
+        ];
+    }
 
+    /**
+     * {@inheritdoc}
+     */
+    public function onConsoleTerminate()
+    {
         $this->filesystem->remove($this->hiddenDirectory);
     }
 }
