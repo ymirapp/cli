@@ -11,7 +11,7 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace Ymir\Cli\Command\Secret;
+namespace Ymir\Cli\Command\Environment;
 
 use Symfony\Component\Console\Exception\InvalidArgumentException;
 use Symfony\Component\Console\Exception\RuntimeException;
@@ -21,14 +21,14 @@ use Symfony\Component\Console\Input\InputOption;
 use Ymir\Cli\Command\AbstractProjectCommand;
 use Ymir\Cli\Console\ConsoleOutput;
 
-class DeleteSecretCommand extends AbstractProjectCommand
+class DeleteEnvironmentSecretCommand extends AbstractProjectCommand
 {
     /**
      * The name of the command.
      *
      * @var string
      */
-    public const NAME = 'secret:delete';
+    public const NAME = 'environment:secret:delete';
 
     /**
      * {@inheritdoc}

@@ -11,7 +11,7 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace Ymir\Cli\Command\Secret;
+namespace Ymir\Cli\Command\Environment;
 
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -21,14 +21,14 @@ use Ymir\Cli\Command\Project\DeployProjectCommand;
 use Ymir\Cli\Command\Project\RedeployProjectCommand;
 use Ymir\Cli\Console\ConsoleOutput;
 
-class ChangeSecretCommand extends AbstractProjectCommand
+class ChangeEnvironmentSecretCommand extends AbstractProjectCommand
 {
     /**
      * The name of the command.
      *
      * @var string
      */
-    public const NAME = 'secret:change';
+    public const NAME = 'environment:secret:change';
 
     /**
      * {@inheritdoc}

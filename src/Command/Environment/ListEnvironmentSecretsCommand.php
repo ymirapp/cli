@@ -11,7 +11,7 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace Ymir\Cli\Command\Secret;
+namespace Ymir\Cli\Command\Environment;
 
 use Carbon\Carbon;
 use Symfony\Component\Console\Input\InputInterface;
@@ -19,14 +19,14 @@ use Symfony\Component\Console\Input\InputOption;
 use Ymir\Cli\Command\AbstractProjectCommand;
 use Ymir\Cli\Console\ConsoleOutput;
 
-class ListSecretsCommand extends AbstractProjectCommand
+class ListEnvironmentSecretsCommand extends AbstractProjectCommand
 {
     /**
      * The name of the command.
      *
      * @var string
      */
-    public const NAME = 'secret:list';
+    public const NAME = 'environment:secret:list';
 
     /**
      * {@inheritdoc}
