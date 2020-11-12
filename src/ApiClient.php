@@ -562,6 +562,14 @@ class ApiClient
     }
 
     /**
+     * Get the environment variables of the given project environment.
+     */
+    public function getEnvironmentVariables(int $projectId, string $environment): Collection
+    {
+        return $this->request('get', "/projects/{$projectId}/environments/{$environment}/variables");
+    }
+
+    /**
      * Get the function invocation with the given ID.
      */
     public function getInvocation(int $invocationId): Collection
