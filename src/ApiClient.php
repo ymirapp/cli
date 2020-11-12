@@ -75,6 +75,17 @@ class ApiClient
     }
 
     /**
+     * Change the environment variables of the given project environment.
+     */
+    public function changeEnvironmentVariables(int $projectId, string $environment, array $variables, bool $overwrite = false): Collection
+    {
+        return $this->request('put', "/projects/{$projectId}/environments/{$environment}/variables", [
+            'variables' => $variables,
+            'overwrite' => $overwrite,
+        ]);
+    }
+
+    /**
      * Change the value of the given secret for the given project environment.
      */
     public function changeSecret(int $projectId, string $environment, string $name, string $value): Collection
