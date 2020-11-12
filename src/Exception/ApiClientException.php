@@ -92,9 +92,12 @@ class ApiClientException extends RuntimeException
             return $message;
         }
 
-        $errors = collect(json_decode((string) $response->getBody(), true))->only('errors')->flatten();
+        $body = collect(json_decode((string) $response->getBody(), true));
+        $errors = $body->only('errors')->flatten();
 
-        if ($errors->isEmpty()) {
+        if ($errors->isEmpty() && $body->has('message')) {
+            $errors->add($body->get('message'));
+        } elseif ($errors->isEmpty() && !$body->has('message')) {
             return $message;
         }
 
