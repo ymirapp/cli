@@ -98,8 +98,7 @@ class ProcessAssetsStep implements DeploymentStepInterface
         }
 
         $progressBar = new ProgressBar($output);
-        $progressBar->setFormat('  > %message% (<comment>%current%/%max%</comment>)');
-        $progressBar->setMessage('Copying unchanged asset files');
+        $progressBar->setFormat('  > Copying unchanged asset files (<comment>%current%/%max%</comment>)');
 
         $this->uploader->batch('PUT', $requests, $progressBar);
 
@@ -137,8 +136,7 @@ class ProcessAssetsStep implements DeploymentStepInterface
         }
 
         $progressBar = new ProgressBar($output);
-        $progressBar->setFormat('  > %message% (<comment>%current%/%max%</comment>)');
-        $progressBar->setMessage('Uploading new asset files');
+        $progressBar->setFormat('  > Uploading new asset files (<comment>%current%/%max%</comment>)');
         $progressBar->start(count($requests));
 
         foreach ($requests as $realFilePath => $request) {
