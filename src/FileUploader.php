@@ -22,6 +22,13 @@ use Symfony\Component\Console\Helper\ProgressBar;
 class FileUploader
 {
     /**
+     * The default headers to send with our requests.
+     *
+     * @var array
+     */
+    private const DEFAULT_HEADERS = ['Cache-Control' => 'public, max-age=2628000'];
+
+    /**
      * The HTTP client used to upload files.
      *
      * @var ClientInterface
@@ -39,19 +46,19 @@ class FileUploader
     /**
      * Sends multiple requests concurrently.
      */
-    public function batch(string $method, array $requests, array $defaultHeaders = [], ?ProgressBar $progressBar = null)
+    public function batch(string $method, array $requests, ?ProgressBar $progressBar = null)
     {
         if ($progressBar instanceof ProgressBar) {
             $progressBar->start(count($requests));
         }
 
-        $requests = function () use ($method, $requests, $defaultHeaders, $progressBar) {
+        $requests = function () use ($method, $requests, $progressBar) {
             foreach ($requests as $request) {
                 if ($progressBar instanceof ProgressBar) {
                     $progressBar->advance();
                 }
 
-                yield new Request($method, $request['uri'], array_merge($defaultHeaders, $request['headers']));
+                yield new Request($method, $request['uri'], array_merge(self::DEFAULT_HEADERS, $request['headers']));
             }
         };
 
@@ -89,7 +96,7 @@ class FileUploader
 
         $this->client->request('PUT', $url, array_filter([
             'body' => $file,
-            'headers' => empty($headers) ? null : $headers,
+            'headers' => array_merge(self::DEFAULT_HEADERS, $headers),
             'progress' => $progressCallback,
         ]));
 

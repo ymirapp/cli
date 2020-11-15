@@ -23,13 +23,6 @@ use Ymir\Cli\FileUploader;
 class ProcessAssetsStep implements DeploymentStepInterface
 {
     /**
-     * The request headers to send with our asset requests.
-     *
-     * @var array
-     */
-    private const REQUEST_HEADERS = ['Cache-Control' => 'public, max-age=2628000'];
-
-    /**
      * The API client that interacts with the Ymir API.
      *
      * @var ApiClient
@@ -108,7 +101,7 @@ class ProcessAssetsStep implements DeploymentStepInterface
         $progressBar->setFormat('  > %message% (<comment>%current%/%max%</comment>)');
         $progressBar->setMessage('Copying unchanged asset files');
 
-        $this->uploader->batch('PUT', $requests, self::REQUEST_HEADERS, $progressBar);
+        $this->uploader->batch('PUT', $requests, $progressBar);
 
         $output->newLine();
     }
@@ -149,7 +142,7 @@ class ProcessAssetsStep implements DeploymentStepInterface
         $progressBar->start(count($requests));
 
         foreach ($requests as $realFilePath => $request) {
-            $this->uploader->uploadFile((string) $realFilePath, (string) $request['uri'], array_merge(self::REQUEST_HEADERS, $request['headers']));
+            $this->uploader->uploadFile((string) $realFilePath, (string) $request['uri'], $request['headers']);
             $progressBar->advance();
         }
 

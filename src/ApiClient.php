@@ -624,6 +624,20 @@ class ApiClient
     }
 
     /**
+     * Get the signed asset requests for the given asset files.
+     */
+    public function getSignedUploadRequests(int $projectId, string $environment, array $uploads): Collection
+    {
+        $requests = $this->request('get', "/projects/{$projectId}/environments/{$environment}/signed-uploads", ['uploads' => $uploads]);
+
+        if (!empty($uploads) && empty($requests)) {
+            throw new RuntimeException('Unable to get authorized uploads requests from the Ymir API');
+        }
+
+        return $requests;
+    }
+
+    /**
      * Get the details on the given team.
      */
     public function getTeam($teamId): Collection

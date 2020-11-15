@@ -16,6 +16,7 @@
     </rule>
     <rule ref="rulesets/controversial.xml" />
     <rule ref="rulesets/unusedcode.xml">
+        <exclude name="UnusedFormalParameter" />
         <exclude name="UnusedLocalVariable" />
     </rule>
     <rule ref="rulesets/naming.xml">
@@ -52,7 +53,7 @@
         <priority>3</priority>
         <properties>
             <property name="minimum" description="Minimum length for a variable, property or parameter name" value="3"/>
-            <property name="exceptions" value="id" />
+            <property name="exceptions" value="id,_,__" />
         </properties>
     </rule>
 </ruleset>
