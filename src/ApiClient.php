@@ -133,9 +133,10 @@ class ApiClient
     /**
      * Create a new user on the given database server.
      */
-    public function createDatabaseUser(int $databaseId, string $username): Collection
+    public function createDatabaseUser(int $databaseId, string $username, array $databases = []): Collection
     {
         return $this->request('post', "/database-servers/{$databaseId}/users", [
+            'databases' => $databases,
             'username' => $username,
         ]);
     }

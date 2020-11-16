@@ -117,6 +117,22 @@ class ConsoleOutput extends SymfonyStyle
     }
 
     /**
+     * Ask a multiselect choice question.
+     */
+    public function multichoice($question, array $choices, $default = null): array
+    {
+        if (null !== $default) {
+            $values = array_flip($choices);
+            $default = $values[$default];
+        }
+
+        $question = new ChoiceQuestion($question, $choices, $default);
+        $question->setMultiselect(true);
+
+        return (array) $this->askQuestion($question);
+    }
+
+    /**
      * Write out a warning message.
      */
     public function warn(string $message, bool $newline = true)
