@@ -63,9 +63,8 @@ class CreateDatabaseServerCommand extends AbstractCommand
         $network = $this->determineNetwork($input, $output);
         $type = $this->determineType($network, $input, $output);
         $storage = $this->determineStorage($input, $output);
-        $public = $this->determinePublic($input, $output);
 
-        $database = $this->apiClient->createDatabaseServer($name, (int) $network['id'], $type, $storage, $public);
+        $database = $this->apiClient->createDatabaseServer($name, (int) $network['id'], $type, $storage, true);
 
         $output->horizontalTable(
             ['Database Sever', new TableSeparator(), 'Username', 'Password', new TableSeparator(), 'Type', 'Public', 'Storage (in GB)'],
@@ -102,16 +101,6 @@ class CreateDatabaseServerCommand extends AbstractCommand
         }
 
         return $network;
-    }
-
-    /**
-     * Determine whether the database should be publicly accessible or not.
-     */
-    private function determinePublic(InputInterface $input, ConsoleOutput $output): bool
-    {
-        return $this->getBooleanOption($input, 'dev')
-            || $this->getBooleanOption($input, 'public')
-            || $output->confirm('Should the database server be publicly accessible?');
     }
 
     /**
