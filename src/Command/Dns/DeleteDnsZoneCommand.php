@@ -42,7 +42,7 @@ class DeleteDnsZoneCommand extends AbstractDnsCommand
      */
     protected function perform(InputInterface $input, ConsoleOutput $output)
     {
-        $zone = $this->determineDnsZone('Which database server would you like to delete', $input, $output);
+        $zone = $this->determineDnsZone('Which DNS zone would you like to delete', $input, $output);
 
         if (!$output->confirm('Are you sure you want to delete this DNS zone?', false)) {
             return;
