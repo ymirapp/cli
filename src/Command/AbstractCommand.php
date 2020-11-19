@@ -100,6 +100,22 @@ abstract class AbstractCommand extends Command
     }
 
     /**
+     * Get the value of an argument that should be an array.
+     */
+    protected function getArrayArgument(InputInterface $input, string $argument, bool $requiredNonInteractive = true): array
+    {
+        $value = $input->getArgument($argument);
+
+        if (null === $value && $requiredNonInteractive && !$input->isInteractive()) {
+            throw new InvalidArgumentException(sprintf('You must pass a "%s" argument when running in non-interactive mode', $argument));
+        } elseif (null !== $value && !is_array($value)) {
+            throw new InvalidArgumentException(sprintf('The "%s" argument must be an array value', $argument));
+        }
+
+        return (array) $value;
+    }
+
+    /**
      * Get the value of a option that should be an array.
      */
     protected function getArrayOption(InputInterface $input, string $option): array

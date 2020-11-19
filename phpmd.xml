@@ -12,6 +12,7 @@
         <exclude name="StaticAccess" />
     </rule>
     <rule ref="rulesets/codesize.xml">
+        <exclude name="ExcessiveClassComplexity" />
         <exclude name="TooManyPublicMethods"/>
     </rule>
     <rule ref="rulesets/controversial.xml" />

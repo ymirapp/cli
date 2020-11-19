@@ -71,5 +71,15 @@ class CreateDnsZoneCommand extends AbstractDnsCommand
         }
 
         $output->info('DNS zone created');
+
+        if ($output->confirm('Do you want to import the root DNS records for this domain', false)) {
+            $this->apiClient->importDnsRecord($zone['id']);
+        }
+
+        if ($output->confirm('Do you want to import DNS records for subdomains of this domain', false)) {
+            $this->invoke($output, ImportDnsRecordsCommand::NAME, [
+                'zone' => $zone['domain_name'],
+            ]);
+        }
     }
 }

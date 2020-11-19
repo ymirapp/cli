@@ -679,6 +679,18 @@ class ApiClient
     }
 
     /**
+     * Change the value of the DNS record in the given DNS zone ID or name.
+     */
+    public function importDnsRecord($zoneIdOrName, array $subdomains = [])
+    {
+        $zone = $this->getDnsZone($zoneIdOrName);
+
+        $this->request('post', "/zones/{$zone['id']}/import-records", [
+            'subdomains' => array_filter($subdomains),
+        ]);
+    }
+
+    /**
      * Invalidate the content delivery network cache for the given project environment.
      */
     public function invalidateCache(int $projectId, string $environment, array $paths)
