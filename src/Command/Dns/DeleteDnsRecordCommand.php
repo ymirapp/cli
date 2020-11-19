@@ -69,7 +69,7 @@ class DeleteDnsRecordCommand extends AbstractDnsCommand
         return $this->apiClient->getDnsRecords($zone['id'])->filter(function (array $record) use ($input, $zone) {
             $name = $this->getStringOption($input, 'name');
 
-            return empty($name) || $record['name'] === $name || $record['name'] === sprintf('%s.%s', $name, $zone['name']);
+            return empty($name) || $record['name'] === $name || $record['name'] === sprintf('%s.%s', $name, $zone['domain_name']);
         })->filter(function (array $record) use ($input) {
             $type = $this->getStringOption($input, 'type');
 

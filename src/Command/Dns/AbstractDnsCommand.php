@@ -34,13 +34,13 @@ abstract class AbstractDnsCommand extends AbstractCommand
         }
 
         if (empty($zoneIdOrName)) {
-            $zoneIdOrName = (string) $output->choice($question, $zones->pluck('name')->all());
+            $zoneIdOrName = (string) $output->choice($question, $zones->pluck('domain_name')->all());
         }
 
         if (is_numeric($zoneIdOrName)) {
             $zone = $zones->firstWhere('id', $zoneIdOrName);
         } elseif (is_string($zoneIdOrName)) {
-            $zone = $zones->firstWhere('name', $zoneIdOrName);
+            $zone = $zones->firstWhere('domain_name', $zoneIdOrName);
         }
 
         if (empty($zone['id'])) {

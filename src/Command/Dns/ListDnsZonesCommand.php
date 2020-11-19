@@ -44,7 +44,7 @@ class ListDnsZonesCommand extends AbstractCommand
         $output->table(
             ['Id', 'Provider', 'Domain Name', 'Name Servers'],
             $this->apiClient->getDnsZones($this->cliConfiguration->getActiveTeamId())->map(function (array $zone) {
-                return [$zone['id'], $zone['provider']['name'], $zone['name'], implode(PHP_EOL, $zone['name_servers'])];
+                return [$zone['id'], $zone['provider']['name'], $zone['domain_name'], implode(PHP_EOL, $zone['name_servers'])];
             })->all()
         );
     }
