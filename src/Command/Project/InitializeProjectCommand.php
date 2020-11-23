@@ -204,7 +204,7 @@ class InitializeProjectCommand extends AbstractProjectCommand
         }
 
         if (empty($type)) {
-            $type = $output->choice('Please select the type of project to initialize', ['Bedrock', 'WordPress'], 'wordpress');
+            $type = $output->choice('Please select the type of project to initialize', ['Bedrock', 'WordPress'], 'WordPress');
         }
 
         return strtolower($type);
