@@ -350,12 +350,13 @@ class ApiClient
     /**
      * Get an access token for the given email and password.
      */
-    public function getAccessToken(string $email, string $password): string
+    public function getAccessToken(string $email, string $password, ?string $authenticationCode = null): string
     {
         $response = $this->request('post', '/token', [
             'host' => gethostname(),
             'email' => $email,
             'password' => $password,
+            'authentication_code' => $authenticationCode,
         ]);
 
         if (empty($response['access_token'])) {

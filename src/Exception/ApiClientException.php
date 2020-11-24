@@ -16,39 +16,50 @@ namespace Ymir\Cli\Exception;
 use GuzzleHttp\Exception\ClientException;
 use Psr\Http\Message\ResponseInterface;
 use Symfony\Component\Console\Exception\RuntimeException;
+use Tightenco\Collect\Support\Collection;
 use Ymir\Cli\Command\LoginCommand;
 
 class ApiClientException extends RuntimeException
 {
     /**
+     * The Guzzle response.
+     *
+     * @var ResponseInterface
+     */
+    private $response;
+
+    /**
      * Constructor.
      */
     public function __construct(ClientException $exception)
     {
-        $message = $this->getApiErrorMessage($exception);
+        $this->response = $exception->getResponse();
+
+        $message = $this->getApiErrorMessage();
 
         if (empty($message)) {
             $message = $this->getDefaultMessage($exception->getCode());
         } elseif (in_array($exception->getCode(), [400, 422])) {
-            $message = $this->getValidationErrorMessage($exception);
+            $message = $this->getValidationErrorMessage();
         }
 
         parent::__construct($message, $exception->getCode());
     }
 
     /**
+     * Get the validation errors that the API sent back.
+     */
+    public function getValidationErrors(): Collection
+    {
+        return collect(json_decode((string) $this->response->getBody(), true))->only('errors')->collapse();
+    }
+
+    /**
      * Get the Ymir API error message.
      */
-    private function getApiErrorMessage(ClientException $exception): string
+    private function getApiErrorMessage(): string
     {
-        $message = '';
-        $response = $exception->getResponse();
-
-        if (!$response instanceof ResponseInterface) {
-            return $message;
-        }
-
-        $body = (string) $response->getBody();
+        $body = (string) $this->response->getBody();
         $decodedBody = json_decode($body, true);
 
         return JSON_ERROR_NONE === json_last_error() && !empty($decodedBody['message']) ? $decodedBody['message'] : str_replace('"', '', $body);
@@ -83,17 +94,11 @@ class ApiClientException extends RuntimeException
     /**
      * Get the validation error messages from the ClientException.
      */
-    private function getValidationErrorMessage(ClientException $exception): string
+    private function getValidationErrorMessage(): string
     {
-        $message = 'The Ymir API responded with errors';
-        $response = $exception->getResponse();
-
-        if (!$response instanceof ResponseInterface) {
-            return $message;
-        }
-
-        $body = collect(json_decode((string) $response->getBody(), true));
+        $body = collect(json_decode((string) $this->response->getBody(), true));
         $errors = $body->only('errors')->flatten();
+        $message = 'The Ymir API responded with errors';
 
         if ($errors->isEmpty() && $body->has('message')) {
             $errors->add($body->get('message'));
