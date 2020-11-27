@@ -23,6 +23,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Ymir\Cli\ApiClient;
 use Ymir\Cli\CliConfiguration;
 use Ymir\Cli\Console\ConsoleOutput;
+use Ymir\Cli\ProjectConfiguration;
 
 abstract class AbstractCommand extends Command
 {
@@ -41,14 +42,22 @@ abstract class AbstractCommand extends Command
     protected $cliConfiguration;
 
     /**
+     * The Ymir project configuration.
+     *
+     * @var ProjectConfiguration
+     */
+    protected $projectConfiguration;
+
+    /**
      * Constructor.
      */
-    public function __construct(ApiClient $apiClient, CliConfiguration $cliConfiguration)
+    public function __construct(ApiClient $apiClient, CliConfiguration $cliConfiguration, ProjectConfiguration $projectConfiguration)
     {
         parent::__construct();
 
         $this->apiClient = $apiClient;
         $this->cliConfiguration = $cliConfiguration;
+        $this->projectConfiguration = $projectConfiguration;
     }
 
     /**
@@ -63,6 +72,10 @@ abstract class AbstractCommand extends Command
             return (int) $providerId;
         } elseif (is_numeric($providerId) && $providers->contains('id', $providerId)) {
             throw new InvalidArgumentException('The given "provider" isn\'t available to currently active team');
+        }
+
+        if ($this->projectConfiguration->exists()) {
+            $providers = collect([$this->apiClient->getProject($this->projectConfiguration->getProjectId())->get('provider')]);
         }
 
         return 1 === count($providers) ? $providers[0]['id'] : $output->choiceWithId($question, $providers);
@@ -84,7 +97,7 @@ abstract class AbstractCommand extends Command
             throw new InvalidArgumentException('The given "region" isn\'t a valid cloud provider region');
         }
 
-        return (string) $output->choice($question, $regions->all());
+        return $this->projectConfiguration->exists() ? $this->apiClient->getProject($this->projectConfiguration->getProjectId())->get('region') : (string) $output->choice($question, $regions->all());
     }
 
     /**
