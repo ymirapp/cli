@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace Ymir\Cli\Build;
 
-use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Finder\SplFileInfo;
 use Ymir\Cli\ProjectConfiguration;
@@ -59,17 +58,15 @@ class CompressBuildFilesStep implements BuildStepInterface
         $archive = new \ZipArchive();
         $archive->open($this->buildArtifactPath, \ZipArchive::CREATE | \ZipArchive::OVERWRITE);
 
-        foreach ($this->getBuildFiles() as $file) {
+        foreach ($this->getWordPressCoreFiles($projectConfiguration->getProjectType()) as $file) {
+            $this->addFileToArchive($archive, $file);
+        }
+
+        foreach ($this->getPhpFiles() as $file) {
             $this->addFileToArchive($archive, $file);
         }
 
         $archive->close();
-
-        $size = round(filesize($this->buildArtifactPath) / 1048576, 1);
-
-        if ($size > 45) {
-            throw new RuntimeException(sprintf('Compressed build is greater than 45MB. Build is %sMB', $size));
-        }
     }
 
     /**
@@ -87,12 +84,31 @@ class CompressBuildFilesStep implements BuildStepInterface
     }
 
     /**
-     * Get the Finder object for finding all the project files.
+     * Get the Finder object for finding all the PHP files.
      */
-    private function getBuildFiles(): Finder
+    private function getPhpFiles(): Finder
     {
         return Finder::create()
             ->in($this->buildDirectory)
+            ->files()
+            ->name(['*.php'])
+            ->ignoreVCS(true);
+    }
+
+    /**
+     * Get the Finder object for finding all the WordPress core files.
+     */
+    private function getWordPressCoreFiles(string $projectType): Finder
+    {
+        return Finder::create()
+            ->in($this->buildDirectory)
+            ->path(collect(['wp-includes\/', 'wp-admin\/'])->map(function (string $path) use ($projectType) {
+                if ('bedrock' === $projectType) {
+                    $path = 'web\/wp\/'.$path;
+                }
+
+                return sprintf('/^%s/', $path);
+            })->add('/^bin\//')->all())
             ->files()
             ->ignoreVCS(true)
             ->ignoreDotFiles(false);
