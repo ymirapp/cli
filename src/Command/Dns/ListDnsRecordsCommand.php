@@ -45,9 +45,9 @@ class ListDnsRecordsCommand extends AbstractDnsCommand
         $zone = $this->determineDnsZone('Which DNS zone would you like to list DNS records from', $input, $output);
 
         $output->table(
-            ['Id', 'Domain Name', 'Type', 'Value'],
+            ['Id', 'Domain Name', 'Type', 'Value', 'Internal'],
             $this->apiClient->getDnsRecords($zone['id'])->map(function (array $record) {
-                return [$record['id'], $record['name'], $record['type'], $record['value']];
+                return [$record['id'], $record['name'], $record['type'], $record['value'], $record['internal'] ? 'yes' : 'no'];
             })->all()
         );
     }
