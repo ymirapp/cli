@@ -155,6 +155,22 @@ abstract class AbstractCommand extends Command
     }
 
     /**
+     * Get the value of an argument that should be numeric.
+     */
+    protected function getNumericArgument(InputInterface $input, string $argument, bool $requiredNonInteractive = true): int
+    {
+        $value = $input->getArgument($argument);
+
+        if (null === $value && $requiredNonInteractive && !$input->isInteractive()) {
+            throw new InvalidArgumentException(sprintf('You must pass a "%s" argument when running in non-interactive mode', $argument));
+        } elseif (null !== $value && !is_numeric($value)) {
+            throw new InvalidArgumentException(sprintf('The "%s" argument must be a numeric value', $argument));
+        }
+
+        return (int) $value;
+    }
+
+    /**
      * Get the value of a option that should be numeric. Returns null if not present.
      */
     protected function getNumericOption(InputInterface $input, string $option): ?int

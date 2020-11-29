@@ -36,6 +36,7 @@ class DeleteDnsRecordCommand extends AbstractDnsCommand
             ->setName(self::NAME)
             ->setDescription('Delete DNS record(s) from a DNS zone')
             ->addArgument('zone', InputArgument::REQUIRED, 'The ID or name of the DNS zone that the DNS record belongs to')
+            ->addArgument('record', InputArgument::OPTIONAL, 'The ID of the DNS record to delete')
             ->addOption('name', null, InputOption::VALUE_REQUIRED, 'The name of the DNS record without the domain')
             ->addOption('type', null, InputOption::VALUE_REQUIRED, 'The DNS record type')
             ->addOption('value', null, InputOption::VALUE_REQUIRED, 'The value of the DNS record');
@@ -48,36 +49,34 @@ class DeleteDnsRecordCommand extends AbstractDnsCommand
     {
         $zoneIdOrName = $this->getStringArgument($input, 'zone');
 
-        if (!$output->confirm('Are you sure you want to delete these DNS records?', false)) {
+        if (!$output->confirm('Are you sure you want to delete these DNS record(s)?', false)) {
             return;
         }
 
+        $name = $this->getStringOption($input, 'name');
+        $recordId = $this->getNumericArgument($input, 'record');
+        $type = $this->getStringOption($input, 'type');
+        $value = $this->getStringOption($input, 'value');
         $zone = $this->apiClient->getDnsZone($zoneIdOrName);
 
-        foreach ($this->getDnsRecords($input, $zone) as $record) {
-            $this->apiClient->deleteDnsRecord((int) $zone['id'], (int) $record['id']);
+        if (empty($name) && empty($recordId) && empty($type) && empty($value) && !$output->confirm('You are about to delete all DNS records. Do you want to proceed?', false)) {
+            return;
         }
 
-        $output->info('DNS records deleted');
-    }
-
-    /**
-     * Get the DNS records of the DNS zone filtered based on the console input.
-     */
-    private function getDnsRecords(InputInterface $input, array $zone): array
-    {
-        return $this->apiClient->getDnsRecords($zone['id'])->filter(function (array $record) use ($input, $zone) {
-            $name = $this->getStringOption($input, 'name');
-
+        $records = !empty($recordId) ? [['id' => $recordId]] : $this->apiClient->getDnsRecords($zone['id'])->filter(function (array $record) {
+            return !$record['internal'];
+        })->filter(function (array $record) use ($name, $zone) {
             return empty($name) || $record['name'] === $name || $record['name'] === sprintf('%s.%s', $name, $zone['domain_name']);
-        })->filter(function (array $record) use ($input) {
-            $type = $this->getStringOption($input, 'type');
-
+        })->filter(function (array $record) use ($type) {
             return empty($type) || $record['type'] === strtoupper($type);
-        })->filter(function (array $record) use ($input) {
-            $value = $this->getStringOption($input, 'value');
-
+        })->filter(function (array $record) use ($value) {
             return empty($value) || $record['value'] === $value;
-        })->values()->all();
+        });
+
+        foreach ($records as $record) {
+            $this->apiClient->deleteDnsRecord($zone['id'], $record['id']);
+        }
+
+        $output->info('DNS record(s) deleted');
     }
 }
