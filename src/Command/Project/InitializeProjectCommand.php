@@ -15,7 +15,9 @@ namespace Ymir\Cli\Command\Project;
 
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
+use Symfony\Component\Console\Output\NullOutput;
 use Symfony\Component\Filesystem\Filesystem;
+use Tightenco\Collect\Support\Arr;
 use Ymir\Cli\ApiClient;
 use Ymir\Cli\CliConfiguration;
 use Ymir\Cli\Command\AbstractProjectCommand;
@@ -109,19 +111,23 @@ class InitializeProjectCommand extends AbstractProjectCommand
             return;
         }
 
-        $databaseName = '';
+        $environments = [
+            'production' => [],
+            'staging' => ['cdn' => ['caching' => 'assets'], 'cron' => false, 'warmup' => false],
+        ];
         $projectName = $this->determineProjectName($input, $output);
         $projectType = $this->determineProjectType($input, $output);
         $providerId = $this->determineCloudProvider('Enter the ID of the cloud provider that the project will use', $input, $output);
         $region = $this->determineRegion('Enter the name of the region that the project will be in', $providerId, $input, $output);
 
-        $databaseServer = $this->determineDatabaseServer($output, $region);
-
-        if (!empty($databaseServer)) {
-            $databaseName = $this->determineDatabaseName($databaseServer, $projectName, $output);
+        if ('bedrock' === $projectType) {
+            Arr::set($environments, 'staging.build', ['COMPOSER_MIRROR_PATH_REPOS=1 composer install']);
+            Arr::set($environments, 'production.build', ['COMPOSER_MIRROR_PATH_REPOS=1 composer install --no-dev']);
         }
 
-        $this->projectConfiguration->createNew($this->apiClient->createProject($providerId, $projectName, $region), $databaseName, $databaseServer['name'] ?? '', $projectType);
+        $environments = $this->addEnvironmentDatabaseNodes($environments, $output, $projectName, $region);
+
+        $this->projectConfiguration->createNew($this->apiClient->createProject($providerId, $projectName, $region), $environments, $projectType);
 
         $output->infoWithDelayWarning('Project initialized');
 
@@ -131,25 +137,41 @@ class InitializeProjectCommand extends AbstractProjectCommand
     }
 
     /**
-     * Determine the name of the database to use for this project.
+     * Add the "database" nodes to all the environments.
      */
-    private function determineDatabaseName(array $databaseServer, string $projectName, ConsoleOutput $output): string
+    private function addEnvironmentDatabaseNodes(array $environments, ConsoleOutput $output, string $projectName, string $region): array
     {
-        $databaseName = '';
-        $databaseServer = $this->apiClient->getDatabaseServers($this->cliConfiguration->getActiveTeamId())->firstWhere('name', $databaseServer);
+        $databasePrefix = '';
+        $databaseServer = $this->determineDatabaseServer($output, $region);
 
-        if (!isset($databaseServer['name'], $databaseServer['status'])
-            || 'available' !== $databaseServer['status']
-            || !$output->confirm(sprintf('Would you like to create a new database for your project on the "<comment>%s</comment>" database server? Otherwise, the default "wordpress" database will be used.', $databaseServer['name']))
-        ) {
-            return $databaseName;
+        if (empty($databaseServer['name'])) {
+            return $environments;
+        } elseif ($output->confirm(sprintf('Would you like to create staging and production databases for your project on the "<comment>%s</comment>" database server?', $databaseServer['name']))) {
+            $databasePrefix = $output->askSlug('What database prefix would you like to use for this project?', $projectName);
         }
 
-        $databaseName = $output->askSlug('What is the name of the new database that you would like to create for this project', $projectName);
+        return collect($environments)->map(function (array $options, string $environment) use ($databasePrefix, $databaseServer) {
+            if (!empty($databaseServer['name']) && empty($databasePrefix)) {
+                Arr::set($options, 'database', $databaseServer['name']);
+            } elseif (!empty($databaseServer['name']) && !empty($databasePrefix)) {
+                Arr::set($options, 'database.server', $databaseServer['name']);
+                Arr::set($options, 'database.name', sprintf('%s_%s', $databasePrefix, $environment));
+            }
 
-        $this->invoke($output, CreateDatabaseCommand::NAME, ['database' => $databaseServer['name'], 'name' => $databaseName]);
+            return $options;
+        })->each(function (array $options) {
+            if (!Arr::has($options, ['database.server', 'database.name'])) {
+                return;
+            }
 
-        return $databaseName;
+            $this->invoke((new NullOutput()), CreateDatabaseCommand::NAME, ['database' => Arr::get($options, 'database.server'), 'name' => Arr::get($options, 'database.name')]);
+        })->map(function (array $options) {
+            if (empty($options)) {
+                $options = null;
+            }
+
+            return $options;
+        })->all();
     }
 
     /**

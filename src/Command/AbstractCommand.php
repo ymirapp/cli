@@ -231,7 +231,7 @@ abstract class AbstractCommand extends Command
     /**
      * Invoke another console command.
      */
-    protected function invoke(ConsoleOutput $output, string $command, array $arguments = []): int
+    protected function invoke(OutputInterface $output, string $command, array $arguments = []): int
     {
         $application = $this->getApplication();
 

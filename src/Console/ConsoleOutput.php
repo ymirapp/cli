@@ -23,7 +23,7 @@ class ConsoleOutput extends SymfonyStyle
      */
     public function askSlug(string $question, string $default = null): string
     {
-        return (string) preg_replace('/[^a-z0-9]+/i', '-', strtolower(trim($this->ask($question, $default))));
+        return (string) preg_replace('/[^a-z0-9-_]+/i', '-', strtolower(trim($this->ask($question, $default))));
     }
 
     /**

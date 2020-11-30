@@ -70,7 +70,7 @@ class ProjectConfiguration implements Arrayable
     public function addEnvironment(string $name, ?array $options = null)
     {
         if ('bedrock' === $this->configuration['type']) {
-            $options = array_merge(['build' => ['composer install --classmap-authoritative']], (array) $options);
+            $options = array_merge(['build' => ['COMPOSER_MIRROR_PATH_REPOS=1 composer install']], (array) $options);
         }
 
         $this->configuration['environments'][$name] = $options;
@@ -81,23 +81,11 @@ class ProjectConfiguration implements Arrayable
      *
      * Overwrites the existing project configuration.
      */
-    public function createNew(Collection $project, string $databaseName = '', string $databaseServer = '', string $type = '')
+    public function createNew(Collection $project, array $environments, string $type = '')
     {
         $this->configuration = $project->only(['id', 'name'])->all();
         $this->configuration['type'] = $type ?: 'wordpress';
-
-        $this->addEnvironment('production');
-        $this->addEnvironment('staging', ['cdn' => ['caching' => 'assets'], 'cron' => false, 'warmup' => false]);
-
-        if (!empty($databaseServer) && !empty($databaseName)) {
-            $this->configuration['environments']['staging']['database'] = [
-                'server' => $databaseServer,
-                'name' => $databaseName,
-            ];
-        }
-        if (!empty($databaseServer)) {
-            $this->configuration['environments']['staging']['database'] = $databaseServer;
-        }
+        $this->configuration['environments'] = $environments;
 
         $this->save();
     }
