@@ -91,7 +91,6 @@ class ExtractAssetFilesStep implements BuildStepInterface
             ->files()
             ->notName(['*.php'])
             ->followLinks()
-            ->ignoreVcs(true)
             ->ignoreDotFiles(true);
     }
 

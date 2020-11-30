@@ -91,8 +91,7 @@ class CompressBuildFilesStep implements BuildStepInterface
         return Finder::create()
             ->in($this->buildDirectory)
             ->files()
-            ->name(['*.php'])
-            ->ignoreVCS(true);
+            ->name(['*.php']);
     }
 
     /**
@@ -109,8 +108,6 @@ class CompressBuildFilesStep implements BuildStepInterface
 
                 return sprintf('/^%s/', $path);
             })->add('/^bin\//')->all())
-            ->files()
-            ->ignoreVCS(true)
-            ->ignoreDotFiles(false);
+            ->files();
     }
 }

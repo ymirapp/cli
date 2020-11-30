@@ -125,11 +125,8 @@ class CopyWordPressFilesStep implements BuildStepInterface
     {
         $finder = Finder::create()
             ->in($this->projectDirectory)
-            ->exclude(['.idea', '.ymir'])
             ->notName(['ymir.yml'])
-            ->followLinks()
-            ->ignoreVcs(true)
-            ->ignoreDotFiles(false);
+            ->followLinks();
 
         if (is_readable($this->projectDirectory.'/.gitignore')) {
             $finder->ignoreVCSIgnored(true);
