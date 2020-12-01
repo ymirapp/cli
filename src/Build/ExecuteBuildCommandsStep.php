@@ -15,6 +15,7 @@ namespace Ymir\Cli\Build;
 
 use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Process\Process;
+use Tightenco\Collect\Support\Arr;
 use Ymir\Cli\ProjectConfiguration;
 
 class ExecuteBuildCommandsStep implements BuildStepInterface
@@ -47,13 +48,21 @@ class ExecuteBuildCommandsStep implements BuildStepInterface
      */
     public function perform(string $environment, ProjectConfiguration $projectConfiguration)
     {
-        $environment = $projectConfiguration->getEnvironment($environment);
+        $environment = (array) $projectConfiguration->getEnvironment($environment);
 
-        if (empty($environment['build']) || !is_array($environment)) {
+        if (empty($environment['build'])) {
             return;
         }
 
-        foreach ($environment['build'] as $command) {
+        $commands = [];
+
+        if (Arr::has($environment, 'build.commands')) {
+            $commands = (array) Arr::get($environment, 'build.commands');
+        } elseif (!Arr::has($environment, 'build.include')) {
+            $commands = (array) $environment['build'];
+        }
+
+        foreach ($commands as $command) {
             $this->runCommand($command);
         }
     }

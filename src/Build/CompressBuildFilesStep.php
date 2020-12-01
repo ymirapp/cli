@@ -15,6 +15,7 @@ namespace Ymir\Cli\Build;
 
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Finder\SplFileInfo;
+use Tightenco\Collect\Support\Arr;
 use Ymir\Cli\ProjectConfiguration;
 
 class CompressBuildFilesStep implements BuildStepInterface
@@ -57,12 +58,18 @@ class CompressBuildFilesStep implements BuildStepInterface
     {
         $archive = new \ZipArchive();
         $archive->open($this->buildArtifactPath, \ZipArchive::CREATE | \ZipArchive::OVERWRITE);
+        $environment = (array) $projectConfiguration->getEnvironment($environment);
 
-        foreach ($this->getWordPressCoreFiles($projectConfiguration->getProjectType()) as $file) {
-            $this->addFileToArchive($archive, $file);
+        $files = Finder::create()
+                       ->append($this->getRequiredFiles())
+                       ->append($this->getRequiredFileTypes())
+                       ->append($this->getWordPressCoreFiles($projectConfiguration->getProjectType()));
+
+        if (Arr::has($environment, 'build.include')) {
+            $files->append($this->getIncludedFiles(Arr::get($environment, 'build.include')));
         }
 
-        foreach ($this->getPhpFiles() as $file) {
+        foreach ($files as $file) {
             $this->addFileToArchive($archive, $file);
         }
 
@@ -84,14 +91,40 @@ class CompressBuildFilesStep implements BuildStepInterface
     }
 
     /**
-     * Get the Finder object for finding all the PHP files.
+     * Get base Finder object.
      */
-    private function getPhpFiles(): Finder
+    private function getBaseFinder(): Finder
     {
         return Finder::create()
             ->in($this->buildDirectory)
-            ->files()
-            ->name(['*.php']);
+            ->files();
+    }
+
+    /**
+     * Get files from "include" node.
+     */
+    private function getIncludedFiles(array $paths): Finder
+    {
+        return $this->getBaseFinder()
+            ->path($paths);
+    }
+
+    /**
+     * Get the Finder object for finding all the required files.
+     */
+    private function getRequiredFiles(): Finder
+    {
+        return $this->getBaseFinder()
+            ->path(['/^wp-cli\.yml/']);
+    }
+
+    /**
+     * Get the Finder object for finding all the required file types.
+     */
+    private function getRequiredFileTypes(): Finder
+    {
+        return $this->getBaseFinder()
+            ->name(['*.mo', '*.php']);
     }
 
     /**
@@ -99,15 +132,13 @@ class CompressBuildFilesStep implements BuildStepInterface
      */
     private function getWordPressCoreFiles(string $projectType): Finder
     {
-        return Finder::create()
-            ->in($this->buildDirectory)
+        return $this->getBaseFinder()
             ->path(collect(['wp-includes\/', 'wp-admin\/'])->map(function (string $path) use ($projectType) {
                 if ('bedrock' === $projectType) {
                     $path = 'web\/wp\/'.$path;
                 }
 
                 return sprintf('/^%s/', $path);
-            })->add('/^bin\//')->all())
-            ->files();
+            })->add('/^bin\//')->all());
     }
 }

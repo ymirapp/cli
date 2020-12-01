@@ -16,6 +16,7 @@ namespace Ymir\Cli\Build;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Finder\SplFileInfo;
+use Tightenco\Collect\Support\Arr;
 use Ymir\Cli\ProjectConfiguration;
 
 class CopyWordPressFilesStep implements BuildStepInterface
@@ -52,37 +53,6 @@ class CopyWordPressFilesStep implements BuildStepInterface
     }
 
     /**
-     * List of files we need to append manually because they're in the default Bedrock .gitignore file.
-     */
-    public function getBedrockFilesToAppend(): array
-    {
-        // Need the .env file for WP-CLI to work during the build
-        $files = [new SplFileInfo($this->projectDirectory.'/.env', $this->projectDirectory, '/.env')];
-
-        // Finder can't seem to honor the .gitignore path ignoring child folders in the mu-plugins
-        // folder while keeping the files at the root of the mu-plugins folder.
-        $finder = Finder::create()->in($this->projectDirectory)
-            ->path('/^web\/app\/mu-plugins/')
-            ->depth('== 3')
-            ->files();
-
-        foreach ($finder as $file) {
-            $files[] = $file;
-        }
-
-        // TODO: Remove once we can install with Composer
-        $finder = Finder::create()->in($this->projectDirectory)
-            ->path('/^web\/app\/plugins\/ymir/')
-            ->files();
-
-        foreach ($finder as $file) {
-            $files[] = $file;
-        }
-
-        return $files;
-    }
-
-    /**
      * {@inheritdoc}
      */
     public function getDescription(): string
@@ -104,6 +74,10 @@ class CopyWordPressFilesStep implements BuildStepInterface
         foreach ($this->getProjectFiles($projectConfiguration->getProjectType()) as $file) {
             $this->copyFile($file);
         }
+
+        foreach ($this->getIncludedFiles(Arr::get((array) $projectConfiguration->getEnvironment($environment), 'build.include', [])) as $file) {
+            $this->copyFile($file);
+        }
     }
 
     /**
@@ -119,12 +93,52 @@ class CopyWordPressFilesStep implements BuildStepInterface
     }
 
     /**
+     * Get base Finder object.
+     */
+    private function getBaseFinder(): Finder
+    {
+        return Finder::create()
+            ->in($this->projectDirectory)
+            ->files();
+    }
+
+    /**
+     * List of files we need to append manually because they're in the default Bedrock .gitignore file.
+     */
+    private function getBedrockFilesToAppend(): array
+    {
+        // Need the .env file for WP-CLI to work during the build
+        $files = [new SplFileInfo($this->projectDirectory.'/.env', $this->projectDirectory, '/.env')];
+
+        // Finder can't seem to honor the .gitignore path ignoring child folders in the mu-plugins
+        // folder while keeping the files at the root of the mu-plugins folder.
+        $finder = $this->getBaseFinder()
+            ->path('/^web\/app\/mu-plugins/')
+            ->depth('== 3');
+
+        foreach ($finder as $file) {
+            $files[] = $file;
+        }
+
+        return $files;
+    }
+
+    /**
+     * Get files from "include" node.
+     */
+    private function getIncludedFiles(array $paths): Finder
+    {
+        return $this->getBaseFinder()
+            ->path($paths)
+            ->followLinks();
+    }
+
+    /**
      * Get the Finder object for finding all the project files.
      */
     private function getProjectFiles(string $projectType): Finder
     {
-        $finder = Finder::create()
-            ->in($this->projectDirectory)
+        $finder = $this->getBaseFinder()
             ->notName(['ymir.yml'])
             ->followLinks();
 
