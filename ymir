@@ -15,13 +15,29 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 use Ymir\Cli\Application;
 
-require __DIR__.'/vendor/autoload.php';
+/**
+ * Determine vendor directory.
+ */
+$vendorDirectory = '';
+
+if (file_exists(__DIR__.'/../../autoload.php')) {
+    $vendorDirectory = __DIR__.'/../..';
+} elseif (file_exists(__DIR__.'/vendor/autoload.php')) {
+    $vendorDirectory = __DIR__.'/vendor';
+}
+
+if (empty($vendorDirectory)) {
+    throw new \RuntimeException('Unable to find vendor directory');
+}
+
+require $vendorDirectory.'/autoload.php';
 
 $container = new ContainerBuilder();
 
 // Load manual parameters
 $container->setParameter('application_directory', __DIR__);
 $container->setParameter('home_directory', rtrim(getenv('HOME'), '/'));
+$container->setParameter('vendor_directory', $vendorDirectory);
 $container->setParameter('working_directory', rtrim(getcwd(), '/'));
 $container->setParameter('ymir_api_url', getenv('YMIR_API_URL') ?: 'https://ymirapp.com/api');
 

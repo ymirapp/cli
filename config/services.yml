@@ -28,10 +28,10 @@ services:
       tags: ['subscriber']
 
   GuzzleHttp\:
-    resource: '../vendor/guzzlehttp/guzzle/src'
+    resource: '%vendor_directory%/guzzlehttp/guzzle/src'
     exclude:
-      - '../vendor/guzzlehttp/guzzle/src/functions.php'
-      - '../vendor/guzzlehttp/guzzle/src/functions_include.php'
+      - '%vendor_directory%/guzzlehttp/guzzle/src/functions.php'
+      - '%vendor_directory%/guzzlehttp/guzzle/src/functions_include.php'
 
   Ymir\Cli\:
     lazy: true
@@ -86,4 +86,4 @@ services:
         - '@Ymir\Cli\Deployment\StartAndMonitorDeploymentStep'
 
   Symfony\Component\Filesystem\:
-    resource: '../vendor/symfony/filesystem'
+    resource: '%vendor_directory%/symfony/filesystem'
