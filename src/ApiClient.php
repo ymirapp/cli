@@ -479,7 +479,6 @@ class ApiClient
     /**
      * Get the DNS zone information from the given zone ID or name.
      */
-    // TODO: Change return values to collection
     public function getDnsZone($idOrName): array
     {
         $zone = null;
