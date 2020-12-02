@@ -10,6 +10,9 @@
             "homepage": "https://ymirapp.com"
         }
     ],
+    "bin": [
+        "ymir"
+    ],
     "require": {
         "php": "^7.2.5",
         "ext-json": "*",
