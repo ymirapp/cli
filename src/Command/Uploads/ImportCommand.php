@@ -117,7 +117,7 @@ class ImportCommand extends AbstractProjectCommand
         $output->info(sprintf('Starting file import to "<comment>%s</comment>" environment', $environment));
 
         $progressBar = new ProgressBar($output);
-        $progressBar->setFormat("Importing file (<comment>%filename%</comment>)\nTotal files imported: <comment>%total%</comment>");
+        $progressBar->setFormat("Importing file (<comment>%filename%</comment>)\nTotal files imported: <comment>%total%</comment>\n");
 
         $total = 0;
         $progressBar->setMessage((string) $total, 'total');
