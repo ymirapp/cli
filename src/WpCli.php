@@ -28,11 +28,13 @@ class WpCli
     }
 
     /**
-     * Checks if the given plugin is installed.
+     * Checks if the Ymir plugin is installed.
      */
-    public static function isPluginInstalled(string $plugin, string $cwd = null, string $executable = ''): bool
+    public static function isYmirPluginInstalled(string $cwd = null, string $executable = ''): bool
     {
-        return self::listPlugins($cwd, $executable)->contains('name', $plugin);
+        return self::listPlugins($cwd, $executable)->contains(function (array $plugin) {
+            return !empty($plugin['file']) && 1 === preg_match('/\/ymir\.php$/', $plugin['file']);
+        });
     }
 
     /**
