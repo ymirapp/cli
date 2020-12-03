@@ -11,7 +11,7 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace Ymir\Cli\Command\Uploads;
+namespace Ymir\Cli\Command\Import;
 
 use League\Flysystem\Filesystem;
 use League\Flysystem\FilesystemAdapter;
@@ -34,14 +34,14 @@ use Ymir\Cli\Console\ConsoleOutput;
 use Ymir\Cli\FileUploader;
 use Ymir\Cli\ProjectConfiguration;
 
-class ImportCommand extends AbstractProjectCommand
+class ImportUploadsCommand extends AbstractProjectCommand
 {
     /**
      * The name of the command.
      *
      * @var string
      */
-    public const NAME = 'uploads:import';
+    public const NAME = 'import:uploads';
 
     /**
      * The temporary directory used for importing.
