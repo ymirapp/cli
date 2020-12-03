@@ -76,22 +76,20 @@ class ExtractAssetFilesStep implements BuildStepInterface
             $fromDirectory .= '/web';
         }
 
-        foreach ($this->getAssetFiles($fromDirectory) as $file) {
-            $this->moveAssetFile($file);
-        }
-    }
-
-    /**
-     * Get the asset files that we want to extract.
-     */
-    private function getAssetFiles(string $fromDirectory): Finder
-    {
-        return Finder::create()
+        $files = Finder::create()
             ->in($fromDirectory)
             ->files()
-            ->notName(['*.php'])
+            ->notName(['*.php', '*.mo', '*.po'])
             ->followLinks()
             ->ignoreDotFiles(true);
+
+        if ('bedrock' === $projectConfiguration->getProjectType()) {
+            $files->exclude(['wp/wp-content']);
+        }
+
+        foreach ($files as $file) {
+            $this->moveAssetFile($file);
+        }
     }
 
     /**

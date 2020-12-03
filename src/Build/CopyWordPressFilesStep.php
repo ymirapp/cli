@@ -71,11 +71,14 @@ class CopyWordPressFilesStep implements BuildStepInterface
 
         $this->filesystem->mkdir($this->buildDirectory, 0755);
 
-        foreach ($this->getProjectFiles($projectConfiguration->getProjectType()) as $file) {
-            $this->copyFile($file);
+        $environment = (array) $projectConfiguration->getEnvironment($environment);
+        $files = $this->getProjectFiles($projectConfiguration->getProjectType());
+
+        if (Arr::has($environment, 'build.include')) {
+            $files->append($this->getIncludedFiles(Arr::get($environment, 'build.include')));
         }
 
-        foreach ($this->getIncludedFiles(Arr::get((array) $projectConfiguration->getEnvironment($environment), 'build.include', [])) as $file) {
+        foreach ($files as $file) {
             $this->copyFile($file);
         }
     }

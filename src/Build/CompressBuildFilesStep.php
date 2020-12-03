@@ -59,11 +59,14 @@ class CompressBuildFilesStep implements BuildStepInterface
         $archive = new \ZipArchive();
         $archive->open($this->buildArtifactPath, \ZipArchive::CREATE | \ZipArchive::OVERWRITE);
         $environment = (array) $projectConfiguration->getEnvironment($environment);
-
         $files = Finder::create()
                        ->append($this->getRequiredFiles())
                        ->append($this->getRequiredFileTypes())
                        ->append($this->getWordPressCoreFiles($projectConfiguration->getProjectType()));
+
+        if ('bedrock' === $projectConfiguration->getProjectType()) {
+            $files->exclude(['web/wp/wp-content']);
+        }
 
         if (Arr::has($environment, 'build.include')) {
             $files->append($this->getIncludedFiles(Arr::get($environment, 'build.include')));
