@@ -751,23 +751,27 @@ class ApiClient
      */
     private function request(string $method, string $uri, array $body = []): Collection
     {
-        $headers = [
-            'Accept' => 'application/json',
-            'Content-Type' => 'application/json',
+        $method = strtolower($method);
+        $options = [
+            'base_uri' => $this->baseUrl,
+            'headers' => [
+                'Accept' => 'application/json',
+                'Content-Type' => 'application/json',
+            ],
+            'verify' => false,
         ];
         $uri = ltrim($uri, '/');
 
         if ($this->cliConfiguration->hasAccessToken()) {
-            $headers['Authorization'] = 'Bearer '.$this->cliConfiguration->getAccessToken();
+            $options['headers']['Authorization'] = 'Bearer '.$this->cliConfiguration->getAccessToken();
+        }
+
+        if (in_array($method, ['post', 'put'])) {
+            $options['json'] = $body;
         }
 
         try {
-            $response = $this->client->request($method, $uri, [
-                'base_uri' => $this->baseUrl,
-                'headers' => $headers,
-                'json' => $body,
-                'verify' => false,
-            ]);
+            $response = $this->client->request($method, $uri, $options);
         } catch (ClientException $exception) {
             throw new ApiClientException($exception);
         }
