@@ -80,7 +80,7 @@ class CreateDatabaseServerCommand extends AbstractCommand
     private function determineNetwork(InputInterface $input, ConsoleOutput $output): array
     {
         $networkIdOrName = $this->getStringOption($input, 'network', true);
-        $networks = $this->apiClient->getTeamNetworks($this->cliConfiguration->getActiveTeamId())->whereNotIn('status', 'deleting');
+        $networks = $this->apiClient->getTeamNetworks($this->cliConfiguration->getActiveTeamId())->whereNotIn('status', ['deleting', 'failed']);
 
         if ($networks->isEmpty() && !$output->confirm('Your team doesn\'t have any provisioned networks to create the database server on. Would you like to create one first? <fg=default>(Answering "<comment>no</comment>" will cancel the command.)</>')) {
             throw new CommandCancelledException();
