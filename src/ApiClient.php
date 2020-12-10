@@ -615,7 +615,7 @@ class ApiClient
      */
     public function getSignedAssetRequests(int $deploymentId, array $assets): Collection
     {
-        $requests = $this->request('get', "/deployments/{$deploymentId}/signed-assets", ['assets' => $assets]);
+        $requests = $this->request('post', "/deployments/{$deploymentId}/signed-assets", ['assets' => $assets]);
 
         if (!empty($assets) && empty($requests)) {
             throw new RuntimeException('Unable to get authorized asset requests from the Ymir API');
