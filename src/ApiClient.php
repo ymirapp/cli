@@ -740,7 +740,7 @@ class ApiClient
      */
     public function validateProjectConfiguration(ProjectConfiguration $projectConfiguration, array $environments = [])
     {
-        $this->request('get', "/projects/{$projectConfiguration->getProjectId()}/validate-configuration", [
+        $this->request('post', "/projects/{$projectConfiguration->getProjectId()}/validate-configuration", [
             'configuration' => $projectConfiguration->toArray(),
             'environments' => $environments,
         ]);
