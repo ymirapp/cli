@@ -24,7 +24,7 @@ class Application extends BaseApplication
      */
     public function __construct(iterable $commands = [])
     {
-        parent::__construct('Ymir', '1.0.4');
+        parent::__construct('Ymir', '1.0.5');
 
         foreach ($commands as $command) {
             $this->add($command);
