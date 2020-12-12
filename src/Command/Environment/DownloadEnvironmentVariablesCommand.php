@@ -75,7 +75,7 @@ class DownloadEnvironmentVariablesCommand extends AbstractProjectCommand
         $environment = $this->getStringArgument($input, 'environment');
         $filename = sprintf('.env.%s', $environment);
 
-        $this->filesystem->dumpFile(sprintf($this->projectDirectory.'/'.$filename), $this->apiClient->getEnvironmentVariables($this->projectConfiguration->getProjectId(), $environment)->sortKeys()->map(function (string $value, string $key) {
+        $this->filesystem->dumpFile($this->projectDirectory.'/'.$filename, $this->apiClient->getEnvironmentVariables($this->projectConfiguration->getProjectId(), $environment)->sortKeys()->map(function (string $value, string $key) {
             return sprintf('%s=%s', $key, $value);
         })->join("\n"));
 
