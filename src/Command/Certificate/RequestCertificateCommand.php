@@ -45,18 +45,22 @@ class RequestCertificateCommand extends AbstractCertificateCommand
      */
     protected function perform(InputInterface $input, ConsoleOutput $output)
     {
-        $domain = $this->getStringArgument($input, 'domain');
+        $certificate = $this->retryApi(function () use ($input, $output) {
+            $domain = $this->getStringArgument($input, 'domain');
 
-        if (empty($domain) && $input->isInteractive()) {
-            $domain = $output->ask('What domain is the certificate for');
-        }
+            if (empty($domain) && $input->isInteractive()) {
+                $domain = $output->ask('What domain is the certificate for');
+            }
 
-        if (0 === stripos($domain, '*.')) {
-            $domain = substr($domain, 2);
-        }
+            if (0 === stripos($domain, '*.')) {
+                $domain = substr($domain, 2);
+            }
 
-        $providerId = $this->determineCloudProvider('Enter the ID of the cloud provider where the SSL certificate will be created', $input, $output);
-        $certificate = $this->apiClient->createCertificate($providerId, $domain, $this->determineRegion('Enter the name of the region where the SSL certificate will be created', $providerId, $input, $output));
+            $providerId = $this->determineCloudProvider('Enter the ID of the cloud provider where the SSL certificate will be created', $input, $output);
+
+            return $this->apiClient->createCertificate($providerId, $domain, $this->determineRegion('Enter the name of the region where the SSL certificate will be created', $providerId, $input, $output));
+        }, 'Do you want to try requesting a certificate again?', $output);
+
         $isManaged = collect($certificate['domains'])->contains('managed', true);
         $validationRecords = [];
 

@@ -23,6 +23,8 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Ymir\Cli\ApiClient;
 use Ymir\Cli\CliConfiguration;
 use Ymir\Cli\Console\ConsoleOutput;
+use Ymir\Cli\Exception\ApiClientException;
+use Ymir\Cli\Exception\CommandCancelledException;
 use Ymir\Cli\ProjectConfiguration;
 
 abstract class AbstractCommand extends Command
@@ -246,6 +248,25 @@ abstract class AbstractCommand extends Command
      * Perform the command.
      */
     abstract protected function perform(InputInterface $input, ConsoleOutput $output);
+
+    /**
+     * Retry an API operation.
+     */
+    protected function retryApi(callable $callable, string $message, ConsoleOutput $output)
+    {
+        while (true) {
+            try {
+                return $callable();
+            } catch (ApiClientException $exception) {
+                $output->newLine();
+                $output->exception($exception);
+
+                if (!$output->confirm($message)) {
+                    throw new CommandCancelledException();
+                }
+            }
+        }
+    }
 
     /**
      * Wait for the given callable to complete.

@@ -63,6 +63,14 @@ class ConsoleOutput extends SymfonyStyle
     }
 
     /**
+     * Write out an exception message.
+     */
+    public function exception(\Exception $exception)
+    {
+        $this->block($exception->getMessage(), null, 'fg=white;bg=red', '  ', true);
+    }
+
+    /**
      * Format the resource for display.
      */
     public function formatStatus(string $status): string

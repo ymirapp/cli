@@ -45,14 +45,17 @@ class CreateEmailIdentityCommand extends AbstractEmailIdentityCommand
      */
     protected function perform(InputInterface $input, ConsoleOutput $output)
     {
-        $name = $this->getStringArgument($input, 'name');
+        $identity = $this->retryApi(function () use ($input, $output) {
+            $name = $this->getStringArgument($input, 'name');
 
-        if (empty($name) && $input->isInteractive()) {
-            $name = $output->ask('What is the name of the email identity');
-        }
+            if (empty($name) && $input->isInteractive()) {
+                $name = $output->ask('What is the name of the email identity');
+            }
 
-        $providerId = $this->determineCloudProvider('Enter the ID of the cloud provider where the email identity will be created', $input, $output);
-        $identity = $this->apiClient->createEmailIdentity($providerId, $name, $this->determineRegion('Enter the name of the region where the email identity will be created', $providerId, $input, $output));
+            $providerId = $this->determineCloudProvider('Enter the ID of the cloud provider where the email identity will be created', $input, $output);
+
+            return $this->apiClient->createEmailIdentity($providerId, $name, $this->determineRegion('Enter the name of the region where the email identity will be created', $providerId, $input, $output));
+        }, 'Do you want to try creating an email identity again?', $output);
 
         $output->info('Email identity created');
 

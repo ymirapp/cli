@@ -18,6 +18,7 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Ymir\Cli\Console\ConsoleOutput;
+use Ymir\Cli\Exception\CommandCancelledException;
 
 class CreateDnsZoneCommand extends AbstractDnsCommand
 {
@@ -45,19 +46,21 @@ class CreateDnsZoneCommand extends AbstractDnsCommand
      */
     protected function perform(InputInterface $input, ConsoleOutput $output)
     {
-        $name = $this->getStringArgument($input, 'name');
+        $zone = $this->retryApi(function () use ($input, $output) {
+            $name = $this->getStringArgument($input, 'name');
 
-        if (empty($name) && $input->isInteractive()) {
-            $name = $output->ask('What is the name of the domain that the DNS zone will manage');
-        }
+            if (empty($name) && $input->isInteractive()) {
+                $name = $output->ask('What is the name of the domain that the DNS zone will manage');
+            }
 
-        $providerId = $this->determineCloudProvider('Enter the ID of the cloud provider where the DNS zone will be created', $input, $output);
+            $providerId = $this->determineCloudProvider('Enter the ID of the cloud provider where the DNS zone will be created', $input, $output);
 
-        if (!$output->confirm('A DNS zone will cost $0.50/month if it isn\'t deleted in the next 12 hours. Would you like to proceed?', true)) {
-            return;
-        }
+            if (!$output->confirm('A DNS zone will cost $0.50/month if it isn\'t deleted in the next 12 hours. Would you like to proceed?', true)) {
+                throw new CommandCancelledException();
+            }
 
-        $zone = $this->apiClient->createDnsZone($providerId, $name);
+            return $this->apiClient->createDnsZone($providerId, $name);
+        }, 'Do you want to try creating a DNS zone again?', $output);
 
         $nameServers = $this->wait(function () use ($zone) {
             return $this->apiClient->getDnsZone($zone['id'])['name_servers'] ?? [];

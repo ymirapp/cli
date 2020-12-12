@@ -61,11 +61,13 @@ class ConnectProviderCommand extends AbstractCommand
      */
     protected function perform(InputInterface $input, ConsoleOutput $output)
     {
-        $name = $output->ask('Please enter a name for the cloud provider connection', 'AWS');
+        $this->retryApi(function () use ($output) {
+            $name = $output->ask('Please enter a name for the cloud provider connection', 'AWS');
 
-        $credentials = $this->getAwsCredentials($output);
+            $credentials = $this->getAwsCredentials($output);
 
-        $this->apiClient->createProvider($name, $credentials, $this->cliConfiguration->getActiveTeamId());
+            $this->apiClient->createProvider($name, $credentials, $this->cliConfiguration->getActiveTeamId());
+        }, 'Do you want to try creating a cloud provider again?', $output);
 
         $output->info('Cloud provider connected');
     }

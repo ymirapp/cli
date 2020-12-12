@@ -51,7 +51,14 @@ class ApiClientException extends RuntimeException
      */
     public function getValidationErrors(): Collection
     {
-        return collect(json_decode((string) $this->response->getBody(), true))->only('errors')->collapse();
+        $body = collect(json_decode((string) $this->response->getBody(), true));
+        $errors = $body->only('errors')->collapse();
+
+        if ($errors->isEmpty() && $body->has('message')) {
+            $errors->add($body->get('message'));
+        }
+
+        return $errors;
     }
 
     /**
@@ -96,13 +103,10 @@ class ApiClientException extends RuntimeException
      */
     private function getValidationErrorMessage(): string
     {
-        $body = collect(json_decode((string) $this->response->getBody(), true));
-        $errors = $body->only('errors')->flatten();
+        $errors = $this->getValidationErrors()->flatten();
         $message = 'The Ymir API responded with errors';
 
-        if ($errors->isEmpty() && $body->has('message')) {
-            $errors->add($body->get('message'));
-        } elseif ($errors->isEmpty() && !$body->has('message')) {
+        if ($errors->isEmpty()) {
             return $message;
         }
 

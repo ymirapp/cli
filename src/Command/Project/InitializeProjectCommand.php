@@ -111,23 +111,27 @@ class InitializeProjectCommand extends AbstractProjectCommand
             return;
         }
 
-        $environments = [
-            'production' => [],
-            'staging' => ['cdn' => ['caching' => 'assets'], 'cron' => false, 'warmup' => false],
-        ];
-        $projectName = $this->determineProjectName($input, $output);
-        $projectType = $this->determineProjectType($input, $output);
-        $providerId = $this->determineCloudProvider('Enter the ID of the cloud provider that the project will use', $input, $output);
-        $region = $this->determineRegion('Enter the name of the region that the project will be in', $providerId, $input, $output);
+        $projectType = $this->retryApi(function () use ($input, $output) {
+            $environments = [
+                'production' => [],
+                'staging' => ['cdn' => ['caching' => 'assets'], 'cron' => false, 'warmup' => false],
+            ];
+            $projectName = $this->determineProjectName($input, $output);
+            $projectType = $this->determineProjectType($input, $output);
+            $providerId = $this->determineCloudProvider('Enter the ID of the cloud provider that the project will use', $input, $output);
+            $region = $this->determineRegion('Enter the name of the region that the project will be in', $providerId, $input, $output);
 
-        if ('bedrock' === $projectType) {
-            Arr::set($environments, 'staging.build', ['COMPOSER_MIRROR_PATH_REPOS=1 composer install']);
-            Arr::set($environments, 'production.build', ['COMPOSER_MIRROR_PATH_REPOS=1 composer install --no-dev']);
-        }
+            if ('bedrock' === $projectType) {
+                Arr::set($environments, 'staging.build', ['COMPOSER_MIRROR_PATH_REPOS=1 composer install']);
+                Arr::set($environments, 'production.build', ['COMPOSER_MIRROR_PATH_REPOS=1 composer install --no-dev']);
+            }
 
-        $environments = $this->addEnvironmentDatabaseNodes($environments, $output, $projectName, $region);
+            $environments = $this->addEnvironmentDatabaseNodes($environments, $output, $projectName, $region);
 
-        $this->projectConfiguration->createNew($this->apiClient->createProject($providerId, $projectName, $region), $environments, $projectType);
+            $this->projectConfiguration->createNew($this->apiClient->createProject($providerId, $projectName, $region), $environments, $projectType);
+
+            return $projectType;
+        }, 'Do you want to try creating a project again?', $output);
 
         $output->infoWithDelayWarning('Project initialized');
 

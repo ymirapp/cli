@@ -54,17 +54,19 @@ class CreateDatabaseServerCommand extends AbstractCommand
      */
     protected function perform(InputInterface $input, ConsoleOutput $output)
     {
-        $name = $this->getStringArgument($input, 'name');
+        $database = $this->retryApi(function () use ($input, $output) {
+            $name = $this->getStringArgument($input, 'name');
 
-        if (empty($name) && $input->isInteractive()) {
-            $name = $output->askSlug('What is the name of the database server');
-        }
+            if (empty($name) && $input->isInteractive()) {
+                $name = $output->askSlug('What is the name of the database server');
+            }
 
-        $network = $this->determineNetwork($input, $output);
-        $type = $this->determineType($network, $input, $output);
-        $storage = $this->determineStorage($input, $output);
+            $network = $this->determineNetwork($input, $output);
+            $type = $this->determineType($network, $input, $output);
+            $storage = $this->determineStorage($input, $output);
 
-        $database = $this->apiClient->createDatabaseServer($name, (int) $network['id'], $type, $storage, true);
+            return $this->apiClient->createDatabaseServer($name, (int) $network['id'], $type, $storage, true);
+        }, 'Do you want to try creating a database server again?', $output);
 
         $output->horizontalTable(
             ['Database Sever', new TableSeparator(), 'Username', 'Password', new TableSeparator(), 'Type', 'Public', 'Storage (in GB)'],
@@ -114,14 +116,13 @@ class CreateDatabaseServerCommand extends AbstractCommand
 
         $storage = $this->getNumericOption($input, 'storage');
 
-        if (null !== $storage) {
-            return $storage;
-        }
+        while (!is_numeric($storage)) {
+            $storage = $output->ask('What should the maximum amount of storage (in GB) allocated to the database server be?', '50');
 
-        $storage = $output->ask('What should the maximum amount of storage (in GB) allocated to the database server be?', '50');
-
-        if (!is_numeric($storage)) {
-            throw new InvalidArgumentException('The maximum allocated storage needs to be a numeric value');
+            if (!is_numeric($storage)) {
+                $output->newLine();
+                $output->error('The maximum allocated storage needs to be a numeric value');
+            }
         }
 
         return (int) $storage;
