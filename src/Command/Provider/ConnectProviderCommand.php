@@ -61,7 +61,7 @@ class ConnectProviderCommand extends AbstractCommand
      */
     protected function perform(InputInterface $input, ConsoleOutput $output)
     {
-        $name = $output->ask('Please enter a name for the cloud provider connection');
+        $name = $output->ask('Please enter a name for the cloud provider connection', 'AWS');
 
         $credentials = $this->getAwsCredentials($output);
 
