@@ -20,18 +20,18 @@ use Ymir\Cli\WpCli;
 class EnsurePluginIsInstalledStep implements BuildStepInterface
 {
     /**
-     * The bin directory where the WP-CLI was installed.
+     * The build directory where the project files are copied to.
      *
      * @var string
      */
-    private $binDirectory;
+    private $buildDirectory;
 
     /**
      * Constructor.
      */
     public function __construct(string $buildDirectory)
     {
-        $this->binDirectory = rtrim($buildDirectory, '/').'/bin';
+        $this->buildDirectory = rtrim($buildDirectory, '/');
     }
 
     /**
@@ -47,7 +47,7 @@ class EnsurePluginIsInstalledStep implements BuildStepInterface
      */
     public function perform(string $environment, ProjectConfiguration $projectConfiguration)
     {
-        if (!WpCli::isYmirPluginInstalled($this->binDirectory.'/wp')) {
+        if (!WpCli::isYmirPluginInstalled($this->buildDirectory, $this->buildDirectory.'/bin/wp')) {
             throw new RuntimeException('Ymir plugin not found');
         }
     }
