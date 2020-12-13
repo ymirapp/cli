@@ -64,7 +64,13 @@ class CliConfiguration
      */
     public function getAccessToken(): string
     {
-        return $this->get('token');
+        $token = getenv('YMIR_API_TOKEN');
+
+        if (!is_string($token)) {
+            $token = $this->get('token');
+        }
+
+        return (string) $token;
     }
 
     /**
@@ -84,7 +90,7 @@ class CliConfiguration
      */
     public function hasAccessToken(): bool
     {
-        return $this->has('token');
+        return !empty($this->getAccessToken());
     }
 
     /**
