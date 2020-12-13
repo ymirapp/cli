@@ -43,15 +43,13 @@ class CreateTeamCommand extends AbstractCommand
      */
     protected function perform(InputInterface $input, ConsoleOutput $output)
     {
-        $this->retryApi(function () use ($input, $output) {
-            $name = $this->getStringArgument($input, 'name');
+        $name = $this->getStringArgument($input, 'name');
 
-            if (empty($name) && $input->isInteractive()) {
-                $name = (string) $output->ask('What is the name of the team');
-            }
+        if (empty($name) && $input->isInteractive()) {
+            $name = (string) $output->ask('What is the name of the team');
+        }
 
-            $this->apiClient->createTeam($name);
-        }, 'Do you want to try creating a team again?', $output);
+        $this->apiClient->createTeam($name);
 
         $output->info('Team created');
     }

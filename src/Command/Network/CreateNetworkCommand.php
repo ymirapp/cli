@@ -46,17 +46,15 @@ class CreateNetworkCommand extends AbstractCommand
      */
     protected function perform(InputInterface $input, ConsoleOutput $output)
     {
-        $this->retryApi(function () use ($input, $output) {
-            $name = $this->getStringArgument($input, 'name');
+        $name = $this->getStringArgument($input, 'name');
 
-            if (empty($name) && $input->isInteractive()) {
-                $name = $output->ask('What is the name of the network being created');
-            }
+        if (empty($name) && $input->isInteractive()) {
+            $name = $output->ask('What is the name of the network being created');
+        }
 
-            $providerId = $this->determineCloudProvider('Enter the ID of the cloud provider where the DNS zone will be created', $input, $output);
+        $providerId = $this->determineCloudProvider('Enter the ID of the cloud provider where the DNS zone will be created', $input, $output);
 
-            $this->apiClient->createNetwork($providerId, $name, $this->determineRegion('Enter the name of the region where the network will be created', $providerId, $input, $output));
-        }, 'Do you want to try creating a network again?', $output);
+        $this->apiClient->createNetwork($providerId, $name, $this->determineRegion('Enter the name of the region where the network will be created', $providerId, $input, $output));
 
         $output->infoWithDelayWarning('Network created');
     }

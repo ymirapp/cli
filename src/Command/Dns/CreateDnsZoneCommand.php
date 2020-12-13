@@ -46,21 +46,19 @@ class CreateDnsZoneCommand extends AbstractDnsCommand
      */
     protected function perform(InputInterface $input, ConsoleOutput $output)
     {
-        $zone = $this->retryApi(function () use ($input, $output) {
-            $name = $this->getStringArgument($input, 'name');
+        $name = $this->getStringArgument($input, 'name');
 
-            if (empty($name) && $input->isInteractive()) {
-                $name = $output->ask('What is the name of the domain that the DNS zone will manage');
-            }
+        if (empty($name) && $input->isInteractive()) {
+            $name = $output->ask('What is the name of the domain that the DNS zone will manage');
+        }
 
-            $providerId = $this->determineCloudProvider('Enter the ID of the cloud provider where the DNS zone will be created', $input, $output);
+        $providerId = $this->determineCloudProvider('Enter the ID of the cloud provider where the DNS zone will be created', $input, $output);
 
-            if (!$output->confirm('A DNS zone will cost $0.50/month if it isn\'t deleted in the next 12 hours. Would you like to proceed?', true)) {
-                throw new CommandCancelledException();
-            }
+        if (!$output->confirm('A DNS zone will cost $0.50/month if it isn\'t deleted in the next 12 hours. Would you like to proceed?', true)) {
+            throw new CommandCancelledException();
+        }
 
-            return $this->apiClient->createDnsZone($providerId, $name);
-        }, 'Do you want to try creating a DNS zone again?', $output);
+        $zone = $this->apiClient->createDnsZone($providerId, $name);
 
         $nameServers = $this->wait(function () use ($zone) {
             return $this->apiClient->getDnsZone($zone['id'])['name_servers'] ?? [];

@@ -94,7 +94,10 @@ class InitializeProjectCommand extends AbstractProjectCommand
 
         if ($providers->isEmpty()) {
             $output->info('Connecting to a cloud provider');
-            $this->invoke($output, ConnectProviderCommand::NAME);
+
+            $this->retryApi(function () use ($output) {
+                $this->invoke($output, ConnectProviderCommand::NAME);
+            }, 'Do you want to try to connect to a cloud provider again?', $output);
         }
 
         return parent::determineCloudProvider($question, $input, $output);
@@ -192,7 +195,9 @@ class InitializeProjectCommand extends AbstractProjectCommand
             (!$databases->isEmpty() && $output->confirm('Would you like to create a new one for this project instead?'))
             || ($databases->isEmpty() && $output->confirm('Your team doesn\'t have any configured database servers. Would you like to create one for this project first?'))
         ) {
-            $this->invoke($output, CreateDatabaseServerCommand::NAME);
+            $this->retryApi(function () use ($output) {
+                $this->invoke($output, CreateDatabaseServerCommand::NAME);
+            }, 'Do you want to try creating a database server again?', $output);
 
             return $this->apiClient->getDatabaseServers($this->cliConfiguration->getActiveTeamId())->last();
         }

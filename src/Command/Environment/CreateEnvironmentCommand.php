@@ -43,13 +43,9 @@ class CreateEnvironmentCommand extends AbstractProjectCommand
      */
     protected function perform(InputInterface $input, ConsoleOutput $output)
     {
-        $name = $this->retryApi(function () use ($input, $output) {
-            $name = $this->getStringArgument($input, 'name') ?: $output->ask('What is the name of the environment');
+        $name = $this->getStringArgument($input, 'name') ?: $output->ask('What is the name of the environment');
 
-            $this->apiClient->createEnvironment($this->projectConfiguration->getProjectId(), $name);
-
-            return $name;
-        }, 'Do you want to try creating an environment again?', $output);
+        $this->apiClient->createEnvironment($this->projectConfiguration->getProjectId(), $name);
 
         $this->projectConfiguration->addEnvironment($name);
 

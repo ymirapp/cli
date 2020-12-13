@@ -54,19 +54,17 @@ class CreateDatabaseServerCommand extends AbstractCommand
      */
     protected function perform(InputInterface $input, ConsoleOutput $output)
     {
-        $database = $this->retryApi(function () use ($input, $output) {
-            $name = $this->getStringArgument($input, 'name');
+        $name = $this->getStringArgument($input, 'name');
 
-            if (empty($name) && $input->isInteractive()) {
-                $name = $output->askSlug('What is the name of the database server');
-            }
+        if (empty($name) && $input->isInteractive()) {
+            $name = $output->askSlug('What is the name of the database server');
+        }
 
-            $network = $this->determineNetwork($input, $output);
-            $type = $this->determineType($network, $input, $output);
-            $storage = $this->determineStorage($input, $output);
+        $network = $this->determineNetwork($input, $output);
+        $type = $this->determineType($network, $input, $output);
+        $storage = $this->determineStorage($input, $output);
 
-            return $this->apiClient->createDatabaseServer($name, (int) $network['id'], $type, $storage, true);
-        }, 'Do you want to try creating a database server again?', $output);
+        $database = $this->apiClient->createDatabaseServer($name, (int) $network['id'], $type, $storage, true);
 
         $output->horizontalTable(
             ['Database Sever', new TableSeparator(), 'Username', 'Password', new TableSeparator(), 'Type', 'Public', 'Storage (in GB)'],
@@ -89,7 +87,9 @@ class CreateDatabaseServerCommand extends AbstractCommand
         }
 
         if ($networks->isEmpty()) {
-            $this->invoke($output, CreateNetworkCommand::NAME);
+            $this->retryApi(function () use ($output) {
+                $this->invoke($output, CreateNetworkCommand::NAME);
+            }, 'Do you want to try creating a network again?', $output);
 
             return $this->apiClient->getTeamNetworks($this->cliConfiguration->getActiveTeamId())->last();
         } elseif (!$networks->isEmpty() && empty($networkIdOrName)) {
