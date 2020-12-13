@@ -30,9 +30,9 @@ class WpCli
     /**
      * Checks if the Ymir plugin is installed.
      */
-    public static function isYmirPluginInstalled(string $cwd = null, string $executable = ''): bool
+    public static function isYmirPluginInstalled(string $executable = ''): bool
     {
-        return self::listPlugins($cwd, $executable)->contains(function (array $plugin) {
+        return self::listPlugins($executable)->contains(function (array $plugin) {
             return !empty($plugin['file']) && 1 === preg_match('/\/ymir\.php$/', $plugin['file']);
         });
     }
@@ -40,9 +40,9 @@ class WpCli
     /**
      * List all the installed plugins.
      */
-    public static function listPlugins(string $cwd = null, string $executable = ''): Enumerable
+    public static function listPlugins(string $executable = ''): Enumerable
     {
-        $process = Process::fromShellCommandline(sprintf('%s plugin list --fields=name,status,version,file --format=json', self::getExecutable($executable)), $cwd);
+        $process = Process::fromShellCommandline(sprintf('%s plugin list --fields=name,status,version,file --format=json', $executable));
         $process->run();
 
         if (!$process->isSuccessful()) {
@@ -56,19 +56,5 @@ class WpCli
         }
 
         return $plugins;
-    }
-
-    /**
-     * Get the path to the WP-CLI executable.
-     */
-    private static function getExecutable(string $executable): string
-    {
-        if (empty($executable) && !self::isInstalledGlobally()) {
-            throw new RuntimeException('WP-CLI isn\'t available');
-        } elseif (empty($executable) && self::isInstalledGlobally()) {
-            $executable = 'wp';
-        }
-
-        return $executable;
     }
 }

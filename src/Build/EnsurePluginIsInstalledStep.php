@@ -47,7 +47,7 @@ class EnsurePluginIsInstalledStep implements BuildStepInterface
      */
     public function perform(string $environment, ProjectConfiguration $projectConfiguration)
     {
-        if (!WpCli::isYmirPluginInstalled($this->buildDirectory, $this->buildDirectory.'/bin/wp')) {
+        if (!WpCli::isYmirPluginInstalled(sprintf('%s --path="%s"', $this->buildDirectory.'/bin/wp', $this->buildDirectory))) {
             throw new RuntimeException('Ymir plugin not found');
         }
     }
