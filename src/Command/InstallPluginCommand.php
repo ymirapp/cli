@@ -18,11 +18,11 @@ use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
-use Symfony\Component\Process\Process;
 use Tightenco\Collect\Support\Arr;
 use Ymir\Cli\ApiClient;
 use Ymir\Cli\CliConfiguration;
 use Ymir\Cli\Console\ConsoleOutput;
+use Ymir\Cli\Process\Process;
 use Ymir\Cli\ProjectConfiguration;
 
 class InstallPluginCommand extends AbstractProjectCommand
@@ -83,7 +83,7 @@ class InstallPluginCommand extends AbstractProjectCommand
 
         if ('bedrock' === $projectType) {
             $output->info($message.' using Composer');
-            $this->installUsingComposer();
+            Process::runShellCommandline('composer require ymirapp/wordpress-plugin');
         } elseif ('wordpress' === $projectType) {
             $output->info($message.' from GitHub');
             $this->installFromGitHub();
@@ -138,18 +138,5 @@ class InstallPluginCommand extends AbstractProjectCommand
         }
 
         $this->filesystem->rename($pluginsDirectory.'/'.Arr::first($files)->getFilename(), $pluginsDirectory.'/ymir-wordpress-plugin', true);
-    }
-
-    /**
-     * Install the WordPress plugin using composer.
-     */
-    private function installUsingComposer()
-    {
-        $process = Process::fromShellCommandline('composer require ymirapp/wordpress-plugin');
-        $process->run();
-
-        if (!$process->isSuccessful()) {
-            throw new RuntimeException($process->getErrorOutput());
-        }
     }
 }

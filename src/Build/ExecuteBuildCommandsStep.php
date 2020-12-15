@@ -13,9 +13,8 @@ declare(strict_types=1);
 
 namespace Ymir\Cli\Build;
 
-use Symfony\Component\Console\Exception\RuntimeException;
-use Symfony\Component\Process\Process;
 use Tightenco\Collect\Support\Arr;
+use Ymir\Cli\Process\Process;
 use Ymir\Cli\ProjectConfiguration;
 
 class ExecuteBuildCommandsStep implements BuildStepInterface
@@ -63,20 +62,7 @@ class ExecuteBuildCommandsStep implements BuildStepInterface
         }
 
         foreach ($commands as $command) {
-            $this->runCommand($command);
-        }
-    }
-
-    /**
-     * Run the build command.
-     */
-    private function runCommand(string $command)
-    {
-        $process = Process::fromShellCommandline($command, $this->buildDirectory, null, null, null);
-        $process->run();
-
-        if (!$process->isSuccessful()) {
-            throw new RuntimeException($process->getErrorOutput());
+            Process::runShellCommandline($command, $this->buildDirectory, null, null, null);
         }
     }
 }

@@ -221,9 +221,7 @@ abstract class AbstractCommand extends Command
 
         if (null === $value && $requiredNonInteractive && !$input->isInteractive()) {
             throw new InvalidArgumentException(sprintf('You must use the "--%s" option when running in non-interactive mode', $option));
-        } elseif (null === $value) {
-            return $value;
-        } elseif (!is_string($value)) {
+        } elseif (null !== $value && !is_string($value)) {
             throw new InvalidArgumentException(sprintf('The "--%s" option must be a string value', $option));
         }
 

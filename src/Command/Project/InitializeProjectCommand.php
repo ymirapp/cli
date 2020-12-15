@@ -13,8 +13,8 @@ declare(strict_types=1);
 
 namespace Ymir\Cli\Command\Project;
 
+use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\NullOutput;
 use Symfony\Component\Filesystem\Filesystem;
 use Tightenco\Collect\Support\Arr;
@@ -26,6 +26,7 @@ use Ymir\Cli\Command\Database\CreateDatabaseServerCommand;
 use Ymir\Cli\Command\InstallPluginCommand;
 use Ymir\Cli\Command\Provider\ConnectProviderCommand;
 use Ymir\Cli\Console\ConsoleOutput;
+use Ymir\Cli\Process\Process;
 use Ymir\Cli\ProjectConfiguration;
 use Ymir\Cli\WpCli;
 
@@ -78,11 +79,7 @@ class InitializeProjectCommand extends AbstractProjectCommand
         $this
             ->setName(self::NAME)
             ->setDescription('Creates a new project in the current directory')
-            ->setAliases([self::ALIAS])
-            ->addOption('name', null, InputOption::VALUE_REQUIRED, 'The name of the project')
-            ->addOption('provider', null, InputOption::VALUE_REQUIRED, 'The cloud provider where the project will be created')
-            ->addOption('region', null, InputOption::VALUE_REQUIRED, 'The cloud provider region where the project will be located')
-            ->addOption('type', null, InputOption::VALUE_REQUIRED, 'The type of project being created');
+            ->setAliases([self::ALIAS]);
     }
 
     /**
@@ -108,18 +105,20 @@ class InitializeProjectCommand extends AbstractProjectCommand
      */
     protected function perform(InputInterface $input, ConsoleOutput $output)
     {
-        if ($this->projectConfiguration->exists()
+        if (!$input->isInteractive()) {
+            throw new RuntimeException(sprintf('Cannot run "%s" command in non-interactive mode', $input->getFirstArgument()));
+        } elseif ($this->projectConfiguration->exists()
             && !$output->confirm('A project already exists in this directory. Do you want to overwrite it?', false)
         ) {
             return;
         }
 
-        $projectType = $this->retryApi(function () use ($input, $output) {
+        $this->retryApi(function () use ($input, $output) {
             $environments = [
                 'production' => [],
                 'staging' => ['cdn' => ['caching' => 'assets'], 'cron' => false, 'warmup' => false],
             ];
-            $projectName = $this->determineProjectName($input, $output);
+            $projectName = $output->askSlug('What is the name of the project', basename(getcwd() ?: '') ?: null);
             $projectType = $this->determineProjectType($input, $output);
             $providerId = $this->determineCloudProvider('Enter the ID of the cloud provider that the project will use', $input, $output);
             $region = $this->determineRegion('Enter the name of the region that the project will be in', $providerId, $input, $output);
@@ -131,16 +130,21 @@ class InitializeProjectCommand extends AbstractProjectCommand
 
             $environments = $this->addEnvironmentDatabaseNodes($environments, $output, $projectName, $region);
 
+            // This needs to happen before we create the configuration file because "composer create-project"
+            // needs an empty directory.
+            if (WpCli::isInstalledGlobally() && !WpCli::isWordPressInstalled() && $output->confirm('WordPress was\'t detected in the project directory. Would you like to download it?')) {
+                $this->installWordPress($projectType);
+                $output->info('WordPress downloaded successfully');
+            }
+
             $this->projectConfiguration->createNew($this->apiClient->createProject($providerId, $projectName, $region), $environments, $projectType);
 
-            return $projectType;
+            $output->infoWithDelayWarning('Project initialized');
+
+            if (!$this->isPluginInstalled($projectType) && $output->confirm('Would you like to install the Ymir WordPress plugin?')) {
+                $this->invoke($output, InstallPluginCommand::NAME);
+            }
         }, 'Do you want to try creating a project again?', $output);
-
-        $output->infoWithDelayWarning('Project initialized');
-
-        if (!$this->isPluginInstalled($projectType) && $output->confirm('Would you like to install the Ymir WordPress plugin?')) {
-            $this->invoke($output, InstallPluginCommand::NAME);
-        }
     }
 
     /**
@@ -206,25 +210,11 @@ class InitializeProjectCommand extends AbstractProjectCommand
     }
 
     /**
-     * Determine the name of the project.
-     */
-    private function determineProjectName(InputInterface $input, ConsoleOutput $output): string
-    {
-        $name = $this->getStringOption($input, 'name', true);
-
-        if (empty($name) && $input->isInteractive()) {
-            $name = $output->askSlug('What is the name of the project', basename(getcwd() ?: '') ?: null);
-        }
-
-        return (string) $name;
-    }
-
-    /**
      * Determine the type of project being initialized.
      */
     private function determineProjectType(InputInterface $input, ConsoleOutput $output): string
     {
-        $type = $this->getStringOption($input, 'type');
+        $type = '';
 
         if ($this->filesystem->exists($this->projectDirectory.'/wp-config.php')) {
             $type = 'wordpress';
@@ -239,6 +229,18 @@ class InitializeProjectCommand extends AbstractProjectCommand
         }
 
         return strtolower($type);
+    }
+
+    /**
+     * Install WordPress for the given project type.
+     */
+    private function installWordPress(string $projectType)
+    {
+        if ('bedrock' === $projectType) {
+            Process::runShellCommandline('composer create-project roots/bedrock .');
+        } elseif ('wordpress' === $projectType) {
+            WpCli::downloadWordPress();
+        }
     }
 
     /**
