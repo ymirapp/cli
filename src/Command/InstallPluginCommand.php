@@ -88,6 +88,8 @@ class InstallPluginCommand extends AbstractProjectCommand
             $output->info($message.' from GitHub');
             $this->installFromGitHub();
         }
+
+        $output->info('Ymir plugin installed');
     }
 
     /**
