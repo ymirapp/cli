@@ -31,7 +31,6 @@ grumphp:
       exclude:
         - 'ApiClient.php'
         - 'activate-ymir-plugin.php'
-        - 'InitializeProjectCommand.php'
       ruleset: ['phpmd.xml']
     phpstan:
       ignore_patterns: ['/^stubs/']

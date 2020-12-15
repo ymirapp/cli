@@ -107,7 +107,9 @@ abstract class AbstractCommand extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        if (LoginCommand::NAME !== $this->getName() && !$this->apiClient->isAuthenticated()) {
+        if (!$input->isInteractive() && $this->mustBeInteractive()) {
+            throw new RuntimeException(sprintf('Cannot run "%s" command in non-interactive mode', $input->getFirstArgument()));
+        } elseif (LoginCommand::NAME !== $this->getName() && !$this->apiClient->isAuthenticated()) {
             throw new RuntimeException(sprintf('Please authenticate using the "%s" command before using this command', LoginCommand::NAME));
         }
 
@@ -240,6 +242,14 @@ abstract class AbstractCommand extends Command
         }
 
         return $application->find($command)->run(new ArrayInput($arguments), $output);
+    }
+
+    /**
+     * Whether the command must always be run in interactive mode or not.
+     */
+    protected function mustBeInteractive(): bool
+    {
+        return false;
     }
 
     /**

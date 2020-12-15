@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace Ymir\Cli\Command\Project;
 
-use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\NullOutput;
 use Symfony\Component\Filesystem\Filesystem;
@@ -103,39 +102,34 @@ class InitializeProjectCommand extends AbstractProjectCommand
     /**
      * {@inheritdoc}
      */
+    protected function mustBeInteractive(): bool
+    {
+        return true;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     protected function perform(InputInterface $input, ConsoleOutput $output)
     {
-        if (!$input->isInteractive()) {
-            throw new RuntimeException(sprintf('Cannot run "%s" command in non-interactive mode', $input->getFirstArgument()));
-        } elseif ($this->projectConfiguration->exists()
+        if ($this->projectConfiguration->exists()
             && !$output->confirm('A project already exists in this directory. Do you want to overwrite it?', false)
         ) {
             return;
         }
 
         $this->retryApi(function () use ($input, $output) {
-            $environments = [
-                'production' => [],
-                'staging' => ['cdn' => ['caching' => 'assets'], 'cron' => false, 'warmup' => false],
-            ];
             $projectName = $output->askSlug('What is the name of the project', basename(getcwd() ?: '') ?: null);
             $projectType = $this->determineProjectType($input, $output);
             $providerId = $this->determineCloudProvider('Enter the ID of the cloud provider that the project will use', $input, $output);
             $region = $this->determineRegion('Enter the name of the region that the project will be in', $providerId, $input, $output);
 
-            if ('bedrock' === $projectType) {
-                Arr::set($environments, 'staging.build', ['COMPOSER_MIRROR_PATH_REPOS=1 composer install']);
-                Arr::set($environments, 'production.build', ['COMPOSER_MIRROR_PATH_REPOS=1 composer install --no-dev']);
-            }
-
-            $environments = $this->addEnvironmentDatabaseNodes($environments, $output, $projectName, $region);
+            // Define the environments now so we check for the database server before checking for WordPress
+            $environments = $this->addEnvironmentDatabaseNodes($this->getBaseEnvironmentsConfiguration($projectType), $output, $projectName, $region);
 
             // This needs to happen before we create the configuration file because "composer create-project"
             // needs an empty directory.
-            if (WpCli::isInstalledGlobally() && !WpCli::isWordPressInstalled() && $output->confirm('WordPress was\'t detected in the project directory. Would you like to download it?')) {
-                $this->installWordPress($projectType);
-                $output->info('WordPress downloaded successfully');
-            }
+            $this->checkForWordPress($output, $projectType);
 
             $this->projectConfiguration->createNew($this->apiClient->createProject($providerId, $projectName, $region), $environments, $projectType);
 
@@ -186,6 +180,24 @@ class InitializeProjectCommand extends AbstractProjectCommand
     }
 
     /**
+     * Check for WordPress and offer to install if it's not detected.
+     */
+    private function checkForWordPress(ConsoleOutput $output, string $projectType)
+    {
+        if (!in_array($projectType, ['bedrock', 'wordpress']) || !WpCli::isInstalledGlobally() || WpCli::isWordPressInstalled() || !$output->confirm('WordPress was\'t detected in the project directory. Would you like to download it?')) {
+            return;
+        }
+
+        if ('bedrock' === $projectType) {
+            Process::runShellCommandline('composer create-project roots/bedrock .');
+        } elseif ('wordpress' === $projectType) {
+            WpCli::downloadWordPress();
+        }
+
+        $output->info('WordPress downloaded successfully');
+    }
+
+    /**
      * Determine the database server to use for this project.
      */
     private function determineDatabaseServer(ConsoleOutput $output, string $region): ?array
@@ -232,15 +244,21 @@ class InitializeProjectCommand extends AbstractProjectCommand
     }
 
     /**
-     * Install WordPress for the given project type.
+     * Get the base environments configuration for the project.
      */
-    private function installWordPress(string $projectType)
+    private function getBaseEnvironmentsConfiguration(string $projectType): array
     {
+        $environments = [
+            'production' => [],
+            'staging' => ['cdn' => ['caching' => 'assets'], 'cron' => false, 'warmup' => false],
+        ];
+
         if ('bedrock' === $projectType) {
-            Process::runShellCommandline('composer create-project roots/bedrock .');
-        } elseif ('wordpress' === $projectType) {
-            WpCli::downloadWordPress();
+            Arr::set($environments, 'staging.build', ['COMPOSER_MIRROR_PATH_REPOS=1 composer install']);
+            Arr::set($environments, 'production.build', ['COMPOSER_MIRROR_PATH_REPOS=1 composer install --no-dev']);
         }
+
+        return $environments;
     }
 
     /**
