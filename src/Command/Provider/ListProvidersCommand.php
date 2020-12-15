@@ -51,7 +51,6 @@ class ListProvidersCommand extends AbstractCommand
                 return [
                     $provider['id'],
                     $provider['name'],
-                    $provider['provider'],
                 ];
             })->all()
         );
