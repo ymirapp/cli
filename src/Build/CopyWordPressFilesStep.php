@@ -151,11 +151,21 @@ class CopyWordPressFilesStep implements BuildStepInterface
 
         if ('wordpress' === $projectType) {
             $finder->exclude('wp-content/uploads');
+            $finder->append($this->getWordPressFilesToAppend());
         } elseif ('bedrock' === $projectType) {
             $finder->exclude('web/app/uploads');
             $finder->append($this->getBedrockFilesToAppend());
         }
 
         return $finder;
+    }
+
+    /**
+     * List of WordPress files we need to append manually.
+     */
+    private function getWordPressFilesToAppend(): array
+    {
+        // wp-config.php is often in .gitignore so we need to add it back
+        return [new SplFileInfo($this->projectDirectory.'/wp-config.php', $this->projectDirectory, '/wp-config.php')];
     }
 }
