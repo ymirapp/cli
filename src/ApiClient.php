@@ -766,7 +766,7 @@ class ApiClient
             $options['headers']['Authorization'] = 'Bearer '.$this->cliConfiguration->getAccessToken();
         }
 
-        if (in_array($method, ['post', 'put'])) {
+        if (in_array($method, ['delete', 'post', 'put'])) {
             $options['json'] = $body;
         }
 
