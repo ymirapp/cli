@@ -51,7 +51,7 @@ class DeleteNetworkCommand extends AbstractCommand
             $networkIdOrName = $output->choiceWithResourceDetails('Which network like to delete', $networks);
         }
 
-        $network = $networks->firstWhere('name', $networkIdOrName) ?? $networks->firstWhere('name', $networkIdOrName);
+        $network = $networks->firstWhere('name', $networkIdOrName) ?? $networks->firstWhere('id', $networkIdOrName);
 
         if (1 < $networks->where('name', $networkIdOrName)->count()) {
             throw new RuntimeException(sprintf('Unable to select a network because more than one network has the name "%s"', $networkIdOrName));
