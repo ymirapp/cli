@@ -79,7 +79,7 @@ class ConnectProviderCommand extends AbstractCommand
 
         return !empty($credentials) ? $credentials : [
             'key' => $output->ask('Please enter your AWS user key'),
-            'secret' => $output->ask('Please enter your AWS user secret'),
+            'secret' => $output->askHidden('Please enter your AWS user secret'),
         ];
     }
 
