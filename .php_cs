@@ -28,6 +28,7 @@ return PhpCsFixer\Config::create()
         'list_syntax' => ['syntax' => 'long'],
         'method_argument_space' => ['ensure_fully_multiline' => true],
         'method_chaining_indentation' => false,
+        'native_constant_invocation' => false,
         'native_function_invocation' => false,
         'no_extra_consecutive_blank_lines' => ['tokens' => ['break', 'continue', 'extra', 'return', 'throw', 'use', 'parenthesis_brace_block', 'square_brace_block', 'curly_brace_block']],
         'no_null_property_initialization' => true,
