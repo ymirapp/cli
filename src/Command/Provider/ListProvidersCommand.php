@@ -46,7 +46,7 @@ class ListProvidersCommand extends AbstractCommand
         $output->info('The following cloud providers are connect your team:');
 
         $output->table(
-            ['Id', 'Name', 'Provider'],
+            ['Id', 'Name'],
             $providers->map(function (array $provider) {
                 return [
                     $provider['id'],
