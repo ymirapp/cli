@@ -587,6 +587,14 @@ class ApiClient
     }
 
     /**
+     * Get the cloud provider with the given ID.
+     */
+    public function getProvider(int $providerId): Collection
+    {
+        return $this->request('get', "/providers/{$providerId}");
+    }
+
+    /**
      * Get the cloud providers for the given team ID.
      */
     public function getProviders(int $teamId): Collection
@@ -732,6 +740,17 @@ class ApiClient
         $this->request('put', "/database-servers/{$databaseId}", [
             'storage' => $storage,
             'type' => $type,
+        ]);
+    }
+
+    /**
+     * Update the given cloud provider.
+     */
+    public function updateProvider(int $providerId, array $credentials, string $name)
+    {
+        $this->request('put', "/providers/{$providerId}", [
+            'name' => $name,
+            'credentials' => $credentials,
         ]);
     }
 

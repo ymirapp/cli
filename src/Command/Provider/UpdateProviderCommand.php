@@ -13,17 +13,18 @@ declare(strict_types=1);
 
 namespace Ymir\Cli\Command\Provider;
 
+use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Ymir\Cli\Console\ConsoleOutput;
 
-class ConnectProviderCommand extends AbstractProviderCommand
+class UpdateProviderCommand extends AbstractProviderCommand
 {
     /**
      * The name of the command.
      *
      * @var string
      */
-    public const NAME = 'provider:connect';
+    public const NAME = 'provider:update';
 
     /**
      * {@inheritdoc}
@@ -32,7 +33,8 @@ class ConnectProviderCommand extends AbstractProviderCommand
     {
         $this
             ->setName(self::NAME)
-            ->setDescription('Connect a cloud provider to the currently active team');
+            ->setDescription('Update a cloud provider')
+            ->addArgument('provider', InputArgument::OPTIONAL, 'The ID of the cloud provider to update');
     }
 
     /**
@@ -40,12 +42,12 @@ class ConnectProviderCommand extends AbstractProviderCommand
      */
     protected function perform(InputInterface $input, ConsoleOutput $output)
     {
-        $name = $output->ask('Please enter a name for the cloud provider connection', 'AWS');
+        $provider = $this->apiClient->getProvider($this->getProviderArgument($input));
 
-        $credentials = $this->getAwsCredentials($output);
+        $name = (string) $output->ask('Please enter a name for the cloud provider connection', $provider->get('name'));
 
-        $this->apiClient->createProvider($name, $credentials, $this->cliConfiguration->getActiveTeamId());
+        $this->apiClient->updateProvider($provider->get('id'), $this->getAwsCredentials($output), $name);
 
-        $output->info('Cloud provider connected');
+        $output->info('Cloud provider updated');
     }
 }
