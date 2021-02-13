@@ -340,6 +340,14 @@ class ApiClient
     }
 
     /**
+     * Delete the given cloud provider.
+     */
+    public function deleteProvider(int $providerId)
+    {
+        $this->request('delete', "/providers/{$providerId}");
+    }
+
+    /**
      * Delete the given secret.
      */
     public function deleteSecret($secretId)
