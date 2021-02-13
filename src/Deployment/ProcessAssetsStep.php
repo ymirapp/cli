@@ -62,12 +62,14 @@ class ProcessAssetsStep implements DeploymentStepInterface
 
         $output->writeStep('Getting signed asset URLs');
         $assetFiles = $this->getAssetFiles();
-        $signedAssetRequests = $this->apiClient->getSignedAssetRequests($deployment->get('id'), $assetFiles->map(function (array $asset) {
+        $signedAssetRequests = $assetFiles->map(function (array $asset) {
             return [
                 'path' => $asset['relative_path'],
                 'hash' => $asset['hash'],
             ];
-        })->all());
+        })->chunk(500)->flatMap(function (Collection $chunkedAssetFiles) use ($deployment) {
+            return $this->apiClient->getSignedAssetRequests($deployment->get('id'), $chunkedAssetFiles->all());
+        });
 
         if (count($assetFiles) !== count($signedAssetRequests)) {
             $output->warn('Warning: Not all asset files were processed successfully');
