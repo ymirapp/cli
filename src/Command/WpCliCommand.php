@@ -36,7 +36,7 @@ class WpCliCommand extends AbstractInvocationCommand
         $this
             ->setName(self::NAME)
             ->setDescription('Execute a WP-CLI command')
-            ->addArgument('wp-command', InputArgument::OPTIONAL, 'The WP-CLI command to execute')
+            ->addArgument('wp-command', InputArgument::IS_ARRAY, 'The WP-CLI command to execute')
             ->addOption('environment', null, InputOption::VALUE_REQUIRED, 'The environment name', 'staging');
     }
 
@@ -45,7 +45,7 @@ class WpCliCommand extends AbstractInvocationCommand
      */
     protected function perform(InputInterface $input, ConsoleOutput $output)
     {
-        $command = $this->getStringArgument($input, 'wp-command');
+        $command = implode(' ', $this->getArrayArgument($input, 'wp-command'));
         $environment = (string) $this->getStringOption($input, 'environment');
 
         if (empty($command) && $input->isInteractive()) {
