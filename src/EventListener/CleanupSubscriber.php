@@ -56,7 +56,7 @@ class CleanupSubscriber implements EventSubscriberInterface
     }
 
     /**
-     * {@inheritdoc}
+     * Remove hidden directory when console terminates.
      */
     public function onConsoleTerminate()
     {
