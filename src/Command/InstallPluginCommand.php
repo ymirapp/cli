@@ -22,6 +22,7 @@ use Tightenco\Collect\Support\Arr;
 use Ymir\Cli\ApiClient;
 use Ymir\Cli\CliConfiguration;
 use Ymir\Cli\Console\ConsoleOutput;
+use Ymir\Cli\GitHubClient;
 use Ymir\Cli\Process\Process;
 use Ymir\Cli\ProjectConfiguration;
 
@@ -42,6 +43,13 @@ class InstallPluginCommand extends AbstractProjectCommand
     private $filesystem;
 
     /**
+     * The API client that interacts with the GitHub API.
+     *
+     * @var GitHubClient
+     */
+    private $gitHubClient;
+
+    /**
      * The project directory where we want to install the plugin.
      *
      * @var string
@@ -51,11 +59,12 @@ class InstallPluginCommand extends AbstractProjectCommand
     /**
      * Constructor.
      */
-    public function __construct(ApiClient $apiClient, CliConfiguration $cliConfiguration, Filesystem $filesystem, ProjectConfiguration $projectConfiguration, string $projectDirectory)
+    public function __construct(ApiClient $apiClient, CliConfiguration $cliConfiguration, Filesystem $filesystem, GitHubClient $gitHubClient, ProjectConfiguration $projectConfiguration, string $projectDirectory)
     {
         parent::__construct($apiClient, $cliConfiguration, $projectConfiguration);
 
         $this->filesystem = $filesystem;
+        $this->gitHubClient = $gitHubClient;
         $this->projectDirectory = rtrim($projectDirectory, '/');
     }
 
@@ -97,35 +106,9 @@ class InstallPluginCommand extends AbstractProjectCommand
      */
     private function installFromGitHub()
     {
-        $client = new Client();
-        $response = $client->request('GET', 'https://api.github.com/repos/ymirapp/wordpress-plugin/tags');
-
-        if (200 !== $response->getStatusCode()) {
-            throw new RuntimeException('Unable to get the latest WordPress plugin versions from the GitHub API');
-        }
-
-        $latestTag = collect(json_decode((string) $response->getBody(), true))->first();
-
-        if (empty($latestTag['zipball_url'])) {
-            throw new RuntimeException('Unable to parse the WordPress plugin versions from the GitHub API');
-        }
-
-        $downloadedZipFile = tmpfile();
-
-        if (!is_resource($downloadedZipFile)) {
-            throw new RuntimeException('Unable to open a temporary file');
-        }
-
-        fwrite($downloadedZipFile, (string) $client->request('GET', $latestTag['zipball_url'])->getBody());
-
-        $downloadedZipArchive = new \ZipArchive();
-
-        if (true !== $downloadedZipArchive->open(stream_get_meta_data($downloadedZipFile)['uri'])) {
-            throw new RuntimeException('Unable to open the WordPress plugin Zip archive from GitHub');
-        }
-
         $pluginsDirectory = $this->projectDirectory.'/wp-content/plugins';
-        $downloadedZipArchive->extractTo($pluginsDirectory);
+
+        $this->gitHubClient->downloadLatestVersion('ymirapp/wordpress-plugin')->extractTo($pluginsDirectory);
 
         $files = Finder::create()
             ->directories()

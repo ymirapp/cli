@@ -22,9 +22,9 @@ class Application extends BaseApplication
     /**
      * Constructor.
      */
-    public function __construct(iterable $commands = [])
+    public function __construct(iterable $commands, string $version)
     {
-        parent::__construct('Ymir', '1.4.3');
+        parent::__construct('Ymir', $version);
 
         foreach ($commands as $command) {
             $this->add($command);

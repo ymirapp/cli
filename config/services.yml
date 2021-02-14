@@ -6,6 +6,7 @@ parameters:
   hidden_directory: '%working_directory%/.ymir'
   project_configuration_filepath: '%working_directory%/ymir.yml'
   stub_directory: '%application_directory%/stubs'
+  version: '1.4.3'
 
 services:
   _defaults:
@@ -20,6 +21,7 @@ services:
       string $homeDirectory: '%home_directory%'
       string $projectDirectory: '%working_directory%'
       string $stubDirectory: '%stub_directory%'
+      string $version: '%version%'
 
   _instanceof:
     Symfony\Component\Console\Command\Command:
