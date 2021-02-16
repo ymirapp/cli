@@ -118,7 +118,11 @@ class CompressBuildFilesStep implements BuildStepInterface
     private function getRequiredFiles(): Finder
     {
         return $this->getBaseFinder()
-            ->path(['/^wp-cli\.yml/']);
+            ->path([
+                '/^wp-cli\.yml/',
+                '/themes\/[^\/]*\/screenshot\.(gif|jpe?g|png)$/',
+                '/themes\/[^\/]*\/style\.css$/',
+            ]);
     }
 
     /**
