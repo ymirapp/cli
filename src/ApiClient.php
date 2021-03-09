@@ -645,7 +645,7 @@ class ApiClient
      */
     public function getSignedUploadRequests(int $projectId, string $environment, array $uploads): Collection
     {
-        $requests = $this->request('get', "/projects/{$projectId}/environments/{$environment}/signed-uploads", ['uploads' => $uploads]);
+        $requests = $this->request('post', "/projects/{$projectId}/environments/{$environment}/signed-uploads", ['uploads' => $uploads]);
 
         if (!empty($uploads) && empty($requests)) {
             throw new RuntimeException('Unable to get authorized uploads requests from the Ymir API');

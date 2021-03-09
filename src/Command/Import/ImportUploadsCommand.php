@@ -158,6 +158,7 @@ class ImportUploadsCommand extends AbstractProjectCommand
         }
 
         $attempts = 0;
+
         do {
             ++$attempts;
             $tmpDirectory = sprintf('%s%s%s', $baseDirectory, 'ymir_', mt_rand(100000, mt_getrandmax()));
