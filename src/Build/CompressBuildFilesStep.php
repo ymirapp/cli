@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Ymir\Cli\Build;
 
+use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Finder\SplFileInfo;
 use Tightenco\Collect\Support\Arr;
@@ -63,6 +64,7 @@ class CompressBuildFilesStep implements BuildStepInterface
                        ->append($this->getRequiredFiles())
                        ->append($this->getRequiredFileTypes())
                        ->append($this->getWordPressCoreFiles($projectConfiguration->getProjectType()));
+        $totalSize = 0;
 
         if ('bedrock' === $projectConfiguration->getProjectType()) {
             $files->exclude(['web/wp/wp-content']);
@@ -74,9 +76,14 @@ class CompressBuildFilesStep implements BuildStepInterface
 
         foreach ($files as $file) {
             $this->addFileToArchive($archive, $file);
+            $totalSize += $file->getSize();
         }
 
         $archive->close();
+
+        if ($totalSize >= 147005412) {
+            throw new RuntimeException(sprintf('The uncompressed build is %s bytes. It must be less than 147005412 bytes to be able to deploy.', $totalSize));
+        }
     }
 
     /**
