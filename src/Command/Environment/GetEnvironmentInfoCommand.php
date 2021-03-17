@@ -99,7 +99,7 @@ class GetEnvironmentInfoCommand extends AbstractProjectCommand
             return null;
         }
 
-        $databaseName = $environment['database']['host'] ?? $environment['database'];
+        $databaseName = $environment['database']['server'] ?? $environment['database'];
 
         if (!is_string($databaseName)) {
             return null;
