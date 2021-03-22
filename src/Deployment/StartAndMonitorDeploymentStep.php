@@ -71,7 +71,7 @@ class StartAndMonitorDeploymentStep implements DeploymentStepInterface
         $message = 'Deployment failed';
 
         if (!empty($failedMessage)) {
-            $message .= "with error message:\n\n\t".$failedMessage;
+            $message .= " with error message:\n\n\t".$failedMessage;
         }
 
         return $message;
