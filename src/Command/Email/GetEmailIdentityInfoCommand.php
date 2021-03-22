@@ -35,7 +35,7 @@ class GetEmailIdentityInfoCommand extends AbstractEmailIdentityCommand
         $this
             ->setName(self::NAME)
             ->setDescription('Get the information on an email identity')
-            ->addArgument('identity', InputArgument::OPTIONAL, 'The ID or name of the email identity to fetch');
+            ->addArgument('identity', InputArgument::OPTIONAL, 'The ID or name of the email identity to fetch the information of');
     }
 
     /**

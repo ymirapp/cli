@@ -35,7 +35,7 @@ class RequestCertificateCommand extends AbstractCertificateCommand
         $this
             ->setName(self::NAME)
             ->setDescription('Request a new SSL certificate')
-            ->addArgument('domain', InputArgument::OPTIONAL, 'The domain secured by the SSL certificate')
+            ->addArgument('domain', InputArgument::OPTIONAL, 'The domain that the SSL certificate is for')
             ->addOption('provider', null, InputOption::VALUE_REQUIRED, 'The cloud provider where the certificate will be created')
             ->addOption('region', null, InputOption::VALUE_REQUIRED, 'The cloud provider region where the certificate will be located');
     }

@@ -35,7 +35,7 @@ class ImportDnsRecordsCommand extends AbstractDnsCommand
             ->setName(self::NAME)
             ->setDescription('Import DNS records into a DNS zone')
             ->addArgument('zone', InputArgument::REQUIRED, 'The name of the DNS zone that the DNS record belongs to')
-            ->addArgument('subdomain', InputArgument::IS_ARRAY | InputArgument::OPTIONAL, 'The subdomains that we want to import');
+            ->addArgument('subdomain', InputArgument::IS_ARRAY | InputArgument::OPTIONAL, 'The subdomain(s) that we want to import');
     }
 
     /**

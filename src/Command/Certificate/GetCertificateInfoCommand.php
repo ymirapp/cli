@@ -34,8 +34,8 @@ class GetCertificateInfoCommand extends AbstractCertificateCommand
     {
         $this
             ->setName(self::NAME)
-            ->setDescription('Get the information on an SSL certificate')
-            ->addArgument('certificate', InputArgument::REQUIRED, 'The ID of the SSL certificate to fetch');
+            ->setDescription('Get information on an SSL certificate')
+            ->addArgument('certificate', InputArgument::REQUIRED, 'The ID of the SSL certificate to fetch the information of');
     }
 
     /**
