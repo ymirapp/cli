@@ -40,9 +40,7 @@ abstract class AbstractInvocationCommand extends AbstractProjectCommand
 
         if ('failed' === $invocation['status']) {
             throw new RuntimeException('Running the command failed');
-        }
-
-        if (!Arr::has($invocation, ['result.exitCode', 'result.output'])) {
+        } elseif (!Arr::has($invocation, ['result.exitCode', 'result.output'])) {
             throw new RuntimeException('Unable to get the result of the command from the Ymir API');
         }
 
