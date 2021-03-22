@@ -63,6 +63,21 @@ class StartAndMonitorDeploymentStep implements DeploymentStepInterface
     }
 
     /**
+     * Get the exception message when a deployment failed.
+     */
+    private function getFailedDeploymentMessage(int $deploymentId): string
+    {
+        $failedMessage = $this->apiClient->getDeployment($deploymentId)->get('failed_message');
+        $message = 'Deployment failed';
+
+        if (!empty($failedMessage)) {
+            $message .= "with error message:\n\n\t".$failedMessage;
+        }
+
+        return $message;
+    }
+
+    /**
      * Get the formatted deployment step name from the job name.
      */
     private function getFormattedDeploymentStepName(string $jobName): string
@@ -147,7 +162,7 @@ class StartAndMonitorDeploymentStep implements DeploymentStepInterface
             if (empty($step['status'])) {
                 throw new RuntimeException('Unable to get deployment status from Ymir API');
             } elseif ('failed' === $step['status']) {
-                throw new RuntimeException('Deployment failed');
+                throw new RuntimeException($this->getFailedDeploymentMessage($deploymentId));
             }
 
             ++$elapsed;
