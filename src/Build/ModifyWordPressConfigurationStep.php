@@ -67,8 +67,6 @@ class ModifyWordPressConfigurationStep implements BuildStepInterface
 
         if ('wordpress' === $projectType) {
             $this->modifyWordPressConfig((array) $projectConfiguration->getEnvironment($environment));
-        } elseif ('bedrock' === $projectType) {
-            $this->filesystem->remove($this->buildDirectory.'/.env');
         }
     }
 
