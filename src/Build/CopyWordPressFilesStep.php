@@ -113,8 +113,12 @@ class CopyWordPressFilesStep implements BuildStepInterface
         // Need the .env file for WP-CLI to work during the build
         $files = [new SplFileInfo($this->projectDirectory.'/.env', $this->projectDirectory, '/.env')];
 
-        // Finder can't seem to honor the .gitignore path ignoring child folders in the mu-plugins
-        // folder while keeping the files at the root of the mu-plugins folder.
+        /**
+         * Finder can't seem to honor the .gitignore path ignoring child folders in the mu-plugins
+         * folder while keeping the files at the root of the mu-plugins folder.
+         *
+         * @see https://github.com/symfony/symfony/issues/39257
+         */
         $finder = $this->getBaseFinder()
             ->path('/^web\/app\/mu-plugins/')
             ->depth('== 3');
