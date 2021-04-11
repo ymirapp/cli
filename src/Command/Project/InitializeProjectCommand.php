@@ -151,7 +151,7 @@ class InitializeProjectCommand extends AbstractProjectCommand
 
         if (empty($databaseServer['name'])) {
             return $environments;
-        } elseif ($output->confirm(sprintf('Would you like to create staging and production databases for your project on the "<comment>%s</comment>" database server?', $databaseServer['name']))) {
+        } elseif (!empty($databaseServer['publicly_accessible']) && $output->confirm(sprintf('Would you like to create staging and production databases for your project on the "<comment>%s</comment>" database server?', $databaseServer['name']))) {
             $databasePrefix = $output->askSlug('What database prefix would you like to use for this project?', $projectName);
         }
 

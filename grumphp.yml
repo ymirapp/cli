@@ -29,6 +29,7 @@ grumphp:
     phplint: ~
     phpmd:
       exclude:
+        - 'Command/Project/InitializeProjectCommand.php'
         - 'ApiClient.php'
         - 'activate-ymir-plugin.php'
       ruleset: ['phpmd.xml']

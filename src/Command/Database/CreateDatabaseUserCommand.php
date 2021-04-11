@@ -33,7 +33,7 @@ class CreateDatabaseUserCommand extends AbstractDatabaseCommand
     {
         $this
             ->setName(self::NAME)
-            ->setDescription('Create a new user on a database server')
+            ->setDescription('Create a new user on a public database server')
             ->addArgument('database', InputArgument::OPTIONAL, 'The ID or name of the database server where the user will be created')
             ->addArgument('username', InputArgument::OPTIONAL, 'The username of the new database user');
     }

@@ -22,6 +22,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Ymir\Cli\ApiClient;
 use Ymir\Cli\CliConfiguration;
+use Ymir\Cli\Command\Provider\ConnectProviderCommand;
 use Ymir\Cli\Console\ConsoleOutput;
 use Ymir\Cli\Exception\ApiClientException;
 use Ymir\Cli\Exception\CommandCancelledException;
@@ -78,6 +79,10 @@ abstract class AbstractCommand extends Command
 
         if ($this->projectConfiguration->exists()) {
             $providers = collect([$this->apiClient->getProject($this->projectConfiguration->getProjectId())->get('provider')]);
+        }
+
+        if ($providers->isEmpty()) {
+            throw new RuntimeException(sprintf('There are no cloud providers connected to currently active team. You can connect to one using the "%s" command.', ConnectProviderCommand::NAME));
         }
 
         return 1 === count($providers) ? $providers[0]['id'] : $output->choiceWithId($question, $providers);
