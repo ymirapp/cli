@@ -22,7 +22,7 @@
         "league/flysystem-ftp": "^2.0",
         "league/flysystem-sftp": "^2.0",
         "nesbot/carbon": "^2.40",
-        "phpseclib/phpseclib": "^2.0",
+        "phpseclib/phpseclib": "^2.0.31",
         "symfony/config": "^4.4",
         "symfony/console": "^4.4",
         "symfony/dependency-injection": "^4.4",
