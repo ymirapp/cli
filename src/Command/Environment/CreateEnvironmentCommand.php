@@ -35,7 +35,7 @@ class CreateEnvironmentCommand extends AbstractProjectCommand
         $this
             ->setName(self::NAME)
             ->setDescription('Create a new environment')
-            ->addArgument('name', InputArgument::OPTIONAL, 'The name of the environment');
+            ->addArgument('environment', InputArgument::OPTIONAL, 'The name of the environment to create');
     }
 
     /**

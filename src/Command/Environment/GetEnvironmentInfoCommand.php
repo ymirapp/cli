@@ -36,7 +36,7 @@ class GetEnvironmentInfoCommand extends AbstractProjectCommand
         $this
             ->setName(self::NAME)
             ->setDescription('Get information on the project environment(s)')
-            ->addArgument('environment', InputArgument::OPTIONAL, 'The environment name');
+            ->addArgument('environment', InputArgument::OPTIONAL, 'The environment name to get information on');
     }
 
     /**

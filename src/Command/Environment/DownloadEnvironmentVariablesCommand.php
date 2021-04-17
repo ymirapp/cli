@@ -64,7 +64,7 @@ class DownloadEnvironmentVariablesCommand extends AbstractProjectCommand
         $this
             ->setName(self::NAME)
             ->setDescription('Download an environment\'s environment variables into an environment file')
-            ->addArgument('environment', InputArgument::OPTIONAL, 'The environment name', 'staging');
+            ->addArgument('environment', InputArgument::OPTIONAL, 'The name of the environment to download environment variables from', 'staging');
     }
 
     /**

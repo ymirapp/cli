@@ -66,8 +66,8 @@ class UploadEnvironmentVariablesCommand extends AbstractProjectCommand
     {
         $this
             ->setName(self::NAME)
-            ->setDescription('Download an environment\'s environment variables into an environment file')
-            ->addArgument('environment', InputArgument::OPTIONAL, 'The environment name', 'staging');
+            ->setDescription('Upload the environment variables in an environment file to an environment')
+            ->addArgument('environment', InputArgument::OPTIONAL, 'The name of the environment to upload environment variables to', 'staging');
     }
 
     /**

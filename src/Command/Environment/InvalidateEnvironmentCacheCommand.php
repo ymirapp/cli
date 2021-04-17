@@ -36,8 +36,8 @@ class InvalidateEnvironmentCacheCommand extends AbstractProjectCommand
         $this
             ->setName(self::NAME)
             ->setDescription('Invalidate the environment\'s content delivery network cache')
-            ->addArgument('environment', InputArgument::OPTIONAL, 'The environment name', 'staging')
-            ->addOption('path', null, InputOption::VALUE_OPTIONAL | InputOption::VALUE_IS_ARRAY, 'The object path(s) to invalidate on the content delivery network', ['*']);
+            ->addArgument('environment', InputArgument::OPTIONAL, 'The name of the environment to invalidate the cache of', 'staging')
+            ->addOption('path', null, InputOption::VALUE_OPTIONAL | InputOption::VALUE_IS_ARRAY, 'The path(s) to invalidate on the content delivery network', ['*']);
     }
 
     /**

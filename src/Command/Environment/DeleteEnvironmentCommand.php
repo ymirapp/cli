@@ -35,7 +35,7 @@ class DeleteEnvironmentCommand extends AbstractProjectCommand
         $this
             ->setName(self::NAME)
             ->setDescription('Delete an environment')
-            ->addArgument('name', InputArgument::OPTIONAL, 'The name of the environment');
+            ->addArgument('environment', InputArgument::OPTIONAL, 'The name of the environment to delete');
     }
 
     /**
