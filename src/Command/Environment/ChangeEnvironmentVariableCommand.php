@@ -15,7 +15,6 @@ namespace Ymir\Cli\Command\Environment;
 
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
 use Ymir\Cli\Command\AbstractProjectCommand;
 use Ymir\Cli\Command\Project\DeployProjectCommand;
 use Ymir\Cli\Command\Project\RedeployProjectCommand;
@@ -38,9 +37,9 @@ class ChangeEnvironmentVariableCommand extends AbstractProjectCommand
         $this
             ->setName(self::NAME)
             ->setDescription('Change an environment variable')
+            ->addArgument('environment', InputArgument::OPTIONAL, 'The name of the environment where the environment variable is', 'staging')
             ->addArgument('name', InputArgument::OPTIONAL, 'The name of the environment variable')
-            ->addArgument('value', InputArgument::OPTIONAL, 'The value of the environment variable')
-            ->addOption('environment', null, InputOption::VALUE_REQUIRED, 'The environment name', 'staging');
+            ->addArgument('value', InputArgument::OPTIONAL, 'The value of the environment variable');
     }
 
     /**
@@ -48,7 +47,7 @@ class ChangeEnvironmentVariableCommand extends AbstractProjectCommand
      */
     protected function perform(InputInterface $input, ConsoleOutput $output)
     {
-        $environment = (string) $this->getStringOption($input, 'environment');
+        $environment = $this->getStringArgument($input, 'environment');
         $name = $this->getStringArgument($input, 'name');
         $value = $this->getStringArgument($input, 'value');
 
