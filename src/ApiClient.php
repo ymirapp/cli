@@ -53,6 +53,14 @@ class ApiClient
     }
 
     /**
+     * Add a NAT gateway to the given network.
+     */
+    public function addNatGateway(int $networkId)
+    {
+        $this->request('post', "/networks/{$networkId}/nat");
+    }
+
+    /**
      * Send signal to the Ymir API to cancel the deployment.
      */
     public function cancelDeployment(int $deploymentId)
@@ -587,6 +595,14 @@ class ApiClient
     }
 
     /**
+     * Get the network.
+     */
+    public function getNetwork(int $networkId): Collection
+    {
+        return $this->request('get', "/networks/{$networkId}");
+    }
+
+    /**
      * Get the project.
      */
     public function getProject(int $projectId): Collection
@@ -730,6 +746,14 @@ class ApiClient
 
             throw $exception;
         }
+    }
+
+    /**
+     * Remove the NAT gateway from the given network.
+     */
+    public function removeNatGateway(int $networkId)
+    {
+        $this->request('delete', "/networks/{$networkId}/nat");
     }
 
     /**

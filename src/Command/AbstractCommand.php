@@ -89,6 +89,29 @@ abstract class AbstractCommand extends Command
     }
 
     /**
+     * Determine the network to use.
+     */
+    protected function determineNetwork(string $question, InputInterface $input, ConsoleOutput $output): int
+    {
+        $networkIdOrName = $this->getStringArgument($input, 'network');
+        $networks = $this->apiClient->getTeamNetworks($this->cliConfiguration->getActiveTeamId());
+
+        if (empty($networkIdOrName) && $input->isInteractive()) {
+            $networkIdOrName = $output->choiceWithResourceDetails($question, $networks);
+        }
+
+        $network = $networks->firstWhere('name', $networkIdOrName) ?? $networks->firstWhere('id', $networkIdOrName);
+
+        if (1 < $networks->where('name', $networkIdOrName)->count()) {
+            throw new RuntimeException(sprintf('Unable to select a network because more than one network has the name "%s"', $networkIdOrName));
+        } elseif (empty($network['id'])) {
+            throw new RuntimeException(sprintf('Unable to find a network with "%s" as the ID or name', $networkIdOrName));
+        }
+
+        return (int) $network['id'];
+    }
+
+    /**
      * Determine the cloud provider region to use.
      */
     protected function determineRegion(string $question, int $providerId, InputInterface $input, ConsoleOutput $output): string

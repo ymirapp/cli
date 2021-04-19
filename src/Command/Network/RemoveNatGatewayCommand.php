@@ -18,14 +18,14 @@ use Symfony\Component\Console\Input\InputInterface;
 use Ymir\Cli\Command\AbstractCommand;
 use Ymir\Cli\Console\ConsoleOutput;
 
-class DeleteNetworkCommand extends AbstractCommand
+class RemoveNatGatewayCommand extends AbstractCommand
 {
     /**
      * The name of the command.
      *
      * @var string
      */
-    public const NAME = 'network:delete';
+    public const NAME = 'network:nat:remove';
 
     /**
      * {@inheritdoc}
@@ -34,8 +34,8 @@ class DeleteNetworkCommand extends AbstractCommand
     {
         $this
             ->setName(self::NAME)
-            ->setDescription('Delete an existing network')
-            ->addArgument('network', InputArgument::OPTIONAL, 'The ID or name of the network to delete');
+            ->setDescription('Remove the NAT gateway from the network\'s private subnet')
+            ->addArgument('network', InputArgument::OPTIONAL, 'The ID or name of the network to remove the NAT gateway from');
     }
 
     /**
@@ -43,14 +43,8 @@ class DeleteNetworkCommand extends AbstractCommand
      */
     protected function perform(InputInterface $input, ConsoleOutput $output)
     {
-        $network = $this->determineNetwork('Which network would you like to delete', $input, $output);
+        $this->apiClient->removeNatGateway($this->determineNetwork('Which network would like to add a NAT gateway to', $input, $output));
 
-        if (!$output->confirm('Are you sure you want to delete this network?', false)) {
-            return;
-        }
-
-        $this->apiClient->deleteNetwork($network);
-
-        $output->infoWithDelayWarning('Network deleted');
+        $output->infoWithDelayWarning('NAT gateway removed');
     }
 }
