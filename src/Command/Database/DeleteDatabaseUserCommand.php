@@ -44,9 +44,9 @@ class DeleteDatabaseUserCommand extends AbstractDatabaseCommand
      */
     protected function perform(InputInterface $input, ConsoleOutput $output)
     {
-        $databaseId = $this->determineDatabaseServer('On which database server would you like to delete a database user?', $input, $output);
+        $databaseServer = $this->apiClient->getDatabaseServer($this->determineDatabaseServer('On which database server would you like to create the new database user?', $input, $output));
         $username = $this->getStringArgument($input, 'username');
-        $users = $this->apiClient->getDatabaseUsers($databaseId);
+        $users = $this->apiClient->getDatabaseUsers($databaseServer['id']);
 
         if ($users->isEmpty()) {
             throw new InvalidArgumentException('The database server doesn\'t have any managed database users');
@@ -64,8 +64,13 @@ class DeleteDatabaseUserCommand extends AbstractDatabaseCommand
             return;
         }
 
-        $this->apiClient->deleteDatabaseUser($databaseId, $user['id']);
+        $this->apiClient->deleteDatabaseUser($databaseServer['id'], $user['id']);
 
         $output->info('Database user deleted');
+
+        if (!$databaseServer['publicly_accessible']) {
+            $output->newLine();
+            $output->warn('The database user needs to be manually deleted on the database server because it isn\'t public');
+        }
     }
 }
