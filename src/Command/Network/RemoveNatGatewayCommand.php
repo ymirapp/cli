@@ -43,7 +43,7 @@ class RemoveNatGatewayCommand extends AbstractCommand
      */
     protected function perform(InputInterface $input, ConsoleOutput $output)
     {
-        $this->apiClient->removeNatGateway($this->determineNetwork('Which network would like to add a NAT gateway to', $input, $output));
+        $this->apiClient->removeNatGateway($this->determineNetwork('Which network would like to remove the NAT gateway from', $input, $output));
 
         $output->infoWithDelayWarning('NAT gateway removed');
     }
