@@ -53,6 +53,14 @@ class ApiClient
     }
 
     /**
+     * Add a bastion host to the given network.
+     */
+    public function addBastionHost(int $networkId): Collection
+    {
+        return $this->request('post', "/networks/{$networkId}/bastion-host");
+    }
+
+    /**
      * Add a NAT gateway to the given network.
      */
     public function addNatGateway(int $networkId)
@@ -405,6 +413,14 @@ class ApiClient
     }
 
     /**
+     * Get the bastion host with the given ID.
+     */
+    public function getBastionHost(int $bastionHostId): Collection
+    {
+        return $this->request('get', "/bastion-hosts/{$bastionHostId}");
+    }
+
+    /**
      * Get the SSL certificates with the given ID.
      */
     public function getCertificate(int $certificateId): Collection
@@ -746,6 +762,14 @@ class ApiClient
 
             throw $exception;
         }
+    }
+
+    /**
+     * Remove the bastion host from the given network.
+     */
+    public function removeBastionHost(int $networkId)
+    {
+        $this->request('delete', "/networks/{$networkId}/bastion-host");
     }
 
     /**
