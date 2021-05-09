@@ -113,6 +113,17 @@ class ApiClient
     }
 
     /**
+     * Create a new cache on the given network.
+     */
+    public function createCache(string $name, int $networkId, string $type): Collection
+    {
+        return $this->request('post', "/networks/{$networkId}/caches", [
+            'name' => $name,
+            'type' => $type,
+        ]);
+    }
+
+    /**
      * Create a new SSL certificate.
      */
     public function createCertificate(int $providerId, string $domain, string $region): Collection
@@ -272,6 +283,14 @@ class ApiClient
     }
 
     /**
+     * Delete the given cache.
+     */
+    public function deleteCache(int $cacheId)
+    {
+        $this->request('delete', "/caches/{$cacheId}");
+    }
+
+    /**
      * Delete the given SSL certificate.
      */
     public function deleteCertificate(int $certificateId)
@@ -418,6 +437,28 @@ class ApiClient
     public function getBastionHost(int $bastionHostId): Collection
     {
         return $this->request('get', "/bastion-hosts/{$bastionHostId}");
+    }
+
+    /**
+     * Get the caches that belong to the given team.
+     */
+    public function getCaches(int $teamId): Collection
+    {
+        return $this->request('get', "/teams/{$teamId}/caches");
+    }
+
+    /**
+     * Get the types of cache available on the given cloud provider.
+     */
+    public function getCacheTypes(int $providerId): Collection
+    {
+        $types = $this->request('get', "/providers/{$providerId}/caches/types");
+
+        if ($types->isEmpty()) {
+            throw new RuntimeException('The Ymir API failed to return information on the cache types');
+        }
+
+        return $types;
     }
 
     /**
@@ -692,6 +733,14 @@ class ApiClient
     public function getTeam($teamId): Collection
     {
         return $this->request('get', '/teams/'.$teamId);
+    }
+
+    /**
+     * Get the caches that the team has access to.
+     */
+    public function getTeamCaches($teamId): Collection
+    {
+        return $this->request('get', "/teams/{$teamId}/caches");
     }
 
     /**

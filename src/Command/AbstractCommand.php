@@ -20,8 +20,10 @@ use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Tightenco\Collect\Support\Arr;
 use Ymir\Cli\ApiClient;
 use Ymir\Cli\CliConfiguration;
+use Ymir\Cli\Command\Network\CreateNetworkCommand;
 use Ymir\Cli\Command\Provider\ConnectProviderCommand;
 use Ymir\Cli\Console\ConsoleOutput;
 use Ymir\Cli\Exception\ApiClientException;
@@ -109,6 +111,28 @@ abstract class AbstractCommand extends Command
         }
 
         return (int) $network['id'];
+    }
+
+    /**
+     * Determine the network to use or create one otherwise.
+     */
+    protected function determineOrCreateNetwork(string $question, InputInterface $input, ConsoleOutput $output)
+    {
+        $networks = $this->apiClient->getTeamNetworks($this->cliConfiguration->getActiveTeamId())->whereNotIn('status', ['deleting', 'failed']);
+
+        if ($networks->isEmpty() && !$output->confirm('Your team doesn\'t have any provisioned networks. Would you like to create one first? <fg=default>(Answering "<comment>no</comment>" will cancel the command.)</>')) {
+            throw new CommandCancelledException();
+        }
+
+        if ($networks->isEmpty()) {
+            $this->retryApi(function () use ($output) {
+                $this->invoke($output, CreateNetworkCommand::NAME);
+            }, 'Do you want to try creating a network again?', $output);
+
+            return (int) Arr::get($this->apiClient->getTeamNetworks($this->cliConfiguration->getActiveTeamId())->last(), 'id');
+        }
+
+        return $this->determineNetwork($question, $input, $output);
     }
 
     /**
