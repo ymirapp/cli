@@ -44,9 +44,9 @@ class ListNetworksCommand extends AbstractCommand
         $networks = $this->apiClient->getTeamNetworks($this->cliConfiguration->getActiveTeamId());
 
         $output->table(
-            ['Id', 'Name', 'Provider', 'Region', 'Status'],
+            ['Id', 'Name', 'Provider', 'Region', 'Status', 'NAT Gateway'],
             $networks->map(function (array $network) use ($output) {
-                return [$network['id'], $network['name'], $network['provider']['name'], $network['region'], $output->formatStatus($network['status'])];
+                return [$network['id'], $network['name'], $network['provider']['name'], $network['region'], $output->formatStatus($network['status']), $network['has_nat_gateway'] ? 'yes' : 'no'];
             })->all()
         );
     }

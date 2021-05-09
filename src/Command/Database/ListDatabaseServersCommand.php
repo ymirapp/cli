@@ -42,15 +42,15 @@ class ListDatabaseServersCommand extends AbstractCommand
     protected function perform(InputInterface $input, ConsoleOutput $output)
     {
         $output->table(
-            ['Id', 'Name', 'Status', 'Provider', 'Network', 'Region', 'Type', 'Storage'],
+            ['Id', 'Name', 'Provider', 'Network', 'Region', 'Status', 'Type', 'Storage'],
             $this->apiClient->getTeamDatabaseServers($this->cliConfiguration->getActiveTeamId())->map(function (array $database) use ($output) {
                 return [
                     $database['id'],
                     $database['name'],
-                    $output->formatStatus($database['status']),
                     $database['network']['provider']['name'],
                     $database['network']['name'],
                     $database['region'],
+                    $output->formatStatus($database['status']),
                     $database['type'],
                     $database['storage'].'GB',
                 ];
