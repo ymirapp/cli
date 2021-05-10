@@ -15,6 +15,7 @@ namespace Ymir\Cli\Command\Database;
 
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
+use Ymir\Cli\Command\Network\RemoveNatGatewayCommand;
 use Ymir\Cli\Console\ConsoleOutput;
 
 class DeleteDatabaseServerCommand extends AbstractDatabaseCommand
@@ -42,14 +43,19 @@ class DeleteDatabaseServerCommand extends AbstractDatabaseCommand
      */
     protected function perform(InputInterface $input, ConsoleOutput $output)
     {
-        $databaseId = $this->determineDatabaseServer('Which database server would you like to delete', $input, $output);
+        $databaseServer = $this->apiClient->getDatabaseServer($this->determineDatabaseServer('Which database server would you like to delete', $input, $output));
 
         if (!$output->confirm('Are you sure you want to delete this database server?', false)) {
             return;
         }
 
-        $this->apiClient->deleteDatabaseServer($databaseId);
+        $this->apiClient->deleteDatabaseServer($databaseServer->get('id'));
 
-        $output->infoWithDelayWarning('Database deleted');
+        $output->infoWithDelayWarning('Database server deleted');
+
+        if (!$databaseServer->get('publicly_accessible')) {
+            $output->newLine();
+            $output->warn(sprintf('If you have no other resources using the private subnet, you should remove the network\'s NAT gateway using the "%s" command', RemoveNatGatewayCommand::NAME));
+        }
     }
 }
