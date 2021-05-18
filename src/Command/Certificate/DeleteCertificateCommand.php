@@ -33,7 +33,7 @@ class DeleteCertificateCommand extends AbstractCertificateCommand
     {
         $this
             ->setName(self::NAME)
-            ->setDescription('Delete an existing SSL certificate')
+            ->setDescription('Delete a SSL certificate')
             ->addArgument('certificate', InputArgument::REQUIRED, 'The ID of the SSL certificate to delete');
     }
 

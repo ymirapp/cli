@@ -34,7 +34,7 @@ class DeleteDatabaseServerCommand extends AbstractDatabaseCommand
     {
         $this
             ->setName(self::NAME)
-            ->setDescription('Delete an existing database server')
+            ->setDescription('Delete a database server')
             ->addArgument('database', InputArgument::OPTIONAL, 'The ID or name of the database server to delete');
     }
 

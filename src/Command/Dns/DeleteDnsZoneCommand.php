@@ -33,7 +33,7 @@ class DeleteDnsZoneCommand extends AbstractDnsCommand
     {
         $this
             ->setName(self::NAME)
-            ->setDescription('Delete an existing DNS zone')
+            ->setDescription('Delete a DNS zone')
             ->addArgument('zone', InputArgument::OPTIONAL, 'The ID or name of the DNS zone to delete');
     }
 

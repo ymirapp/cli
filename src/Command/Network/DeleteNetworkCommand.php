@@ -34,7 +34,7 @@ class DeleteNetworkCommand extends AbstractCommand
     {
         $this
             ->setName(self::NAME)
-            ->setDescription('Delete an existing network')
+            ->setDescription('Delete a network')
             ->addArgument('network', InputArgument::OPTIONAL, 'The ID or name of the network to delete');
     }
 

@@ -33,7 +33,7 @@ class DeleteEmailIdentityCommand extends AbstractEmailIdentityCommand
     {
         $this
             ->setName(self::NAME)
-            ->setDescription('Delete an existing email identity')
+            ->setDescription('Delete an email identity')
             ->addArgument('identity', InputArgument::OPTIONAL, 'The ID or name of the email identity to delete');
     }
 

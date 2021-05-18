@@ -33,7 +33,7 @@ class DeleteProviderCommand extends AbstractProviderCommand
     {
         $this
             ->setName(self::NAME)
-            ->setDescription('Delete an existing cloud provider')
+            ->setDescription('Delete a cloud provider')
             ->addArgument('provider', InputArgument::REQUIRED, 'The ID of the cloud provider to delete');
     }
 

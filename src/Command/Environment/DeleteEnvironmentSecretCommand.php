@@ -37,7 +37,7 @@ class DeleteEnvironmentSecretCommand extends AbstractProjectCommand
     {
         $this
             ->setName(self::NAME)
-            ->setDescription('Delete an existing environment\'s secret')
+            ->setDescription('Delete an environment\'s secret')
             ->addArgument('secret', InputArgument::OPTIONAL, 'The ID or name of the secret')
             ->addOption('environment', null, InputOption::VALUE_REQUIRED, 'The environment name', 'staging');
     }
