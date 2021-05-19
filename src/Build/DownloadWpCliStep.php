@@ -60,7 +60,7 @@ class DownloadWpCliStep implements BuildStepInterface
             $this->filesystem->mkdir($this->binDirectory, 0755);
         }
 
-        $this->filesystem->copy('https://github.com/wp-cli/wp-cli/releases/download/v2.4.0/wp-cli-2.4.0.phar', $wpCliPath, true);
+        $this->filesystem->copy('https://github.com/wp-cli/wp-cli/releases/download/v2.5.0/wp-cli-2.5.0.phar', $wpCliPath, true);
         $this->filesystem->chmod($wpCliPath, 0755);
     }
 }
