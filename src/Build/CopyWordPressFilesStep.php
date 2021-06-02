@@ -106,30 +106,6 @@ class CopyWordPressFilesStep implements BuildStepInterface
     }
 
     /**
-     * List of files we need to append manually because they're in the default Bedrock .gitignore file.
-     */
-    private function getBedrockFilesToAppend(): array
-    {
-        $files = [];
-
-        /**
-         * Finder can't seem to honor the .gitignore path ignoring child folders in the mu-plugins
-         * folder while keeping the files at the root of the mu-plugins folder.
-         *
-         * @see https://github.com/symfony/symfony/issues/39257
-         */
-        $finder = $this->getBaseFinder()
-            ->path('/^web\/app\/mu-plugins/')
-            ->depth('== 3');
-
-        foreach ($finder as $file) {
-            $files[] = $file;
-        }
-
-        return $files;
-    }
-
-    /**
      * Get files from "include" node.
      */
     private function getIncludedFiles(array $paths): Finder
@@ -157,7 +133,6 @@ class CopyWordPressFilesStep implements BuildStepInterface
             $finder->append($this->getWordPressFilesToAppend());
         } elseif ('bedrock' === $projectType) {
             $finder->exclude('web/app/uploads');
-            $finder->append($this->getBedrockFilesToAppend());
         }
 
         return $finder;
