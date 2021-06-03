@@ -206,7 +206,7 @@ class InitializeProjectCommand extends AbstractProjectCommand
         $databases = $this->apiClient->getDatabaseServers($this->cliConfiguration->getActiveTeamId())->where('region', $region)->whereNotIn('status', ['deleting', 'failed']);
 
         if (!$databases->isEmpty() && $output->confirm('Would you like to use an existing database server for this project?')) {
-            $database = (string) $output->choiceWithResourceDetails('Which database server would you like to use?', $databases);
+            $database = $output->choiceWithResourceDetails('Which database server would you like to use?', $databases);
         } elseif (
             (!$databases->isEmpty() && $output->confirm('Would you like to create a new one for this project instead?'))
             || ($databases->isEmpty() && $output->confirm('Your team doesn\'t have any configured database servers. Would you like to create one for this project first?'))
