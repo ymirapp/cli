@@ -116,6 +116,8 @@ class InitializeProjectCommand extends AbstractProjectCommand
             && !$output->confirm('A project already exists in this directory. Do you want to overwrite it?', false)
         ) {
             return;
+        } elseif ($this->projectConfiguration->exists()) {
+            $this->projectConfiguration->delete();
         }
 
         $this->retryApi(function () use ($input, $output) {
