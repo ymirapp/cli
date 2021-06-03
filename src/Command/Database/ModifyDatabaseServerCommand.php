@@ -66,7 +66,7 @@ class ModifyDatabaseServerCommand extends AbstractDatabaseCommand
             return $storage;
         }
 
-        $storage = $output->ask(sprintf('What should the new maximum amount of storage (in GB) allocated to the database server be? <fg=default>(Currently: <comment>%sGB</comment>)</>', $storage), '50');
+        $storage = $output->ask(sprintf('What should the new maximum amount of storage (in GB) allocated to the database server be? <fg=default>(Currently: <comment>%sGB</comment>)</>', $storage), (string) $storage);
 
         if (!is_numeric($storage)) {
             throw new InvalidArgumentException('The maximum allocated storage needs to be a numeric value');
@@ -94,7 +94,7 @@ class ModifyDatabaseServerCommand extends AbstractDatabaseCommand
             throw new InvalidArgumentException(sprintf('The type "%s" isn\'t a valid database type', $typeOption));
         }
 
-        $newType = $output->choice(sprintf('What should the database server type be changed to? <fg=default>(Currently: <comment>%s</comment>)</>', $type), $types->all());
+        $newType = $output->choice(sprintf('What should the database server type be changed to? <fg=default>(Currently: <comment>%s</comment>)</>', $type), $types->all(), $type);
 
         if ($newType !== $type && !$output->confirm('Modifying the database server type will cause your database to become unavailable for a few minutes. Do you want to proceed?', false)) {
             exit;
