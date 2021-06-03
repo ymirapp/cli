@@ -44,7 +44,7 @@ class ListDatabasesCommand extends AbstractDatabaseCommand
     {
         $output->table(
             ['Name'],
-            $this->apiClient->getDatabases($this->determineDatabaseServer('Which database server would you like to list databases from', $input, $output))->map(function (string $name) {
+            $this->apiClient->getDatabases($this->determineDatabaseServer('Which database server would you like to list databases from', $input, $output)['id'])->map(function (string $name) {
                 return [$name];
             })->all()
         );

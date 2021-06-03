@@ -43,14 +43,14 @@ class CreateDatabaseCommand extends AbstractDatabaseCommand
      */
     protected function perform(InputInterface $input, ConsoleOutput $output)
     {
-        $databaseId = $this->determineDatabaseServer('On which database server would you like to create the new database?', $input, $output);
+        $databaseServer = $this->determineDatabaseServer('On which database server would you like to create the new database?', $input, $output);
         $name = $this->getStringArgument($input, 'name');
 
         if (empty($name) && $input->isInteractive()) {
             $name = $output->ask('What is the name of the database');
         }
 
-        $this->apiClient->createDatabase($databaseId, $name);
+        $this->apiClient->createDatabase($databaseServer['id'], $name);
 
         $output->info('Database created');
     }

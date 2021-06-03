@@ -43,11 +43,11 @@ class DeleteDatabaseCommand extends AbstractDatabaseCommand
      */
     protected function perform(InputInterface $input, ConsoleOutput $output)
     {
-        $databaseId = $this->determineDatabaseServer('On which database server would you like to delete a database?', $input, $output);
+        $databaseServer = $this->determineDatabaseServer('On which database server would you like to delete a database?', $input, $output);
         $name = $this->getStringArgument($input, 'name');
 
         if (empty($name) && $input->isInteractive()) {
-            $name = (string) $output->choice('Which database would you like to delete', $this->apiClient->getDatabases($databaseId)->filter(function (string $name) {
+            $name = (string) $output->choice('Which database would you like to delete', $this->apiClient->getDatabases($databaseServer['id'])->filter(function (string $name) {
                 return !in_array($name, ['information_schema', 'innodb', 'mysql', 'performance_schema', 'sys']);
             })->values()->all());
         }
@@ -56,7 +56,7 @@ class DeleteDatabaseCommand extends AbstractDatabaseCommand
             return;
         }
 
-        $this->apiClient->deleteDatabase($databaseId, $name);
+        $this->apiClient->deleteDatabase($databaseServer['id'], $name);
 
         $output->info('Database deleted');
     }

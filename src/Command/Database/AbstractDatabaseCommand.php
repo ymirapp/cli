@@ -23,9 +23,8 @@ abstract class AbstractDatabaseCommand extends AbstractCommand
     /**
      * Determine the database server that the command is interacting with.
      */
-    protected function determineDatabaseServer(string $question, InputInterface $input, ConsoleOutput $output): int
+    protected function determineDatabaseServer(string $question, InputInterface $input, ConsoleOutput $output): array
     {
-        $database = null;
         $databases = $this->apiClient->getDatabaseServers($this->cliConfiguration->getActiveTeamId());
         $databaseIdOrName = $this->getStringArgument($input, 'database');
 
@@ -43,6 +42,6 @@ abstract class AbstractDatabaseCommand extends AbstractCommand
             throw new RuntimeException(sprintf('Unable to find a database server with "%s" as the ID or name', $databaseIdOrName));
         }
 
-        return (int) $database['id'];
+        return $database;
     }
 }

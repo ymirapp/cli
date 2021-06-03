@@ -43,17 +43,17 @@ class DeleteDatabaseServerCommand extends AbstractDatabaseCommand
      */
     protected function perform(InputInterface $input, ConsoleOutput $output)
     {
-        $databaseServer = $this->apiClient->getDatabaseServer($this->determineDatabaseServer('Which database server would you like to delete', $input, $output));
+        $databaseServer = $this->determineDatabaseServer('Which database server would you like to delete', $input, $output);
 
         if (!$output->confirm('Are you sure you want to delete this database server?', false)) {
             return;
         }
 
-        $this->apiClient->deleteDatabaseServer($databaseServer->get('id'));
+        $this->apiClient->deleteDatabaseServer($databaseServer['id']);
 
         $output->infoWithDelayWarning('Database server deleted');
 
-        if (!$databaseServer->get('publicly_accessible')) {
+        if (!$databaseServer['publicly_accessible']) {
             $output->newLine();
             $output->warn(sprintf('If you have no other resources using the private subnet, you should remove the network\'s NAT gateway using the "%s" command', RemoveNatGatewayCommand::NAME));
         }

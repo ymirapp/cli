@@ -45,7 +45,7 @@ class ListDatabaseUsersCommand extends AbstractDatabaseCommand
     {
         $output->table(
             ['Id', 'Username', 'Created At'],
-            $this->apiClient->getDatabaseUsers($this->determineDatabaseServer('Which database server would you like to list users from', $input, $output))->map(function (array $database) {
+            $this->apiClient->getDatabaseUsers($this->determineDatabaseServer('Which database server would you like to list users from', $input, $output)['id'])->map(function (array $database) {
                 return [$database['id'], $database['username'], Carbon::parse($database['created_at'])->diffForHumans()];
             })->all()
         );

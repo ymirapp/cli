@@ -46,9 +46,9 @@ class ModifyDatabaseServerCommand extends AbstractDatabaseCommand
      */
     protected function perform(InputInterface $input, ConsoleOutput $output)
     {
-        $database = $this->apiClient->getDatabaseServer($this->determineDatabaseServer('Which database server would you like to modify?', $input, $output));
+        $databaseServer = $this->determineDatabaseServer('Which database server would you like to modify?', $input, $output);
 
-        $this->apiClient->updateDatabaseServer((int) $database['id'], $this->determineStorage($input, $output, (int) $database['storage']), $this->determineType($input, $output, $database['network']['provider']['id'], $database['type']));
+        $this->apiClient->updateDatabaseServer((int) $databaseServer['id'], $this->determineStorage($input, $output, (int) $databaseServer['storage']), $this->determineType($input, $output, $databaseServer['network']['provider']['id'], $databaseServer['type']));
 
         $output->infoWithDelayWarning('Database server modified');
     }

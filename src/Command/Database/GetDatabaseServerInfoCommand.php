@@ -43,11 +43,11 @@ class GetDatabaseServerInfoCommand extends AbstractDatabaseCommand
      */
     protected function perform(InputInterface $input, ConsoleOutput $output)
     {
-        $database = $this->apiClient->getDatabaseServer($this->determineDatabaseServer('Which database server would you like to get information about', $input, $output));
+        $databaseServer = $this->determineDatabaseServer('Which database server would you like to get information about', $input, $output);
 
         $output->horizontalTable(
             ['Id', 'Name', 'Status', new TableSeparator(), 'Network', 'Provider', 'Region'],
-            [[$database['id'], $database['name'], $output->formatStatus($database['status']), new TableSeparator(),  $database['network']['name'], $database['network']['provider']['name'], $database['region']]]
+            [[$databaseServer['id'], $databaseServer['name'], $output->formatStatus($databaseServer['status']), new TableSeparator(),  $databaseServer['network']['name'], $databaseServer['network']['provider']['name'], $databaseServer['region']]]
         );
     }
 }

@@ -44,7 +44,7 @@ class CreateDatabaseUserCommand extends AbstractDatabaseCommand
     protected function perform(InputInterface $input, ConsoleOutput $output)
     {
         $databases = [];
-        $databaseServer = $this->apiClient->getDatabaseServer($this->determineDatabaseServer('On which database server would you like to create the new database user?', $input, $output));
+        $databaseServer = $this->determineDatabaseServer('On which database server would you like to create the new database user?', $input, $output);
         $username = $this->getStringArgument($input, 'username');
 
         if (empty($username) && $input->isInteractive()) {
