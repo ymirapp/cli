@@ -43,13 +43,13 @@ class DeleteCacheCommand extends AbstractCacheCommand
      */
     protected function perform(InputInterface $input, ConsoleOutput $output)
     {
-        $cacheId = $this->determineCache('Which cache cluster would you like to delete', $input, $output);
+        $cache = $this->determineCache('Which cache cluster would you like to delete', $input, $output);
 
         if (!$output->confirm('Are you sure you want to delete this cache cluster?', false)) {
             return;
         }
 
-        $this->apiClient->deleteCache($cacheId);
+        $this->apiClient->deleteCache($cache['id']);
 
         $output->infoWithDelayWarning('Cache cluster deleted');
         $output->newLine();

@@ -23,9 +23,8 @@ abstract class AbstractCacheCommand extends AbstractCommand
     /**
      * Determine the cache that the command is interacting with.
      */
-    protected function determineCache(string $question, InputInterface $input, ConsoleOutput $output): int
+    protected function determineCache(string $question, InputInterface $input, ConsoleOutput $output): array
     {
-        $cache = null;
         $caches = $this->apiClient->getCaches($this->cliConfiguration->getActiveTeamId());
         $cacheIdOrName = $this->getStringArgument($input, 'cache');
 
@@ -39,10 +38,10 @@ abstract class AbstractCacheCommand extends AbstractCommand
 
         if (1 < $caches->where('name', $cacheIdOrName)->count()) {
             throw new RuntimeException(sprintf('Unable to select a cache cluster because more than one cache cluster has the name "%s"', $cacheIdOrName));
-        } elseif (empty($cache['id'])) {
+        } elseif (!is_array($cache) || empty($cache['id'])) {
             throw new RuntimeException(sprintf('Unable to find a cache cluster with "%s" as the ID or name', $cacheIdOrName));
         }
 
-        return (int) $cache['id'];
+        return $cache;
     }
 }
