@@ -67,6 +67,10 @@ class CreateCacheCommand extends AbstractCommand
         $this->apiClient->createCache($name, (int) $network->get('id'), $type);
 
         $output->infoWithDelayWarning('Cache cluster created');
+
+        if ($this->projectConfiguration->exists() && $output->confirm('Would you like to add the cache cluster to your project configuration?')) {
+            $this->projectConfiguration->addOptionsToEnvironments(['cache' => $name]);
+        }
     }
 
     /**
