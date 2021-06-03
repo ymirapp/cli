@@ -66,7 +66,7 @@ class CreateDatabaseUserCommand extends AbstractDatabaseCommand
 
         if (!$databaseServer['publicly_accessible']) {
             $output->newLine();
-            $output->warn('The database user needs to be manually created on the database server because it isn\'t public');
+            $output->warn('The database user needs to be manually created on the database server because it isn\'t publicly accessible');
         }
     }
 }
