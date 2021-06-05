@@ -83,7 +83,7 @@ class CacheTunnelCommand extends AbstractCacheCommand
 
         $network = $this->apiClient->getNetwork($cache['network']['id']);
 
-        if (!$network->has('bastion_host')) {
+        if (!is_array($network->get('bastion_host'))) {
             throw new RuntimeException(sprintf('The cache network does\'t have a bastion host to connect to. You can add one to the network with the "%s" command.', AddBastionHostCommand::NAME));
         } elseif (!is_dir($this->homeDirectory.'/.ssh')) {
             $this->filesystem->mkdir($this->homeDirectory.'/.ssh', 0700);
