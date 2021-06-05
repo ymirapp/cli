@@ -100,7 +100,7 @@ class CacheTunnelCommand extends AbstractCacheCommand
         $this->filesystem->dumpFile($privateKeyFilename, Arr::get($network, 'bastion_host.private_key'));
         $this->filesystem->chmod($privateKeyFilename, 0600);
 
-        $output->writeln(sprintf('<info>Creating SSH tunnel to the </info> "<comment>%s</comment>" <info>database server. You can connect using: <comment>localhost:%s</comment>', $cache['name'], $localPort));
+        $output->writeln(sprintf('<info>Creating SSH tunnel to the</info> "<comment>%s</comment>" <info>cache cluster. You can connect using: <comment>localhost:%s</comment>', $cache['name'], $localPort));
 
         passthru(sprintf('ssh ec2-user@%s -i %s -o LogLevel=error -L %s:%s:6379 -N', Arr::get($network, 'bastion_host.endpoint'), $privateKeyFilename, $localPort, $cache['endpoint']));
     }

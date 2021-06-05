@@ -102,7 +102,7 @@ class DatabaseServerTunnelCommand extends AbstractDatabaseCommand
         $this->filesystem->dumpFile($privateKeyFilename, Arr::get($network, 'bastion_host.private_key'));
         $this->filesystem->chmod($privateKeyFilename, 0600);
 
-        $output->writeln(sprintf('<info>Creating SSH tunnel to the </info> "<comment>%s</comment>" <info>database server. You can connect using: <comment>localhost:%s</comment>', $databaseServer['name'], $localPort));
+        $output->writeln(sprintf('<info>Creating SSH tunnel to the</info> "<comment>%s</comment>" <info>database server. You can connect using: <comment>localhost:%s</comment>', $databaseServer['name'], $localPort));
 
         passthru(sprintf('ssh ec2-user@%s -i %s -o LogLevel=error -L %s:%s:3306 -N', Arr::get($network, 'bastion_host.endpoint'), $privateKeyFilename, $localPort, $databaseServer['endpoint']));
     }
