@@ -16,6 +16,7 @@ namespace Ymir\Cli\Command\Cache;
 use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Filesystem\Filesystem;
 use Tightenco\Collect\Support\Arr;
 use Ymir\Cli\ApiClient;
@@ -67,7 +68,7 @@ class CacheTunnelCommand extends AbstractCacheCommand
             ->setName(self::NAME)
             ->setDescription('Create a SSH tunnel to a cache cluster')
             ->addArgument('cache', InputArgument::OPTIONAL, 'The ID or name of the cache cluster to create a SSH tunnel to')
-            ->addArgument('port', InputArgument::OPTIONAL, 'The local port to use to connect to the cache cluster', '6378');
+            ->addOption('port', null, InputOption::VALUE_REQUIRED, 'The local port to use to connect to the cache cluster', '6378');
     }
 
     /**
@@ -89,7 +90,7 @@ class CacheTunnelCommand extends AbstractCacheCommand
             $this->filesystem->mkdir($this->homeDirectory.'/.ssh', 0700);
         }
 
-        $localPort = $this->getNumericArgument($input, 'port');
+        $localPort = $this->getNumericOption($input, 'port');
 
         if (6379 === $localPort) {
             throw new RuntimeException('Cannot use port 6379 as the local port for the SSH tunnel to the cache cluster');

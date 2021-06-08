@@ -16,6 +16,7 @@ namespace Ymir\Cli\Command\Database;
 use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Filesystem\Filesystem;
 use Tightenco\Collect\Support\Arr;
 use Ymir\Cli\ApiClient;
@@ -67,7 +68,7 @@ class DatabaseServerTunnelCommand extends AbstractDatabaseCommand
             ->setName(self::NAME)
             ->setDescription('Create a SSH tunnel to a database server')
             ->addArgument('database', InputArgument::OPTIONAL, 'The ID or name of the database server to create a SSH tunnel to')
-            ->addArgument('port', InputArgument::OPTIONAL, 'The local port to use to connect to the database server', '3305');
+            ->addOption('port', null, InputOption::VALUE_REQUIRED, 'The local port to use to connect to the database server', '3305');
     }
 
     /**
@@ -91,7 +92,7 @@ class DatabaseServerTunnelCommand extends AbstractDatabaseCommand
             $this->filesystem->mkdir($this->homeDirectory.'/.ssh', 0700);
         }
 
-        $localPort = $this->getNumericArgument($input, 'port');
+        $localPort = $this->getNumericOption($input, 'port');
 
         if (3306 === $localPort) {
             throw new RuntimeException('Cannot use port 3306 as the local port for the SSH tunnel to the database server');
