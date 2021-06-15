@@ -17,7 +17,7 @@ use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Finder\Finder;
 use Ymir\Cli\ProjectConfiguration;
 
-class EnsurePluginIsInstalledStep implements BuildStepInterface
+class EnsurePluginIsInstalledStep extends AbstractBuildStep
 {
     /**
      * The build directory where the project files are copied to.

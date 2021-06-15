@@ -17,11 +17,13 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\NullOutput;
 use Symfony\Component\Filesystem\Filesystem;
 use Tightenco\Collect\Support\Arr;
+use Tightenco\Collect\Support\Collection;
 use Ymir\Cli\ApiClient;
 use Ymir\Cli\CliConfiguration;
 use Ymir\Cli\Command\AbstractProjectCommand;
 use Ymir\Cli\Command\Database\CreateDatabaseCommand;
 use Ymir\Cli\Command\Database\CreateDatabaseServerCommand;
+use Ymir\Cli\Command\Docker\CreateDockerfileCommand;
 use Ymir\Cli\Command\InstallPluginCommand;
 use Ymir\Cli\Command\Provider\ConnectProviderCommand;
 use Ymir\Cli\Console\ConsoleOutput;
@@ -133,12 +135,20 @@ class InitializeProjectCommand extends AbstractProjectCommand
             // needs an empty directory.
             $this->checkForWordPress($output, $projectType);
 
-            $this->projectConfiguration->createNew($this->apiClient->createProject($providerId, $projectName, $region), $environments, $projectType);
+            $this->projectConfiguration->createNew($this->apiClient->createProject($providerId, $projectName, $region), $environments->all(), $projectType);
 
             $output->infoWithDelayWarning('Project initialized');
 
             if (!$this->isPluginInstalled($projectType) && $output->confirm('Would you like to install the Ymir WordPress plugin?')) {
                 $this->invoke($output, InstallPluginCommand::NAME);
+            }
+
+            if ($output->confirm('Will you deploy this project using a container image?', false)) {
+                $this->invoke($output, CreateDockerfileCommand::NAME);
+
+                $this->projectConfiguration->addOptionsToEnvironments([
+                    'deployment' => 'image',
+                ]);
             }
         }, 'Do you want to try creating a project again?', $output);
     }
@@ -146,7 +156,7 @@ class InitializeProjectCommand extends AbstractProjectCommand
     /**
      * Add the "database" nodes to all the environments.
      */
-    private function addEnvironmentDatabaseNodes(array $environments, ConsoleOutput $output, string $projectName, string $region): array
+    private function addEnvironmentDatabaseNodes(Collection $environments, ConsoleOutput $output, string $projectName, string $region): Collection
     {
         $databasePrefix = '';
         $databaseServer = $this->determineDatabaseServer($output, $region);
@@ -157,7 +167,7 @@ class InitializeProjectCommand extends AbstractProjectCommand
             $databasePrefix = $output->askSlug('What database prefix would you like to use for this project?', $projectName);
         }
 
-        return collect($environments)->map(function (array $options, string $environment) use ($databasePrefix, $databaseServer) {
+        return $environments->map(function (array $options, string $environment) use ($databasePrefix, $databaseServer) {
             if (!empty($databaseServer['name']) && empty($databasePrefix)) {
                 Arr::set($options, 'database', $databaseServer['name']);
             } elseif (!empty($databaseServer['name']) && !empty($databasePrefix)) {
@@ -178,7 +188,7 @@ class InitializeProjectCommand extends AbstractProjectCommand
             }
 
             return $options;
-        })->all();
+        });
     }
 
     /**
@@ -248,7 +258,7 @@ class InitializeProjectCommand extends AbstractProjectCommand
     /**
      * Get the base environments configuration for the project.
      */
-    private function getBaseEnvironmentsConfiguration(string $projectType): array
+    private function getBaseEnvironmentsConfiguration(string $projectType): Collection
     {
         $environments = [
             'production' => [],
@@ -260,7 +270,7 @@ class InitializeProjectCommand extends AbstractProjectCommand
             Arr::set($environments, 'production.build', ['COMPOSER_MIRROR_PATH_REPOS=1 composer install --no-dev']);
         }
 
-        return $environments;
+        return collect($environments);
     }
 
     /**

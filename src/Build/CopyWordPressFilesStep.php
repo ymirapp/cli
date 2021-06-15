@@ -19,7 +19,7 @@ use Symfony\Component\Finder\SplFileInfo;
 use Tightenco\Collect\Support\Arr;
 use Ymir\Cli\ProjectConfiguration;
 
-class CopyWordPressFilesStep implements BuildStepInterface
+class CopyWordPressFilesStep extends AbstractBuildStep
 {
     /**
      * The build directory where the project files are copied to.

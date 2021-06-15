@@ -78,10 +78,12 @@ class BuildProjectCommand extends AbstractProjectCommand
 
         $output->info('Building project');
 
-        foreach ($this->buildSteps as $buildStep) {
+        collect($this->buildSteps)->filter(function (BuildStepInterface $buildStep) use ($environment) {
+            return $buildStep->isNeeded($environment, $this->projectConfiguration);
+        })->each(function (BuildStepInterface $buildStep) use ($environment, $output) {
             $output->writeStep($buildStep->getDescription());
             $buildStep->perform($environment, $this->projectConfiguration);
-        }
+        });
 
         $output->info('Project built successfully');
     }

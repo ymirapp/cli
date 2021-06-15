@@ -16,7 +16,7 @@ namespace Ymir\Cli\Build;
 use Symfony\Component\Filesystem\Filesystem;
 use Ymir\Cli\ProjectConfiguration;
 
-class DownloadWpCliStep implements BuildStepInterface
+class DownloadWpCliStep extends AbstractBuildStep
 {
     /**
      * The path to the WP-CLI bin directory.

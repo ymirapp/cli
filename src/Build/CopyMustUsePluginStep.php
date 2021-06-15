@@ -17,7 +17,7 @@ use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Filesystem\Filesystem;
 use Ymir\Cli\ProjectConfiguration;
 
-class CopyMustUsePluginStep implements BuildStepInterface
+class CopyMustUsePluginStep extends AbstractBuildStep
 {
     /**
      * The build directory where the project files are copied to.

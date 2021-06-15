@@ -55,6 +55,14 @@ class CompressBuildFilesStep implements BuildStepInterface
     /**
      * {@inheritdoc}
      */
+    public function isNeeded(string $environment, ProjectConfiguration $projectConfiguration): bool
+    {
+        return 'image' !== Arr::get((array) $projectConfiguration->getEnvironment($environment), 'deployment');
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function perform(string $environment, ProjectConfiguration $projectConfiguration)
     {
         $archive = new \ZipArchive();

@@ -17,7 +17,7 @@ use Tightenco\Collect\Support\Arr;
 use Ymir\Cli\Process\Process;
 use Ymir\Cli\ProjectConfiguration;
 
-class ExecuteBuildCommandsStep implements BuildStepInterface
+class ExecuteBuildCommandsStep extends AbstractBuildStep
 {
     /**
      * The build directory where the project files are copied to.
@@ -62,7 +62,7 @@ class ExecuteBuildCommandsStep implements BuildStepInterface
         }
 
         foreach ($commands as $command) {
-            Process::runShellCommandline($command, $this->buildDirectory, null, null, null);
+            Process::runShellCommandline($command, $this->buildDirectory, null);
         }
     }
 }

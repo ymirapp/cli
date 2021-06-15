@@ -18,7 +18,7 @@ use Symfony\Component\Finder\Finder;
 use Symfony\Component\Finder\SplFileInfo;
 use Ymir\Cli\ProjectConfiguration;
 
-class ExtractAssetFilesStep implements BuildStepInterface
+class ExtractAssetFilesStep extends AbstractBuildStep
 {
     /**
      * The file system.

@@ -69,11 +69,12 @@ services:
         - '@Ymir\Cli\Build\ModifyWordPressConfigurationStep'
         - '@Ymir\Cli\Build\ExtractAssetFilesStep'
         - '@Ymir\Cli\Build\CompressBuildFilesStep'
+        - '@Ymir\Cli\Build\BuildContainerImageStep'
 
   Ymir\Cli\Command\Project\DeployProjectCommand:
     arguments:
       $deploymentSteps:
-        - '@Ymir\Cli\Deployment\UploadBuildStep'
+        - '@Ymir\Cli\Deployment\UploadFunctionCodeStep'
         - '@Ymir\Cli\Deployment\ProcessAssetsStep'
         - '@Ymir\Cli\Deployment\StartAndMonitorDeploymentStep'
 

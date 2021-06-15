@@ -23,6 +23,11 @@ interface BuildStepInterface
     public function getDescription(): string;
 
     /**
+     * Check if the build step needs to be performed for the given project environment.
+     */
+    public function isNeeded(string $environment, ProjectConfiguration $projectConfiguration): bool;
+
+    /**
      * Perform the build step.
      */
     public function perform(string $environment, ProjectConfiguration $projectConfiguration);

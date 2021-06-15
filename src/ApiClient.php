@@ -532,6 +532,14 @@ class ApiClient
     }
 
     /**
+     * Get the container image used by the deployment.
+     */
+    public function getDeploymentImage(int $deploymentId): Collection
+    {
+        return $this->request('get', "/deployments/{$deploymentId}/image");
+    }
+
+    /**
      * Get all the deployments for the given project on the given environment.
      */
     public function getDeployments(int $projectId, string $environment): Collection

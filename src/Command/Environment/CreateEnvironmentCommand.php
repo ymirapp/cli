@@ -15,6 +15,7 @@ namespace Ymir\Cli\Command\Environment;
 
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Ymir\Cli\Command\AbstractProjectCommand;
 use Ymir\Cli\Console\ConsoleOutput;
 
@@ -35,7 +36,8 @@ class CreateEnvironmentCommand extends AbstractProjectCommand
         $this
             ->setName(self::NAME)
             ->setDescription('Create a new environment')
-            ->addArgument('environment', InputArgument::OPTIONAL, 'The name of the environment to create');
+            ->addArgument('name', InputArgument::OPTIONAL, 'The name of the environment to create')
+            ->addOption('use-image', null, InputOption::VALUE_NONE, 'Whether the environment will be deployed using a container image');
     }
 
     /**
@@ -43,11 +45,11 @@ class CreateEnvironmentCommand extends AbstractProjectCommand
      */
     protected function perform(InputInterface $input, ConsoleOutput $output)
     {
-        $name = $this->getStringArgument($input, 'environment') ?: $output->ask('What is the name of the environment');
+        $name = $this->getStringArgument($input, 'name') ?: $output->ask('What is the name of the environment');
 
         $this->apiClient->createEnvironment($this->projectConfiguration->getProjectId(), $name);
 
-        $this->projectConfiguration->addEnvironment($name);
+        $this->projectConfiguration->addEnvironment($name, $this->getBooleanOption($input, 'use-image') ? ['deployment' => 'image'] : null);
 
         $output->info('Environment created');
     }
