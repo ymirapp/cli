@@ -34,7 +34,7 @@ class RemoveBastionHostCommand extends AbstractCommand
     {
         $this
             ->setName(self::NAME)
-            ->setDescription('Remove bastion host from the network')
+            ->setDescription('Remove bastion host from a network')
             ->addArgument('network', InputArgument::OPTIONAL, 'The ID or name of the network to remove the bastion host from');
     }
 

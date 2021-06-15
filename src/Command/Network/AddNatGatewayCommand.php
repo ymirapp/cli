@@ -34,7 +34,7 @@ class AddNatGatewayCommand extends AbstractCommand
     {
         $this
             ->setName(self::NAME)
-            ->setDescription('Add a NAT gateway to the network\'s private subnet')
+            ->setDescription('Add a NAT gateway to a network\'s private subnet')
             ->addArgument('network', InputArgument::OPTIONAL, 'The ID or name of the network to add a NAT gateway to');
     }
 

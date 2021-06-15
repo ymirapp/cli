@@ -95,8 +95,8 @@ class ImportUploadsCommand extends AbstractProjectCommand
             ->setName(self::NAME)
             ->setDescription('Import files to the environment uploads directory')
             ->addArgument('path', InputArgument::REQUIRED, 'The path to the files to import')
-            ->addOption('environment', null, InputOption::VALUE_REQUIRED, 'The environment name', 'staging')
-            ->addOption('size', null, InputOption::VALUE_REQUIRED, 'The number of files to process at a time', 20);
+            ->addOption('environment', null, InputOption::VALUE_REQUIRED, 'The environment to upload files to', 'staging')
+            ->addOption('size', null, InputOption::VALUE_REQUIRED, 'The number of files to process at a time', '20');
     }
 
     /**

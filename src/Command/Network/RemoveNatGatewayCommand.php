@@ -34,7 +34,7 @@ class RemoveNatGatewayCommand extends AbstractCommand
     {
         $this
             ->setName(self::NAME)
-            ->setDescription('Remove the NAT gateway from the network\'s private subnet')
+            ->setDescription('Remove a NAT gateway from a network\'s private subnet')
             ->addArgument('network', InputArgument::OPTIONAL, 'The ID or name of the network to remove the NAT gateway from');
     }
 
