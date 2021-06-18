@@ -99,7 +99,7 @@ class UploadFunctionCodeStep implements DeploymentStepInterface
 
         $output->infoWithDelayWarning('Pushing container image');
 
-        Docker::login($user, $password, Arr::get((array) explode('/', $image->get('image_uri')), 0), $this->buildDirectory);
+        Docker::login($user, $password, Arr::get((array) explode('/', $imageUri), 0), $this->buildDirectory);
         Docker::tag(sprintf('%s:%s', $this->projectConfiguration->getProjectName(), $environment), $imageUri, $this->buildDirectory);
         Docker::push($imageUri, $this->buildDirectory);
     }
