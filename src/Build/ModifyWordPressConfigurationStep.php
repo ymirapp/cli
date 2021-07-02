@@ -72,10 +72,13 @@ class ModifyWordPressConfigurationStep extends AbstractBuildStep
     public function perform(string $environment, ProjectConfiguration $projectConfiguration)
     {
         $environment = (array) $projectConfiguration->getEnvironment($environment);
+        $sampleWpConfigFile = $this->buildDirectory.'/wp-config-sample.php';
         $wpConfigFile = $this->buildDirectory.'/wp-config.php';
 
-        if (!$this->filesystem->exists($wpConfigFile)) {
-            throw new RuntimeException('No wp-config.php found in the build directory');
+        if (!$this->filesystem->exists($wpConfigFile) && $this->filesystem->exists($sampleWpConfigFile)) {
+            $this->filesystem->copy($sampleWpConfigFile, $wpConfigFile);
+        } elseif (!$this->filesystem->exists($wpConfigFile) && !$this->filesystem->exists($sampleWpConfigFile)) {
+            throw new RuntimeException('No wp-config.php or wp-config-sample.php found in the build directory');
         }
 
         $wpConfig = file($wpConfigFile, FILE_IGNORE_NEW_LINES);
