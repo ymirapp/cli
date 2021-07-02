@@ -120,7 +120,7 @@ class ProcessAssetsStep implements DeploymentStepInterface
         foreach ($finder as $assetFile) {
             $assetFiles[] = [
                 'real_path' => $assetFile->getRealPath(),
-                'relative_path' => $assetFile->getRelativePathname(),
+                'relative_path' => str_replace('\\', '/', $assetFile->getRelativePathname()),
                 'hash' => md5_file((string) $assetFile->getRealPath()),
             ];
         }
