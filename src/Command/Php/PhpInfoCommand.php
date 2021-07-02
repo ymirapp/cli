@@ -13,8 +13,8 @@ declare(strict_types=1);
 
 namespace Ymir\Cli\Command\Php;
 
+use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
 use Ymir\Cli\Command\AbstractInvocationCommand;
 use Ymir\Cli\Console\ConsoleOutput;
 
@@ -35,7 +35,7 @@ class PhpInfoCommand extends AbstractInvocationCommand
         $this
             ->setName(self::NAME)
             ->setDescription('Get information about PHP on the cloud provider')
-            ->addOption('environment', null, InputOption::VALUE_REQUIRED, 'The environment name', 'staging');
+            ->addArgument('environment', InputArgument::OPTIONAL, 'The name of the environment to get PHP information about.', 'staging');
     }
 
     /**

@@ -17,7 +17,6 @@ use Symfony\Component\Console\Exception\InvalidArgumentException;
 use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
 use Ymir\Cli\Command\AbstractProjectCommand;
 use Ymir\Cli\Console\ConsoleOutput;
 
@@ -38,8 +37,8 @@ class DeleteEnvironmentSecretCommand extends AbstractProjectCommand
         $this
             ->setName(self::NAME)
             ->setDescription('Delete an environment\'s secret')
-            ->addArgument('secret', InputArgument::OPTIONAL, 'The ID or name of the secret')
-            ->addOption('environment', null, InputOption::VALUE_REQUIRED, 'The environment name', 'staging');
+            ->addArgument('environment', InputArgument::OPTIONAL, 'The name of the environment where the secret is', 'staging')
+            ->addArgument('secret', InputArgument::OPTIONAL, 'The ID or name of the secret');
     }
 
     /**
@@ -47,7 +46,7 @@ class DeleteEnvironmentSecretCommand extends AbstractProjectCommand
      */
     protected function perform(InputInterface $input, ConsoleOutput $output)
     {
-        $environment = (string) $this->getStringOption($input, 'environment');
+        $environment = $this->getStringArgument($input, 'environment');
         $secrets = $this->apiClient->getSecrets($this->projectConfiguration->getProjectId(), $environment);
 
         if ($secrets->isEmpty()) {

@@ -13,8 +13,8 @@ declare(strict_types=1);
 
 namespace Ymir\Cli\Command\Php;
 
+use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
 use Ymir\Cli\Command\AbstractInvocationCommand;
 use Ymir\Cli\Console\ConsoleOutput;
 
@@ -34,8 +34,8 @@ class PhpVersionCommand extends AbstractInvocationCommand
     {
         $this
             ->setName(self::NAME)
-            ->setDescription('Get PHP version information on the cloud provider')
-            ->addOption('environment', null, InputOption::VALUE_REQUIRED, 'The environment name', 'staging');
+            ->setDescription('Get the PHP version information on the cloud provider')
+            ->addArgument('environment', InputArgument::OPTIONAL, 'The name of the environment to get the PHP version of.', 'staging');
     }
 
     /**
