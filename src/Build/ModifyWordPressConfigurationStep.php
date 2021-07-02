@@ -61,20 +61,17 @@ class ModifyWordPressConfigurationStep extends AbstractBuildStep
     /**
      * {@inheritdoc}
      */
-    public function perform(string $environment, ProjectConfiguration $projectConfiguration)
+    public function isNeeded(string $environment, ProjectConfiguration $projectConfiguration): bool
     {
-        $projectType = $projectConfiguration->getProjectType();
-
-        if ('wordpress' === $projectType) {
-            $this->modifyWordPressConfig((array) $projectConfiguration->getEnvironment($environment));
-        }
+        return 'wordpress' === $projectConfiguration->getProjectType();
     }
 
     /**
-     * Modify WordPress configuration to use environment variables.
+     * {@inheritdoc}
      */
-    private function modifyWordPressConfig(array $environment)
+    public function perform(string $environment, ProjectConfiguration $projectConfiguration)
     {
+        $environment = (array) $projectConfiguration->getEnvironment($environment);
         $wpConfigFile = $this->buildDirectory.'/wp-config.php';
 
         if (!$this->filesystem->exists($wpConfigFile)) {
