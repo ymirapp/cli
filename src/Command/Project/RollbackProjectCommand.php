@@ -47,7 +47,7 @@ class RollbackProjectCommand extends AbstractProjectDeploymentCommand
             ->setName(self::NAME)
             ->setDescription('Rollback project environment to a previous deployment')
             ->setAliases([self::ALIAS])
-            ->addArgument('environment', InputArgument::OPTIONAL, 'The environment name', 'staging')
+            ->addArgument('environment', InputArgument::OPTIONAL, 'The name of the environment to rollback', 'staging')
             ->addOption('select', null, InputOption::VALUE_NONE, 'Select the deployment to rollback to');
     }
 

@@ -41,7 +41,7 @@ class GetProjectInfoCommand extends AbstractProjectCommand
     {
         $this
             ->setName(self::NAME)
-            ->setDescription('Get the information on the project')
+            ->setDescription('Get information on the project')
             ->setAliases([self::ALIAS]);
     }
 

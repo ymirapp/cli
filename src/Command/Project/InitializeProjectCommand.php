@@ -79,7 +79,7 @@ class InitializeProjectCommand extends AbstractProjectCommand
     {
         $this
             ->setName(self::NAME)
-            ->setDescription('Creates a new project in the current directory')
+            ->setDescription('Initialize a new project')
             ->setAliases([self::ALIAS]);
     }
 

@@ -66,7 +66,7 @@ class BuildProjectCommand extends AbstractProjectCommand
             ->setName(self::NAME)
             ->setDescription('Build the project for deployment')
             ->setAliases([self::ALIAS])
-            ->addArgument('environment', InputArgument::OPTIONAL, 'The environment name', 'staging');
+            ->addArgument('environment', InputArgument::OPTIONAL, 'The name of the environment to build', 'staging');
     }
 
     /**

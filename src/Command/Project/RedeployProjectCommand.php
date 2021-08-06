@@ -44,7 +44,7 @@ class RedeployProjectCommand extends AbstractProjectDeploymentCommand
             ->setName(self::NAME)
             ->setDescription('Redeploy project to an environment')
             ->setAliases([self::ALIAS])
-            ->addArgument('environment', InputArgument::OPTIONAL, 'The environment name', 'staging');
+            ->addArgument('environment', InputArgument::OPTIONAL, 'The name of the environment to redeploy', 'staging');
     }
 
     /**

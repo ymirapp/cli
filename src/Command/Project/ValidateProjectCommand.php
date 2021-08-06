@@ -41,9 +41,9 @@ class ValidateProjectCommand extends AbstractProjectCommand
     {
         $this
             ->setName(self::NAME)
-            ->setDescription('Validates the project ymir.yml file')
+            ->setDescription('Validates the project\'s ymir.yml file')
             ->setAliases([self::ALIAS])
-            ->addArgument('environments', InputArgument::OPTIONAL, 'The environments to validate');
+            ->addArgument('environments', InputArgument::OPTIONAL, 'The names of the environments to validate');
     }
 
     /**
