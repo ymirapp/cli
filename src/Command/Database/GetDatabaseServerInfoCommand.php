@@ -46,8 +46,20 @@ class GetDatabaseServerInfoCommand extends AbstractDatabaseCommand
         $databaseServer = $this->determineDatabaseServer('Which database server would you like to get information about', $input, $output);
 
         $output->horizontalTable(
-            ['Id', 'Name', 'Status', new TableSeparator(), 'Network', 'Provider', 'Region'],
-            [[$databaseServer['id'], $databaseServer['name'], $output->formatStatus($databaseServer['status']), new TableSeparator(),  $databaseServer['network']['name'], $databaseServer['network']['provider']['name'], $databaseServer['region']]]
+            ['Id', 'Name', 'Status', 'Public', new TableSeparator(), 'Provider', 'Network', 'Region', 'Type', 'Storage', 'Endpoint'],
+            [[
+                $databaseServer['id'],
+                $databaseServer['name'],
+                $output->formatStatus($databaseServer['status']),
+                $databaseServer['publicly_accessible'] ? 'yes' : 'no',
+                new TableSeparator(),
+                $databaseServer['network']['provider']['name'],
+                $databaseServer['network']['name'],
+                $databaseServer['region'],
+                $databaseServer['type'],
+                $databaseServer['storage'].'GB',
+                $databaseServer['endpoint'],
+            ]]
         );
     }
 }
