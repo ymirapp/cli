@@ -192,7 +192,7 @@ class ImportUploadsCommand extends AbstractProjectCommand
             );
         } elseif ('sftp' === $parsedPath['scheme']) {
             return new SftpAdapter(
-                new SftpConnectionProvider($parsedPath['host'], $parsedPath['user'] ?? get_current_user(), $parsedPath['pass'] ?? null, null, null, $parsedPath['port'] ?? 22, true),
+                new SftpConnectionProvider($parsedPath['host'], $parsedPath['user'] ?? get_current_user(), $parsedPath['pass'] ?? null, null, null, $parsedPath['port'] ?? 22, $parsedPath['pass'] ? false : true),
                 $parsedPath['path'] ?? '/'
             );
         }
