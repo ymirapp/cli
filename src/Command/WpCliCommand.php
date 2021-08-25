@@ -39,7 +39,8 @@ class WpCliCommand extends AbstractInvocationCommand
             ->setDescription('Execute a WP-CLI command')
             ->addArgument('wp-command', InputArgument::IS_ARRAY, 'The WP-CLI command to execute')
             ->addOption('environment', null, InputOption::VALUE_REQUIRED, 'The environment name', 'staging')
-            ->addOption('async', null, InputOption::VALUE_NONE, 'Execute WP-CLI command asynchronously');
+            ->addOption('async', null, InputOption::VALUE_NONE, 'Execute WP-CLI command asynchronously')
+            ->addHiddenOption('yolo', null, InputOption::VALUE_NONE);
     }
 
     /**
@@ -47,7 +48,7 @@ class WpCliCommand extends AbstractInvocationCommand
      */
     protected function perform(InputInterface $input, ConsoleOutput $output)
     {
-        $async = $this->getBooleanOption($input, 'async');
+        $async = $this->getBooleanOption($input, 'async') || $this->getBooleanOption($input, 'yolo');
         $command = implode(' ', $this->getArrayArgument($input, 'wp-command'));
         $environment = (string) $this->getStringOption($input, 'environment');
         $exitCode = 0;

@@ -26,6 +26,8 @@ use Ymir\Cli\CliConfiguration;
 use Ymir\Cli\Command\Network\CreateNetworkCommand;
 use Ymir\Cli\Command\Provider\ConnectProviderCommand;
 use Ymir\Cli\Console\ConsoleOutput;
+use Ymir\Cli\Console\HiddenInputOption;
+use Ymir\Cli\Console\InputDefinition;
 use Ymir\Cli\Exception\ApiClientException;
 use Ymir\Cli\Exception\CommandCancelledException;
 use Ymir\Cli\ProjectConfiguration;
@@ -58,11 +60,23 @@ abstract class AbstractCommand extends Command
      */
     public function __construct(ApiClient $apiClient, CliConfiguration $cliConfiguration, ProjectConfiguration $projectConfiguration)
     {
-        parent::__construct();
-
         $this->apiClient = $apiClient;
         $this->cliConfiguration = $cliConfiguration;
         $this->projectConfiguration = $projectConfiguration;
+
+        $this->setDefinition(new InputDefinition());
+
+        $this->configure();
+    }
+
+    /**
+     * Adds an option that doesn't appear in the "help" command.
+     */
+    public function addHiddenOption($name, $shortcut = null, $mode = null, $default = null)
+    {
+        $this->getDefinition()->addOption(new HiddenInputOption($name, $shortcut, $mode, $default));
+
+        return $this;
     }
 
     /**
