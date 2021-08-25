@@ -17,6 +17,7 @@ use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
+use Tightenco\Collect\Support\Arr;
 use Ymir\Cli\Console\ConsoleOutput;
 
 class WpCliCommand extends AbstractInvocationCommand
@@ -64,7 +65,7 @@ class WpCliCommand extends AbstractInvocationCommand
 
         $result = $this->invokeEnvironmentFunction($environment, [
             'php' => sprintf('bin/wp %s', $command),
-        ]);
+        ], Arr::get((array) $this->projectConfiguration->getEnvironment($environment), 'console.timeout', 60));
 
         $output->newLine();
         $output->write("${result['output']}");

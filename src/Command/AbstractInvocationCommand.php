@@ -24,7 +24,7 @@ abstract class AbstractInvocationCommand extends AbstractProjectCommand
     /**
      * Invokes the given environment console function with the given payload and returns the output.
      */
-    protected function invokeEnvironmentFunction(string $environment, array $payload): array
+    protected function invokeEnvironmentFunction(string $environment, array $payload, int $timeout = 60): array
     {
         $invocationId = $this->apiClient->createInvocation($this->projectConfiguration->getProjectId(), $environment, $payload)->get('id');
 
@@ -36,7 +36,7 @@ abstract class AbstractInvocationCommand extends AbstractProjectCommand
             $invocation = $this->apiClient->getInvocation($invocationId);
 
             return !in_array($invocation->get('status'), ['pending', 'running']) ? $invocation : [];
-        });
+        }, $timeout);
 
         if ('failed' === $invocation['status']) {
             throw new RuntimeException('Running the command failed');
