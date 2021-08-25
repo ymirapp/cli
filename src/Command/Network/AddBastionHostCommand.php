@@ -109,7 +109,7 @@ class AddBastionHostCommand extends AbstractCommand
             $bastionHost = $this->apiClient->getBastionHost((int) $bastionHost->get('id'));
 
             return 'available' === $bastionHost->get('status') ? $bastionHost : [];
-        }, 20, 15);
+        }, 300, 5);
 
         $this->filesystem->appendToFile($sshConfigFilename, sprintf("\nHost %s\n  User ec2-user\n  IdentitiesOnly yes\n  IdentityFile %s\n", $bastionHost->get('endpoint'), $privateKeyFilename));
 

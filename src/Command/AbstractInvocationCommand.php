@@ -36,7 +36,7 @@ abstract class AbstractInvocationCommand extends AbstractProjectCommand
             $invocation = $this->apiClient->getInvocation($invocationId);
 
             return !in_array($invocation->get('status'), ['pending', 'running']) ? $invocation : [];
-        }, 60);
+        });
 
         if ('failed' === $invocation['status']) {
             throw new RuntimeException('Running the command failed');

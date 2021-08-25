@@ -340,15 +340,14 @@ abstract class AbstractCommand extends Command
     /**
      * Wait for the given callable to complete.
      */
-    protected function wait(callable $callable, $maxAttempts = 20, $sleep = 1)
+    protected function wait(callable $callable, int $timeout = 60, int $sleep = 1)
     {
-        $attempts = 0;
+        $timeout += time();
 
         do {
             $result = $callable();
             sleep($sleep);
-            ++$attempts;
-        } while (empty($result) && $attempts < $maxAttempts);
+        } while (empty($result) && time() < $timeout);
 
         return $result;
     }
