@@ -1,4 +1,5 @@
 parameters:
+    level: max
     checkMissingIterableValueType: false
     ignoreErrors:
         - '#Access to an undefined property Tightenco\\Collect\\Support\\HigherOrder#'
