@@ -57,7 +57,7 @@ class BuildContainerImageStep implements BuildStepInterface
      */
     public function isNeeded(string $environment, ProjectConfiguration $projectConfiguration): bool
     {
-        return 'image' === Arr::get((array) $projectConfiguration->getEnvironment($environment), 'deployment');
+        return 'image' === Arr::get($projectConfiguration->getEnvironment($environment), 'deployment');
     }
 
     /**

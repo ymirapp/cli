@@ -130,13 +130,13 @@ class ProjectConfiguration implements Arrayable
     /**
      * Get the configuration information for the given environment.
      */
-    public function getEnvironment(string $environment): ?array
+    public function getEnvironment(string $environment): array
     {
         if (!$this->hasEnvironment($environment)) {
             throw new \InvalidArgumentException(sprintf('Environment "%s" not found in ymir.yml file', $environment));
         }
 
-        return $this->configuration['environments'][$environment];
+        return (array) $this->configuration['environments'][$environment];
     }
 
     /**

@@ -57,7 +57,7 @@ class CompressBuildFilesStep implements BuildStepInterface
      */
     public function isNeeded(string $environment, ProjectConfiguration $projectConfiguration): bool
     {
-        return 'image' !== Arr::get((array) $projectConfiguration->getEnvironment($environment), 'deployment');
+        return 'image' !== Arr::get($projectConfiguration->getEnvironment($environment), 'deployment');
     }
 
     /**
@@ -67,7 +67,7 @@ class CompressBuildFilesStep implements BuildStepInterface
     {
         $archive = new \ZipArchive();
         $archive->open($this->buildArtifactPath, \ZipArchive::CREATE | \ZipArchive::OVERWRITE);
-        $environment = (array) $projectConfiguration->getEnvironment($environment);
+        $environment = $projectConfiguration->getEnvironment($environment);
         $files = Finder::create()
                        ->append($this->getRequiredFiles())
                        ->append($this->getRequiredFileTypes())

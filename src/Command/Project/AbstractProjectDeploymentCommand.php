@@ -89,7 +89,7 @@ abstract class AbstractProjectDeploymentCommand extends AbstractProjectCommand
             );
         }
 
-        if (!array_key_exists('domain', (array) $this->projectConfiguration->getEnvironment($environment))) {
+        if (!array_key_exists('domain', $this->projectConfiguration->getEnvironment($environment))) {
             $output->newLine();
             $output->writeln(sprintf('<comment>Note:</comment> You cannot send emails using the "<comment>ymirsites.com</comment>" domain. Please use the "<comment>%s</comment>" command to add an email address or domain for sending emails.', CreateEmailIdentityCommand::NAME));
         }

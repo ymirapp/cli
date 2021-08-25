@@ -71,7 +71,7 @@ class CopyWordPressFilesStep extends AbstractBuildStep
 
         $this->filesystem->mkdir($this->buildDirectory, 0755);
 
-        $environment = (array) $projectConfiguration->getEnvironment($environment);
+        $environment = $projectConfiguration->getEnvironment($environment);
         $files = $this->getProjectFiles($projectConfiguration->getProjectType());
 
         if (Arr::has($environment, 'build.include')) {

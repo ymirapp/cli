@@ -65,7 +65,7 @@ class WpCliCommand extends AbstractInvocationCommand
 
         $result = $this->invokeEnvironmentFunction($environment, [
             'php' => sprintf('bin/wp %s', $command),
-        ], Arr::get((array) $this->projectConfiguration->getEnvironment($environment), 'console.timeout', 60));
+        ], Arr::get($this->projectConfiguration->getEnvironment($environment), 'console.timeout', 60));
 
         $output->newLine();
         $output->write("${result['output']}");

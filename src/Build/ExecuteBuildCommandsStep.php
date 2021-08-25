@@ -47,7 +47,7 @@ class ExecuteBuildCommandsStep extends AbstractBuildStep
      */
     public function perform(string $environment, ProjectConfiguration $projectConfiguration)
     {
-        $environment = (array) $projectConfiguration->getEnvironment($environment);
+        $environment = $projectConfiguration->getEnvironment($environment);
 
         if (empty($environment['build'])) {
             return;

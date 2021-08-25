@@ -71,7 +71,7 @@ class ModifyWordPressConfigurationStep extends AbstractBuildStep
      */
     public function perform(string $environment, ProjectConfiguration $projectConfiguration)
     {
-        $environment = (array) $projectConfiguration->getEnvironment($environment);
+        $environment = $projectConfiguration->getEnvironment($environment);
         $sampleWpConfigFile = $this->buildDirectory.'/wp-config-sample.php';
         $wpConfigFile = $this->buildDirectory.'/wp-config.php';
 
