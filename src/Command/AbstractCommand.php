@@ -342,7 +342,9 @@ abstract class AbstractCommand extends Command
      */
     protected function wait(callable $callable, int $timeout = 60, int $sleep = 1)
     {
-        $timeout += time();
+        if (0 !== $timeout) {
+            $timeout += time();
+        }
 
         do {
             $result = $callable();
