@@ -328,11 +328,6 @@ abstract class AbstractCommand extends Command
     }
 
     /**
-     * Perform the command.
-     */
-    abstract protected function perform(InputInterface $input, ConsoleOutput $output);
-
-    /**
      * Retry an API operation.
      */
     protected function retryApi(callable $callable, string $message, ConsoleOutput $output)
@@ -367,4 +362,9 @@ abstract class AbstractCommand extends Command
 
         return $result;
     }
+
+    /**
+     * Perform the command.
+     */
+    abstract protected function perform(InputInterface $input, ConsoleOutput $output);
 }

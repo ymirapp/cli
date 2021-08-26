@@ -34,7 +34,7 @@
         "tightenco/collect": "^8.0"
     },
     "require-dev": {
-        "friendsofphp/php-cs-fixer": "^2.16",
+        "friendsofphp/php-cs-fixer": "^3.0",
         "php-parallel-lint/php-parallel-lint": "^1.1",
         "phpmd/phpmd": "^2.7",
         "phpro/grumphp": "^0.19 || ^1.0",

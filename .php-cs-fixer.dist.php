@@ -9,10 +9,17 @@ For the full copyright and license information, please view the LICENSE
 file that was distributed with this source code.
 EOF;
 
-return PhpCsFixer\Config::create()
+$finder = PhpCsFixer\Finder::create()
+    ->in([
+        __DIR__ . '/src',
+        __DIR__ . '/tests',
+    ])
+;
+
+$config = new PhpCsFixer\Config();
+$config
     ->setRiskyAllowed(true)
     ->setRules([
-        '@PHP56Migration' => true,
         '@Symfony' => true,
         '@Symfony:risky' => true,
         'align_multiline_comment' => true,
@@ -26,13 +33,12 @@ return PhpCsFixer\Config::create()
         'header_comment' => ['header' => $header],
         'heredoc_to_nowdoc' => true,
         'list_syntax' => ['syntax' => 'long'],
-        'method_argument_space' => ['ensure_fully_multiline' => true],
         'method_chaining_indentation' => false,
-        'native_constant_invocation' => false,
         'native_function_invocation' => false,
-        'no_extra_consecutive_blank_lines' => ['tokens' => ['break', 'continue', 'extra', 'return', 'throw', 'use', 'parenthesis_brace_block', 'square_brace_block', 'curly_brace_block']],
+        'native_constant_invocation' => false,
+        'no_extra_blank_lines' => ['tokens' => ['break', 'continue', 'extra', 'return', 'throw', 'use', 'parenthesis_brace_block', 'square_brace_block', 'curly_brace_block']],
         'no_null_property_initialization' => true,
-        'no_short_echo_tag' => true,
+        'echo_tag_syntax' => ['format' => 'long'],
         'no_superfluous_phpdoc_tags' => ['allow_mixed' => false],
         'no_unneeded_curly_braces' => true,
         'no_unneeded_final_method' => true,
@@ -51,31 +57,30 @@ return PhpCsFixer\Config::create()
                 'construct',
                 'destruct',
                 'magic',
+                'phpunit',
                 'method_public_static',
-                'method_public',
                 'method_protected_static',
-                'method_protected',
                 'method_private_static',
+                'method_public',
+                'method_public_abstract',
+                'method_protected',
+                'method_protected_abstract',
                 'method_private',
             ],
-            'sortAlgorithm' => 'alpha'
+            'sort_algorithm' => 'alpha'
         ],
         'ordered_imports' => true,
         'php_unit_construct' => true,
+        'php_unit_method_casing' => ['case' => 'camel_case'],
         'php_unit_test_class_requires_covers' => true,
         'php_unit_dedicate_assert' => true,
         'phpdoc_order' => true,
         'phpdoc_types_order' => ['null_adjustment' => 'always_last'],
         'semicolon_after_instruction' => true,
         'single_line_comment_style' => true,
-        'visibility_required' => ['const', 'property', 'method'],
         'yoda_style' => true,
     ])
-    ->setFinder(
-        PhpCsFixer\Finder::create()
-            ->in([
-                __DIR__ . '/src',
-                __DIR__ . '/tests',
-            ])
-    )
-    ;
+    ->setFinder($finder)
+;
+
+return $config;

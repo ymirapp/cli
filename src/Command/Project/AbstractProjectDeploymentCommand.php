@@ -48,16 +48,6 @@ abstract class AbstractProjectDeploymentCommand extends AbstractProjectCommand
     }
 
     /**
-     * Create the deployment and return its ID.
-     */
-    abstract protected function createDeployment(InputInterface $input, ConsoleOutput $output): Collection;
-
-    /**
-     * Get the message to display when a deployment was successful.
-     */
-    abstract protected function getSuccessMessage(string $environment): string;
-
-    /**
      * {@inheritdoc}
      */
     protected function perform(InputInterface $input, ConsoleOutput $output)
@@ -94,6 +84,16 @@ abstract class AbstractProjectDeploymentCommand extends AbstractProjectCommand
             $output->writeln(sprintf('<comment>Note:</comment> You cannot send emails using the "<comment>ymirsites.com</comment>" domain. Please use the "<comment>%s</comment>" command to add an email address or domain for sending emails.', CreateEmailIdentityCommand::NAME));
         }
     }
+
+    /**
+     * Create the deployment and return its ID.
+     */
+    abstract protected function createDeployment(InputInterface $input, ConsoleOutput $output): Collection;
+
+    /**
+     * Get the message to display when a deployment was successful.
+     */
+    abstract protected function getSuccessMessage(string $environment): string;
 
     /**
      * Add a deployment step to the command.
