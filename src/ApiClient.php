@@ -15,6 +15,9 @@ namespace Ymir\Cli;
 
 use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Exception\ClientException;
+use GuzzleHttp\Pool;
+use GuzzleHttp\Psr7\Request;
+use Psr\Http\Message\ResponseInterface;
 use Symfony\Component\Console\Exception\RuntimeException;
 use Tightenco\Collect\Support\Collection;
 use Ymir\Cli\Exception\ApiClientException;
@@ -712,13 +715,23 @@ class ApiClient
      */
     public function getSignedAssetRequests(int $deploymentId, array $assets): Collection
     {
-        $requests = $this->request('post', "/deployments/{$deploymentId}/signed-assets", ['assets' => $assets]);
+        $requests = function (array $assets) use ($deploymentId) {
+            foreach (array_chunk($assets, 500) as $chunkedAssets) {
+                yield $this->createRequest('post', "/deployments/{$deploymentId}/signed-assets", ['assets' => $chunkedAssets]);
+            }
+        };
+        $signedAssetRequests = [];
 
-        if (!empty($assets) && empty($requests)) {
-            throw new RuntimeException('Unable to get authorized asset requests from the Ymir API');
-        }
+        $pool = new Pool($this->client, $requests($assets), [
+            'concurrency' => 10,
+            'fulfilled' => function (ResponseInterface $response) use (&$signedAssetRequests) {
+                $signedAssetRequests[] = $this->decodeResponse($response);
+            },
+            'options' => ['verify' => false],
+        ]);
+        $pool->promise()->wait();
 
-        return $requests;
+        return collect($signedAssetRequests)->collapse();
     }
 
     /**
@@ -879,35 +892,42 @@ class ApiClient
     }
 
     /**
+     * Create a PSR request object.
+     */
+    private function createRequest(string $method, string $uri, array $body = []): Request
+    {
+        $headers = [
+            'Accept' => 'application/json',
+            'Content-Type' => 'application/json',
+        ];
+        $method = strtolower($method);
+
+        if ($this->cliConfiguration->hasAccessToken()) {
+            $headers['Authorization'] = 'Bearer '.$this->cliConfiguration->getAccessToken();
+        }
+
+        return new Request($method, $this->baseUrl.ltrim($uri, '/'), $headers, in_array($method, ['delete', 'post', 'put']) ? (string) json_encode($body) : null);
+    }
+
+    /**
+     * Decode response returned by the Ymir API.
+     */
+    private function decodeResponse(ResponseInterface $response): Collection
+    {
+        return collect(json_decode((string) $response->getBody(), true));
+    }
+
+    /**
      * Send a request to the Ymir API.
      */
     private function request(string $method, string $uri, array $body = []): Collection
     {
-        $method = strtolower($method);
-        $options = [
-            'base_uri' => $this->baseUrl,
-            'headers' => [
-                'Accept' => 'application/json',
-                'Content-Type' => 'application/json',
-            ],
-            'verify' => false,
-        ];
-        $uri = ltrim($uri, '/');
-
-        if ($this->cliConfiguration->hasAccessToken()) {
-            $options['headers']['Authorization'] = 'Bearer '.$this->cliConfiguration->getAccessToken();
-        }
-
-        if (in_array($method, ['delete', 'post', 'put'])) {
-            $options['json'] = $body;
-        }
-
         try {
-            $response = $this->client->request($method, $uri, $options);
+            $response = $this->client->send($this->createRequest($method, $uri, $body), ['verify' => false]);
         } catch (ClientException $exception) {
             throw new ApiClientException($exception);
         }
 
-        return collect(json_decode((string) $response->getBody(), true));
+        return $this->decodeResponse($response);
     }
 }
