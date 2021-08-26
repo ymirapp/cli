@@ -35,6 +35,9 @@ services:
       - '%vendor_directory%/guzzlehttp/guzzle/src/functions.php'
       - '%vendor_directory%/guzzlehttp/guzzle/src/functions_include.php'
 
+  Symfony\Component\Filesystem\:
+    resource: '%vendor_directory%/symfony/filesystem'
+
   Ymir\Cli\:
     lazy: true
     resource: '../src'
@@ -87,6 +90,3 @@ services:
     arguments:
       $deploymentSteps:
         - '@Ymir\Cli\Deployment\StartAndMonitorDeploymentStep'
-
-  Symfony\Component\Filesystem\:
-    resource: '%vendor_directory%/symfony/filesystem'
