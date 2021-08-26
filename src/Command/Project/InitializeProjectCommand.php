@@ -192,7 +192,7 @@ class InitializeProjectCommand extends AbstractProjectCommand
     }
 
     /**
-     * Check for WordPress and offer to install if it's not detected.
+     * Check for WordPress and offer to install it if it's not detected.
      */
     private function checkForWordPress(ConsoleOutput $output, string $projectType)
     {
