@@ -625,6 +625,14 @@ class ApiClient
     }
 
     /**
+     * Get the the project environment's metrics.
+     */
+    public function getEnvironmentMetrics(int $projectId, string $environment, string $period): Collection
+    {
+        return $this->request('get', "/projects/{$projectId}/environments/{$environment}/metrics?period={$period}");
+    }
+
+    /**
      * Get the details on the project's environments.
      */
     public function getEnvironments(int $projectId): Collection
