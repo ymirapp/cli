@@ -15,7 +15,6 @@ namespace Ymir\Cli\Command;
 
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Ymir\Cli\Command\Project\InitializeProjectCommand;
 
 /**
  * Base command for interacting with a project.
@@ -27,9 +26,7 @@ abstract class AbstractProjectCommand extends AbstractCommand
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        if (InitializeProjectCommand::NAME !== $this->getName()) {
-            $this->projectConfiguration->validate();
-        }
+        $this->projectConfiguration->validate();
 
         return parent::execute($input, $output);
     }

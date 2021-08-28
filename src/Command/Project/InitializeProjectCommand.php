@@ -20,7 +20,7 @@ use Tightenco\Collect\Support\Arr;
 use Tightenco\Collect\Support\Collection;
 use Ymir\Cli\ApiClient;
 use Ymir\Cli\CliConfiguration;
-use Ymir\Cli\Command\AbstractProjectCommand;
+use Ymir\Cli\Command\AbstractCommand;
 use Ymir\Cli\Command\Database\CreateDatabaseCommand;
 use Ymir\Cli\Command\Database\CreateDatabaseServerCommand;
 use Ymir\Cli\Command\Docker\CreateDockerfileCommand;
@@ -31,7 +31,7 @@ use Ymir\Cli\Process\Process;
 use Ymir\Cli\ProjectConfiguration;
 use Ymir\Cli\WpCli;
 
-class InitializeProjectCommand extends AbstractProjectCommand
+class InitializeProjectCommand extends AbstractCommand
 {
     /**
      * The alias of the command.
