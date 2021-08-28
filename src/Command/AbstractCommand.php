@@ -114,15 +114,13 @@ abstract class AbstractCommand extends Command
         if ($input->hasArgument('network')) {
             $networkIdOrName = $this->getStringArgument($input, 'network');
         } elseif ($input->hasOption('network')) {
-            $networkIdOrName = $this->getStringOption($input, 'network');
+            $networkIdOrName = $this->getStringOption($input, 'network', true);
         }
 
         $networks = $this->apiClient->getTeamNetworks($this->cliConfiguration->getActiveTeamId());
 
         if (empty($networkIdOrName) && $input->isInteractive()) {
             $networkIdOrName = $output->choiceWithResourceDetails($question, $networks);
-        } elseif (empty($networkIdOrName) && !$input->isInteractive()) {
-            throw new RuntimeException('Must specify a network when running command in non-interactive mode');
         } elseif (1 < $networks->where('name', $networkIdOrName)->count()) {
             throw new RuntimeException(sprintf('Unable to select a network because more than one network has the name "%s"', $networkIdOrName));
         }
