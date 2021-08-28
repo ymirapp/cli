@@ -159,6 +159,34 @@ abstract class AbstractCommand extends Command
     }
 
     /**
+     * Determine the project to use.
+     */
+    protected function determineProject(string $question, InputInterface $input, ConsoleOutput $output): int
+    {
+        $projects = $this->apiClient->getTeamProjects($this->cliConfiguration->getActiveTeamId());
+
+        if ($projects->isEmpty()) {
+            throw new RuntimeException('There are no projects on the currently active team.');
+        }
+
+        $projectIdOrName = $this->getStringArgument($input, 'project');
+
+        if (empty($projectIdOrName)) {
+            $projectIdOrName = $output->choiceWithId($question, $projects);
+        } elseif (1 < $projects->where('name', $projectIdOrName)->count()) {
+            throw new RuntimeException(sprintf('Unable to select a project because more than one project has the name "%s"', $projectIdOrName));
+        }
+
+        $project = $projects->firstWhere('name', $projectIdOrName) ?? $projects->firstWhere('id', $projectIdOrName);
+
+        if (empty($project['id'])) {
+            throw new RuntimeException(sprintf('Unable to find a project with "%s" as the ID or name', $projectIdOrName));
+        }
+
+        return (int) $project['id'];
+    }
+
+    /**
      * Determine the cloud provider region to use.
      */
     protected function determineRegion(string $question, int $providerId, InputInterface $input, ConsoleOutput $output): string

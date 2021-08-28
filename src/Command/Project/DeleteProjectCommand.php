@@ -13,11 +13,12 @@ declare(strict_types=1);
 
 namespace Ymir\Cli\Command\Project;
 
+use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
-use Ymir\Cli\Command\AbstractProjectCommand;
+use Ymir\Cli\Command\AbstractCommand;
 use Ymir\Cli\Console\ConsoleOutput;
 
-class DeleteProjectCommand extends AbstractProjectCommand
+class DeleteProjectCommand extends AbstractCommand
 {
     /**
      * The alias of the command.
@@ -40,7 +41,8 @@ class DeleteProjectCommand extends AbstractProjectCommand
     {
         $this
             ->setName(self::NAME)
-            ->setDescription('Delete the project')
+            ->setDescription('Delete a project')
+            ->addArgument('project', InputArgument::OPTIONAL, 'The ID or name of the project to delete')
             ->setAliases([self::ALIAS]);
     }
 
@@ -49,15 +51,25 @@ class DeleteProjectCommand extends AbstractProjectCommand
      */
     protected function perform(InputInterface $input, ConsoleOutput $output)
     {
-        if (!$output->confirm('Are you sure you want to delete this project?', false)) {
+        $projectId = $this->projectConfiguration->exists() ? $this->projectConfiguration->getProjectId() : null;
+
+        if (null === $projectId) {
+            $projectId = $this->determineProject('Which project would you like to delete', $input, $output);
+        }
+
+        $project = $this->apiClient->getProject($projectId);
+
+        if (!$output->confirm(sprintf('Are you sure you want to delete the <comment>%s</comment> project?', $project['name']), false)) {
             return;
         }
 
         $deleteResources = (bool) $output->confirm('Do you want to delete all the project resources on the cloud provider?', false);
 
-        $this->apiClient->deleteProject($this->projectConfiguration->getProjectId(), $deleteResources);
+        $this->apiClient->deleteProject($projectId, $deleteResources);
 
-        $this->projectConfiguration->delete();
+        if ($this->projectConfiguration->exists() && $projectId === $this->projectConfiguration->getProjectId()) {
+            $this->projectConfiguration->delete();
+        }
 
         $message = 'Project deleted';
         $deleteResources ? $output->infoWithDelayWarning($message) : $output->info($message);

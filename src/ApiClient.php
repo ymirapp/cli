@@ -789,6 +789,14 @@ class ApiClient
     }
 
     /**
+     * Get the projects that belong to the given team.
+     */
+    public function getTeamProjects(int $teamId): Collection
+    {
+        return $this->request('get', "/teams/{$teamId}/projects");
+    }
+
+    /**
      * Get the teams the user is a member of.
      */
     public function getTeams(): Collection
