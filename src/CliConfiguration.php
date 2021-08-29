@@ -86,6 +86,22 @@ class CliConfiguration
     }
 
     /**
+     * Get the CLI version on GitHub.
+     */
+    public function getGitHubCliVersion(): string
+    {
+        return (string) $this->get('github_cli_version');
+    }
+
+    /**
+     * Get the timestamp when GitHub was last checked for a CLI update.
+     */
+    public function getGitHubLastCheckedTimestamp(): int
+    {
+        return (int) $this->get('github_last_checked');
+    }
+
+    /**
      * Check if the global configuration has an access token.
      */
     public function hasAccessToken(): bool
@@ -107,6 +123,22 @@ class CliConfiguration
     public function setActiveTeamId(int $teamId)
     {
         $this->set('active_team', $teamId);
+    }
+
+    /**
+     * Set the CLI version on GitHub.
+     */
+    public function setGitHubCliVersion(string $version)
+    {
+        $this->set('github_cli_version', $version);
+    }
+
+    /**
+     * Set the timestamp when GitHub was last checked for a CLI update.
+     */
+    public function setGitHubLastCheckedTimestamp(int $timestamp)
+    {
+        $this->set('github_last_checked', $timestamp);
     }
 
     /**

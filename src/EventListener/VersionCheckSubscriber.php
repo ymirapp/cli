@@ -17,10 +17,18 @@ use Symfony\Component\Console\ConsoleEvents;
 use Symfony\Component\Console\Event\ConsoleCommandEvent;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Ymir\Cli\Application;
+use Ymir\Cli\CliConfiguration;
 use Ymir\Cli\GitHubClient;
 
 class VersionCheckSubscriber implements EventSubscriberInterface
 {
+    /**
+     * The global Ymir CLI configuration.
+     *
+     * @var CliConfiguration
+     */
+    private $cliConfiguration;
+
     /**
      * The API client that interacts with the GitHub API.
      *
@@ -38,8 +46,9 @@ class VersionCheckSubscriber implements EventSubscriberInterface
     /**
      * Constructor.
      */
-    public function __construct(GitHubClient $gitHubClient, string $version)
+    public function __construct(CliConfiguration $cliConfiguration, GitHubClient $gitHubClient, string $version)
     {
+        $this->cliConfiguration = $cliConfiguration;
         $this->gitHubClient = $gitHubClient;
         $this->version = $version;
     }
@@ -59,9 +68,14 @@ class VersionCheckSubscriber implements EventSubscriberInterface
      */
     public function onConsoleCommand(ConsoleCommandEvent $event)
     {
-        $latestVersion = ltrim($this->gitHubClient->getTags('ymirapp/cli')->pluck('name')->first(), 'v');
+        $time = time();
 
-        if (version_compare($latestVersion, $this->version, '>')) {
+        if ($time - $this->cliConfiguration->getGitHubLastCheckedTimestamp() > 3600) {
+            $this->cliConfiguration->setGitHubCliVersion(ltrim($this->gitHubClient->getTags('ymirapp/cli')->pluck('name')->first(), 'v'));
+            $this->cliConfiguration->setGitHubLastCheckedTimestamp($time);
+        }
+
+        if (version_compare($this->cliConfiguration->getGitHubCliVersion(), $this->version, '>')) {
             $event->getOutput()->writeln('<comment>A new version of the Ymir CLI is available</comment>');
         }
     }
