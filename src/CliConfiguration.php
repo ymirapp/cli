@@ -67,10 +67,10 @@ class CliConfiguration
         $token = getenv('YMIR_API_TOKEN');
 
         if (!is_string($token)) {
-            $token = $this->get('token');
+            $token = (string) $this->get('token');
         }
 
-        return (string) $token;
+        return $token;
     }
 
     /**
