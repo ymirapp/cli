@@ -13,8 +13,6 @@ declare(strict_types=1);
 
 namespace Ymir\Cli\Command\Provider;
 
-use Symfony\Component\Console\Exception\InvalidArgumentException;
-use Symfony\Component\Console\Input\InputInterface;
 use Ymir\Cli\ApiClient;
 use Ymir\Cli\CliConfiguration;
 use Ymir\Cli\Command\AbstractCommand;
@@ -51,20 +49,6 @@ abstract class AbstractProviderCommand extends AbstractCommand
             'key' => $output->ask('Please enter your AWS user key'),
             'secret' => $output->askHidden('Please enter your AWS user secret'),
         ];
-    }
-
-    /**
-     * Get the "provider" argument.
-     */
-    protected function getProviderArgument(InputInterface $input): int
-    {
-        $providerId = $this->getStringArgument($input, 'provider');
-
-        if (!is_numeric($providerId)) {
-            throw new InvalidArgumentException('The "provider" argument must be the ID of the cloud provider');
-        }
-
-        return (int) $providerId;
     }
 
     /**

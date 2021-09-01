@@ -34,7 +34,7 @@ class UpdateProviderCommand extends AbstractProviderCommand
         $this
             ->setName(self::NAME)
             ->setDescription('Update a cloud provider')
-            ->addArgument('provider', InputArgument::OPTIONAL, 'The ID of the cloud provider to update');
+            ->addArgument('provider', InputArgument::REQUIRED, 'The ID of the cloud provider to update');
     }
 
     /**
@@ -42,7 +42,7 @@ class UpdateProviderCommand extends AbstractProviderCommand
      */
     protected function perform(InputInterface $input, ConsoleOutput $output)
     {
-        $provider = $this->apiClient->getProvider($this->getProviderArgument($input));
+        $provider = $this->apiClient->getProvider($this->getNumericArgument($input, 'provider'));
 
         $name = (string) $output->ask('Please enter a name for the cloud provider connection', $provider->get('name'));
 

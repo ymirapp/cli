@@ -42,7 +42,7 @@ class DeleteProviderCommand extends AbstractProviderCommand
      */
     protected function perform(InputInterface $input, ConsoleOutput $output)
     {
-        $providerId = $this->getProviderArgument($input);
+        $providerId = $this->getNumericArgument($input, 'provider');
 
         if (!$output->confirm('Are you sure you want to delete this cloud provider? All resources associated to it will also be deleted on Ymir. They won\'t be deleted on your cloud provider.', false)) {
             return;
