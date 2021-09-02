@@ -34,7 +34,7 @@ class CurrentTeamCommand extends AbstractCommand
     {
         $this
             ->setName(self::NAME)
-            ->setDescription('Get the name of your currently active team');
+            ->setDescription('Get the details on your currently active team');
     }
 
     /**
