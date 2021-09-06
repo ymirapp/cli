@@ -90,7 +90,7 @@ class CompressBuildFilesStep implements BuildStepInterface
         $archive->close();
 
         if ($totalSize >= 147005412) {
-            throw new RuntimeException(sprintf('The uncompressed build is %s bytes. It must be less than 147005412 bytes to be able to deploy.', $totalSize));
+            throw new RuntimeException(sprintf("The uncompressed build is %s bytes. It must be less than 147005412 bytes to be able to deploy. You can avoid this error by switching to container image deployment.\n\nPlease refer to this guide: https://docs.ymirapp.com/guides/container-image-deployment.html", $totalSize));
         }
     }
 
