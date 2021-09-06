@@ -16,6 +16,7 @@ namespace Ymir\Cli\Command\Team;
 use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
+use Tightenco\Collect\Support\Arr;
 use Ymir\Cli\Command\AbstractCommand;
 use Ymir\Cli\Console\ConsoleOutput;
 
@@ -55,7 +56,20 @@ class SelectTeamCommand extends AbstractCommand
         if (0 !== $teamId && !$teams->contains('id', $teamId)) {
             throw new RuntimeException(sprintf('You\'re not on a team with ID %s', $teamId));
         } elseif (0 === $teamId) {
-            $teamId = $output->choiceWithId('Enter the ID of the team that you want to switch to', $teams);
+            $user = $this->apiClient->getUser();
+
+            $teamId = $output->choiceWithId('Enter the ID of the team that you want to switch to', $teams->map(function (array $team) use ($user) {
+                $owner = (string) Arr::get($team, 'owner.name');
+
+                if ($user['id'] === Arr::get($team, 'owner.id')) {
+                    $owner = 'You';
+                }
+
+                return [
+                    'id' => $team['id'],
+                    'name' => sprintf('%s (<info>Owner</info>: %s)', $team['name'], $owner),
+                ];
+            }));
         }
 
         $this->cliConfiguration->setActiveTeamId($teamId);
