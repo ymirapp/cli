@@ -83,7 +83,7 @@ class ConsoleOutput extends SymfonyStyle
             $format = '<info>%s</info>';
         }
 
-        return sprintf($format, $status);
+        return sprintf($format, str_replace('_', ' ', $status));
     }
 
     /**
