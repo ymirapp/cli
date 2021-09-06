@@ -16,6 +16,7 @@ namespace Ymir\Cli\Command\Docker;
 use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Filesystem\Filesystem;
 use Ymir\Cli\ApiClient;
 use Ymir\Cli\CliConfiguration;
@@ -73,7 +74,8 @@ class CreateDockerfileCommand extends AbstractProjectCommand
         $this
             ->setName(self::NAME)
             ->setDescription('Create a new Dockerfile')
-            ->addArgument('environment', InputArgument::OPTIONAL, 'The name of the environment to create the Dockerfile for');
+            ->addArgument('environment', InputArgument::OPTIONAL, 'The name of the environment to create the Dockerfile for')
+            ->addOption('configure-project', null, InputOption::VALUE_NONE, 'Configure project\'s ymir.yml file');
     }
 
     /**
@@ -108,5 +110,15 @@ class CreateDockerfileCommand extends AbstractProjectCommand
         }
 
         $output->info($message);
+
+        if (!$this->getBooleanOption($input, 'configure-project') && !$output->confirm('Would you like to configure your project for container image deployment?')) {
+            return;
+        }
+
+        $options = [
+            'deployment' => 'image',
+        ];
+
+        empty($environment) ? $this->projectConfiguration->addOptionsToEnvironments($options) : $this->projectConfiguration->addOptionsToEnvironment($environment, $options);
     }
 }

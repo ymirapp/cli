@@ -144,11 +144,7 @@ class InitializeProjectCommand extends AbstractCommand
             }
 
             if ($output->confirm('Will you deploy this project using a container image?', false)) {
-                $this->invoke($output, CreateDockerfileCommand::NAME);
-
-                $this->projectConfiguration->addOptionsToEnvironments([
-                    'deployment' => 'image',
-                ]);
+                $this->invoke($output, CreateDockerfileCommand::NAME, ['--configure-project']);
             }
         }, 'Do you want to try creating a project again?', $output);
     }

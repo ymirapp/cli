@@ -77,12 +77,20 @@ class ProjectConfiguration implements Arrayable
     }
 
     /**
+     * Add the given options to the given project environment.
+     */
+    public function addOptionsToEnvironment(string $environment, array $options)
+    {
+        $this->configuration['environments'][$environment] = array_merge((array) $this->configuration['environments'][$environment], $options);
+    }
+
+    /**
      * Add the given options to all project environments.
      */
     public function addOptionsToEnvironments(array $options)
     {
-        foreach ($this->configuration['environments'] as $name => $environment) {
-            $this->configuration['environments'][$name] = array_merge((array) $environment, $options);
+        foreach ($this->getEnvironments() as $environment) {
+            $this->addOptionsToEnvironment($environment, $options);
         }
     }
 
