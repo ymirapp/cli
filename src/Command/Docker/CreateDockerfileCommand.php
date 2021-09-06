@@ -83,7 +83,7 @@ class CreateDockerfileCommand extends AbstractProjectCommand
     {
         $dockerfileStub = 'Dockerfile';
         $dockerfileStubPath = $this->stubDirectory.'/'.$dockerfileStub;
-        $environment = $this->getStringArgument($input, 'environment');
+        $environment = $this->getStringArgument($input, 'environment', false);
 
         if (!empty($environment)) {
             $dockerfileStub = $environment.'.'.$dockerfileStub;
