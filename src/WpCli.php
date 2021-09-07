@@ -14,7 +14,7 @@ declare(strict_types=1);
 namespace Ymir\Cli;
 
 use Symfony\Component\Console\Exception\RuntimeException;
-use Tightenco\Collect\Support\Enumerable;
+use Tightenco\Collect\Support\Collection;
 use Ymir\Cli\Process\Process;
 
 class WpCli
@@ -55,10 +55,10 @@ class WpCli
     public static function isYmirPluginInstalled(string $executable = ''): bool
     {
         try {
-            return self::isInstalledGlobally() && self::listPlugins($executable)->contains(function (array $plugin) {
+            return self::listPlugins($executable)->contains(function (array $plugin) {
                 return !empty($plugin['file']) && 1 === preg_match('/\/ymir\.php$/', $plugin['file']);
             });
-        } catch (RuntimeException $exception) {
+        } catch (\Throwable $exception) {
             return false;
         }
     }
@@ -66,7 +66,7 @@ class WpCli
     /**
      * List all the installed plugins.
      */
-    public static function listPlugins(string $executable = ''): Enumerable
+    public static function listPlugins(string $executable = ''): Collection
     {
         $process = self::runCommand('plugin list --fields=name,status,version,file --format=json', $executable);
 
