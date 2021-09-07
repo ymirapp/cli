@@ -21,6 +21,7 @@ use Psr\Http\Message\ResponseInterface;
 use Symfony\Component\Console\Exception\RuntimeException;
 use Tightenco\Collect\Support\Collection;
 use Ymir\Cli\Exception\ApiClientException;
+use Ymir\Cli\ProjectConfiguration\ProjectConfiguration;
 
 class ApiClient
 {

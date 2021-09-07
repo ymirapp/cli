@@ -16,7 +16,6 @@ namespace Ymir\Cli\Command\Project;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\NullOutput;
 use Symfony\Component\Filesystem\Filesystem;
-use Tightenco\Collect\Support\Arr;
 use Tightenco\Collect\Support\Collection;
 use Ymir\Cli\ApiClient;
 use Ymir\Cli\CliConfiguration;
@@ -28,7 +27,8 @@ use Ymir\Cli\Command\InstallPluginCommand;
 use Ymir\Cli\Command\Provider\ConnectProviderCommand;
 use Ymir\Cli\Console\ConsoleOutput;
 use Ymir\Cli\Process\Process;
-use Ymir\Cli\ProjectConfiguration;
+use Ymir\Cli\ProjectConfiguration\ProjectConfiguration;
+use Ymir\Cli\Support\Arr;
 use Ymir\Cli\WpCli;
 
 class InitializeProjectCommand extends AbstractCommand
@@ -145,6 +145,10 @@ class InitializeProjectCommand extends AbstractCommand
 
             if ($output->confirm('Will you deploy this project using a container image?', false)) {
                 $this->invoke($output, CreateDockerfileCommand::NAME, ['--configure-project']);
+            }
+
+            if (WpCli::isInstalledGlobally() && WpCli::isWordPressInstalled() && $output->confirm('Do you want to have Ymir scan your plugins and themes and configure your project?')) {
+                $this->invoke($output, ConfigureProjectCommand::NAME);
             }
         }, 'Do you want to try creating a project again?', $output);
     }

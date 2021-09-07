@@ -11,7 +11,7 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace Ymir\Cli;
+namespace Ymir\Cli\ProjectConfiguration;
 
 use Symfony\Component\Console\Exception\InvalidArgumentException;
 use Symfony\Component\Console\Exception\RuntimeException;
@@ -92,6 +92,24 @@ class ProjectConfiguration implements Arrayable
     {
         foreach ($this->getEnvironments() as $environment) {
             $this->addOptionsToEnvironment($environment, $options);
+        }
+    }
+
+    /**
+     * Apply the given configuration changes to the given environment.
+     */
+    public function applyChangesToEnvironment(string $environment, ConfigurationChangeInterface $configurationChange)
+    {
+        $this->configuration['environments'][$environment] = $configurationChange->apply($this->getEnvironment($environment), $this->getProjectType());
+    }
+
+    /**
+     * Apply the given configuration changes to all project environments.
+     */
+    public function applyChangesToEnvironments(ConfigurationChangeInterface $configurationChange)
+    {
+        foreach ($this->getEnvironments() as $environment) {
+            $this->applyChangesToEnvironment($environment, $configurationChange);
         }
     }
 

@@ -16,9 +16,9 @@ namespace Ymir\Cli\Command\Team;
 use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
-use Tightenco\Collect\Support\Arr;
 use Ymir\Cli\Command\AbstractCommand;
 use Ymir\Cli\Console\ConsoleOutput;
+use Ymir\Cli\Support\Arr;
 
 class SelectTeamCommand extends AbstractCommand
 {

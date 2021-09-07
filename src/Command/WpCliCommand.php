@@ -17,8 +17,8 @@ use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
-use Tightenco\Collect\Support\Arr;
 use Ymir\Cli\Console\ConsoleOutput;
+use Ymir\Cli\Support\Arr;
 
 class WpCliCommand extends AbstractInvocationCommand
 {

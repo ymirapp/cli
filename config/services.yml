@@ -28,6 +28,8 @@ services:
       tags: ['command']
     Symfony\Component\EventDispatcher\EventSubscriberInterface:
       tags: ['subscriber']
+    Ymir\Cli\ProjectConfiguration\WordPressConfigurationChangeInterface:
+      tags: ['wordpress_configuration_changes']
 
   GuzzleHttp\:
     resource: '%vendor_directory%/guzzlehttp/guzzle/src'
@@ -57,7 +59,7 @@ services:
     arguments:
       - !tagged subscriber
 
-  Ymir\Cli\ProjectConfiguration:
+  Ymir\Cli\ProjectConfiguration\ProjectConfiguration:
     arguments:
       $configurationFilePath: '%project_configuration_filepath%'
 
@@ -73,6 +75,10 @@ services:
         - '@Ymir\Cli\Build\ExtractAssetFilesStep'
         - '@Ymir\Cli\Build\CompressBuildFilesStep'
         - '@Ymir\Cli\Build\BuildContainerImageStep'
+
+  Ymir\Cli\Command\Project\ConfigureProjectCommand:
+    arguments:
+      $configurationChanges: !tagged wordpress_configuration_changes
 
   Ymir\Cli\Command\Project\DeployProjectCommand:
     arguments:

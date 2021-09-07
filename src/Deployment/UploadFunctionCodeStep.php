@@ -14,13 +14,13 @@ declare(strict_types=1);
 namespace Ymir\Cli\Deployment;
 
 use Symfony\Component\Console\Helper\ProgressBar;
-use Tightenco\Collect\Support\Arr;
 use Tightenco\Collect\Support\Collection;
 use Ymir\Cli\ApiClient;
 use Ymir\Cli\Console\ConsoleOutput;
 use Ymir\Cli\Docker;
 use Ymir\Cli\FileUploader;
-use Ymir\Cli\ProjectConfiguration;
+use Ymir\Cli\ProjectConfiguration\ProjectConfiguration;
+use Ymir\Cli\Support\Arr;
 
 class UploadFunctionCodeStep implements DeploymentStepInterface
 {

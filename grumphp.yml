@@ -34,4 +34,6 @@ grumphp:
         - 'activate-ymir-plugin.php'
       ruleset: ['phpmd.xml']
     phpstan:
-      ignore_patterns: ['/^stubs/']
+      ignore_patterns: ['/^(?!src)/']
+    phpunit:
+      always_execute: true

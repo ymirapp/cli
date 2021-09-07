@@ -17,7 +17,7 @@ use Ymir\Cli\ApiClient;
 use Ymir\Cli\CliConfiguration;
 use Ymir\Cli\Command\AbstractCommand;
 use Ymir\Cli\Console\ConsoleOutput;
-use Ymir\Cli\ProjectConfiguration;
+use Ymir\Cli\ProjectConfiguration\ProjectConfiguration;
 
 abstract class AbstractProviderCommand extends AbstractCommand
 {

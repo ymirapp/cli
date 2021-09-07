@@ -15,7 +15,7 @@ namespace Ymir\Cli\Build;
 
 use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Filesystem\Filesystem;
-use Ymir\Cli\ProjectConfiguration;
+use Ymir\Cli\ProjectConfiguration\ProjectConfiguration;
 
 class CopyMustUsePluginStep extends AbstractBuildStep
 {

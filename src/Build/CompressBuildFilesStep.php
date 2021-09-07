@@ -16,8 +16,8 @@ namespace Ymir\Cli\Build;
 use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Finder\SplFileInfo;
-use Tightenco\Collect\Support\Arr;
-use Ymir\Cli\ProjectConfiguration;
+use Ymir\Cli\ProjectConfiguration\ProjectConfiguration;
+use Ymir\Cli\Support\Arr;
 
 class CompressBuildFilesStep implements BuildStepInterface
 {

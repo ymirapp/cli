@@ -18,12 +18,12 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Filesystem\Filesystem;
-use Tightenco\Collect\Support\Arr;
 use Ymir\Cli\ApiClient;
 use Ymir\Cli\CliConfiguration;
 use Ymir\Cli\Command\Network\AddBastionHostCommand;
 use Ymir\Cli\Console\ConsoleOutput;
-use Ymir\Cli\ProjectConfiguration;
+use Ymir\Cli\ProjectConfiguration\ProjectConfiguration;
+use Ymir\Cli\Support\Arr;
 
 class CacheTunnelCommand extends AbstractCacheCommand
 {

@@ -18,13 +18,13 @@ use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
-use Tightenco\Collect\Support\Arr;
 use Ymir\Cli\ApiClient;
 use Ymir\Cli\CliConfiguration;
 use Ymir\Cli\Console\ConsoleOutput;
 use Ymir\Cli\GitHubClient;
 use Ymir\Cli\Process\Process;
-use Ymir\Cli\ProjectConfiguration;
+use Ymir\Cli\ProjectConfiguration\ProjectConfiguration;
+use Ymir\Cli\Support\Arr;
 
 class InstallPluginCommand extends AbstractProjectCommand
 {

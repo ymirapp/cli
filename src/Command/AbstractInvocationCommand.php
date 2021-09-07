@@ -14,7 +14,7 @@ declare(strict_types=1);
 namespace Ymir\Cli\Command;
 
 use Symfony\Component\Console\Exception\RuntimeException;
-use Tightenco\Collect\Support\Arr;
+use Ymir\Cli\Support\Arr;
 
 /**
  * Base command for invoking a project function.

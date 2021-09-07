@@ -23,7 +23,7 @@ use Ymir\Cli\Command\AbstractProjectCommand;
 use Ymir\Cli\Command\Project\DeployProjectCommand;
 use Ymir\Cli\Command\Project\RedeployProjectCommand;
 use Ymir\Cli\Console\ConsoleOutput;
-use Ymir\Cli\ProjectConfiguration;
+use Ymir\Cli\ProjectConfiguration\ProjectConfiguration;
 
 class UploadEnvironmentVariablesCommand extends AbstractProjectCommand
 {

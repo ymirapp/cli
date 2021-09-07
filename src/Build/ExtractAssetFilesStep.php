@@ -16,7 +16,7 @@ namespace Ymir\Cli\Build;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Finder\SplFileInfo;
-use Ymir\Cli\ProjectConfiguration;
+use Ymir\Cli\ProjectConfiguration\ProjectConfiguration;
 
 class ExtractAssetFilesStep extends AbstractBuildStep
 {

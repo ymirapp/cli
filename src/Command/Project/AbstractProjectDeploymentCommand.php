@@ -22,7 +22,7 @@ use Ymir\Cli\Command\Email\CreateEmailIdentityCommand;
 use Ymir\Cli\Command\Environment\GetEnvironmentUrlCommand;
 use Ymir\Cli\Console\ConsoleOutput;
 use Ymir\Cli\Deployment\DeploymentStepInterface;
-use Ymir\Cli\ProjectConfiguration;
+use Ymir\Cli\ProjectConfiguration\ProjectConfiguration;
 
 abstract class AbstractProjectDeploymentCommand extends AbstractProjectCommand
 {

@@ -125,6 +125,18 @@ class ConsoleOutput extends SymfonyStyle
     }
 
     /**
+     * Write out a list of items.
+     */
+    public function list(iterable $items)
+    {
+        $this->newLine();
+
+        foreach ($items as $item) {
+            $this->writeln(sprintf('  * %s', (string) $item));
+        }
+    }
+
+    /**
      * Ask a multiselect choice question.
      */
     public function multichoice($question, array $choices, $default = null): array

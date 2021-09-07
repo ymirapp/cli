@@ -15,6 +15,7 @@ namespace Ymir\Cli;
 
 use Symfony\Component\Console\Exception\RuntimeException;
 use Tightenco\Collect\Support\Collection;
+use Ymir\Cli\Exception\WpCliException;
 use Ymir\Cli\Process\Process;
 
 class WpCli
@@ -44,8 +45,8 @@ class WpCli
             self::runCommand('core is-installed', $executable);
 
             return true;
-        } catch (RuntimeException $exception) {
-            return false === stripos($exception->getMessage(), 'This does not seem to be a WordPress installation');
+        } catch (WpCliException $exception) {
+            return false;
         }
     }
 
@@ -90,6 +91,10 @@ class WpCli
             $executable = 'wp';
         }
 
-        return Process::runShellCommandline(sprintf('%s %s', $executable, $command));
+        try {
+            return Process::runShellCommandline(sprintf('%s %s', $executable, $command));
+        } catch (RuntimeException $exception) {
+            throw new WpCliException($exception->getMessage(), $exception->getCode(), $exception);
+        }
     }
 }

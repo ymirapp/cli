@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace Ymir\Cli\Build;
 
-use Ymir\Cli\ProjectConfiguration;
+use Ymir\Cli\ProjectConfiguration\ProjectConfiguration;
 
 interface BuildStepInterface
 {

@@ -20,7 +20,6 @@ use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Tightenco\Collect\Support\Arr;
 use Ymir\Cli\ApiClient;
 use Ymir\Cli\CliConfiguration;
 use Ymir\Cli\Command\Network\CreateNetworkCommand;
@@ -30,7 +29,8 @@ use Ymir\Cli\Console\HiddenInputOption;
 use Ymir\Cli\Console\InputDefinition;
 use Ymir\Cli\Exception\ApiClientException;
 use Ymir\Cli\Exception\CommandCancelledException;
-use Ymir\Cli\ProjectConfiguration;
+use Ymir\Cli\ProjectConfiguration\ProjectConfiguration;
+use Ymir\Cli\Support\Arr;
 
 abstract class AbstractCommand extends Command
 {
