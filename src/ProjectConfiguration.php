@@ -70,7 +70,7 @@ class ProjectConfiguration implements Arrayable
      */
     public function addEnvironment(string $environment, ?array $options = null)
     {
-        if ('bedrock' === $this->configuration['type']) {
+        if (isset($this->configuration['type']) && 'bedrock' === $this->configuration['type']) {
             $options = array_merge(['build' => ['COMPOSER_MIRROR_PATH_REPOS=1 composer install']], (array) $options);
         }
 
