@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Ymir\Cli;
 
+use Symfony\Component\Console\Exception\InvalidArgumentException;
 use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Yaml\Yaml;
@@ -141,7 +142,7 @@ class ProjectConfiguration implements Arrayable
     public function getEnvironment(string $environment): array
     {
         if (!$this->hasEnvironment($environment)) {
-            throw new \InvalidArgumentException(sprintf('Environment "%s" not found in ymir.yml file', $environment));
+            throw new InvalidArgumentException(sprintf('Environment "%s" not found in ymir.yml file', $environment));
         }
 
         return (array) $this->configuration['environments'][$environment];
