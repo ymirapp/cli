@@ -82,7 +82,7 @@ class ProjectConfiguration implements Arrayable
      */
     public function addOptionsToEnvironment(string $environment, array $options)
     {
-        $this->configuration['environments'][$environment] = array_merge((array) $this->configuration['environments'][$environment], $options);
+        $this->configuration['environments'][$environment] = array_merge($this->getEnvironment($environment), $options);
     }
 
     /**
