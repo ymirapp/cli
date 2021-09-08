@@ -24,6 +24,7 @@ use Ymir\Cli\Command\AbstractProjectCommand;
 use Ymir\Cli\Console\ConsoleOutput;
 use Ymir\Cli\ProjectConfiguration\ProjectConfiguration;
 use Ymir\Cli\ProjectConfiguration\WordPressConfigurationChangeInterface;
+use Ymir\Cli\Support\Arr;
 use Ymir\Cli\WpCli;
 
 class ConfigureProjectCommand extends AbstractProjectCommand
@@ -128,8 +129,10 @@ class ConfigureProjectCommand extends AbstractProjectCommand
 
         $output->info($message);
 
-        $output->list($filteredConfigurationChanges->map(function (WordPressConfigurationChangeInterface $configurationChange) {
-            return $configurationChange->getName();
+        $output->list($filteredConfigurationChanges->map(function (WordPressConfigurationChangeInterface $configurationChange) use ($plugins) {
+            $name = $configurationChange->getName();
+
+            return Arr::get($plugins->firstWhere('name', $name), 'title', $name);
         }));
 
         if (!$output->confirm('Do you want to apply them?', $apply)) {

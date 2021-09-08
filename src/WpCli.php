@@ -69,7 +69,7 @@ class WpCli
      */
     public static function listPlugins(string $executable = ''): Collection
     {
-        $process = self::runCommand('plugin list --fields=name,status,version,file --format=json', $executable);
+        $process = self::runCommand('plugin list --fields=file,name,status,title,version --format=json', $executable);
 
         $plugins = collect(json_decode($process->getOutput(), true));
 
