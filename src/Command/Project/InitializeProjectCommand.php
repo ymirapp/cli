@@ -278,7 +278,7 @@ class InitializeProjectCommand extends AbstractCommand
      */
     private function isPluginInstalled(string $projectType): bool
     {
-        return ('wordpress' === $projectType && WpCli::isInstalledGlobally() && WpCli::isYmirPluginInstalled())
+        return ('wordpress' === $projectType && WpCli::isYmirPluginInstalled())
             || ('bedrock' === $projectType && false !== strpos((string) file_get_contents('./composer.json'), 'ymirapp/wordpress-plugin'));
     }
 }
