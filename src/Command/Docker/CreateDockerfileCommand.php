@@ -22,6 +22,7 @@ use Ymir\Cli\ApiClient;
 use Ymir\Cli\CliConfiguration;
 use Ymir\Cli\Command\AbstractProjectCommand;
 use Ymir\Cli\Console\ConsoleOutput;
+use Ymir\Cli\ProjectConfiguration\ImageDeploymentConfigurationChange;
 use Ymir\Cli\ProjectConfiguration\ProjectConfiguration;
 
 class CreateDockerfileCommand extends AbstractProjectCommand
@@ -115,10 +116,8 @@ class CreateDockerfileCommand extends AbstractProjectCommand
             return;
         }
 
-        $options = [
-            'deployment' => 'image',
-        ];
+        $configurationChange = new ImageDeploymentConfigurationChange();
 
-        empty($environment) ? $this->projectConfiguration->addOptionsToEnvironments($options) : $this->projectConfiguration->addOptionsToEnvironment($environment, $options);
+        empty($environment) ? $this->projectConfiguration->applyChangesToEnvironments($configurationChange) : $this->projectConfiguration->applyChangesToEnvironment($environment, $configurationChange);
     }
 }

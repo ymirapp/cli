@@ -22,6 +22,7 @@ use Tightenco\Collect\Support\Collection;
 use Ymir\Cli\Command\AbstractCommand;
 use Ymir\Cli\Console\ConsoleOutput;
 use Ymir\Cli\Exception\CommandCancelledException;
+use Ymir\Cli\ProjectConfiguration\CacheConfigurationChange;
 
 class CreateCacheCommand extends AbstractCommand
 {
@@ -69,7 +70,7 @@ class CreateCacheCommand extends AbstractCommand
         $output->infoWithDelayWarning('Cache cluster created');
 
         if ($this->projectConfiguration->exists() && $output->confirm('Would you like to add the cache cluster to your project configuration?')) {
-            $this->projectConfiguration->addOptionsToEnvironments(['cache' => $name]);
+            $this->projectConfiguration->applyChangesToEnvironments(new CacheConfigurationChange($name));
         }
     }
 
