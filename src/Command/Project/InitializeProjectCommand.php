@@ -196,13 +196,15 @@ class InitializeProjectCommand extends AbstractCommand
      */
     private function checkForWordPress(ConsoleOutput $output, string $projectType)
     {
-        if (!in_array($projectType, ['bedrock', 'wordpress']) || !WpCli::isInstalledGlobally() || WpCli::isWordPressInstalled() || !$output->confirm('WordPress wasn\'t detected in the project directory. Would you like to download it?')) {
+        if (!$this->isWordPressDownloadable($projectType) || !$output->confirm('WordPress wasn\'t detected in the project directory. Would you like to download it?')) {
             return;
         }
 
         if ('bedrock' === $projectType) {
+            $output->info('Creating new Bedrock project');
             Process::runShellCommandline('composer create-project roots/bedrock .');
         } elseif ('wordpress' === $projectType) {
+            $output->info('Downloading WordPress using WP-CLI');
             WpCli::downloadWordPress();
         }
 
@@ -280,5 +282,16 @@ class InitializeProjectCommand extends AbstractCommand
     {
         return ('wordpress' === $projectType && WpCli::isYmirPluginInstalled())
             || ('bedrock' === $projectType && false !== strpos((string) file_get_contents('./composer.json'), 'ymirapp/wordpress-plugin'));
+    }
+
+    /**
+     * Checks if we're able to download WordPress.
+     */
+    private function isWordPressDownloadable(string $projectType): bool
+    {
+        return in_array($projectType, ['bedrock', 'wordpress'])
+            && !WpCli::isWordPressInstalled()
+            && (('wordpress' === $projectType && WpCli::isInstalledGlobally())
+               || ('bedrock' === $projectType && !(new \FilesystemIterator($this->projectDirectory))->valid()));
     }
 }
