@@ -237,6 +237,10 @@ class ProjectConfiguration implements Arrayable
             throw new RuntimeException('The ymir.yml file must have an "id"');
         } elseif (empty($this->configuration['environments'])) {
             throw new RuntimeException('The ymir.yml file must have at least one environment');
+        } elseif (empty($this->configuration['type'])) {
+            throw new RuntimeException('The ymir.yml file must have an "type"');
+        } elseif (!in_array($this->configuration['type'], ['bedrock', 'wordpress'])) {
+            throw new RuntimeException('The allowed project "type" are "bedrock" or "wordpress"');
         }
     }
 
