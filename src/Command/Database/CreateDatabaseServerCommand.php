@@ -65,7 +65,7 @@ class CreateDatabaseServerCommand extends AbstractCommand
         $storage = $this->determineStorage($input, $output);
         $public = $this->determinePublic($input, $output);
 
-        if (!$public && !$network->get('has_nat_gateway') && !$output->confirm('A cache cluster will require Ymir to add a NAT gateway to your network (~$32/month). Would you like to proceed?')) {
+        if (!$public && !$network->get('has_nat_gateway') && !$output->confirm('A private database server will require Ymir to add a NAT gateway to your network (~$32/month). Would you like to proceed?')) {
             throw new CommandCancelledException();
         }
 

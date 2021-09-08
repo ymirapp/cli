@@ -196,7 +196,7 @@ class InitializeProjectCommand extends AbstractCommand
      */
     private function checkForWordPress(ConsoleOutput $output, string $projectType)
     {
-        if (!in_array($projectType, ['bedrock', 'wordpress']) || !WpCli::isInstalledGlobally() || WpCli::isWordPressInstalled() || !$output->confirm('WordPress was\'t detected in the project directory. Would you like to download it?')) {
+        if (!in_array($projectType, ['bedrock', 'wordpress']) || !WpCli::isInstalledGlobally() || WpCli::isWordPressInstalled() || !$output->confirm('WordPress wasn\'t detected in the project directory. Would you like to download it?')) {
             return;
         }
 
