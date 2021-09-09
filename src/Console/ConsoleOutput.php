@@ -15,6 +15,8 @@ namespace Ymir\Cli\Console;
 
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Tightenco\Collect\Support\Collection;
+use Ymir\Cli\Command\Project\DeployProjectCommand;
+use Ymir\Cli\Command\Project\RedeployProjectCommand;
 
 class ConsoleOutput extends SymfonyStyle
 {
@@ -100,6 +102,16 @@ class ConsoleOutput extends SymfonyStyle
     public function infoWithDelayWarning(string $message, bool $newline = true)
     {
         $this->infoWithWarning($message, 'process takes several minutes to complete', $newline);
+    }
+
+    /**
+     * Write out an informational message with an accompanied warning about having to redeploy an environment.
+     */
+    public function infoWithRedeployWarning(string $message, string $environment)
+    {
+        $this->info($message);
+        $this->newLine();
+        $this->writeln(sprintf('<comment>Note:</comment> You need to redeploy the project to the "<comment>%s</comment>" environment using either the "<comment>%s</comment>" or "<comment>%s</comment>" commands for the change to take effect.', $environment, DeployProjectCommand::ALIAS, RedeployProjectCommand::ALIAS));
     }
 
     /**

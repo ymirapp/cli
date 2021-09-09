@@ -20,8 +20,6 @@ use Symfony\Component\Filesystem\Filesystem;
 use Ymir\Cli\ApiClient;
 use Ymir\Cli\CliConfiguration;
 use Ymir\Cli\Command\AbstractProjectCommand;
-use Ymir\Cli\Command\Project\DeployProjectCommand;
-use Ymir\Cli\Command\Project\RedeployProjectCommand;
 use Ymir\Cli\Console\ConsoleOutput;
 use Ymir\Cli\ProjectConfiguration\ProjectConfiguration;
 
@@ -91,9 +89,7 @@ class UploadEnvironmentVariablesCommand extends AbstractProjectCommand
             return isset($matches[1], $matches[2]) ? [$matches[1] => $matches[2]] : [];
         })->all(), true);
 
-        $output->info('Environment variables uploaded');
-        $output->newLine();
-        $output->writeln(sprintf('<comment>Note:</comment> You need to redeploy the project to the "<comment>%s</comment>" environment using either the "<comment>%s</comment>" or "<comment>%s</comment>" commands for the change to take effect.', $environment, DeployProjectCommand::ALIAS, RedeployProjectCommand::ALIAS));
+        $output->infoWithRedeployWarning('Environment variables uploaded', $environment);
 
         if ($output->confirm('Do you want to delete the environment file?')) {
             $this->filesystem->remove($filePath);

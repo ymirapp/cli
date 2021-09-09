@@ -16,8 +16,6 @@ namespace Ymir\Cli\Command\Environment;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Ymir\Cli\Command\AbstractProjectCommand;
-use Ymir\Cli\Command\Project\DeployProjectCommand;
-use Ymir\Cli\Command\Project\RedeployProjectCommand;
 use Ymir\Cli\Console\ConsoleOutput;
 
 class ChangeEnvironmentVariableCommand extends AbstractProjectCommand
@@ -63,8 +61,6 @@ class ChangeEnvironmentVariableCommand extends AbstractProjectCommand
             $name => $value,
         ]);
 
-        $output->info('Environment variable changed');
-        $output->newLine();
-        $output->writeln(sprintf('<comment>Note:</comment> You need to redeploy the project to the "<comment>%s</comment>" environment using either the "<comment>%s</comment>" or "<comment>%s</comment>" commands for the change to take effect.', $environment, DeployProjectCommand::ALIAS, RedeployProjectCommand::ALIAS));
+        $output->infoWithRedeployWarning('Environment variable changed', $environment);
     }
 }
