@@ -59,6 +59,6 @@ class RotateDatabaseServerPasswordCommand extends AbstractDatabaseCommand
 
         $output->infoWithDelayWarning('Database server password rotated successfully');
         $output->newLine();
-        $output->writeln(sprintf('<comment>Note:</comment> You need to redeploy all projects using this database server with the default user either the "<comment>%s</comment>" or "<comment>%s</comment>" commands for the change to take effect.', DeployProjectCommand::ALIAS, RedeployProjectCommand::ALIAS));
+        $output->writeln(sprintf('<comment>Note:</comment> You need to redeploy all projects using this database server with the default user using either the "<comment>%s</comment>" or "<comment>%s</comment>" commands for the change to take effect.', DeployProjectCommand::ALIAS, RedeployProjectCommand::ALIAS));
     }
 }

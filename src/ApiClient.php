@@ -884,7 +884,7 @@ class ApiClient
     }
 
     /**
-     * Update the give database server.
+     * Update the given database server.
      */
     public function updateDatabaseServer(int $databaseId, int $storage, string $type)
     {
