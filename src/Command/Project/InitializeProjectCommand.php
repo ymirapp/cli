@@ -289,9 +289,12 @@ class InitializeProjectCommand extends AbstractCommand
      */
     private function isWordPressDownloadable(string $projectType): bool
     {
-        return in_array($projectType, ['bedrock', 'wordpress'])
-            && !WpCli::isWordPressInstalled()
-            && (('wordpress' === $projectType && WpCli::isInstalledGlobally())
-               || ('bedrock' === $projectType && !(new \FilesystemIterator($this->projectDirectory))->valid()));
+        try {
+            return in_array($projectType, ['bedrock', 'wordpress'])
+                && !WpCli::isWordPressInstalled()
+                && ('bedrock' !== $projectType || !(new \FilesystemIterator($this->projectDirectory))->valid());
+        } catch (\Throwable $exception) {
+            return false;
+        }
     }
 }
