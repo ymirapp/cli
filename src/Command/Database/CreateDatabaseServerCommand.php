@@ -71,6 +71,9 @@ class CreateDatabaseServerCommand extends AbstractCommand
 
         $database = $this->apiClient->createDatabaseServer($name, (int) $network['id'], $type, $storage, $public);
 
+        $output->info(sprintf('<comment>Warning:</comment> The username/password below won\'t be shown again. If you lose the password, use the "<comment>%s</comment>" command to generate a new one.', RotateDatabaseServerPasswordCommand::NAME));
+        $output->newLine();
+
         $output->horizontalTable(
             ['Database Sever', new TableSeparator(), 'Username', 'Password', new TableSeparator(), 'Type', 'Public', 'Storage (in GB)'],
             [[$database['name'], new TableSeparator(), $database['username'], $database['password'], new TableSeparator(), $database['type'], $database['publicly_accessible'] ? 'yes' : 'no', $database['storage']]]
