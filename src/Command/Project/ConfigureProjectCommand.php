@@ -73,7 +73,7 @@ class ConfigureProjectCommand extends AbstractProjectCommand
             ->setName(self::NAME)
             ->setDescription('Configure the project by scanning your plugins and themes')
             ->setAliases([self::ALIAS])
-            ->addArgument('environment', InputArgument::OPTIONAL, 'The name of the environment to configure', 'staging');
+            ->addArgument('environment', InputArgument::OPTIONAL, 'The name of the environment to configure');
     }
 
     /**
