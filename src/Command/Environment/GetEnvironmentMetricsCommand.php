@@ -68,28 +68,28 @@ class GetEnvironmentMetricsCommand extends AbstractProjectCommand
         if (!empty($metrics['cdn'])) {
             $headers = array_merge($headers, [new TableSeparator(), 'Content Delivery Network', '']);
             $row1 = array_merge($row1, [new TableSeparator(), 'Bandwidth used', 'Requests']);
-            $row2 = array_merge($row2, [new TableSeparator(), number_format(collect($metrics['cdn']['bandwidth'])->sum() / 1000000000, 2).'GB', number_format(collect($metrics['cdn']['requests'])->sum())]);
+            $row2 = array_merge($row2, [new TableSeparator(), number_format((float) collect($metrics['cdn']['bandwidth'])->sum() / 1000000000, 2).'GB', number_format((float) collect($metrics['cdn']['requests'])->sum())]);
             $row3 = array_merge($row3, [new TableSeparator(), '$'.number_format($metrics['cdn']['cost_bandwidth'], 2), '$'.number_format($metrics['cdn']['cost_requests'], 2)]);
             $total += $metrics['cdn']['cost_bandwidth'] + $metrics['cdn']['cost_requests'];
         }
         if (!empty($metrics['gateway'])) {
             $headers = array_merge($headers, [new TableSeparator(), 'API Gateway']);
             $row1 = array_merge($row1, [new TableSeparator(), 'Requests']);
-            $row2 = array_merge($row2, [new TableSeparator(), number_format(collect($metrics['gateway']['requests'])->sum())]);
+            $row2 = array_merge($row2, [new TableSeparator(), number_format((float) collect($metrics['gateway']['requests'])->sum())]);
             $row3 = array_merge($row3, [new TableSeparator(), '$'.number_format($metrics['gateway']['cost_requests'], 2)]);
             $total += $metrics['gateway']['cost_requests'];
         }
         if (!empty($metrics['website'])) {
             $headers = array_merge($headers, [new TableSeparator(), 'Website Lambda function', '', '']);
             $row1 = array_merge($row1, [new TableSeparator(), 'Invocations', 'Duration', 'Avg duration']);
-            $row2 = array_merge($row2, [new TableSeparator(), number_format(collect($metrics['website']['invocations'])->sum()), number_format(collect($metrics['website']['duration'])->sum() / 1000).'s', number_format(collect($metrics['website']['avg_duration'])->avg()).'ms']);
+            $row2 = array_merge($row2, [new TableSeparator(), number_format((float) collect($metrics['website']['invocations'])->sum()), number_format((float) collect($metrics['website']['duration'])->sum() / 1000).'s', number_format((float) collect($metrics['website']['avg_duration'])->avg()).'ms']);
             $row3 = array_merge($row3, [new TableSeparator(), '$'.number_format($metrics['website']['cost_invocations'], 2), '$'.number_format($metrics['website']['cost_duration'], 2), '-']);
             $total += $metrics['website']['cost_duration'] + $metrics['website']['cost_invocations'];
         }
         if (!empty($metrics['console'])) {
             $headers = array_merge($headers, [new TableSeparator(), 'Console Lambda function', '', '']);
             $row1 = array_merge($row1, [new TableSeparator(), 'Invocations', 'Duration', 'Avg duration']);
-            $row2 = array_merge($row2, [new TableSeparator(), number_format(collect($metrics['console']['invocations'])->sum()), number_format(collect($metrics['console']['duration'])->sum() / 1000).'s', number_format(collect($metrics['console']['avg_duration'])->avg()).'ms']);
+            $row2 = array_merge($row2, [new TableSeparator(), number_format((float) collect($metrics['console']['invocations'])->sum()), number_format((float) collect($metrics['console']['duration'])->sum() / 1000).'s', number_format((float) collect($metrics['console']['avg_duration'])->avg()).'ms']);
             $row3 = array_merge($row3, [new TableSeparator(), '$'.number_format($metrics['console']['cost_invocations'], 2), '$'.number_format($metrics['console']['cost_duration'], 2), '-']);
             $total += $metrics['console']['cost_duration'] + $metrics['console']['cost_invocations'];
         }
