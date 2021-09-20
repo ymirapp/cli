@@ -19,6 +19,7 @@ use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Yaml\Yaml;
 use Tightenco\Collect\Contracts\Support\Arrayable;
 use Tightenco\Collect\Support\Collection;
+use Ymir\Cli\Command\Project\InitializeProjectCommand;
 
 class ProjectConfiguration implements Arrayable
 {
@@ -214,7 +215,7 @@ class ProjectConfiguration implements Arrayable
     public function validate()
     {
         if (!$this->exists()) {
-            throw new RuntimeException('No ymir.yml file found in current directory');
+            throw new RuntimeException(sprintf('No Ymir project found in the current directory. You can initialize one with the "%s" command.', InitializeProjectCommand::ALIAS));
         } elseif (empty($this->configuration['id'])) {
             throw new RuntimeException('The ymir.yml file must have an "id"');
         } elseif (empty($this->configuration['environments'])) {
