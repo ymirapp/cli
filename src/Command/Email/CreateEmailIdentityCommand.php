@@ -58,7 +58,7 @@ class CreateEmailIdentityCommand extends AbstractEmailIdentityCommand
         $output->info('Email identity created');
 
         if ('domain' === $identity['type'] && !$identity['managed']) {
-            $this->showValidationRecord($identity['id'], $output);
+            $this->displayValidationRecord($identity['id'], $output);
         } elseif ('email' === $identity['type']) {
             $output->newLine();
             $output->warn(sprintf('A verification email was sent to %s to validate the email identity', $identity['name']));
@@ -66,9 +66,9 @@ class CreateEmailIdentityCommand extends AbstractEmailIdentityCommand
     }
 
     /**
-     * Show the warning for adding DNS record manually.
+     * Display warning about DNS record required to validate email identity.
      */
-    private function showValidationRecord(int $identityId, ConsoleOutput $output)
+    private function displayValidationRecord(int $identityId, ConsoleOutput $output)
     {
         $validationRecord = $this->wait(function () use ($identityId) {
             $identity = $this->apiClient->getEmailIdentity($identityId);
