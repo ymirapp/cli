@@ -54,7 +54,6 @@ abstract class AbstractProjectDeploymentCommand extends AbstractProjectCommand
     {
         $deployment = $this->createDeployment($input, $output);
         $environment = $this->getStringArgument($input, 'environment');
-        $projectId = $this->projectConfiguration->getProjectId();
 
         foreach ($this->deploymentSteps as $deploymentStep) {
             $deploymentStep->perform($deployment, $output);
@@ -62,27 +61,44 @@ abstract class AbstractProjectDeploymentCommand extends AbstractProjectCommand
 
         $output->info($this->getSuccessMessage($environment));
 
-        $unmanagedDomains = (array) $this->apiClient->getDeployment($deployment->get('id'))->get('unmanaged_domains');
-        $vanityDomainName = $this->apiClient->getEnvironmentVanityDomainName($projectId, $environment);
-
         $this->invoke($output, GetEnvironmentUrlCommand::NAME, ['environment' => $environment]);
-
-        if (!empty($unmanagedDomains)) {
-            $output->newLine();
-            $output->warn('Not all domains in this project are managed by Ymir. The following DNS record(s) need to be manually added to your DNS server for these domains to work:');
-            $output->newLine();
-            $output->table(
-                ['Type', 'Name', 'Value'],
-                array_map(function (string $unmanagedDomain) use ($vanityDomainName) {
-                    return ['CNAME', $unmanagedDomain, $vanityDomainName];
-                }, $unmanagedDomains)
-            );
-        }
 
         if (!array_key_exists('domain', $this->projectConfiguration->getEnvironment($environment))) {
             $output->newLine();
             $output->writeln(sprintf('<comment>Note:</comment> You cannot send emails using the "<comment>ymirsites.com</comment>" domain. Please use the "<comment>%s</comment>" command to add an email address or domain for sending emails.', CreateEmailIdentityCommand::NAME));
+
+            return;
         }
+
+        $unmanagedDomains = collect($this->apiClient->getDeployment($deployment->get('id'))->get('unmanaged_domains'));
+
+        if ($unmanagedDomains->isEmpty()) {
+            return;
+        }
+
+        $vanityDomainName = $this->apiClient->getEnvironmentVanityDomainName($this->projectConfiguration->getProjectId(), $environment);
+
+        $unmanagedDomains = $unmanagedDomains->filter(function (string $unmanagedDomain) use ($vanityDomainName) {
+            try {
+                return !collect(dns_get_record($unmanagedDomain, DNS_CNAME))->contains('target', $vanityDomainName);
+            } catch (\Throwable $exception) {
+                return true;
+            }
+        });
+
+        if ($unmanagedDomains->isEmpty()) {
+            return;
+        }
+
+        $output->newLine();
+        $output->warn('Not all domains in this project are managed by Ymir. The following DNS record(s) need to be manually added to your DNS server for these domains to work:');
+        $output->newLine();
+        $output->table(
+            ['Type', 'Name', 'Value'],
+            $unmanagedDomains->map(function (string $unmanagedDomain) use ($vanityDomainName) {
+                return ['CNAME', $unmanagedDomain, $vanityDomainName];
+            })->all()
+        );
     }
 
     /**
