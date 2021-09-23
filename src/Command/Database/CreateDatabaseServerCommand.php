@@ -22,7 +22,6 @@ use Symfony\Component\Console\Input\InputOption;
 use Tightenco\Collect\Support\Collection;
 use Ymir\Cli\Command\AbstractCommand;
 use Ymir\Cli\Console\ConsoleOutput;
-use Ymir\Cli\Exception\CommandCancelledException;
 
 class CreateDatabaseServerCommand extends AbstractCommand
 {
@@ -65,8 +64,8 @@ class CreateDatabaseServerCommand extends AbstractCommand
         $storage = $this->determineStorage($input, $output);
         $public = $this->determinePublic($input, $output);
 
-        if (!$public && !$network->get('has_nat_gateway') && !$output->confirm('A private database server will require Ymir to add a NAT gateway to your network (~$32/month). Would you like to proceed?')) {
-            throw new CommandCancelledException();
+        if (!$public && !$network->get('has_nat_gateway') && !$output->confirm('A private database server will require Ymir to add a NAT gateway to your network (~$32/month). Would you like to proceed? (Answering "no" will make the database server publicly accessible.)')) {
+            $public = true;
         }
 
         $database = $this->apiClient->createDatabaseServer($name, (int) $network['id'], $type, $storage, $public);
