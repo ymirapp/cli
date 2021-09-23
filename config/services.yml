@@ -67,8 +67,8 @@ services:
     arguments:
       $buildSteps:
         - '@Ymir\Cli\Build\CopyWordPressFilesStep'
-        - '@Ymir\Cli\Build\ExecuteBuildCommandsStep'
         - '@Ymir\Cli\Build\DownloadWpCliStep'
+        - '@Ymir\Cli\Build\ExecuteBuildCommandsStep'
         - '@Ymir\Cli\Build\EnsurePluginIsInstalledStep'
         - '@Ymir\Cli\Build\CopyMustUsePluginStep'
         - '@Ymir\Cli\Build\ModifyWordPressConfigurationStep'
