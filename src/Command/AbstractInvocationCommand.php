@@ -38,7 +38,7 @@ abstract class AbstractInvocationCommand extends AbstractProjectCommand
             return !in_array($invocation->get('status'), ['pending', 'running']) ? $invocation : [];
         }, $timeout);
 
-        if ('failed' === $invocation['status']) {
+        if ('failed' === $invocation->get('status')) {
             throw new RuntimeException('Running the command failed');
         } elseif (!Arr::has($invocation, ['result.exitCode', 'result.output'])) {
             throw new RuntimeException('Unable to get the result of the command from the Ymir API');
