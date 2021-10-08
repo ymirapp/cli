@@ -81,6 +81,16 @@ class ApiClient
     }
 
     /**
+     * Change the lock of the given database server.
+     */
+    public function changeDatabaseServerLock(int $databaseId, bool $locked): Collection
+    {
+        return $this->request('post', "/database-servers/{$databaseId}/lock", [
+            'locked' => $locked,
+        ]);
+    }
+
+    /**
      * Change the value of the DNS record in the given DNS zone ID or name.
      */
     public function changeDnsRecord($zoneIdOrName, string $type, string $name, string $value)
