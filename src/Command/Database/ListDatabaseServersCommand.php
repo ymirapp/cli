@@ -42,7 +42,7 @@ class ListDatabaseServersCommand extends AbstractCommand
     protected function perform(InputInterface $input, ConsoleOutput $output)
     {
         $output->table(
-            ['Id', 'Name', 'Provider', 'Network', 'Region', 'Status', 'Locked', 'Type', 'Storage'],
+            ['Id', 'Name', 'Provider', 'Network', 'Region', 'Status', 'Locked', 'Public', 'Type', 'Storage'],
             $this->apiClient->getTeamDatabaseServers($this->cliConfiguration->getActiveTeamId())->map(function (array $database) use ($output) {
                 return [
                     $database['id'],
@@ -52,6 +52,7 @@ class ListDatabaseServersCommand extends AbstractCommand
                     $database['region'],
                     $output->formatStatus($database['status']),
                     $output->formatBoolean($database['locked']),
+                    $output->formatBoolean($database['publicly_accessible']),
                     $database['type'],
                     $database['storage'].'GB',
                 ];
