@@ -46,8 +46,8 @@ class ListDnsRecordsCommand extends AbstractDnsCommand
 
         $output->table(
             ['Id', 'Domain Name', 'Type', 'Value', 'Internal'],
-            $this->apiClient->getDnsRecords($zone['id'])->map(function (array $record) {
-                return [$record['id'], $record['name'], $record['type'], str_replace(',', "\n", $record['value']), $record['internal'] ? 'yes' : 'no'];
+            $this->apiClient->getDnsRecords($zone['id'])->map(function (array $record) use ($output) {
+                return [$record['id'], $record['name'], $record['type'], str_replace(',', "\n", $record['value']), $output->formatBoolean($record['internal'])];
             })->all()
         );
     }

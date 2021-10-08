@@ -47,7 +47,7 @@ class GetEmailIdentityInfoCommand extends AbstractEmailIdentityCommand
 
         $output->horizontalTable(
             ['Name', new TableSeparator(), 'Provider', 'Region', new TableSeparator(), 'Type', 'Status', 'Managed'],
-            [[$identity['name'], new TableSeparator(), $identity['provider']['name'], $identity['region'], new TableSeparator(), $identity['type'], $identity['status'], $identity['managed'] ? 'yes' : 'no']]
+            [[$identity['name'], new TableSeparator(), $identity['provider']['name'], $identity['region'], new TableSeparator(), $identity['type'], $identity['status'], $output->formatBoolean($identity['managed'])]]
         );
 
         if (!isset($identity['managed'], $identity['type'], $identity['validation_record']['name'], $identity['validation_record']['value']) || 'domain' !== $identity['type'] || true === $identity['managed']) {

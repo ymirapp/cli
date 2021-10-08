@@ -73,7 +73,15 @@ class ConsoleOutput extends SymfonyStyle
     }
 
     /**
-     * Format the resource for display.
+     * Format a boolean value.
+     */
+    public function formatBoolean(bool $bool): string
+    {
+        return $bool ? 'yes' : 'no';
+    }
+
+    /**
+     * Format the status of a resource for display.
      */
     public function formatStatus(string $status): string
     {

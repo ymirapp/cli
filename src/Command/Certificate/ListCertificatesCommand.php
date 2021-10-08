@@ -44,8 +44,8 @@ class ListCertificatesCommand extends AbstractCertificateCommand
 
         $output->table(
             ['Id', 'Provider', 'Region', 'Domains', 'Status', 'In Use'],
-            $certificates->map(function (array $certificate) {
-                return [$certificate['id'], $certificate['provider']['name'], $certificate['region'], $this->getDomainsList($certificate), $certificate['status'], $certificate['in_use'] ? 'yes' : 'no'];
+            $certificates->map(function (array $certificate) use ($output) {
+                return [$certificate['id'], $certificate['provider']['name'], $certificate['region'], $this->getDomainsList($certificate), $certificate['status'], $output->formatBoolean($certificate['in_use'])];
             })->all()
         );
     }

@@ -46,7 +46,7 @@ class ListNetworksCommand extends AbstractCommand
         $output->table(
             ['Id', 'Name', 'Provider', 'Region', 'Status', 'NAT Gateway'],
             $networks->map(function (array $network) use ($output) {
-                return [$network['id'], $network['name'], $network['provider']['name'], $network['region'], $output->formatStatus($network['status']), $network['has_nat_gateway'] ? 'yes' : 'no'];
+                return [$network['id'], $network['name'], $network['provider']['name'], $network['region'], $output->formatStatus($network['status']), $output->formatBoolean($network['has_nat_gateway'])];
             })->all()
         );
     }

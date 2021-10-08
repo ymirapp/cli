@@ -75,7 +75,7 @@ class CreateDatabaseServerCommand extends AbstractCommand
 
         $output->horizontalTable(
             ['Database Sever', new TableSeparator(), 'Username', 'Password', new TableSeparator(), 'Type', 'Public', 'Storage (in GB)'],
-            [[$database['name'], new TableSeparator(), $database['username'], $database['password'], new TableSeparator(), $database['type'], $database['publicly_accessible'] ? 'yes' : 'no', $database['storage']]]
+            [[$database['name'], new TableSeparator(), $database['username'], $database['password'], new TableSeparator(), $database['type'], $output->formatBoolean($database['publicly_accessible']), $database['storage']]]
         );
 
         $output->infoWithDelayWarning('Database server created');

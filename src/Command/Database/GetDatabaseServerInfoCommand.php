@@ -51,7 +51,7 @@ class GetDatabaseServerInfoCommand extends AbstractDatabaseCommand
                 $databaseServer['id'],
                 $databaseServer['name'],
                 $output->formatStatus($databaseServer['status']),
-                $databaseServer['publicly_accessible'] ? 'yes' : 'no',
+                $output->formatBoolean($databaseServer['publicly_accessible']),
                 new TableSeparator(),
                 $databaseServer['network']['provider']['name'],
                 $databaseServer['network']['name'],
