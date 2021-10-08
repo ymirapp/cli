@@ -43,7 +43,7 @@ class PhpInfoCommand extends AbstractInvocationCommand
      */
     protected function perform(InputInterface $input, ConsoleOutput $output)
     {
-        $environment = (string) $this->getStringOption($input, 'environment');
+        $environment = $this->getStringArgument($input, 'environment');
 
         $output->info(sprintf('Getting information about PHP from the "<comment>%s</comment>" environment', $environment));
 
