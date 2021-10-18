@@ -38,7 +38,7 @@ class WooCommerceConfigurationChangeTest extends TestCase
                 'wp-content/plugins/woocommerce',
             ]],
             'cdn' => [
-                'cookies_whitelist' => ['foo_cookie', 'woocommerce_cart_hash', 'woocommerce_items_in_cart', 'woocommerce_recently_viewed', 'wp_woocommerce_session'],
+                'cookies_whitelist' => ['foo_cookie', 'woocommerce_cart_hash', 'woocommerce_items_in_cart', 'woocommerce_recently_viewed', 'wp_woocommerce_session_*'],
                 'excluded_paths' => ['/addons', '/cart', '/checkout', '/foo', '/my-account'],
             ],
         ], $this->configurationChange->apply([
@@ -46,7 +46,7 @@ class WooCommerceConfigurationChangeTest extends TestCase
                 'wp-content/plugins/woocommerce',
             ]],
             'cdn' => [
-                'cookies_whitelist' => ['foo_cookie', 'woocommerce_cart_hash', 'woocommerce_items_in_cart', 'woocommerce_recently_viewed', 'wp_woocommerce_session'],
+                'cookies_whitelist' => ['foo_cookie', 'woocommerce_cart_hash', 'woocommerce_items_in_cart', 'woocommerce_recently_viewed', 'wp_woocommerce_session_*'],
                 'excluded_paths' => ['/addons', '/cart', '/checkout', '/foo', '/my-account'],
             ],
         ], 'wordpress'));
@@ -60,7 +60,7 @@ class WooCommerceConfigurationChangeTest extends TestCase
                 'wp-content/plugins/woocommerce',
             ]],
             'cdn' => [
-                'cookies_whitelist' => ['foo_cookie', 'woocommerce_cart_hash', 'woocommerce_items_in_cart', 'woocommerce_recently_viewed', 'wp_woocommerce_session'],
+                'cookies_whitelist' => ['foo_cookie', 'woocommerce_cart_hash', 'woocommerce_items_in_cart', 'woocommerce_recently_viewed', 'wp_woocommerce_session_*'],
                 'excluded_paths' => ['/addons', '/cart', '/checkout', '/foo', '/my-account'],
             ],
         ], $this->configurationChange->apply([
@@ -76,7 +76,7 @@ class WooCommerceConfigurationChangeTest extends TestCase
     {
         $this->assertSame([
             'cdn' => [
-                'cookies_whitelist' => ['woocommerce_cart_hash', 'woocommerce_items_in_cart', 'woocommerce_recently_viewed', 'wp_woocommerce_session'],
+                'cookies_whitelist' => ['woocommerce_cart_hash', 'woocommerce_items_in_cart', 'woocommerce_recently_viewed', 'wp_woocommerce_session_*'],
                 'excluded_paths' => ['/addons', '/cart', '/checkout', '/my-account'],
             ],
             'deployment' => 'image',
@@ -88,7 +88,7 @@ class WooCommerceConfigurationChangeTest extends TestCase
         $this->assertSame([
             'build' => ['include' => ['web/app/plugins/woocommerce']],
             'cdn' => [
-                'cookies_whitelist' => ['woocommerce_cart_hash', 'woocommerce_items_in_cart', 'woocommerce_recently_viewed', 'wp_woocommerce_session'],
+                'cookies_whitelist' => ['woocommerce_cart_hash', 'woocommerce_items_in_cart', 'woocommerce_recently_viewed', 'wp_woocommerce_session_*'],
                 'excluded_paths' => ['/addons', '/cart', '/checkout', '/my-account'],
             ],
         ], $this->configurationChange->apply([], 'bedrock'));
@@ -98,7 +98,7 @@ class WooCommerceConfigurationChangeTest extends TestCase
     {
         $this->assertSame([
             'cdn' => [
-                'cookies_whitelist' => ['woocommerce_cart_hash', 'woocommerce_items_in_cart', 'woocommerce_recently_viewed', 'wp_woocommerce_session'],
+                'cookies_whitelist' => ['woocommerce_cart_hash', 'woocommerce_items_in_cart', 'woocommerce_recently_viewed', 'wp_woocommerce_session_*'],
                 'excluded_paths' => ['/addons', '/cart', '/checkout', '/my-account'],
             ],
             'deployment' => 'image',
@@ -110,7 +110,7 @@ class WooCommerceConfigurationChangeTest extends TestCase
         $this->assertSame([
             'build' => ['include' => ['wp-content/plugins/woocommerce']],
             'cdn' => [
-                'cookies_whitelist' => ['woocommerce_cart_hash', 'woocommerce_items_in_cart', 'woocommerce_recently_viewed', 'wp_woocommerce_session'],
+                'cookies_whitelist' => ['woocommerce_cart_hash', 'woocommerce_items_in_cart', 'woocommerce_recently_viewed', 'wp_woocommerce_session_*'],
                 'excluded_paths' => ['/addons', '/cart', '/checkout', '/my-account'],
             ],
         ], $this->configurationChange->apply([], 'wordpress'));
