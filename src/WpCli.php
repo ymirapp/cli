@@ -87,6 +87,8 @@ class WpCli
     {
         if (empty($executable) && !self::isInstalledGlobally()) {
             throw new RuntimeException('WP-CLI isn\'t available');
+        } elseif (function_exists('posix_geteuid') && 0 === posix_geteuid()) {
+            throw new RuntimeException('WP-CLI commands can only be run as a non-root user');
         } elseif (empty($executable) && self::isInstalledGlobally()) {
             $executable = 'wp';
         }
