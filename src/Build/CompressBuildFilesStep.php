@@ -105,7 +105,7 @@ class CompressBuildFilesStep implements BuildStepInterface
 
         $relativePathName = str_replace('\\', '/', $file->getRelativePathname());
         $archive->addFile($file->getRealPath(), $relativePathName);
-        $archive->setExternalAttributesName($relativePathName, \ZipArchive::OPSYS_UNIX, (33060 & 0xffff) << 16);
+        $archive->setExternalAttributesName($relativePathName, \ZipArchive::OPSYS_UNIX, (33060 & 0xFFFF) << 16);
     }
 
     /**
