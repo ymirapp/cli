@@ -33,7 +33,7 @@ class ListProjectsCommand extends AbstractCommand
     {
         $this
             ->setName(self::NAME)
-            ->setDescription('List the networks that belong to the currently active team');
+            ->setDescription('List the projects that belong to the currently active team');
     }
 
     /**
