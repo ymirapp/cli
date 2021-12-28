@@ -94,11 +94,13 @@ class FileUploader
             };
         }
 
-        $this->client->request('PUT', $url, array_filter([
-            'body' => $file,
-            'headers' => array_merge(self::DEFAULT_HEADERS, $headers),
-            'progress' => $progressCallback,
-        ]));
+        $this->retry(function () use ($file, $headers, $progressCallback, $url) {
+            $this->client->request('PUT', $url, array_filter([
+                'body' => $file,
+                'headers' => array_merge(self::DEFAULT_HEADERS, $headers),
+                'progress' => $progressCallback,
+            ]));
+        });
 
         if ($progressBar instanceof ProgressBar) {
             $progressBar->finish();
@@ -106,6 +108,27 @@ class FileUploader
 
         if (is_resource($file)) {
             fclose($file);
+        }
+    }
+
+    /**
+     * Retry callback a given number of times.
+     */
+    private function retry(callable $callback, $times = 5)
+    {
+        beginning:
+        $times--;
+
+        try {
+            return $callback();
+        } catch (\Throwable $exception) {
+            if ($times < 1) {
+                throw $exception;
+            }
+
+            sleep(1);
+
+            goto beginning;
         }
     }
 }
