@@ -74,7 +74,8 @@ class UploadEnvironmentVariablesCommand extends AbstractProjectCommand
     protected function perform(InputInterface $input, OutputInterface $output)
     {
         $environment = $this->getStringArgument($input, 'environment');
-        $filePath = sprintf($this->projectDirectory.'/.env.%s', $environment);
+        $fileName = sprintf('.env.%s', $environment);
+        $filePath = $this->projectDirectory.'/'.$fileName;
 
         if (!$this->filesystem->exists($filePath)) {
             throw new RuntimeException(sprintf('No environment file found for the "%s" environment. Please download it using the "%s" command.', $environment, DownloadEnvironmentVariablesCommand::NAME));
@@ -91,7 +92,7 @@ class UploadEnvironmentVariablesCommand extends AbstractProjectCommand
 
         $output->infoWithRedeployWarning('Environment variables uploaded', $environment);
 
-        if ($output->confirm('Do you want to delete the environment file?')) {
+        if ($output->confirm(sprintf('Do you want to delete the "<comment>%s</comment>" environment file?', $fileName))) {
             $this->filesystem->remove($filePath);
         }
     }
