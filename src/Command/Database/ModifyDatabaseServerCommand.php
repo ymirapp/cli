@@ -17,7 +17,7 @@ use Symfony\Component\Console\Exception\InvalidArgumentException;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
-use Ymir\Cli\Console\ConsoleOutput;
+use Ymir\Cli\Console\OutputInterface;
 
 class ModifyDatabaseServerCommand extends AbstractDatabaseCommand
 {
@@ -44,7 +44,7 @@ class ModifyDatabaseServerCommand extends AbstractDatabaseCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(InputInterface $input, ConsoleOutput $output)
+    protected function perform(InputInterface $input, OutputInterface $output)
     {
         $databaseServer = $this->determineDatabaseServer('Which database server would you like to modify?', $input, $output);
 
@@ -56,7 +56,7 @@ class ModifyDatabaseServerCommand extends AbstractDatabaseCommand
     /**
      * Determine the new maximum amount of storage allocated to the database.
      */
-    private function determineStorage(InputInterface $input, ConsoleOutput $output, int $storage): int
+    private function determineStorage(InputInterface $input, OutputInterface $output, int $storage): int
     {
         $storageOption = $this->getNumericOption($input, 'storage');
 
@@ -78,7 +78,7 @@ class ModifyDatabaseServerCommand extends AbstractDatabaseCommand
     /**
      * Determine the new database server type.
      */
-    private function determineType(InputInterface $input, ConsoleOutput $output, int $providerId, string $type): string
+    private function determineType(InputInterface $input, OutputInterface $output, int $providerId, string $type): string
     {
         $typeOption = $this->getStringOption($input, 'type');
 

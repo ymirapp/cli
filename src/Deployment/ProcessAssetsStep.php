@@ -17,7 +17,7 @@ use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Finder\Finder;
 use Tightenco\Collect\Support\Collection;
 use Ymir\Cli\ApiClient;
-use Ymir\Cli\Console\ConsoleOutput;
+use Ymir\Cli\Console\OutputInterface;
 use Ymir\Cli\FileUploader;
 
 class ProcessAssetsStep implements DeploymentStepInterface
@@ -56,7 +56,7 @@ class ProcessAssetsStep implements DeploymentStepInterface
     /**
      * {@inheritdoc}
      */
-    public function perform(Collection $deployment, ConsoleOutput $output)
+    public function perform(Collection $deployment, OutputInterface $output)
     {
         $output->info('Processing assets');
 
@@ -91,7 +91,7 @@ class ProcessAssetsStep implements DeploymentStepInterface
     /**
      * Send the given asset file copy requests.
      */
-    private function copyAssetFiles(array $requests, ConsoleOutput $output)
+    private function copyAssetFiles(array $requests, OutputInterface $output)
     {
         if (empty($requests)) {
             return;
@@ -129,7 +129,7 @@ class ProcessAssetsStep implements DeploymentStepInterface
     /**
      * Send the given asset file upload requests.
      */
-    private function uploadAssetFiles(array $requests, ConsoleOutput $output)
+    private function uploadAssetFiles(array $requests, OutputInterface $output)
     {
         if (empty($requests)) {
             return;

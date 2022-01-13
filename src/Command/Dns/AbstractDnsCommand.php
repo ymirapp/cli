@@ -16,14 +16,14 @@ namespace Ymir\Cli\Command\Dns;
 use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Input\InputInterface;
 use Ymir\Cli\Command\AbstractCommand;
-use Ymir\Cli\Console\ConsoleOutput;
+use Ymir\Cli\Console\OutputInterface;
 
 abstract class AbstractDnsCommand extends AbstractCommand
 {
     /**
      * Determine the DNS zone that the command is interacting with.
      */
-    protected function determineDnsZone(string $question, InputInterface $input, ConsoleOutput $output): array
+    protected function determineDnsZone(string $question, InputInterface $input, OutputInterface $output): array
     {
         $zone = null;
         $zones = $this->apiClient->getDnsZones($this->cliConfiguration->getActiveTeamId());

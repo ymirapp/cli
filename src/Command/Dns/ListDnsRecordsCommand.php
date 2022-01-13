@@ -15,7 +15,7 @@ namespace Ymir\Cli\Command\Dns;
 
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
-use Ymir\Cli\Console\ConsoleOutput;
+use Ymir\Cli\Console\OutputInterface;
 
 class ListDnsRecordsCommand extends AbstractDnsCommand
 {
@@ -40,7 +40,7 @@ class ListDnsRecordsCommand extends AbstractDnsCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(InputInterface $input, ConsoleOutput $output)
+    protected function perform(InputInterface $input, OutputInterface $output)
     {
         $zone = $this->determineDnsZone('Which DNS zone would you like to list DNS records from', $input, $output);
 

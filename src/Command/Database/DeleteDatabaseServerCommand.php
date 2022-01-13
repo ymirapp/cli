@@ -16,7 +16,7 @@ namespace Ymir\Cli\Command\Database;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Ymir\Cli\Command\Network\RemoveNatGatewayCommand;
-use Ymir\Cli\Console\ConsoleOutput;
+use Ymir\Cli\Console\OutputInterface;
 
 class DeleteDatabaseServerCommand extends AbstractDatabaseCommand
 {
@@ -41,7 +41,7 @@ class DeleteDatabaseServerCommand extends AbstractDatabaseCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(InputInterface $input, ConsoleOutput $output)
+    protected function perform(InputInterface $input, OutputInterface $output)
     {
         $databaseServer = $this->determineDatabaseServer('Which database server would you like to delete', $input, $output);
 

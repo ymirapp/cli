@@ -19,7 +19,7 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Tightenco\Collect\Support\Collection;
-use Ymir\Cli\Console\ConsoleOutput;
+use Ymir\Cli\Console\OutputInterface;
 use Ymir\Cli\Support\Arr;
 
 class RollbackProjectCommand extends AbstractProjectDeploymentCommand
@@ -54,7 +54,7 @@ class RollbackProjectCommand extends AbstractProjectDeploymentCommand
     /**
      * {@inheritdoc}
      */
-    protected function createDeployment(InputInterface $input, ConsoleOutput $output): Collection
+    protected function createDeployment(InputInterface $input, OutputInterface $output): Collection
     {
         $environment = $this->getStringArgument($input, 'environment');
         $projectId = $this->projectConfiguration->getProjectId();

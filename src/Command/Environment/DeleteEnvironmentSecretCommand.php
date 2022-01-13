@@ -18,7 +18,7 @@ use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Ymir\Cli\Command\AbstractProjectCommand;
-use Ymir\Cli\Console\ConsoleOutput;
+use Ymir\Cli\Console\OutputInterface;
 
 class DeleteEnvironmentSecretCommand extends AbstractProjectCommand
 {
@@ -44,7 +44,7 @@ class DeleteEnvironmentSecretCommand extends AbstractProjectCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(InputInterface $input, ConsoleOutput $output)
+    protected function perform(InputInterface $input, OutputInterface $output)
     {
         $environment = $this->getStringArgument($input, 'environment');
         $secrets = $this->apiClient->getSecrets($this->projectConfiguration->getProjectId(), $environment);

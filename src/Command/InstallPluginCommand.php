@@ -20,7 +20,7 @@ use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
 use Ymir\Cli\ApiClient;
 use Ymir\Cli\CliConfiguration;
-use Ymir\Cli\Console\ConsoleOutput;
+use Ymir\Cli\Console\OutputInterface;
 use Ymir\Cli\GitHubClient;
 use Ymir\Cli\Process\Process;
 use Ymir\Cli\ProjectConfiguration\ProjectConfiguration;
@@ -81,7 +81,7 @@ class InstallPluginCommand extends AbstractProjectCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(InputInterface $input, ConsoleOutput $output)
+    protected function perform(InputInterface $input, OutputInterface $output)
     {
         $message = 'Installing Ymir plugin';
         $projectType = strtolower($this->projectConfiguration->getProjectType());

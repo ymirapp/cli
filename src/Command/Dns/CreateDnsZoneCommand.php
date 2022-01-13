@@ -17,7 +17,7 @@ use Symfony\Component\Console\Helper\TableSeparator;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
-use Ymir\Cli\Console\ConsoleOutput;
+use Ymir\Cli\Console\OutputInterface;
 use Ymir\Cli\Exception\CommandCancelledException;
 
 class CreateDnsZoneCommand extends AbstractDnsCommand
@@ -44,7 +44,7 @@ class CreateDnsZoneCommand extends AbstractDnsCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(InputInterface $input, ConsoleOutput $output)
+    protected function perform(InputInterface $input, OutputInterface $output)
     {
         $name = $this->getStringArgument($input, 'name');
 

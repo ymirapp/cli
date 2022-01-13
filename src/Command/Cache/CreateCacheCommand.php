@@ -20,7 +20,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Tightenco\Collect\Support\Collection;
 use Ymir\Cli\Command\AbstractCommand;
-use Ymir\Cli\Console\ConsoleOutput;
+use Ymir\Cli\Console\OutputInterface;
 use Ymir\Cli\Exception\CommandCancelledException;
 use Ymir\Cli\ProjectConfiguration\CacheConfigurationChange;
 
@@ -49,7 +49,7 @@ class CreateCacheCommand extends AbstractCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(InputInterface $input, ConsoleOutput $output)
+    protected function perform(InputInterface $input, OutputInterface $output)
     {
         $name = $this->getStringArgument($input, 'name');
 
@@ -77,7 +77,7 @@ class CreateCacheCommand extends AbstractCommand
     /**
      * Determine the cache cluster type to create.
      */
-    private function determineType(Collection $network, InputInterface $input, ConsoleOutput $output): string
+    private function determineType(Collection $network, InputInterface $input, OutputInterface $output): string
     {
         if (!isset($network['provider']['id'])) {
             throw new RuntimeException('The Ymir API failed to return information on the cloud provider');

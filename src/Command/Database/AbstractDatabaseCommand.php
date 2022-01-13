@@ -16,14 +16,14 @@ namespace Ymir\Cli\Command\Database;
 use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Input\InputInterface;
 use Ymir\Cli\Command\AbstractCommand;
-use Ymir\Cli\Console\ConsoleOutput;
+use Ymir\Cli\Console\OutputInterface;
 
 abstract class AbstractDatabaseCommand extends AbstractCommand
 {
     /**
      * Determine the database server that the command is interacting with.
      */
-    protected function determineDatabaseServer(string $question, InputInterface $input, ConsoleOutput $output): array
+    protected function determineDatabaseServer(string $question, InputInterface $input, OutputInterface $output): array
     {
         $databases = $this->apiClient->getDatabaseServers($this->cliConfiguration->getActiveTeamId());
         $databaseIdOrName = $this->getStringArgument($input, 'database');

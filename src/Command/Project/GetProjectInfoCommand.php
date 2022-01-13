@@ -16,7 +16,7 @@ namespace Ymir\Cli\Command\Project;
 use Symfony\Component\Console\Input\InputInterface;
 use Ymir\Cli\Command\AbstractProjectCommand;
 use Ymir\Cli\Command\Environment\GetEnvironmentInfoCommand;
-use Ymir\Cli\Console\ConsoleOutput;
+use Ymir\Cli\Console\OutputInterface;
 
 class GetProjectInfoCommand extends AbstractProjectCommand
 {
@@ -48,7 +48,7 @@ class GetProjectInfoCommand extends AbstractProjectCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(InputInterface $input, ConsoleOutput $output)
+    protected function perform(InputInterface $input, OutputInterface $output)
     {
         $project = $this->apiClient->getProject($this->projectConfiguration->getProjectId());
 

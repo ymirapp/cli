@@ -15,7 +15,7 @@ namespace Ymir\Cli\Command\Network;
 
 use Symfony\Component\Console\Input\InputInterface;
 use Ymir\Cli\Command\AbstractCommand;
-use Ymir\Cli\Console\ConsoleOutput;
+use Ymir\Cli\Console\OutputInterface;
 
 class ListNetworksCommand extends AbstractCommand
 {
@@ -39,7 +39,7 @@ class ListNetworksCommand extends AbstractCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(InputInterface $input, ConsoleOutput $output)
+    protected function perform(InputInterface $input, OutputInterface $output)
     {
         $networks = $this->apiClient->getTeamNetworks($this->cliConfiguration->getActiveTeamId());
 

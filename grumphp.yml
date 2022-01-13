@@ -30,6 +30,7 @@ grumphp:
     phpmd:
       exclude:
         - 'Command/Project/InitializeProjectCommand.php'
+        - 'Console/Output.php'
         - 'ApiClient.php'
         - 'activate-ymir-plugin.php'
       ruleset: ['phpmd.xml']

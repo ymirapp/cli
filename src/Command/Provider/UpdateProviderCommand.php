@@ -15,7 +15,7 @@ namespace Ymir\Cli\Command\Provider;
 
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
-use Ymir\Cli\Console\ConsoleOutput;
+use Ymir\Cli\Console\OutputInterface;
 
 class UpdateProviderCommand extends AbstractProviderCommand
 {
@@ -40,7 +40,7 @@ class UpdateProviderCommand extends AbstractProviderCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(InputInterface $input, ConsoleOutput $output)
+    protected function perform(InputInterface $input, OutputInterface $output)
     {
         $provider = $this->apiClient->getProvider($this->getNumericArgument($input, 'provider'));
 

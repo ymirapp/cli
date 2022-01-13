@@ -16,7 +16,7 @@ namespace Ymir\Cli\Command\Project;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Ymir\Cli\Command\AbstractProjectCommand;
-use Ymir\Cli\Console\ConsoleOutput;
+use Ymir\Cli\Console\OutputInterface;
 
 class ValidateProjectCommand extends AbstractProjectCommand
 {
@@ -49,7 +49,7 @@ class ValidateProjectCommand extends AbstractProjectCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(InputInterface $input, ConsoleOutput $output)
+    protected function perform(InputInterface $input, OutputInterface $output)
     {
         $environments = $input->getArgument('environments');
 

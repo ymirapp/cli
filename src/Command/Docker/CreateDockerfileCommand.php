@@ -21,7 +21,7 @@ use Symfony\Component\Filesystem\Filesystem;
 use Ymir\Cli\ApiClient;
 use Ymir\Cli\CliConfiguration;
 use Ymir\Cli\Command\AbstractProjectCommand;
-use Ymir\Cli\Console\ConsoleOutput;
+use Ymir\Cli\Console\OutputInterface;
 use Ymir\Cli\ProjectConfiguration\ImageDeploymentConfigurationChange;
 use Ymir\Cli\ProjectConfiguration\ProjectConfiguration;
 
@@ -82,7 +82,7 @@ class CreateDockerfileCommand extends AbstractProjectCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(InputInterface $input, ConsoleOutput $output)
+    protected function perform(InputInterface $input, OutputInterface $output)
     {
         $dockerfileStub = 'Dockerfile';
         $dockerfileStubPath = $this->stubDirectory.'/'.$dockerfileStub;

@@ -15,7 +15,7 @@ namespace Ymir\Cli\Command\Dns;
 
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
-use Ymir\Cli\Console\ConsoleOutput;
+use Ymir\Cli\Console\OutputInterface;
 
 class ImportDnsRecordsCommand extends AbstractDnsCommand
 {
@@ -41,7 +41,7 @@ class ImportDnsRecordsCommand extends AbstractDnsCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(InputInterface $input, ConsoleOutput $output)
+    protected function perform(InputInterface $input, OutputInterface $output)
     {
         $subdomains = $this->getArrayArgument($input, 'subdomain', false);
 

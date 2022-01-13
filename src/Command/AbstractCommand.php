@@ -19,14 +19,15 @@ use Symfony\Component\Console\Exception\InvalidArgumentException;
 use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Output\OutputInterface as SymfonyOutputInterface;
 use Ymir\Cli\ApiClient;
 use Ymir\Cli\CliConfiguration;
 use Ymir\Cli\Command\Network\CreateNetworkCommand;
 use Ymir\Cli\Command\Provider\ConnectProviderCommand;
-use Ymir\Cli\Console\ConsoleOutput;
 use Ymir\Cli\Console\HiddenInputOption;
 use Ymir\Cli\Console\InputDefinition;
+use Ymir\Cli\Console\Output;
+use Ymir\Cli\Console\OutputInterface;
 use Ymir\Cli\Exception\ApiClientException;
 use Ymir\Cli\Exception\CommandCancelledException;
 use Ymir\Cli\ProjectConfiguration\ProjectConfiguration;
@@ -82,7 +83,7 @@ abstract class AbstractCommand extends Command
     /**
      * Determine the cloud provider to use.
      */
-    protected function determineCloudProvider(string $question, InputInterface $input, ConsoleOutput $output): int
+    protected function determineCloudProvider(string $question, InputInterface $input, OutputInterface $output): int
     {
         $providerId = $this->getStringOption($input, 'provider', true);
         $providers = $this->apiClient->getProviders($this->cliConfiguration->getActiveTeamId());
@@ -107,7 +108,7 @@ abstract class AbstractCommand extends Command
     /**
      * Determine the network to use.
      */
-    protected function determineNetwork(string $question, InputInterface $input, ConsoleOutput $output): int
+    protected function determineNetwork(string $question, InputInterface $input, OutputInterface $output): int
     {
         $networkIdOrName = null;
 
@@ -137,7 +138,7 @@ abstract class AbstractCommand extends Command
     /**
      * Determine the network to use or create one otherwise.
      */
-    protected function determineOrCreateNetwork(string $question, InputInterface $input, ConsoleOutput $output)
+    protected function determineOrCreateNetwork(string $question, InputInterface $input, OutputInterface $output)
     {
         $networks = $this->apiClient->getTeamNetworks($this->cliConfiguration->getActiveTeamId())->whereNotIn('status', ['deleting', 'failed']);
 
@@ -159,7 +160,7 @@ abstract class AbstractCommand extends Command
     /**
      * Determine the project to use.
      */
-    protected function determineProject(string $question, InputInterface $input, ConsoleOutput $output): int
+    protected function determineProject(string $question, InputInterface $input, OutputInterface $output): int
     {
         $projects = $this->apiClient->getTeamProjects($this->cliConfiguration->getActiveTeamId());
 
@@ -187,7 +188,7 @@ abstract class AbstractCommand extends Command
     /**
      * Determine the cloud provider region to use.
      */
-    protected function determineRegion(string $question, int $providerId, InputInterface $input, ConsoleOutput $output): string
+    protected function determineRegion(string $question, int $providerId, InputInterface $input, OutputInterface $output): string
     {
         $region = $this->getStringOption($input, 'region', true);
         $regions = $this->apiClient->getRegions($providerId);
@@ -206,7 +207,7 @@ abstract class AbstractCommand extends Command
     /**
      * {@inheritdoc}
      */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, SymfonyOutputInterface $output)
     {
         if (!$input->isInteractive() && $this->mustBeInteractive()) {
             throw new RuntimeException(sprintf('Cannot run "%s" command in non-interactive mode', $input->getFirstArgument()));
@@ -214,7 +215,7 @@ abstract class AbstractCommand extends Command
             throw new RuntimeException(sprintf('Please authenticate using the "%s" command before using this command', LoginCommand::NAME));
         }
 
-        return $this->perform($input, new ConsoleOutput($input, $output)) ?? 0;
+        return $this->perform($input, new Output($input, $output)) ?? 0;
     }
 
     /**
@@ -334,7 +335,7 @@ abstract class AbstractCommand extends Command
     /**
      * Invoke another console command.
      */
-    protected function invoke(OutputInterface $output, string $command, array $arguments = []): int
+    protected function invoke(SymfonyOutputInterface $output, string $command, array $arguments = []): int
     {
         $application = $this->getApplication();
 
@@ -356,7 +357,7 @@ abstract class AbstractCommand extends Command
     /**
      * Retry an API operation.
      */
-    protected function retryApi(callable $callable, string $message, ConsoleOutput $output)
+    protected function retryApi(callable $callable, string $message, OutputInterface $output)
     {
         while (true) {
             try {
@@ -392,5 +393,5 @@ abstract class AbstractCommand extends Command
     /**
      * Perform the command.
      */
-    abstract protected function perform(InputInterface $input, ConsoleOutput $output);
+    abstract protected function perform(InputInterface $input, OutputInterface $output);
 }

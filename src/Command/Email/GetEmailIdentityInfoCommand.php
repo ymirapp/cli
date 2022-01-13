@@ -16,7 +16,7 @@ namespace Ymir\Cli\Command\Email;
 use Symfony\Component\Console\Helper\TableSeparator;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
-use Ymir\Cli\Console\ConsoleOutput;
+use Ymir\Cli\Console\OutputInterface;
 
 class GetEmailIdentityInfoCommand extends AbstractEmailIdentityCommand
 {
@@ -41,7 +41,7 @@ class GetEmailIdentityInfoCommand extends AbstractEmailIdentityCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(InputInterface $input, ConsoleOutput $output)
+    protected function perform(InputInterface $input, OutputInterface $output)
     {
         $identity = $this->determineEmailIdentity('Which email identity would you like to get information about', $input, $output);
 

@@ -25,7 +25,7 @@ use Ymir\Cli\Command\Database\CreateDatabaseServerCommand;
 use Ymir\Cli\Command\Docker\CreateDockerfileCommand;
 use Ymir\Cli\Command\InstallPluginCommand;
 use Ymir\Cli\Command\Provider\ConnectProviderCommand;
-use Ymir\Cli\Console\ConsoleOutput;
+use Ymir\Cli\Console\OutputInterface;
 use Ymir\Cli\Process\Process;
 use Ymir\Cli\ProjectConfiguration\ProjectConfiguration;
 use Ymir\Cli\Support\Arr;
@@ -86,7 +86,7 @@ class InitializeProjectCommand extends AbstractCommand
     /**
      * {@inheritdoc}
      */
-    protected function determineCloudProvider(string $question, InputInterface $input, ConsoleOutput $output): int
+    protected function determineCloudProvider(string $question, InputInterface $input, OutputInterface $output): int
     {
         $providers = $this->apiClient->getProviders($this->cliConfiguration->getActiveTeamId());
 
@@ -112,7 +112,7 @@ class InitializeProjectCommand extends AbstractCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(InputInterface $input, ConsoleOutput $output)
+    protected function perform(InputInterface $input, OutputInterface $output)
     {
         if ($this->projectConfiguration->exists()
             && !$output->confirm('A project already exists in this directory. Do you want to overwrite it?', false)
@@ -156,7 +156,7 @@ class InitializeProjectCommand extends AbstractCommand
     /**
      * Add the "database" nodes to all the environments.
      */
-    private function addEnvironmentDatabaseNodes(Collection $environments, ConsoleOutput $output, string $projectName, string $region): Collection
+    private function addEnvironmentDatabaseNodes(Collection $environments, OutputInterface $output, string $projectName, string $region): Collection
     {
         $databasePrefix = '';
         $databaseServer = $this->determineDatabaseServer($output, $region);
@@ -194,7 +194,7 @@ class InitializeProjectCommand extends AbstractCommand
     /**
      * Check for WordPress and offer to install it if it's not detected.
      */
-    private function checkForWordPress(ConsoleOutput $output, string $projectType)
+    private function checkForWordPress(OutputInterface $output, string $projectType)
     {
         if (!$this->isWordPressDownloadable($projectType) || !$output->confirm('WordPress wasn\'t detected in the project directory. Would you like to download it?')) {
             return;
@@ -214,7 +214,7 @@ class InitializeProjectCommand extends AbstractCommand
     /**
      * Determine the database server to use for this project.
      */
-    private function determineDatabaseServer(ConsoleOutput $output, string $region): ?array
+    private function determineDatabaseServer(OutputInterface $output, string $region): ?array
     {
         $database = null;
         $databases = $this->apiClient->getDatabaseServers($this->cliConfiguration->getActiveTeamId())->where('region', $region)->whereNotIn('status', ['deleting', 'failed']);
@@ -238,7 +238,7 @@ class InitializeProjectCommand extends AbstractCommand
     /**
      * Determine the type of project being initialized.
      */
-    private function determineProjectType(InputInterface $input, ConsoleOutput $output): string
+    private function determineProjectType(InputInterface $input, OutputInterface $output): string
     {
         $type = '';
 

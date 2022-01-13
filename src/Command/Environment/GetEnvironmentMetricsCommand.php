@@ -19,7 +19,7 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Ymir\Cli\Command\AbstractProjectCommand;
-use Ymir\Cli\Console\ConsoleOutput;
+use Ymir\Cli\Console\OutputInterface;
 
 class GetEnvironmentMetricsCommand extends AbstractProjectCommand
 {
@@ -45,7 +45,7 @@ class GetEnvironmentMetricsCommand extends AbstractProjectCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(InputInterface $input, ConsoleOutput $output)
+    protected function perform(InputInterface $input, OutputInterface $output)
     {
         $period = strtolower((string) $this->getStringOption($input, 'period'));
 

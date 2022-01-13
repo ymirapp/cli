@@ -19,7 +19,7 @@ use Symfony\Component\Filesystem\Filesystem;
 use Ymir\Cli\ApiClient;
 use Ymir\Cli\CliConfiguration;
 use Ymir\Cli\Command\AbstractCommand;
-use Ymir\Cli\Console\ConsoleOutput;
+use Ymir\Cli\Console\OutputInterface;
 use Ymir\Cli\ProjectConfiguration\ProjectConfiguration;
 
 class AddBastionHostCommand extends AbstractCommand
@@ -70,7 +70,7 @@ class AddBastionHostCommand extends AbstractCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(InputInterface $input, ConsoleOutput $output)
+    protected function perform(InputInterface $input, OutputInterface $output)
     {
         $network = $this->apiClient->getNetwork($this->determineNetwork('Which network would like to add a bastion host to', $input, $output));
 

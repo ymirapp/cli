@@ -21,7 +21,7 @@ use Symfony\Component\Filesystem\Filesystem;
 use Ymir\Cli\ApiClient;
 use Ymir\Cli\CliConfiguration;
 use Ymir\Cli\Command\Network\AddBastionHostCommand;
-use Ymir\Cli\Console\ConsoleOutput;
+use Ymir\Cli\Console\OutputInterface;
 use Ymir\Cli\ProjectConfiguration\ProjectConfiguration;
 use Ymir\Cli\Support\Arr;
 
@@ -74,7 +74,7 @@ class CacheTunnelCommand extends AbstractCacheCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(InputInterface $input, ConsoleOutput $output)
+    protected function perform(InputInterface $input, OutputInterface $output)
     {
         $cache = $this->determineCache('Which cache cluster would you like to connect to', $input, $output);
 

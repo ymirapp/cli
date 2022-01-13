@@ -15,7 +15,7 @@ namespace Ymir\Cli\Command\Cache;
 
 use Symfony\Component\Console\Input\InputInterface;
 use Ymir\Cli\Command\AbstractCommand;
-use Ymir\Cli\Console\ConsoleOutput;
+use Ymir\Cli\Console\OutputInterface;
 
 class ListCachesCommand extends AbstractCommand
 {
@@ -39,7 +39,7 @@ class ListCachesCommand extends AbstractCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(InputInterface $input, ConsoleOutput $output)
+    protected function perform(InputInterface $input, OutputInterface $output)
     {
         $output->table(
             ['Id', 'Name', 'Provider', 'Network', 'Region', 'Status', 'Type'],

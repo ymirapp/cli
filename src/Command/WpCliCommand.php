@@ -17,7 +17,7 @@ use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
-use Ymir\Cli\Console\ConsoleOutput;
+use Ymir\Cli\Console\OutputInterface;
 use Ymir\Cli\Support\Arr;
 
 class WpCliCommand extends AbstractInvocationCommand
@@ -46,7 +46,7 @@ class WpCliCommand extends AbstractInvocationCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(InputInterface $input, ConsoleOutput $output)
+    protected function perform(InputInterface $input, OutputInterface $output)
     {
         $async = $this->getBooleanOption($input, 'async') || $this->getBooleanOption($input, 'yolo');
         $command = implode(' ', $this->getArrayArgument($input, 'wp-command'));

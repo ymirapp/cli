@@ -15,7 +15,7 @@ namespace Ymir\Cli\Command\Dns;
 
 use Symfony\Component\Console\Input\InputInterface;
 use Ymir\Cli\Command\AbstractCommand;
-use Ymir\Cli\Console\ConsoleOutput;
+use Ymir\Cli\Console\OutputInterface;
 
 class ListDnsZonesCommand extends AbstractCommand
 {
@@ -39,7 +39,7 @@ class ListDnsZonesCommand extends AbstractCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(InputInterface $input, ConsoleOutput $output)
+    protected function perform(InputInterface $input, OutputInterface $output)
     {
         $output->table(
             ['Id', 'Provider', 'Domain Name', 'Name Servers'],

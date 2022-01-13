@@ -16,7 +16,7 @@ namespace Ymir\Cli\Command\Environment;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Ymir\Cli\Command\AbstractProjectCommand;
-use Ymir\Cli\Console\ConsoleOutput;
+use Ymir\Cli\Console\OutputInterface;
 
 class DeleteEnvironmentCommand extends AbstractProjectCommand
 {
@@ -41,7 +41,7 @@ class DeleteEnvironmentCommand extends AbstractProjectCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(InputInterface $input, ConsoleOutput $output)
+    protected function perform(InputInterface $input, OutputInterface $output)
     {
         $name = $this->getStringArgument($input, 'name');
 

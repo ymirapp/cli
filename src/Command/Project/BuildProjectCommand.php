@@ -19,7 +19,7 @@ use Ymir\Cli\ApiClient;
 use Ymir\Cli\Build\BuildStepInterface;
 use Ymir\Cli\CliConfiguration;
 use Ymir\Cli\Command\AbstractProjectCommand;
-use Ymir\Cli\Console\ConsoleOutput;
+use Ymir\Cli\Console\OutputInterface;
 use Ymir\Cli\ProjectConfiguration\ProjectConfiguration;
 
 class BuildProjectCommand extends AbstractProjectCommand
@@ -72,7 +72,7 @@ class BuildProjectCommand extends AbstractProjectCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(InputInterface $input, ConsoleOutput $output)
+    protected function perform(InputInterface $input, OutputInterface $output)
     {
         $environment = $this->getStringArgument($input, 'environment');
 

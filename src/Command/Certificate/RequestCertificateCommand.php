@@ -16,7 +16,7 @@ namespace Ymir\Cli\Command\Certificate;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
-use Ymir\Cli\Console\ConsoleOutput;
+use Ymir\Cli\Console\OutputInterface;
 
 class RequestCertificateCommand extends AbstractCertificateCommand
 {
@@ -43,7 +43,7 @@ class RequestCertificateCommand extends AbstractCertificateCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(InputInterface $input, ConsoleOutput $output)
+    protected function perform(InputInterface $input, OutputInterface $output)
     {
         $domain = $this->getStringArgument($input, 'domain');
 

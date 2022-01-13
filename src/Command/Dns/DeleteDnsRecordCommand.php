@@ -16,7 +16,7 @@ namespace Ymir\Cli\Command\Dns;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
-use Ymir\Cli\Console\ConsoleOutput;
+use Ymir\Cli\Console\OutputInterface;
 
 class DeleteDnsRecordCommand extends AbstractDnsCommand
 {
@@ -45,7 +45,7 @@ class DeleteDnsRecordCommand extends AbstractDnsCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(InputInterface $input, ConsoleOutput $output)
+    protected function perform(InputInterface $input, OutputInterface $output)
     {
         $zoneIdOrName = $this->getStringArgument($input, 'zone');
 

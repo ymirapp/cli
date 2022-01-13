@@ -16,7 +16,7 @@ namespace Ymir\Cli\Command\Network;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Ymir\Cli\Command\AbstractCommand;
-use Ymir\Cli\Console\ConsoleOutput;
+use Ymir\Cli\Console\OutputInterface;
 
 class DeleteNetworkCommand extends AbstractCommand
 {
@@ -41,7 +41,7 @@ class DeleteNetworkCommand extends AbstractCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(InputInterface $input, ConsoleOutput $output)
+    protected function perform(InputInterface $input, OutputInterface $output)
     {
         $network = $this->determineNetwork('Which network would you like to delete', $input, $output);
 

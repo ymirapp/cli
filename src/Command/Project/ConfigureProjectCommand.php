@@ -21,7 +21,7 @@ use Tightenco\Collect\Support\Collection;
 use Ymir\Cli\ApiClient;
 use Ymir\Cli\CliConfiguration;
 use Ymir\Cli\Command\AbstractProjectCommand;
-use Ymir\Cli\Console\ConsoleOutput;
+use Ymir\Cli\Console\OutputInterface;
 use Ymir\Cli\ProjectConfiguration\ProjectConfiguration;
 use Ymir\Cli\ProjectConfiguration\WordPressConfigurationChangeInterface;
 use Ymir\Cli\Support\Arr;
@@ -79,7 +79,7 @@ class ConfigureProjectCommand extends AbstractProjectCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(InputInterface $input, ConsoleOutput $output)
+    protected function perform(InputInterface $input, OutputInterface $output)
     {
         if (!WpCli::isInstalledGlobally()) {
             throw new RuntimeException('WP-CLI needs to be available globally to scan your project');
@@ -117,7 +117,7 @@ class ConfigureProjectCommand extends AbstractProjectCommand
     /**
      * Apply the given configuration changes to the given environment.
      */
-    private function applyConfigurationChanges(string $message, Collection $plugins, ConsoleOutput $output, string $environment = '', bool $apply = true)
+    private function applyConfigurationChanges(string $message, Collection $plugins, OutputInterface $output, string $environment = '', bool $apply = true)
     {
         $filteredConfigurationChanges = $this->configurationChanges->filter(function (WordPressConfigurationChangeInterface $configurationChange) use ($plugins) {
             return $plugins->contains('name', $configurationChange->getName());

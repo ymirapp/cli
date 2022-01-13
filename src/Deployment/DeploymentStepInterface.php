@@ -14,12 +14,12 @@ declare(strict_types=1);
 namespace Ymir\Cli\Deployment;
 
 use Tightenco\Collect\Support\Collection;
-use Ymir\Cli\Console\ConsoleOutput;
+use Ymir\Cli\Console\OutputInterface;
 
 interface DeploymentStepInterface
 {
     /**
      * Perform the deployment step and generate the console output.
      */
-    public function perform(Collection $deployment, ConsoleOutput $output);
+    public function perform(Collection $deployment, OutputInterface $output);
 }

@@ -16,14 +16,14 @@ namespace Ymir\Cli\Command\Cache;
 use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Input\InputInterface;
 use Ymir\Cli\Command\AbstractCommand;
-use Ymir\Cli\Console\ConsoleOutput;
+use Ymir\Cli\Console\OutputInterface;
 
 abstract class AbstractCacheCommand extends AbstractCommand
 {
     /**
      * Determine the cache that the command is interacting with.
      */
-    protected function determineCache(string $question, InputInterface $input, ConsoleOutput $output): array
+    protected function determineCache(string $question, InputInterface $input, OutputInterface $output): array
     {
         $caches = $this->apiClient->getCaches($this->cliConfiguration->getActiveTeamId());
         $cacheIdOrName = $this->getStringArgument($input, 'cache');

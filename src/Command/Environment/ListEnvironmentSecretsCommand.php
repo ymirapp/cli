@@ -17,7 +17,7 @@ use Carbon\Carbon;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Ymir\Cli\Command\AbstractProjectCommand;
-use Ymir\Cli\Console\ConsoleOutput;
+use Ymir\Cli\Console\OutputInterface;
 
 class ListEnvironmentSecretsCommand extends AbstractProjectCommand
 {
@@ -42,7 +42,7 @@ class ListEnvironmentSecretsCommand extends AbstractProjectCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(InputInterface $input, ConsoleOutput $output)
+    protected function perform(InputInterface $input, OutputInterface $output)
     {
         $output->table(
             ['Id', 'Name', 'Last Updated'],

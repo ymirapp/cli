@@ -15,7 +15,7 @@ namespace Ymir\Cli\Command\Environment;
 
 use Symfony\Component\Console\Input\InputInterface;
 use Ymir\Cli\Command\AbstractProjectCommand;
-use Ymir\Cli\Console\ConsoleOutput;
+use Ymir\Cli\Console\OutputInterface;
 
 class ListEnvironmentsCommand extends AbstractProjectCommand
 {
@@ -39,7 +39,7 @@ class ListEnvironmentsCommand extends AbstractProjectCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(InputInterface $input, ConsoleOutput $output)
+    protected function perform(InputInterface $input, OutputInterface $output)
     {
         $output->table(
             ['Id', 'Name', 'URL'],

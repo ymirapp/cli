@@ -14,7 +14,7 @@ declare(strict_types=1);
 namespace Ymir\Cli\Command\Email;
 
 use Symfony\Component\Console\Input\InputInterface;
-use Ymir\Cli\Console\ConsoleOutput;
+use Ymir\Cli\Console\OutputInterface;
 
 class ListEmailIdentitiesCommand extends AbstractEmailIdentityCommand
 {
@@ -38,7 +38,7 @@ class ListEmailIdentitiesCommand extends AbstractEmailIdentityCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(InputInterface $input, ConsoleOutput $output)
+    protected function perform(InputInterface $input, OutputInterface $output)
     {
         $output->table(
             ['Id', 'Name', 'Type', 'Provider', 'Region', 'Status', 'Managed'],

@@ -20,7 +20,7 @@ use Ymir\Cli\CliConfiguration;
 use Ymir\Cli\Command\AbstractProjectCommand;
 use Ymir\Cli\Command\Email\CreateEmailIdentityCommand;
 use Ymir\Cli\Command\Environment\GetEnvironmentUrlCommand;
-use Ymir\Cli\Console\ConsoleOutput;
+use Ymir\Cli\Console\OutputInterface;
 use Ymir\Cli\Deployment\DeploymentStepInterface;
 use Ymir\Cli\ProjectConfiguration\ProjectConfiguration;
 
@@ -50,7 +50,7 @@ abstract class AbstractProjectDeploymentCommand extends AbstractProjectCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(InputInterface $input, ConsoleOutput $output)
+    protected function perform(InputInterface $input, OutputInterface $output)
     {
         $deployment = $this->createDeployment($input, $output);
         $environment = $this->getStringArgument($input, 'environment');
@@ -104,7 +104,7 @@ abstract class AbstractProjectDeploymentCommand extends AbstractProjectCommand
     /**
      * Create the deployment and return its ID.
      */
-    abstract protected function createDeployment(InputInterface $input, ConsoleOutput $output): Collection;
+    abstract protected function createDeployment(InputInterface $input, OutputInterface $output): Collection;
 
     /**
      * Get the message to display when a deployment was successful.

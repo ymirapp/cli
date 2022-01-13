@@ -30,7 +30,7 @@ use Tightenco\Collect\Support\Collection;
 use Ymir\Cli\ApiClient;
 use Ymir\Cli\CliConfiguration;
 use Ymir\Cli\Command\AbstractProjectCommand;
-use Ymir\Cli\Console\ConsoleOutput;
+use Ymir\Cli\Console\OutputInterface;
 use Ymir\Cli\FileUploader;
 use Ymir\Cli\ProjectConfiguration\ProjectConfiguration;
 
@@ -102,7 +102,7 @@ class ImportUploadsCommand extends AbstractProjectCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(InputInterface $input, ConsoleOutput $output)
+    protected function perform(InputInterface $input, OutputInterface $output)
     {
         $environment = (string) $this->getStringOption($input, 'environment');
         $filesystem = new Filesystem($this->getAdapter($this->getStringArgument($input, 'path')));
@@ -180,19 +180,25 @@ class ImportUploadsCommand extends AbstractProjectCommand
 
         if (!is_array($parsedPath) || !isset($parsedPath['host'], $parsedPath['scheme']) || !in_array($parsedPath['scheme'], ['ftp', 'sftp'])) {
             return new LocalFilesystemAdapter($path);
-        } elseif ('ftp' === $parsedPath['scheme']) {
+        }
+
+        if (!array_key_exists('pass', $parsedPath)) {
+            $parsedPath['pass'] = null;
+        }
+
+        if ('ftp' === $parsedPath['scheme']) {
             return new FtpAdapter(
                 FtpConnectionOptions::fromArray([
                     'host' => $parsedPath['host'],
                     'root' => $parsedPath['path'] ?? '/',
                     'username' => $parsedPath['user'] ?? get_current_user(),
-                    $parsedPath['pass'] ?? null,
+                    $parsedPath['pass'],
                     'port' => $parsedPath['port'] ?? 21,
                 ])
             );
         } elseif ('sftp' === $parsedPath['scheme']) {
             return new SftpAdapter(
-                new SftpConnectionProvider($parsedPath['host'], $parsedPath['user'] ?? get_current_user(), $parsedPath['pass'] ?? null, null, null, $parsedPath['port'] ?? 22, $parsedPath['pass'] ? false : true),
+                new SftpConnectionProvider($parsedPath['host'], $parsedPath['user'] ?? get_current_user(), $parsedPath['pass'], null, null, $parsedPath['port'] ?? 22, !$parsedPath['pass']),
                 $parsedPath['path'] ?? '/'
             );
         }

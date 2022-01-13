@@ -15,7 +15,7 @@ namespace Ymir\Cli\Command\Email;
 
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
-use Ymir\Cli\Console\ConsoleOutput;
+use Ymir\Cli\Console\OutputInterface;
 
 class DeleteEmailIdentityCommand extends AbstractEmailIdentityCommand
 {
@@ -40,7 +40,7 @@ class DeleteEmailIdentityCommand extends AbstractEmailIdentityCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(InputInterface $input, ConsoleOutput $output)
+    protected function perform(InputInterface $input, OutputInterface $output)
     {
         $identity = $this->determineEmailIdentity('Which email identity would you like to delete', $input, $output);
 

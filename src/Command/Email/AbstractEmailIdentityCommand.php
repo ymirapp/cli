@@ -16,14 +16,14 @@ namespace Ymir\Cli\Command\Email;
 use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Input\InputInterface;
 use Ymir\Cli\Command\AbstractCommand;
-use Ymir\Cli\Console\ConsoleOutput;
+use Ymir\Cli\Console\OutputInterface;
 
 abstract class AbstractEmailIdentityCommand extends AbstractCommand
 {
     /**
      * Determine the email identity that the command is interacting with.
      */
-    protected function determineEmailIdentity(string $question, InputInterface $input, ConsoleOutput $output): array
+    protected function determineEmailIdentity(string $question, InputInterface $input, OutputInterface $output): array
     {
         $identity = null;
         $identities = $this->apiClient->getEmailIdentities($this->cliConfiguration->getActiveTeamId());

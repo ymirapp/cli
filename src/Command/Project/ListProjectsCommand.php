@@ -15,7 +15,7 @@ namespace Ymir\Cli\Command\Project;
 
 use Symfony\Component\Console\Input\InputInterface;
 use Ymir\Cli\Command\AbstractCommand;
-use Ymir\Cli\Console\ConsoleOutput;
+use Ymir\Cli\Console\OutputInterface;
 
 class ListProjectsCommand extends AbstractCommand
 {
@@ -39,7 +39,7 @@ class ListProjectsCommand extends AbstractCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(InputInterface $input, ConsoleOutput $output)
+    protected function perform(InputInterface $input, OutputInterface $output)
     {
         $projects = $this->apiClient->getTeamProjects($this->cliConfiguration->getActiveTeamId());
 

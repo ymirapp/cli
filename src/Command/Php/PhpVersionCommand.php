@@ -16,7 +16,7 @@ namespace Ymir\Cli\Command\Php;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Ymir\Cli\Command\AbstractInvocationCommand;
-use Ymir\Cli\Console\ConsoleOutput;
+use Ymir\Cli\Console\OutputInterface;
 
 class PhpVersionCommand extends AbstractInvocationCommand
 {
@@ -41,7 +41,7 @@ class PhpVersionCommand extends AbstractInvocationCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(InputInterface $input, ConsoleOutput $output)
+    protected function perform(InputInterface $input, OutputInterface $output)
     {
         $environment = (string) $this->getStringOption($input, 'environment');
 

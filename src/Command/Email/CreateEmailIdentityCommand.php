@@ -16,7 +16,7 @@ namespace Ymir\Cli\Command\Email;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
-use Ymir\Cli\Console\ConsoleOutput;
+use Ymir\Cli\Console\OutputInterface;
 
 class CreateEmailIdentityCommand extends AbstractEmailIdentityCommand
 {
@@ -43,7 +43,7 @@ class CreateEmailIdentityCommand extends AbstractEmailIdentityCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(InputInterface $input, ConsoleOutput $output)
+    protected function perform(InputInterface $input, OutputInterface $output)
     {
         $name = $this->getStringArgument($input, 'name');
 
@@ -68,7 +68,7 @@ class CreateEmailIdentityCommand extends AbstractEmailIdentityCommand
     /**
      * Display warning about DNS record required to validate email identity.
      */
-    private function displayValidationRecord(int $identityId, ConsoleOutput $output)
+    private function displayValidationRecord(int $identityId, OutputInterface $output)
     {
         $validationRecord = $this->wait(function () use ($identityId) {
             $identity = $this->apiClient->getEmailIdentity($identityId);

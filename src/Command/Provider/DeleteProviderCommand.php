@@ -15,7 +15,7 @@ namespace Ymir\Cli\Command\Provider;
 
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
-use Ymir\Cli\Console\ConsoleOutput;
+use Ymir\Cli\Console\OutputInterface;
 
 class DeleteProviderCommand extends AbstractProviderCommand
 {
@@ -40,7 +40,7 @@ class DeleteProviderCommand extends AbstractProviderCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(InputInterface $input, ConsoleOutput $output)
+    protected function perform(InputInterface $input, OutputInterface $output)
     {
         $providerId = $this->getNumericArgument($input, 'provider');
 

@@ -16,7 +16,7 @@ namespace Ymir\Cli\Command\Project;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Ymir\Cli\Command\AbstractCommand;
-use Ymir\Cli\Console\ConsoleOutput;
+use Ymir\Cli\Console\OutputInterface;
 
 class DeleteProjectCommand extends AbstractCommand
 {
@@ -49,7 +49,7 @@ class DeleteProjectCommand extends AbstractCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(InputInterface $input, ConsoleOutput $output)
+    protected function perform(InputInterface $input, OutputInterface $output)
     {
         $projectId = $this->projectConfiguration->exists() ? $this->projectConfiguration->getProjectId() : null;
 

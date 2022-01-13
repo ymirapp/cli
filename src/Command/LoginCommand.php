@@ -14,7 +14,7 @@ declare(strict_types=1);
 namespace Ymir\Cli\Command;
 
 use Symfony\Component\Console\Input\InputInterface;
-use Ymir\Cli\Console\ConsoleOutput;
+use Ymir\Cli\Console\OutputInterface;
 use Ymir\Cli\Exception\ApiClientException;
 
 class LoginCommand extends AbstractCommand
@@ -39,7 +39,7 @@ class LoginCommand extends AbstractCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(InputInterface $input, ConsoleOutput $output)
+    protected function perform(InputInterface $input, OutputInterface $output)
     {
         if ($this->apiClient->isAuthenticated()
             && !$output->confirm('You are already logged in. Do you want to log in again?', false)
