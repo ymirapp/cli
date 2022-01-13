@@ -27,14 +27,15 @@ grumphp:
       allow_risky: true
       config: '.php-cs-fixer.dist.php'
     phplint: ~
-    phpmd:
-      exclude:
-        - 'Command/Project/InitializeProjectCommand.php'
-        - 'Console/Output.php'
-        - 'ApiClient.php'
-        - 'activate-ymir-plugin.php'
-      ruleset: ['phpmd.xml']
     phpstan:
       ignore_patterns: ['/^(?!src)/']
     phpunit:
       always_execute: true
+  testsuites:
+    code_quality:
+      tasks:
+        - composer
+        - phpcpd
+        - phpcsfixer2
+        - phplint
+        - phpstan
