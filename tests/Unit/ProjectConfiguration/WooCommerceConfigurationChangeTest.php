@@ -13,8 +13,8 @@ declare(strict_types=1);
 
 namespace Ymir\Cli\Tests\Unit\ProjectConfiguration;
 
-use PHPUnit\Framework\TestCase;
 use Ymir\Cli\ProjectConfiguration\WooCommerceConfigurationChange;
+use Ymir\Cli\Tests\Unit\TestCase;
 
 /**
  * @covers \Ymir\Cli\ProjectConfiguration\WooCommerceConfigurationChange
