@@ -140,10 +140,10 @@ class ApiClient
     /**
      * Create a new SSL certificate.
      */
-    public function createCertificate(int $providerId, string $domain, string $region): Collection
+    public function createCertificate(int $providerId, array $domains, string $region): Collection
     {
         return $this->request('post', "/providers/{$providerId}/certificates", [
-            'domain' => $domain,
+            'domains' => $domains,
             'region' => $region,
         ]);
     }

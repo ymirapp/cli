@@ -35,7 +35,7 @@ class RequestCertificateCommand extends AbstractCertificateCommand
         $this
             ->setName(self::NAME)
             ->setDescription('Request a new SSL certificate')
-            ->addArgument('domain', InputArgument::OPTIONAL, 'The domain that the SSL certificate is for')
+            ->addArgument('domains', InputArgument::IS_ARRAY | InputArgument::OPTIONAL, 'List of domains that the SSL certificate is for')
             ->addOption('provider', null, InputOption::VALUE_REQUIRED, 'The cloud provider where the certificate will be created')
             ->addOption('region', null, InputOption::VALUE_REQUIRED, 'The cloud provider region where the certificate will be located');
     }
@@ -45,19 +45,19 @@ class RequestCertificateCommand extends AbstractCertificateCommand
      */
     protected function perform(InputInterface $input, OutputInterface $output)
     {
-        $domain = $this->getStringArgument($input, 'domain');
+        $domains = $this->getArrayArgument($input, 'domains');
 
-        if (empty($domain) && $input->isInteractive()) {
-            $domain = $output->ask('What domain is the certificate for');
+        if (empty($domains) && $input->isInteractive()) {
+            $domains = array_map('trim', explode(',', (string) $output->ask('Please enter a comma-separated list of domains for the certificate')));
         }
 
-        if (0 === stripos($domain, '*.')) {
-            $domain = substr($domain, 2);
+        if (1 === count($domains) && false === stripos($domains[0], '*.') && $output->confirm(sprintf('Do you want your certificate to also cover "<comment>*.%s</comment>" subdomains?', $domains[0]))) {
+            $domains[] = '*.'.$domains[0];
         }
 
         $providerId = $this->determineCloudProvider('Enter the ID of the cloud provider where the SSL certificate will be created', $input, $output);
 
-        $certificate = $this->apiClient->createCertificate($providerId, $domain, $this->determineRegion('Enter the name of the region where the SSL certificate will be created', $providerId, $input, $output));
+        $certificate = $this->apiClient->createCertificate($providerId, $domains, $this->determineRegion('Enter the name of the region where the SSL certificate will be created', $providerId, $input, $output));
 
         $isManaged = collect($certificate['domains'])->contains('managed', true);
         $validationRecords = [];
