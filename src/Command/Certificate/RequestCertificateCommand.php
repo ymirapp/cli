@@ -53,6 +53,8 @@ class RequestCertificateCommand extends AbstractCertificateCommand
 
         if (1 === count($domains) && false === stripos($domains[0], '*.') && $output->confirm(sprintf('Do you want your certificate to also cover "<comment>*.%s</comment>" subdomains?', $domains[0]))) {
             $domains[] = '*.'.$domains[0];
+        } elseif (1 === count($domains) && 0 === stripos($domains[0], '*.')) {
+            $domains[] = substr($domains[0], 2);
         }
 
         $providerId = $this->determineCloudProvider('Enter the ID of the cloud provider where the SSL certificate will be created', $input, $output);
