@@ -18,7 +18,6 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Ymir\Cli\Console\OutputInterface;
-use Ymir\Cli\Support\Arr;
 
 class WpCliCommand extends AbstractInvocationCommand
 {
@@ -57,19 +56,13 @@ class WpCliCommand extends AbstractInvocationCommand
             $command = $output->ask('Please enter the WP-CLI command to run');
         }
 
-        if ('wp ' === substr($command, 0, 3)) {
-            $command = substr($command, 3);
-        }
-
         if (in_array($command, ['shell'])) {
             throw new RuntimeException(sprintf('The "wp %s" command isn\'t available remotely', $command));
         }
 
         $output->info(sprintf('Running "<comment>wp %s</comment>" %s "<comment>%s</comment>" environment', $command, $async ? 'asynchronously on' : 'on', $environment));
 
-        $result = $this->invokeEnvironmentFunction($environment, [
-            'php' => sprintf('bin/wp %s', $command),
-        ], $async ? 0 : Arr::get($this->projectConfiguration->getEnvironment($environment), 'console.timeout', 60));
+        $result = $this->invokeWpCliCommand($command, $environment, $async ? 0 : null);
 
         if (!$async) {
             $output->newLine();

@@ -47,9 +47,7 @@ class PhpInfoCommand extends AbstractInvocationCommand
 
         $output->info(sprintf('Getting information about PHP from the "<comment>%s</comment>" environment', $environment));
 
-        $result = $this->invokeEnvironmentFunction($environment, [
-            'php' => '--info',
-        ]);
+        $result = $this->invokePhpCommand('--info', $environment);
 
         $output->newLine();
         $output->write("${result['output']}");
