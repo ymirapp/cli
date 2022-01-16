@@ -47,7 +47,7 @@ class RequestCertificateCommand extends AbstractCertificateCommand
     {
         $domains = $this->getArrayArgument($input, 'domains');
 
-        if (empty($domains) && $input->isInteractive()) {
+        if (empty($domains)) {
             $domains = array_map('trim', explode(',', (string) $output->ask('Please enter a comma-separated list of domains for the certificate')));
         }
 

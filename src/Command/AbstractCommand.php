@@ -120,7 +120,7 @@ abstract class AbstractCommand extends Command
 
         $networks = $this->apiClient->getTeamNetworks($this->cliConfiguration->getActiveTeamId());
 
-        if (empty($networkIdOrName) && $input->isInteractive()) {
+        if (empty($networkIdOrName)) {
             $networkIdOrName = $output->choiceWithResourceDetails($question, $networks);
         } elseif (1 < $networks->where('name', $networkIdOrName)->count()) {
             throw new RuntimeException(sprintf('Unable to select a network because more than one network has the name "%s"', $networkIdOrName));

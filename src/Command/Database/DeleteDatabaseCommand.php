@@ -46,7 +46,7 @@ class DeleteDatabaseCommand extends AbstractDatabaseCommand
         $databaseServer = $this->determineDatabaseServer('On which database server would you like to delete a database?', $input, $output);
         $name = $this->getStringArgument($input, 'name');
 
-        if (empty($name) && $input->isInteractive()) {
+        if (empty($name)) {
             $name = (string) $output->choice('Which database would you like to delete', $this->apiClient->getDatabases($databaseServer['id'])->filter(function (string $name) {
                 return !in_array($name, ['information_schema', 'innodb', 'mysql', 'performance_schema', 'sys']);
             })->values());

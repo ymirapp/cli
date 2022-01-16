@@ -47,7 +47,7 @@ class CreateEmailIdentityCommand extends AbstractEmailIdentityCommand
     {
         $name = $this->getStringArgument($input, 'name');
 
-        if (empty($name) && $input->isInteractive()) {
+        if (empty($name)) {
             $name = $output->ask('What is the name of the email identity');
         }
 

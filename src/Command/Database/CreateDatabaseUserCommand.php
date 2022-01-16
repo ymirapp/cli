@@ -47,7 +47,7 @@ class CreateDatabaseUserCommand extends AbstractDatabaseCommand
         $databaseServer = $this->determineDatabaseServer('On which database server would you like to create the new database user?', $input, $output);
         $username = $this->getStringArgument($input, 'username');
 
-        if (empty($username) && $input->isInteractive()) {
+        if (empty($username)) {
             $username = $output->ask('What is the username of the new database user');
         }
 

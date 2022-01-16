@@ -55,7 +55,7 @@ class CreateDatabaseServerCommand extends AbstractCommand
     {
         $name = $this->getStringArgument($input, 'name');
 
-        if (empty($name) && $input->isInteractive()) {
+        if (empty($name)) {
             $name = $output->askSlug('What is the name of the database server');
         }
 

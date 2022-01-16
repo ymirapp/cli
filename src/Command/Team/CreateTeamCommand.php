@@ -45,7 +45,7 @@ class CreateTeamCommand extends AbstractCommand
     {
         $name = $this->getStringArgument($input, 'name');
 
-        if (empty($name) && $input->isInteractive()) {
+        if (empty($name)) {
             $name = (string) $output->ask('What is the name of the team');
         }
 

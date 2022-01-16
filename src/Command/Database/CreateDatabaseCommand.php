@@ -46,7 +46,7 @@ class CreateDatabaseCommand extends AbstractDatabaseCommand
         $databaseServer = $this->determineDatabaseServer('On which database server would you like to create the new database?', $input, $output);
         $name = $this->getStringArgument($input, 'name');
 
-        if (empty($name) && $input->isInteractive()) {
+        if (empty($name)) {
             $name = $output->ask('What is the name of the database');
         }
 

@@ -52,7 +52,7 @@ class WpCliCommand extends AbstractInvocationCommand
         $environment = (string) $this->getStringOption($input, 'environment');
         $exitCode = 0;
 
-        if (empty($command) && $input->isInteractive()) {
+        if (empty($command)) {
             $command = $output->ask('Please enter the WP-CLI command to run');
         }
 

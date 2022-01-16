@@ -48,7 +48,7 @@ class CreateDnsZoneCommand extends AbstractDnsCommand
     {
         $name = $this->getStringArgument($input, 'name');
 
-        if (empty($name) && $input->isInteractive()) {
+        if (empty($name)) {
             $name = $output->ask('What is the name of the domain that the DNS zone will manage');
         }
 

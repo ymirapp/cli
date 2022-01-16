@@ -49,11 +49,11 @@ class ChangeEnvironmentSecretCommand extends AbstractProjectCommand
         $name = $this->getStringArgument($input, 'name');
         $value = $this->getStringArgument($input, 'value');
 
-        if (empty($name) && $input->isInteractive()) {
+        if (empty($name)) {
             $name = $output->ask('What is the name of the secret');
         }
 
-        if (empty($value) && $input->isInteractive()) {
+        if (empty($value)) {
             $value = $output->ask('What is the secret value');
         }
 

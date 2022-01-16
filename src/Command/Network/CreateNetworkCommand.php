@@ -48,7 +48,7 @@ class CreateNetworkCommand extends AbstractCommand
     {
         $name = $this->getStringArgument($input, 'name');
 
-        if (empty($name) && $input->isInteractive()) {
+        if (empty($name)) {
             $name = $output->ask('What is the name of the network being created');
         }
 
