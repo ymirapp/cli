@@ -250,6 +250,6 @@ class ProjectConfiguration implements Arrayable
      */
     private function save()
     {
-        $this->filesystem->dumpFile($this->configurationFilePath, Yaml::dump($this->configuration, 20, 2, Yaml::DUMP_NULL_AS_TILDE));
+        $this->filesystem->dumpFile($this->configurationFilePath, str_replace('!!float 8', '8.0', Yaml::dump($this->configuration, 20, 2, Yaml::DUMP_NULL_AS_TILDE)));
     }
 }
