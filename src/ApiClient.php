@@ -615,7 +615,7 @@ class ApiClient
         $identity = null;
 
         if (is_numeric($idOrName)) {
-            $identity = $this->request('get', "/email-identities/$idOrName")->toArray();
+            $identity = $this->request('get', "/email-identities/{$idOrName}")->toArray();
         } elseif (is_string($idOrName)) {
             $identity = $this->getEmailIdentities($this->cliConfiguration->getActiveTeamId())->firstWhere('name', $idOrName);
         }
@@ -632,7 +632,7 @@ class ApiClient
      */
     public function getEnvironment(int $projectId, string $environment): Collection
     {
-        return $this->request('get', "/projects/{$projectId}/environments/$environment");
+        return $this->request('get', "/projects/{$projectId}/environments/{$environment}");
     }
 
     /**
@@ -840,7 +840,7 @@ class ApiClient
      */
     public function invalidateCache(int $projectId, string $environment, array $paths)
     {
-        $this->request('post', "/projects/{$projectId}/environments/$environment/invalidate-cache", [
+        $this->request('post', "/projects/{$projectId}/environments/{$environment}/invalidate-cache", [
             'paths' => $paths,
         ]);
     }

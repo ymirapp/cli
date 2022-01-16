@@ -30,6 +30,7 @@ $config
         'declare_strict_types' => true,
         // one should use PHPUnit methods to set up expected exception instead of annotations
         'general_phpdoc_annotation_remove' => ['annotations' => ['expectedException', 'expectedExceptionMessage', 'expectedExceptionMessageRegExp']],
+        'explicit_string_variable' => true,
         'header_comment' => ['header' => $header],
         'heredoc_to_nowdoc' => true,
         'list_syntax' => ['syntax' => 'long'],
