@@ -83,9 +83,9 @@ class ApiClient
     /**
      * Change the lock of the given database server.
      */
-    public function changeDatabaseServerLock(int $databaseId, bool $locked): Collection
+    public function changeDatabaseServerLock(int $databaseServerId, bool $locked): Collection
     {
-        return $this->request('post', "/database-servers/{$databaseId}/lock", [
+        return $this->request('post', "/database-servers/{$databaseServerId}/lock", [
             'locked' => $locked,
         ]);
     }
@@ -151,9 +151,9 @@ class ApiClient
     /**
      * Create a new database on the given database server.
      */
-    public function createDatabase(int $databaseId, string $name): Collection
+    public function createDatabase(int $databaseServerId, string $name): Collection
     {
-        return $this->request('post', "/database-servers/{$databaseId}/databases", [
+        return $this->request('post', "/database-servers/{$databaseServerId}/databases", [
             'name' => $name,
         ]);
     }
@@ -174,9 +174,9 @@ class ApiClient
     /**
      * Create a new user on the given database server.
      */
-    public function createDatabaseUser(int $databaseId, string $username, array $databases = []): Collection
+    public function createDatabaseUser(int $databaseServerId, string $username, array $databases = []): Collection
     {
-        return $this->request('post', "/database-servers/{$databaseId}/users", [
+        return $this->request('post', "/database-servers/{$databaseServerId}/users", [
             'databases' => $databases,
             'username' => $username,
         ]);
@@ -315,25 +315,25 @@ class ApiClient
     /**
      * Delete a the given database on the given database server.
      */
-    public function deleteDatabase(int $databaseId, string $name): Collection
+    public function deleteDatabase(int $databaseServerId, string $name): Collection
     {
-        return $this->request('delete', "/database-servers/{$databaseId}/databases/{$name}");
+        return $this->request('delete', "/database-servers/{$databaseServerId}/databases/{$name}");
     }
 
     /**
      * Delete the given database server.
      */
-    public function deleteDatabaseServer(int $databaseId)
+    public function deleteDatabaseServer(int $databaseServerId)
     {
-        $this->request('delete', "/database-servers/{$databaseId}");
+        $this->request('delete', "/database-servers/{$databaseServerId}");
     }
 
     /**
      * Delete a the given database user on the given database server.
      */
-    public function deleteDatabaseUser(int $databaseId, int $userId): Collection
+    public function deleteDatabaseUser(int $databaseServerId, int $userId): Collection
     {
-        return $this->request('delete', "/database-servers/{$databaseId}/users/{$userId}");
+        return $this->request('delete', "/database-servers/{$databaseServerId}/users/{$userId}");
     }
 
     /**
@@ -494,17 +494,17 @@ class ApiClient
     /**
      * Get the list of databases on the given database server.
      */
-    public function getDatabases(int $databaseId): Collection
+    public function getDatabases(int $databaseServerId): Collection
     {
-        return $this->request('get', "/database-servers/{$databaseId}/databases");
+        return $this->request('get', "/database-servers/{$databaseServerId}/databases");
     }
 
     /**
      * Get the information on the database server with the given database ID or name.
      */
-    public function getDatabaseServer(int $databaseId): Collection
+    public function getDatabaseServer(int $databaseServerId): Collection
     {
-        return $this->request('get', "/database-servers/{$databaseId}");
+        return $this->request('get', "/database-servers/{$databaseServerId}");
     }
 
     /**
@@ -532,9 +532,9 @@ class ApiClient
     /**
      * Get the list of database users on the given database server.
      */
-    public function getDatabaseUsers(int $databaseId): Collection
+    public function getDatabaseUsers(int $databaseServerId): Collection
     {
-        return $this->request('get', "/database-servers/{$databaseId}/users");
+        return $this->request('get', "/database-servers/{$databaseServerId}/users");
     }
 
     /**
@@ -880,9 +880,9 @@ class ApiClient
     /**
      * Rotate the password of the given database server.
      */
-    public function rotateDatabaseServerPassword(int $databaseId): Collection
+    public function rotateDatabaseServerPassword(int $databaseServerId): Collection
     {
-        return $this->request('post', "/database-servers/{$databaseId}/rotate-password");
+        return $this->request('post', "/database-servers/{$databaseServerId}/rotate-password");
     }
 
     /**
@@ -896,9 +896,9 @@ class ApiClient
     /**
      * Update the given database server.
      */
-    public function updateDatabaseServer(int $databaseId, int $storage, string $type)
+    public function updateDatabaseServer(int $databaseServerId, int $storage, string $type)
     {
-        $this->request('put', "/database-servers/{$databaseId}", [
+        $this->request('put', "/database-servers/{$databaseServerId}", [
             'storage' => $storage,
             'type' => $type,
         ]);
