@@ -52,7 +52,7 @@ class CreateDatabaseUserCommand extends AbstractDatabaseCommand
         }
 
         if ($databaseServer['publicly_accessible'] && !$output->confirm('Do you want to the new user to have access to all databases?', false)) {
-            $databases = $output->multichoice('Please enter the comma-separated list of databases that you want the user to have access to', $this->apiClient->getDatabases($databaseServer['id'])->all());
+            $databases = $output->multichoice('Please enter the comma-separated list of databases that you want the user to have access to', $this->apiClient->getDatabases($databaseServer['id']));
         }
 
         $user = $this->apiClient->createDatabaseUser($databaseServer['id'], $username, $databases);

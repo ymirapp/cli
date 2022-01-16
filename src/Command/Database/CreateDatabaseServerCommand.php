@@ -135,7 +135,7 @@ class CreateDatabaseServerCommand extends AbstractCommand
         if (null !== $type && !$types->has($type)) {
             throw new InvalidArgumentException(sprintf('The type "%s" isn\'t a valid database type', $type));
         } elseif (null === $type) {
-            $type = (string) $output->choice('What should the database server type be?', $types->all());
+            $type = (string) $output->choice('What should the database server type be?', $types);
         }
 
         return $type;

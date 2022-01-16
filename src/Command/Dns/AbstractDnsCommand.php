@@ -34,7 +34,7 @@ abstract class AbstractDnsCommand extends AbstractCommand
         }
 
         if (empty($zoneIdOrName)) {
-            $zoneIdOrName = (string) $output->choice($question, $zones->pluck('domain_name')->all());
+            $zoneIdOrName = (string) $output->choice($question, $zones->pluck('domain_name'));
         }
 
         if (is_numeric($zoneIdOrName)) {

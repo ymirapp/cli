@@ -36,7 +36,7 @@ interface OutputInterface extends SymfonyOutputInterface
     /**
      * Asks a choice question.
      */
-    public function choice(string $question, array $choices, $default = null);
+    public function choice(string $question, $choices, $default = null);
 
     /**
      * Ask a choice question that uses the ID for answers.
@@ -106,7 +106,7 @@ interface OutputInterface extends SymfonyOutputInterface
     /**
      * Ask a multiselect choice question.
      */
-    public function multichoice($question, array $choices, $default = null): array;
+    public function multichoice($question, $choices, $default = null): array;
 
     /**
      * Add newline(s).

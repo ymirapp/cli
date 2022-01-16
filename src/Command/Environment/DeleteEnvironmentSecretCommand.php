@@ -56,7 +56,7 @@ class DeleteEnvironmentSecretCommand extends AbstractProjectCommand
         $secretIdOrName = $this->getStringArgument($input, 'secret');
 
         if (empty($secretIdOrName)) {
-            $secretIdOrName = (string) $output->choice('Which secret would you like to delete', $secrets->pluck('name')->all());
+            $secretIdOrName = (string) $output->choice('Which secret would you like to delete', $secrets->pluck('name'));
         }
 
         $secret = is_numeric($secretIdOrName) ? $secrets->firstWhere('id', $secretIdOrName) : $secrets->firstWhere('name', $secretIdOrName);

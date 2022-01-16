@@ -201,7 +201,7 @@ abstract class AbstractCommand extends Command
             throw new InvalidArgumentException('The given "region" isn\'t a valid cloud provider region');
         }
 
-        return $this->projectConfiguration->exists() ? $this->apiClient->getProject($this->projectConfiguration->getProjectId())->get('region') : (string) $output->choice($question, $regions->all());
+        return $this->projectConfiguration->exists() ? $this->apiClient->getProject($this->projectConfiguration->getProjectId())->get('region') : (string) $output->choice($question, $regions);
     }
 
     /**

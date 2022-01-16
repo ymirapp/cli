@@ -94,7 +94,7 @@ class ModifyDatabaseServerCommand extends AbstractDatabaseCommand
             throw new InvalidArgumentException(sprintf('The type "%s" isn\'t a valid database type', $typeOption));
         }
 
-        $newType = $output->choice(sprintf('What should the database server type be changed to? <fg=default>(Currently: <comment>%s</comment>)</>', $type), $types->all(), $type);
+        $newType = $output->choice(sprintf('What should the database server type be changed to? <fg=default>(Currently: <comment>%s</comment>)</>', $type), $types, $type);
 
         if ($newType !== $type && !$output->confirm('Modifying the database server type will cause your database to become unavailable for a few minutes. Do you want to proceed?', false)) {
             exit;

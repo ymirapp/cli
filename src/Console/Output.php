@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Ymir\Cli\Console;
 
+use Symfony\Component\Console\Exception\InvalidArgumentException;
 use Symfony\Component\Console\Formatter\OutputFormatter;
 use Symfony\Component\Console\Formatter\OutputFormatterInterface;
 use Symfony\Component\Console\Helper\Helper;
@@ -26,6 +27,7 @@ use Symfony\Component\Console\Question\ConfirmationQuestion;
 use Symfony\Component\Console\Question\Question;
 use Symfony\Component\Console\Terminal;
 use Tightenco\Collect\Support\Collection;
+use Tightenco\Collect\Support\Enumerable;
 use Ymir\Cli\Command\Project\DeployProjectCommand;
 use Ymir\Cli\Command\Project\RedeployProjectCommand;
 
@@ -110,8 +112,10 @@ class Output implements OutputInterface
     /**
      * {@inheritdoc}
      */
-    public function choice($question, array $choices, $default = null)
+    public function choice($question, $choices, $default = null)
     {
+        $choices = $this->getChoices($choices);
+
         if (null !== $default) {
             $values = array_flip($choices);
             $default = $values[$default];
@@ -317,8 +321,10 @@ class Output implements OutputInterface
     /**
      * Ask a multiselect choice question.
      */
-    public function multichoice($question, array $choices, $default = null): array
+    public function multichoice($question, $choices, $default = null): array
     {
+        $choices = $this->getChoices($choices);
+
         if (null !== $default) {
             $values = array_flip($choices);
             $default = $values[$default];
@@ -520,5 +526,19 @@ class Output implements OutputInterface
         $style->setCellHeaderFormat('<info>%s</info>');
 
         return (new Table($output))->setStyle($style);
+    }
+
+    /**
+     * Get the choices as an array.
+     */
+    private function getChoices($choices): array
+    {
+        if ($choices instanceof Enumerable) {
+            $choices = $choices->all();
+        } elseif (!is_array($choices)) {
+            throw new InvalidArgumentException('"choices" must be an array or enumerable object');
+        }
+
+        return $choices;
     }
 }

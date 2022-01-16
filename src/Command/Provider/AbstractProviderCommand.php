@@ -74,7 +74,7 @@ abstract class AbstractProviderCommand extends AbstractCommand
             'Enter the name of the credentials to import from your AWS credentials file',
             $parsedCredentials->mapWithKeys(function ($credentials, $key) {
                 return [$key => $key];
-            })->all()
+            })
         );
 
         return [

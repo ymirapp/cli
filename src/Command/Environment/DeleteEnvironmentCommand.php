@@ -48,7 +48,7 @@ class DeleteEnvironmentCommand extends AbstractProjectCommand
         if (!empty($name) && !$output->confirm('Are you sure you want to delete this environment?', false)) {
             return;
         } elseif (empty($name)) {
-            $name = $output->choice('Please choose an environment to delete', $this->apiClient->getEnvironments($this->projectConfiguration->getProjectId())->pluck(['name'])->all());
+            $name = $output->choice('Please choose an environment to delete', $this->apiClient->getEnvironments($this->projectConfiguration->getProjectId())->pluck(['name']));
         }
 
         $deleteResources = (bool) $output->confirm('Do you want to delete all the environment resources on the cloud provider?', false);

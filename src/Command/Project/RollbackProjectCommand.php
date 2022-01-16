@@ -73,7 +73,7 @@ class RollbackProjectCommand extends AbstractProjectDeploymentCommand
 
         $deploymentId = !$this->getBooleanOption($input, 'select') ? $deployments[0]['id'] : $output->choice('Please select a deployment to rollback to', $deployments->mapWithKeys(function (array $deployment) {
             return [$deployment['id'] => $this->getDeploymentChoiceDisplayName($deployment)];
-        })->all());
+        }));
 
         $rollback = $this->apiClient->createRollback($this->projectConfiguration->getProjectId(), $this->getStringArgument($input, 'environment'), (int) $deploymentId);
 

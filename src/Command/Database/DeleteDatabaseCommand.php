@@ -49,7 +49,7 @@ class DeleteDatabaseCommand extends AbstractDatabaseCommand
         if (empty($name) && $input->isInteractive()) {
             $name = (string) $output->choice('Which database would you like to delete', $this->apiClient->getDatabases($databaseServer['id'])->filter(function (string $name) {
                 return !in_array($name, ['information_schema', 'innodb', 'mysql', 'performance_schema', 'sys']);
-            })->values()->all());
+            })->values());
         }
 
         if (!$output->confirm('Are you sure you want to delete this database?', false)) {

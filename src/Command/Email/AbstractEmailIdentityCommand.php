@@ -34,7 +34,7 @@ abstract class AbstractEmailIdentityCommand extends AbstractCommand
         }
 
         if (empty($identityIdOrName)) {
-            $identityIdOrName = (string) $output->choice($question, $identities->pluck('name')->all());
+            $identityIdOrName = (string) $output->choice($question, $identities->pluck('name'));
         }
 
         if (is_numeric($identityIdOrName)) {
