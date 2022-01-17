@@ -28,7 +28,7 @@
         "symfony/dependency-injection": "^5.4",
         "symfony/event-dispatcher": "^5.4",
         "symfony/filesystem": "^5.4",
-        "symfony/finder": "^5.4",
+        "symfony/finder": "^4.4.24",
         "symfony/process": "^5.4",
         "symfony/yaml": "^5.4",
         "tightenco/collect": "^8.0"
