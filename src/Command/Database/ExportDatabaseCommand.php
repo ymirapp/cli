@@ -44,13 +44,6 @@ class ExportDatabaseCommand extends AbstractDatabaseCommand
     private $filesystem;
 
     /**
-     * The project directory where the project files are copied from.
-     *
-     * @var string
-     */
-    private $projectDirectory;
-
-    /**
      * Constructor.
      */
     public function __construct(ApiClient $apiClient, CliConfiguration $cliConfiguration, Filesystem $filesystem, ProjectConfiguration $projectConfiguration)
