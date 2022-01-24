@@ -11,12 +11,9 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace Ymir\Cli;
+namespace Ymir\Cli\Tool;
 
-use Symfony\Component\Console\Exception\RuntimeException;
-use Ymir\Cli\Process\Process;
-
-class Docker
+class Docker extends CommandLineTool
 {
     /**
      * Build a docker image.
@@ -51,14 +48,18 @@ class Docker
     }
 
     /**
-     * Run Docker command.
+     * {@inheritdoc}
      */
-    private static function runCommand(string $command, ?string $cwd = null): Process
+    protected static function getCommand(): string
     {
-        if (0 !== Process::fromShellCommandline('command -v docker')->run()) {
-            throw new RuntimeException('Docker isn\'t available');
-        }
+        return 'docker';
+    }
 
-        return Process::runShellCommandline(sprintf('docker %s', $command), $cwd, null);
+    /**
+     * {@inheritdoc}
+     */
+    protected static function getName(): string
+    {
+        return 'Docker';
     }
 }

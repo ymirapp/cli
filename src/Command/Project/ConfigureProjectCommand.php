@@ -25,7 +25,7 @@ use Ymir\Cli\Console\OutputInterface;
 use Ymir\Cli\ProjectConfiguration\ProjectConfiguration;
 use Ymir\Cli\ProjectConfiguration\WordPressConfigurationChangeInterface;
 use Ymir\Cli\Support\Arr;
-use Ymir\Cli\WpCli;
+use Ymir\Cli\Tool\WpCli;
 
 class ConfigureProjectCommand extends AbstractProjectCommand
 {

@@ -29,7 +29,7 @@ use Ymir\Cli\Console\OutputInterface;
 use Ymir\Cli\Process\Process;
 use Ymir\Cli\ProjectConfiguration\ProjectConfiguration;
 use Ymir\Cli\Support\Arr;
-use Ymir\Cli\WpCli;
+use Ymir\Cli\Tool\WpCli;
 
 class InitializeProjectCommand extends AbstractCommand
 {

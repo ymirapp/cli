@@ -17,10 +17,10 @@ use Symfony\Component\Console\Helper\ProgressBar;
 use Tightenco\Collect\Support\Collection;
 use Ymir\Cli\ApiClient;
 use Ymir\Cli\Console\OutputInterface;
-use Ymir\Cli\Docker;
 use Ymir\Cli\FileUploader;
 use Ymir\Cli\ProjectConfiguration\ProjectConfiguration;
 use Ymir\Cli\Support\Arr;
+use Ymir\Cli\Tool\Docker;
 
 class UploadFunctionCodeStep implements DeploymentStepInterface
 {
