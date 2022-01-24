@@ -48,7 +48,7 @@ class CommandLineTool
      */
     protected static function getProcess(string $command, ?string $cwd = null, ?float $timeout = 60): Process
     {
-        if (static::isInstalledGlobally()) {
+        if (!static::isInstalledGlobally()) {
             throw new CommandLineToolNotAvailableException(static::getName());
         }
 
@@ -60,7 +60,7 @@ class CommandLineTool
      */
     protected static function runCommand(string $command, ?string $cwd = null): Process
     {
-        if (static::isInstalledGlobally()) {
+        if (!static::isInstalledGlobally()) {
             throw new CommandLineToolNotAvailableException(static::getName());
         }
 
