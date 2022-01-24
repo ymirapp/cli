@@ -113,7 +113,7 @@ class ExportDatabaseCommand extends AbstractDatabaseCommand
             sleep(1);
         }
 
-        $output->infoWithDelayWarning('Exporting database');
+        $output->infoWithDelayWarning(sprintf('Exporting "<comment>%s</comment>" database', $name));
 
         Process::runShellCommandline(sprintf('mysqldump --quick --single-transaction --default-character-set=utf8mb4 --host=%s --port=%s --user=%s --password=%s %s | gzip > %s', $host, $port, $user, $password, $name, $filename));
 
