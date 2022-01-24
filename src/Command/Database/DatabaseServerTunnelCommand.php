@@ -23,7 +23,7 @@ use Ymir\Cli\CliConfiguration;
 use Ymir\Cli\Command\Network\AddBastionHostCommand;
 use Ymir\Cli\Console\OutputInterface;
 use Ymir\Cli\ProjectConfiguration\ProjectConfiguration;
-use Ymir\Cli\Support\Arr;
+use Ymir\Cli\Tool\Ssh;
 
 class DatabaseServerTunnelCommand extends AbstractDatabaseCommand
 {
@@ -88,23 +88,20 @@ class DatabaseServerTunnelCommand extends AbstractDatabaseCommand
 
         if (!is_array($network->get('bastion_host'))) {
             throw new RuntimeException(sprintf('The database server network does\'t have a bastion host to connect to. You can add one to the network with the "%s" command.', AddBastionHostCommand::NAME));
-        } elseif (!is_dir($this->homeDirectory.'/.ssh')) {
-            $this->filesystem->mkdir($this->homeDirectory.'/.ssh', 0700);
         }
 
-        $localPort = $this->getNumericOption($input, 'port');
+        $localPort = (int) $this->getNumericOption($input, 'port');
 
         if (3306 === $localPort) {
             throw new RuntimeException('Cannot use port 3306 as the local port for the SSH tunnel to the database server');
         }
 
-        $privateKeyFilename = $this->homeDirectory.'/.ssh/ymir-database-server-tunnel';
+        $output->info(sprintf('Creating SSH tunnel to the "<comment>%s</comment>" database server. You can connect using: <comment>localhost:%s</comment>', $databaseServer['name'], $localPort));
 
-        $this->filesystem->dumpFile($privateKeyFilename, Arr::get($network, 'bastion_host.private_key'));
-        $this->filesystem->chmod($privateKeyFilename, 0600);
+        $process = Ssh::tunnelBastionHost($network->get('bastion_host'), $localPort, $databaseServer['endpoint'], 3306);
 
-        $output->writeln(sprintf('<info>Creating SSH tunnel to the</info> "<comment>%s</comment>" <info>database server. You can connect using: <comment>localhost:%s</comment>', $databaseServer['name'], $localPort));
+        $output->info('Once finished, press "<comment>Ctrl+C</comment>" to close the tunnel');
 
-        passthru(sprintf('ssh ec2-user@%s -i %s -o LogLevel=error -L %s:%s:3306 -N', Arr::get($network, 'bastion_host.endpoint'), $privateKeyFilename, $localPort, $databaseServer['endpoint']));
+        $process->wait();
     }
 }
