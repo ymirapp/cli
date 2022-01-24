@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace Ymir\Cli\Command\Database;
 
-use Carbon\Carbon;
 use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -24,14 +23,14 @@ use Ymir\Cli\Console\OutputInterface;
 use Ymir\Cli\Process\Process;
 use Ymir\Cli\ProjectConfiguration\ProjectConfiguration;
 
-class ExportDatabaseCommand extends AbstractDatabaseCommand
+class ImportDatabaseCommand extends AbstractDatabaseCommand
 {
     /**
      * The name of the command.
      *
      * @var string
      */
-    public const NAME = 'database:export';
+    public const NAME = 'database:import';
 
     /**
      * The file system.
@@ -57,9 +56,10 @@ class ExportDatabaseCommand extends AbstractDatabaseCommand
     {
         $this
             ->setName(self::NAME)
-            ->setDescription('Export a database to a local .sql.gz file')
-            ->addArgument('database', InputArgument::OPTIONAL, 'The ID or name of the database server to export a database from')
-            ->addArgument('name', InputArgument::OPTIONAL, 'The name of the database to export')
+            ->setDescription('Import a local .sql or .sql.gz file to a database')
+            ->addArgument('file', InputArgument::REQUIRED, 'The path to the local .sql or .sql.gz file')
+            ->addArgument('database', InputArgument::OPTIONAL, 'The ID or name of the database server to import a database to')
+            ->addArgument('name', InputArgument::OPTIONAL, 'The name of the database to import')
             ->addArgument('user', InputArgument::OPTIONAL, 'The user used to connect to the database server')
             ->addArgument('password', InputArgument::OPTIONAL, 'The password of the user connecting to the database server');
     }
@@ -69,20 +69,22 @@ class ExportDatabaseCommand extends AbstractDatabaseCommand
      */
     protected function perform(InputInterface $input, OutputInterface $output)
     {
-        $databaseServer = $this->determineDatabaseServer('Which database server would you like to export a database from?', $input, $output);
-        $name = $this->determineDatabaseName($databaseServer, $input, $output);
-        $user = $this->determineUser($input, $output);
-        $password = $this->determinePassword($input, $output, $user);
+        $file = $this->getStringArgument($input, 'file');
 
-        $filename = sprintf('%s_%s.sql.gz', $name, Carbon::now()->toDateString());
-
-        if ($this->filesystem->exists($filename) && !$output->confirm(sprintf('The "<comment>%s</comment>" backup file already exists. Do you want to overwrite it?', $filename), false)) {
-            return;
+        if (!str_ends_with($file, '.sql') && !str_ends_with($file, '.sql.gz')) {
+            throw new RuntimeException('You may only import .sql or .sql.gz files');
+        } elseif (!$this->filesystem->exists($file)) {
+            throw new RuntimeException(sprintf('File "%s" doesn\'t exist', $file));
         }
 
+        $databaseServer = $this->determineDatabaseServer('Which database server would you like to import a database to?', $input, $output);
         $host = $databaseServer['endpoint'];
+        $name = $this->determineDatabaseName($databaseServer, $input, $output);
         $port = 3306;
         $tunnel = null;
+
+        $user = $this->determineUser($input, $output);
+        $password = $this->determinePassword($input, $output, $user);
 
         if (!$databaseServer['publicly_accessible']) {
             $output->info(sprintf('Opening SSH tunnel to "<comment>%s</comment>" database server', $databaseServer['name']));
@@ -92,15 +94,17 @@ class ExportDatabaseCommand extends AbstractDatabaseCommand
             $port = '3305';
         }
 
-        $output->infoWithDelayWarning(sprintf('Exporting "<comment>%s</comment>" database', $name));
+        $output->infoWithDelayWarning(sprintf('Importing "<comment>%s</comment>" to the "<comment>%s</comment>" database', $file, $name));
 
-        Process::runShellCommandline(sprintf('mysqldump --quick --single-transaction --default-character-set=utf8mb4 --host=%s --port=%s --user=%s --password=%s %s | gzip > %s', $host, $port, $user, $password, $name, $filename));
+        $command = sprintf('%s %s | mysql --host=%s --port=%s --user=%s --password=%s %s', str_ends_with($file, '.sql.gz') ? 'gunzip <' : 'cat', $file, $host, $port, $user, $password, $name);
+
+        Process::runShellCommandline($command);
 
         if ($tunnel instanceof Process) {
             $tunnel->stop();
         }
 
-        $output->infoWithValue('Database exported successfully to', $filename);
+        $output->info('Database imported successfully');
     }
 
     /**
@@ -113,9 +117,9 @@ class ExportDatabaseCommand extends AbstractDatabaseCommand
         if (!empty($name)) {
             return $name;
         } elseif (empty($name) && !$databaseServer['publicly_accessible']) {
-            throw new RuntimeException('You must specify the name of the database to export for a private database server');
+            throw new RuntimeException('You must specify the name of the database to import the SQL file to for a private database server');
         }
 
-        return $output->choice('Which database would you like to export?', $this->apiClient->getDatabases($databaseServer['id']));
+        return $output->choice('Which database would you like to import the SQL file to?', $this->apiClient->getDatabases($databaseServer['id']));
     }
 }
