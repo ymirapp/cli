@@ -23,6 +23,7 @@ use Ymir\Cli\CliConfiguration;
 use Ymir\Cli\Command\Network\AddBastionHostCommand;
 use Ymir\Cli\Console\OutputInterface;
 use Ymir\Cli\ProjectConfiguration\ProjectConfiguration;
+use Ymir\Cli\Support\Arr;
 use Ymir\Cli\Tool\Ssh;
 
 class DatabaseServerTunnelCommand extends AbstractDatabaseCommand
@@ -84,7 +85,7 @@ class DatabaseServerTunnelCommand extends AbstractDatabaseCommand
             throw new RuntimeException(sprintf('The "%s" database server is publicly accessible and isn\'t on a private subnet', $databaseServer['name']));
         }
 
-        $network = $this->apiClient->getNetwork($databaseServer['network']['id']);
+        $network = $this->apiClient->getNetwork(Arr::get($databaseServer, 'network.id'));
 
         if (!is_array($network->get('bastion_host'))) {
             throw new RuntimeException(sprintf('The database server network does\'t have a bastion host to connect to. You can add one to the network with the "%s" command.', AddBastionHostCommand::NAME));
@@ -98,10 +99,10 @@ class DatabaseServerTunnelCommand extends AbstractDatabaseCommand
 
         $output->info(sprintf('Creating SSH tunnel to the "<comment>%s</comment>" database server. You can connect using: <comment>localhost:%s</comment>', $databaseServer['name'], $localPort));
 
-        $process = Ssh::tunnelBastionHost($network->get('bastion_host'), $localPort, $databaseServer['endpoint'], 3306);
+        $tunnel = Ssh::tunnelBastionHost($network->get('bastion_host'), $localPort, $databaseServer['endpoint'], 3306);
 
         $output->info('Once finished, press "<comment>Ctrl+C</comment>" to close the tunnel');
 
-        $process->wait();
+        $tunnel->wait();
     }
 }

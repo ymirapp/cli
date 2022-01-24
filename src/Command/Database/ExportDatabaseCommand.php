@@ -20,9 +20,12 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Filesystem\Filesystem;
 use Ymir\Cli\ApiClient;
 use Ymir\Cli\CliConfiguration;
+use Ymir\Cli\Command\Network\AddBastionHostCommand;
 use Ymir\Cli\Console\OutputInterface;
 use Ymir\Cli\Process\Process;
 use Ymir\Cli\ProjectConfiguration\ProjectConfiguration;
+use Ymir\Cli\Support\Arr;
+use Ymir\Cli\Tool\Ssh;
 
 class ExportDatabaseCommand extends AbstractDatabaseCommand
 {
@@ -77,17 +80,9 @@ class ExportDatabaseCommand extends AbstractDatabaseCommand
     protected function perform(InputInterface $input, OutputInterface $output)
     {
         $databaseServer = $this->determineDatabaseServer('Which database server would you like to export a database from?', $input, $output);
-        $name = $this->getStringArgument($input, 'name');
+        $name = $this->determineDatabaseName($databaseServer, $input, $output);
         $user = $this->getStringArgument($input, 'user');
         $password = $this->getStringArgument($input, 'password');
-
-        $databases = $this->apiClient->getDatabases($databaseServer['id']);
-
-        if (empty($name)) {
-            $name = $output->choice('Which database would you like to export?', $databases);
-        } elseif (!$databases->has($name)) {
-            throw new RuntimeException(sprintf('The "%s" database doesn\'t exist on the "%s" database server', $name, $databaseServer['name']));
-        }
 
         if (empty($user)) {
             $user = $output->ask('Which user do you want to use to connect to the database server?', 'ymir');
@@ -103,10 +98,59 @@ class ExportDatabaseCommand extends AbstractDatabaseCommand
             return;
         }
 
+        $host = $databaseServer['endpoint'];
+        $port = 3306;
+        $tunnel = null;
+
+        if (!$databaseServer['publicly_accessible']) {
+            $output->info(sprintf('Opening SSH tunnel to "<comment>%s</comment>" database server', $databaseServer['name']));
+
+            $tunnel = $this->startSshTunnel($databaseServer);
+            $host = '127.0.0.1';
+            $port = '3305';
+
+            // Need to wait a bit while SSH connection opens
+            sleep(1);
+        }
+
         $output->infoWithDelayWarning('Exporting database');
 
-        Process::runShellCommandline(sprintf('mysqldump --quick --single-transaction --default-character-set=utf8mb4 --host=%s --user=%s --password=%s %s | gzip > %s', $databaseServer['endpoint'], $user, $password, $name, $filename));
+        Process::runShellCommandline(sprintf('mysqldump --quick --single-transaction --default-character-set=utf8mb4 --host=%s --port=%s --user=%s --password=%s %s | gzip > %s', $host, $port, $user, $password, $name, $filename));
+
+        if ($tunnel instanceof Process) {
+            $tunnel->stop();
+        }
 
         $output->infoWithValue('Database exported successfully to', $filename);
+    }
+
+    /**
+     * Determine the name of the database to export.
+     */
+    private function determineDatabaseName(array $databaseServer, InputInterface $input, OutputInterface $output): string
+    {
+        $name = $this->getStringArgument($input, 'name');
+
+        if (!empty($name)) {
+            return $name;
+        } elseif (empty($name) && !$databaseServer['publicly_accessible']) {
+            throw new RuntimeException('You must specify the name of the database to export for a private database server');
+        }
+
+        return $output->choice('Which database would you like to export?', $this->apiClient->getDatabases($databaseServer['id']));
+    }
+
+    /**
+     * Start a SSH tunnel to a private database server.
+     */
+    private function startSshTunnel(array $databaseServer): Process
+    {
+        $network = $this->apiClient->getNetwork(Arr::get($databaseServer, 'network.id'));
+
+        if (!is_array($network->get('bastion_host'))) {
+            throw new RuntimeException(sprintf('The database server network does\'t have a bastion host to connect to. You can add one to the network with the "%s" command.', AddBastionHostCommand::NAME));
+        }
+
+        return Ssh::tunnelBastionHost($network->get('bastion_host'), 3305, $databaseServer['endpoint'], 3306);
     }
 }

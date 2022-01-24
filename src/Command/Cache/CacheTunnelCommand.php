@@ -23,6 +23,7 @@ use Ymir\Cli\CliConfiguration;
 use Ymir\Cli\Command\Network\AddBastionHostCommand;
 use Ymir\Cli\Console\OutputInterface;
 use Ymir\Cli\ProjectConfiguration\ProjectConfiguration;
+use Ymir\Cli\Support\Arr;
 use Ymir\Cli\Tool\Ssh;
 
 class CacheTunnelCommand extends AbstractCacheCommand
@@ -82,7 +83,7 @@ class CacheTunnelCommand extends AbstractCacheCommand
             throw new RuntimeException(sprintf('The "%s" cache isn\'t available', $cache['name']));
         }
 
-        $network = $this->apiClient->getNetwork($cache['network']['id']);
+        $network = $this->apiClient->getNetwork(Arr::get($cache, 'network.id'));
 
         if (!is_array($network->get('bastion_host'))) {
             throw new RuntimeException(sprintf('The cache network does\'t have a bastion host to connect to. You can add one to the network with the "%s" command.', AddBastionHostCommand::NAME));
@@ -96,10 +97,10 @@ class CacheTunnelCommand extends AbstractCacheCommand
 
         $output->info(sprintf('Creating SSH tunnel to the "<comment>%s</comment>" cache cluster. You can connect using: <comment>localhost:%s</comment>', $cache['name'], $localPort));
 
-        $process = Ssh::tunnelBastionHost($network->get('bastion_host'), $localPort, $cache['endpoint'], 6379);
+        $tunnel = Ssh::tunnelBastionHost($network->get('bastion_host'), $localPort, $cache['endpoint'], 6379);
 
         $output->info('Once finished, press "<comment>Ctrl+C</comment>" to close the tunnel');
 
-        $process->wait();
+        $tunnel->wait();
     }
 }
