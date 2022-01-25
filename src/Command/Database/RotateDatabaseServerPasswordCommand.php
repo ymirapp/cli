@@ -46,7 +46,9 @@ class RotateDatabaseServerPasswordCommand extends AbstractDatabaseCommand
     {
         $databaseServer = $this->determineDatabaseServer('Which database server would you like to rotate the password of?', $input, $output);
 
-        if (!$output->confirm('<comment>Warning:</comment> All projects that use this database server with the default user will be unable to connect to the database server until they\'re redeployed. Do you want to proceed?', false)) {
+        $output->writeln(sprintf('<comment>Warning:</comment> All projects that use the "<comment>%s</comment>" database server with the default user will be unable to connect to the database server until they\'re redeployed.', $databaseServer['name']));
+
+        if (!$output->confirm('Do you want to proceed?', false)) {
             return;
         }
 
@@ -59,6 +61,6 @@ class RotateDatabaseServerPasswordCommand extends AbstractDatabaseCommand
 
         $output->infoWithDelayWarning('Database server password rotated successfully');
         $output->newLine();
-        $output->writeln(sprintf('<comment>Note:</comment> You need to redeploy all projects using this database server with the default user using either the "<comment>%s</comment>" or "<comment>%s</comment>" commands for the change to take effect.', DeployProjectCommand::ALIAS, RedeployProjectCommand::ALIAS));
+        $output->writeln(sprintf('<comment>Important:</comment> You need to redeploy all projects using this database server with the default user using either the "<comment>%s</comment>" or "<comment>%s</comment>" commands for the change to take effect.', DeployProjectCommand::ALIAS, RedeployProjectCommand::ALIAS));
     }
 }

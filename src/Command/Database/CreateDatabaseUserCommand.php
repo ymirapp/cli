@@ -33,7 +33,7 @@ class CreateDatabaseUserCommand extends AbstractDatabaseCommand
     {
         $this
             ->setName(self::NAME)
-            ->setDescription('Create a new user on a public database server')
+            ->setDescription('Create a new user on a database server')
             ->addArgument('database', InputArgument::OPTIONAL, 'The ID or name of the database server where the user will be created')
             ->addArgument('username', InputArgument::OPTIONAL, 'The username of the new database user');
     }
@@ -68,7 +68,7 @@ class CreateDatabaseUserCommand extends AbstractDatabaseCommand
 
         if (!$databaseServer['publicly_accessible']) {
             $output->newLine();
-            $output->warn('The database user needs to be manually created on the database server because it isn\'t publicly accessible. You can use the following queries to create it and grant it access to the server:');
+            $output->warn(sprintf('The "%s" database user needs to be manually created on the "%s" database server because it isn\'t publicly accessible. You can use the following queries to create it and grant it access to the server:', $user['username'], $databaseServer['name']));
             $output->writeln(sprintf('CREATE USER %s@\'%%\' IDENTIFIED BY \'%s\'', $user['username'], $user['password']));
             $output->writeln(sprintf('GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, DROP, INDEX, ALTER, CREATE TEMPORARY TABLES ON *.* TO %s@\'%%\'', $user['username']));
         }
