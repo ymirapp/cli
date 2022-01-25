@@ -62,7 +62,9 @@ class CreateDatabaseUserCommand extends AbstractDatabaseCommand
             [[$user['username'], $user['password']]]
         );
 
-        $output->info('Database user created');
+        $output->writeln(sprintf('<comment>Warning:</comment> Please write down the password shown below as it won\'t be displayed again. Ymir will inject it automatically whenever you assign this database user to a project. If you lose the password, use the "<comment>%s</comment>" command to generate a new one.', RotateDatabaseUserPasswordCommand::NAME));
+        $output->newLine();
+        $output->info('Database user created successfully');
 
         if (!$databaseServer['publicly_accessible']) {
             $output->newLine();
