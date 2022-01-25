@@ -76,7 +76,7 @@ class CreateEmailIdentityCommand extends AbstractEmailIdentityCommand
             return $identity['validation_record'] ?? [];
         });
 
-        if (!isset($validationRecord['name'], $validationRecord['value'])) {
+        if (!isset($validationRecord['type'], $validationRecord['name'], $validationRecord['value'])) {
             return;
         }
 
@@ -84,8 +84,8 @@ class CreateEmailIdentityCommand extends AbstractEmailIdentityCommand
         $output->warn('The following DNS record needs to be manually added to your DNS server to validate the email identity:');
         $output->newLine();
         $output->table(
-            ['Name', 'Value'],
-            [$validationRecord]
+            ['Type', 'Name', 'Value'],
+            [strtoupper($validationRecord['type']), $validationRecord['name'], $validationRecord['value']]
         );
     }
 }
