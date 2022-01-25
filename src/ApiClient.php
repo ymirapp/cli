@@ -329,7 +329,7 @@ class ApiClient
     }
 
     /**
-     * Delete a the given database user on the given database server.
+     * Delete the given database user on the given database server.
      */
     public function deleteDatabaseUser(int $databaseServerId, int $userId): Collection
     {
