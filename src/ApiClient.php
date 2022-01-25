@@ -886,6 +886,14 @@ class ApiClient
     }
 
     /**
+     * Rotate the password of given database user on the given database server.
+     */
+    public function rotateDatabaseUserPassword(int $databaseServerId, int $userId): Collection
+    {
+        return $this->request('post', "/database-servers/{$databaseServerId}/users/{$userId}/rotate-password");
+    }
+
+    /**
      * Send signal to the Ymir API to start the deployment.
      */
     public function startDeployment(int $deploymentId)
