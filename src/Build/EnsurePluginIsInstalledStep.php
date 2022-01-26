@@ -47,11 +47,13 @@ class EnsurePluginIsInstalledStep extends AbstractBuildStep
      */
     public function perform(string $environment, ProjectConfiguration $projectConfiguration)
     {
-        $pluginsPath = 'bedrock' !== $projectConfiguration->getProjectType() ? '/wp-content/plugins' : '/web/app/plugins';
+        $pluginsPaths = array_map(function (string $path) {
+            return $this->buildDirectory.$path;
+        }, 'bedrock' !== $projectConfiguration->getProjectType() ? ['/wp-content/mu-plugins', '/wp-content/plugins'] : ['/web/app/plugins', '/web/app/mu-plugins']);
 
         $finder = Finder::create()
                         ->files()
-                        ->in($this->buildDirectory.$pluginsPath)
+                        ->in($pluginsPaths)
                         ->depth('== 1')
                         ->name('ymir.php')
                         ->contains('Plugin Name: Ymir');
