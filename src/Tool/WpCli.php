@@ -23,18 +23,18 @@ class WpCli extends CommandLineTool
     /**
      * Download WordPress.
      */
-    public static function downloadWordPress()
+    public static function downloadWordPress(?string $cwd = null)
     {
-        self::runCommand('core download');
+        self::runCommand('core download', $cwd);
     }
 
     /**
      * Checks if WordPress is installed.
      */
-    public static function isWordPressInstalled(): bool
+    public static function isWordPressInstalled(?string $cwd = null): bool
     {
         try {
-            self::runCommand('core is-installed');
+            self::runCommand('core is-installed', $cwd);
 
             return true;
         } catch (WpCliException $exception) {
@@ -45,10 +45,10 @@ class WpCli extends CommandLineTool
     /**
      * Checks if the Ymir plugin is installed.
      */
-    public static function isYmirPluginInstalled(): bool
+    public static function isYmirPluginInstalled(?string $cwd = null): bool
     {
         try {
-            return self::listPlugins()->contains(function (array $plugin) {
+            return self::listPlugins($cwd)->contains(function (array $plugin) {
                 return !empty($plugin['file']) && 1 === preg_match('/\/ymir\.php$/', $plugin['file']);
             });
         } catch (\Throwable $exception) {
@@ -59,9 +59,9 @@ class WpCli extends CommandLineTool
     /**
      * List all the installed plugins.
      */
-    public static function listPlugins(): Collection
+    public static function listPlugins(?string $cwd = null): Collection
     {
-        $process = self::runCommand('plugin list --fields=file,name,status,title,version --format=json');
+        $process = self::runCommand('plugin list --fields=file,name,status,title,version --format=json', $cwd);
 
         $plugins = collect(json_decode($process->getOutput(), true));
 

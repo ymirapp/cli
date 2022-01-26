@@ -22,7 +22,7 @@ class Ssh extends CommandLineTool
     /**
      * Creates an SSH tunnel to a bastion host and returns the running process.
      */
-    public static function tunnelBastionHost(array $bastionHost, int $localPort, string $remoteHost, int $remotePort): Process
+    public static function tunnelBastionHost(array $bastionHost, int $localPort, string $remoteHost, int $remotePort, ?string $cwd = null): Process
     {
         if (!isset($bastionHost['endpoint'], $bastionHost['private_key'])) {
             throw new InvalidArgumentException('Invalid bastion host given');
@@ -42,7 +42,7 @@ class Ssh extends CommandLineTool
 
         $command = sprintf('ec2-user@%s -i %s -o LogLevel=error -L %s:%s:%s -N', $bastionHost['endpoint'], $identityFilePath, $localPort, $remoteHost, $remotePort);
 
-        $process = self::getProcess($command, null, null);
+        $process = self::getProcess($command, $cwd, null);
         $process->start();
 
         return $process;
