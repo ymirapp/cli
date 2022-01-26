@@ -74,16 +74,16 @@ class RequestCertificateCommand extends AbstractCertificateCommand
 
         if (!$isManaged && !empty($validationRecords)) {
             $output->newLine();
-            $output->warn('The following DNS record(s) need to be manually added to your DNS server to validate the SSL certificate:');
+            $output->important('The following DNS record(s) need to be manually added to your DNS server to validate the SSL certificate:');
             $output->newLine();
             $output->table(
                 ['Type', 'Name', 'Value'],
                 $validationRecords
             );
-            $output->warn('The SSL certificate won\'t be issued until these DNS record(s) are added');
+            $output->warning('The SSL certificate won\'t be issued until these DNS record(s) are added');
         } elseif (!$isManaged && empty($validationRecords)) {
             $output->newLine();
-            $output->warn(sprintf('Unable to fetch the DNS record(s) to your DNS server to validate the SSL certificate. You can run the "%s" command to get them.', GetCertificateInfoCommand::NAME));
+            $output->warning(sprintf('Unable to fetch the DNS record(s) to your DNS server to validate the SSL certificate. You can run the "%s" command to get them.', GetCertificateInfoCommand::NAME));
         }
     }
 }

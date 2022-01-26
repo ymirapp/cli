@@ -70,7 +70,7 @@ class CreateDatabaseServerCommand extends AbstractCommand
 
         $database = $this->apiClient->createDatabaseServer($name, (int) $network['id'], $type, $storage, $public);
 
-        $output->writeln(sprintf('<comment>Warning:</comment> Please write down the password shown below as it won\'t be displayed again. Ymir will inject it automatically whenever you assign this database server to a project. If you lose the password, use the "<comment>%s</comment>" command to generate a new one.', RotateDatabaseServerPasswordCommand::NAME));
+        $output->important(sprintf('Please write down the password shown below as it won\'t be displayed again. Ymir will inject it automatically whenever you assign this database server to a project. If you lose the password, use the "<comment>%s</comment>" command to generate a new one.', RotateDatabaseServerPasswordCommand::NAME));
         $output->newLine();
 
         $output->horizontalTable(

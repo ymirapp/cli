@@ -61,7 +61,7 @@ class CreateEmailIdentityCommand extends AbstractEmailIdentityCommand
             $this->displayValidationRecord($identity['id'], $output);
         } elseif ('email' === $identity['type']) {
             $output->newLine();
-            $output->warn(sprintf('A verification email was sent to %s to validate the email identity', $identity['name']));
+            $output->important(sprintf('A verification email was sent to %s to validate the email identity', $identity['name']));
         }
     }
 
@@ -81,7 +81,7 @@ class CreateEmailIdentityCommand extends AbstractEmailIdentityCommand
         }
 
         $output->newLine();
-        $output->warn('The following DNS record needs to be manually added to your DNS server to validate the email identity:');
+        $output->important('The following DNS record needs to be exist on your DNS server at all times to keep the email identity active:');
         $output->newLine();
         $output->table(
             ['Type', 'Name', 'Value'],

@@ -101,6 +101,6 @@ class GetEnvironmentMetricsCommand extends AbstractProjectCommand
 
         $output->horizontalTable($headers, [$row1, $row2, $row3]);
 
-        $output->writeln('<comment>Note:</comment> This is a partial cost estimate.');
+        $output->note('This is a partial cost estimate.');
     }
 }

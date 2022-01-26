@@ -55,7 +55,7 @@ class GetEmailIdentityInfoCommand extends AbstractEmailIdentityCommand
         }
 
         $output->newLine();
-        $output->warn('The following DNS record needs to be exist on your DNS server at all times to keep the email identity active:');
+        $output->important('The following DNS record needs to be exist on your DNS server at all times to keep the email identity active:');
         $output->newLine();
         $output->table(
             ['Name', 'Value'],

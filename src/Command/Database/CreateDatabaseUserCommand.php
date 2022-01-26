@@ -62,13 +62,13 @@ class CreateDatabaseUserCommand extends AbstractDatabaseCommand
             [[$user['username'], $user['password']]]
         );
 
-        $output->writeln(sprintf('<comment>Warning:</comment> Please write down the password shown below as it won\'t be displayed again. Ymir will inject it automatically whenever you assign this database user to a project. If you lose the password, use the "<comment>%s</comment>" command to generate a new one.', RotateDatabaseUserPasswordCommand::NAME));
+        $output->important(sprintf('Please write down the password shown below as it won\'t be displayed again. Ymir will inject it automatically whenever you assign this database user to a project. If you lose the password, use the "<comment>%s</comment>" command to generate a new one.', RotateDatabaseUserPasswordCommand::NAME));
         $output->newLine();
         $output->info('Database user created successfully');
 
         if (!$databaseServer['publicly_accessible']) {
             $output->newLine();
-            $output->warn(sprintf('The "%s" database user needs to be manually created on the "%s" database server because it isn\'t publicly accessible. You can use the following queries to create it and grant it access to the server:', $user['username'], $databaseServer['name']));
+            $output->important(sprintf('The "%s" database user needs to be manually created on the "%s" database server because it isn\'t publicly accessible. You can use the following queries to create it and grant it access to the server:', $user['username'], $databaseServer['name']));
             $output->writeln(sprintf('CREATE USER %s@\'%%\' IDENTIFIED BY \'%s\'', $user['username'], $user['password']));
             $output->writeln(sprintf('GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, DROP, INDEX, ALTER, CREATE TEMPORARY TABLES ON *.* TO %s@\'%%\'', $user['username']));
         }

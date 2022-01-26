@@ -49,6 +49,11 @@ interface OutputInterface extends SymfonyOutputInterface
     public function choiceWithResourceDetails(string $question, Collection $collection): string;
 
     /**
+     * Write out a comment message.
+     */
+    public function comment(string $message);
+
+    /**
      * Asks for confirmation.
      */
     public function confirm(string $question, bool $default = true): bool;
@@ -72,6 +77,11 @@ interface OutputInterface extends SymfonyOutputInterface
      * Formats a horizontal table.
      */
     public function horizontalTable(array $headers, array $rows);
+
+    /**
+     * Write out an important message.
+     */
+    public function important(string $message);
 
     /**
      * Write out an informational message.
@@ -114,6 +124,11 @@ interface OutputInterface extends SymfonyOutputInterface
     public function newLine(int $count = 1);
 
     /**
+     * Write out a note message.
+     */
+    public function note(string $message);
+
+    /**
      * Formats a table.
      */
     public function table(array $headers, array $rows);
@@ -121,7 +136,7 @@ interface OutputInterface extends SymfonyOutputInterface
     /**
      * Write out a warning message.
      */
-    public function warn(string $message);
+    public function warning(string $message);
 
     /**
      * Write the build step message.

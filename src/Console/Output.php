@@ -150,6 +150,14 @@ class Output implements OutputInterface
     /**
      * {@inheritdoc}
      */
+    public function comment(string $message)
+    {
+        $this->writeln(sprintf('<comment>%s</comment>', $message));
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function confirm(string $question, bool $default = true): bool
     {
         return (bool) $this->askQuestion(new ConfirmationQuestion($question, $default));
@@ -221,6 +229,14 @@ class Output implements OutputInterface
     /**
      * {@inheritdoc}
      */
+    public function important(string $message)
+    {
+        $this->writeln(sprintf('<fg=red>Important:</> %s', $message));
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function info(string $message)
     {
         $this->writeln(sprintf('<info>%s</info>', $message));
@@ -241,7 +257,7 @@ class Output implements OutputInterface
     {
         $this->info($message);
         $this->newLine();
-        $this->writeln(sprintf('<comment>Note:</comment> You need to redeploy the project to the "<comment>%s</comment>" environment using either the "<comment>%s</comment>" or "<comment>%s</comment>" commands for the change to take effect.', $environment, DeployProjectCommand::ALIAS, RedeployProjectCommand::ALIAS));
+        $this->warning(sprintf('You need to redeploy the project to the "<comment>%s</comment>" environment using either the "<comment>%s</comment>" or "<comment>%s</comment>" commands for the change to take effect.', $environment, DeployProjectCommand::ALIAS, RedeployProjectCommand::ALIAS));
     }
 
     /**
@@ -347,6 +363,14 @@ class Output implements OutputInterface
     /**
      * {@inheritdoc}
      */
+    public function note(string $message)
+    {
+        $this->writeln(sprintf('<comment>Note:</comment> %s', $message));
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function setDecorated(bool $decorated)
     {
         $this->output->setDecorated($decorated);
@@ -385,9 +409,9 @@ class Output implements OutputInterface
     /**
      * {@inheritdoc}
      */
-    public function warn(string $message)
+    public function warning(string $message)
     {
-        $this->writeln(sprintf('<comment>%s</comment>', $message));
+        $this->writeln(sprintf('<comment>Warning:</comment> %s', $message));
     }
 
     /**

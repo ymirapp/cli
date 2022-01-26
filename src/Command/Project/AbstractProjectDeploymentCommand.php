@@ -65,7 +65,7 @@ abstract class AbstractProjectDeploymentCommand extends AbstractProjectCommand
 
         if (!array_key_exists('domain', $this->projectConfiguration->getEnvironment($environment))) {
             $output->newLine();
-            $output->writeln(sprintf('<comment>Note:</comment> You cannot send emails using the "<comment>ymirsites.com</comment>" domain. Please use the "<comment>%s</comment>" command to add an email address or domain for sending emails.', CreateEmailIdentityCommand::NAME));
+            $output->note(sprintf('You cannot send emails using the "<comment>ymirsites.com</comment>" domain. Please use the "<comment>%s</comment>" command to add an email address or domain for sending emails.', CreateEmailIdentityCommand::NAME));
 
             return;
         }
@@ -91,7 +91,7 @@ abstract class AbstractProjectDeploymentCommand extends AbstractProjectCommand
         }
 
         $output->newLine();
-        $output->warn('Not all domains in this project are managed by Ymir. The following DNS record(s) need to be manually added to your DNS server for these domains to work:');
+        $output->warning('Not all domains in this project are managed by Ymir. The following DNS record(s) need to be manually added to your DNS server for these domains to work:');
         $output->newLine();
         $output->table(
             ['Type', 'Name', 'Value'],

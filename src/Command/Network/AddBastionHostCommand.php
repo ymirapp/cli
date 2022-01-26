@@ -78,7 +78,7 @@ class AddBastionHostCommand extends AbstractCommand
 
         $output->infoWithDelayWarning('Bastion host added');
         $output->newLine();
-        $output->warn('SSH private key:');
+        $output->comment('SSH private key:');
         $output->newLine();
         $output->writeln($bastionHost['private_key']);
 

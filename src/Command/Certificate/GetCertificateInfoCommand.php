@@ -54,13 +54,13 @@ class GetCertificateInfoCommand extends AbstractCertificateCommand
 
         if (!empty($validationRecords)) {
             $output->newLine();
-            $output->warn('The following DNS record(s) need to exist on your DNS server at all times:');
+            $output->important('The following DNS record(s) need to exist on your DNS server at all times:');
             $output->newLine();
             $output->table(
                 ['Type', 'Name', 'Value'],
                 $validationRecords
             );
-            $output->warn('The SSL certificate won\'t be issued or renewed if these DNS record(s) don\'t exist.');
+            $output->warning('The SSL certificate won\'t be issued or renewed if these DNS record(s) don\'t exist.');
         }
     }
 

@@ -62,7 +62,7 @@ class RotateDatabaseUserPasswordCommand extends AbstractDatabaseCommand
             throw new InvalidArgumentException(sprintf('No database user found with the "%s" username', $username));
         }
 
-        $output->writeln(sprintf('<comment>Warning:</comment> All projects that use the "<comment>%s</comment>" database server with the "<comment>%s</comment>" user will be unable to connect to the database server until they\'re redeployed.', $databaseServer['name'], $databaseUser['username']));
+        $output->warning(sprintf('All projects that use the "<comment>%s</comment>" database server with the "<comment>%s</comment>" user will be unable to connect to the database server until they\'re redeployed.', $databaseServer['name'], $databaseUser['username']));
 
         if (!$output->confirm('Do you want to proceed?', false)) {
             return;
@@ -79,11 +79,11 @@ class RotateDatabaseUserPasswordCommand extends AbstractDatabaseCommand
 
         if (!$databaseServer['publicly_accessible']) {
             $output->newLine();
-            $output->warn(sprintf('The password of the "%s" database user needs to be manually changed on the "%s" database server because it isn\'t publicly accessible. You can use the following query to change it:', $newCredentials['username'], $databaseServer['name']));
+            $output->important(sprintf('The password of the "%s" database user needs to be manually changed on the "%s" database server because it isn\'t publicly accessible. You can use the following query to change it:', $newCredentials['username'], $databaseServer['name']));
             $output->writeln(sprintf('ALTER USER %s@\'%%\' IDENTIFIED BY %s', $newCredentials['username'], $newCredentials['password']));
         }
 
         $output->newLine();
-        $output->writeln(sprintf('<comment>Important:</comment> You need to redeploy all projects using this database user using either the "<comment>%s</comment>" or "<comment>%s</comment>" commands for the change to take effect.', DeployProjectCommand::ALIAS, RedeployProjectCommand::ALIAS));
+        $output->important(sprintf('You need to redeploy all projects using this database user using either the "<comment>%s</comment>" or "<comment>%s</comment>" commands for the change to take effect.', DeployProjectCommand::ALIAS, RedeployProjectCommand::ALIAS));
     }
 }
