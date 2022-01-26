@@ -1,6 +1,6 @@
 <?php
 
-function activate_ymir_plugin() {
+function ymir_activate_plugin() {
     if (defined('WP_INSTALLING') && WP_INSTALLING) {
         return;
     } elseif (!function_exists('get_plugins')) {
@@ -20,12 +20,12 @@ function activate_ymir_plugin() {
         }
     }
 }
-add_action('plugins_loaded', 'activate_ymir_plugin');
+add_action('plugins_loaded', 'ymir_activate_plugin');
 
 /**
  * Ensures that the plugin is always the first one to be loaded per site.
  */
-function ensure_ymir_plugin_loaded_first($active_plugins)
+function ymir_ensure_plugin_loaded_first($active_plugins)
 {
     if (!is_array($active_plugins)) {
         return $active_plugins;
@@ -40,12 +40,12 @@ function ensure_ymir_plugin_loaded_first($active_plugins)
 
     return $active_plugins;
 }
-add_filter('pre_update_option_active_plugins', 'ensure_ymir_plugin_loaded_first', PHP_INT_MAX);
+add_filter('pre_update_option_active_plugins', 'ymir_ensure_plugin_loaded_first', PHP_INT_MAX);
 
 /**
  * Ensures that the plugin is always the first one to be loaded for the network.
  */
-function ensure_ymir_plugin_loaded_first_on_network($active_plugins)
+function ymir_ensure_plugin_loaded_first_on_network($active_plugins)
 {
     if (!is_array($active_plugins)) {
         return $active_plugins;
@@ -62,12 +62,12 @@ function ensure_ymir_plugin_loaded_first_on_network($active_plugins)
 
     return array_fill_keys($active_plugins, time());
 }
-add_filter('pre_update_site_option_active_sitewide_plugins', 'ensure_ymir_plugin_loaded_first_on_network', PHP_INT_MAX);
+add_filter('pre_update_site_option_active_sitewide_plugins', 'ymir_ensure_plugin_loaded_first_on_network', PHP_INT_MAX);
 
 /**
  * Load Ymir plugin right away if it's in "mu-plugins".
  */
-function ymir_maybe_load_mu_plugins()
+function ymir_maybe_load_mu_plugin()
 {
     $paths = glob(WPMU_PLUGIN_DIR.'/*/ymir.php');
 
@@ -75,4 +75,4 @@ function ymir_maybe_load_mu_plugins()
         include_once $path;
     }
 }
-ymir_maybe_load_mu_plugins();
+ymir_maybe_load_mu_plugin();
