@@ -18,7 +18,6 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Ymir\Cli\Console\OutputInterface;
-use Ymir\Cli\Exception\CommandCancelledException;
 
 class CreateDnsZoneCommand extends AbstractDnsCommand
 {
@@ -55,7 +54,7 @@ class CreateDnsZoneCommand extends AbstractDnsCommand
         $providerId = $this->determineCloudProvider('Enter the ID of the cloud provider where the DNS zone will be created', $input, $output);
 
         if (!$output->confirm('A DNS zone will cost $0.50/month if it isn\'t deleted in the next 12 hours. Would you like to proceed?', true)) {
-            throw new CommandCancelledException();
+            return;
         }
 
         $zone = $this->apiClient->createDnsZone($providerId, $name);
