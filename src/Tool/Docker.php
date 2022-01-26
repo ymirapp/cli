@@ -13,6 +13,8 @@ declare(strict_types=1);
 
 namespace Ymir\Cli\Tool;
 
+use Symfony\Component\Console\Exception\RuntimeException;
+
 class Docker extends CommandLineTool
 {
     /**
@@ -37,6 +39,27 @@ class Docker extends CommandLineTool
     public static function push(string $image, ?string $cwd = null)
     {
         self::runCommand(sprintf('push %s', $image), $cwd);
+    }
+
+    /**
+     * Remove all images matching grep pattern.
+     */
+    public static function rmigrep(string $pattern, ?string $cwd = null)
+    {
+        try {
+            self::runCommand(sprintf('rmi -f $(docker images | grep \'%s\')', $pattern), $cwd);
+        } catch (RuntimeException $exception) {
+            $throwException = collect([
+                '"docker rmi" requires at least 1 argument',
+                'Error: No such image',
+            ])->doesntContain(function (string $ignore) use ($exception) {
+                return false === stripos($exception->getMessage(), $ignore);
+            });
+
+            if ($throwException) {
+                throw $exception;
+            }
+        }
     }
 
     /**
