@@ -63,3 +63,16 @@ function ensure_ymir_plugin_loaded_first_on_network($active_plugins)
     return array_fill_keys($active_plugins, time());
 }
 add_filter('pre_update_site_option_active_sitewide_plugins', 'ensure_ymir_plugin_loaded_first_on_network', PHP_INT_MAX);
+
+/**
+ * Load Ymir plugin right away if it's in "mu-plugins".
+ */
+function ymir_maybe_load_mu_plugins()
+{
+    $paths = glob(WPMU_PLUGIN_DIR.'/*/ymir.php');
+
+    foreach ($paths as $path) {
+        include_once $path;
+    }
+}
+ymir_maybe_load_mu_plugins();
