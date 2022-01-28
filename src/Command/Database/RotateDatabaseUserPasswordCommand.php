@@ -37,7 +37,7 @@ class RotateDatabaseUserPasswordCommand extends AbstractDatabaseCommand
         $this
             ->setName(self::NAME)
             ->setDescription('Rotate the password of a user on a database server')
-            ->addArgument('database', InputArgument::OPTIONAL, 'The ID or name of the database server where the database user is located')
+            ->addArgument('server', InputArgument::OPTIONAL, 'The ID or name of the database server where the database user is located')
             ->addArgument('username', InputArgument::OPTIONAL, 'The username of the database user to rotate the password of');
     }
 

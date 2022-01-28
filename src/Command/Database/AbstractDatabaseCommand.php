@@ -30,7 +30,7 @@ abstract class AbstractDatabaseCommand extends AbstractCommand
     protected function determineDatabaseServer(string $question, InputInterface $input, OutputInterface $output): array
     {
         $databases = $this->apiClient->getDatabaseServers($this->cliConfiguration->getActiveTeamId());
-        $databaseIdOrName = $this->getStringArgument($input, 'database');
+        $databaseIdOrName = $this->getStringArgument($input, 'server');
 
         if ($databases->isEmpty()) {
             throw new RuntimeException(sprintf('The currently active team has no database servers. You can create one with the "%s" command.', CreateDatabaseServerCommand::NAME));

@@ -34,7 +34,7 @@ class UnlockDatabaseServerCommand extends AbstractDatabaseCommand
         $this
             ->setName(self::NAME)
             ->setDescription('Unlock the database server which allows it to be deleted')
-            ->addArgument('database', InputArgument::OPTIONAL, 'The ID or name of the database server to unlock');
+            ->addArgument('server', InputArgument::OPTIONAL, 'The ID or name of the database server to unlock');
     }
 
     /**

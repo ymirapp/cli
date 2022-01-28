@@ -58,7 +58,7 @@ class ImportDatabaseCommand extends AbstractDatabaseCommand
             ->setName(self::NAME)
             ->setDescription('Import a local .sql or .sql.gz file to a database')
             ->addArgument('file', InputArgument::REQUIRED, 'The path to the local .sql or .sql.gz file')
-            ->addArgument('database', InputArgument::OPTIONAL, 'The ID or name of the database server to import a database to')
+            ->addArgument('server', InputArgument::OPTIONAL, 'The ID or name of the database server to import a database to')
             ->addArgument('name', InputArgument::OPTIONAL, 'The name of the database to import')
             ->addArgument('user', InputArgument::OPTIONAL, 'The user used to connect to the database server')
             ->addArgument('password', InputArgument::OPTIONAL, 'The password of the user connecting to the database server');

@@ -34,7 +34,7 @@ class DeleteDatabaseCommand extends AbstractDatabaseCommand
         $this
             ->setName(self::NAME)
             ->setDescription('Delete a database on a public database server')
-            ->addArgument('database', InputArgument::OPTIONAL, 'The ID or name of the database server where the database will be deleted')
+            ->addArgument('server', InputArgument::OPTIONAL, 'The ID or name of the database server where the database will be deleted')
             ->addArgument('name', InputArgument::OPTIONAL, 'The name of the database to delete');
     }
 

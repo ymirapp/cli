@@ -34,7 +34,7 @@ class LockDatabaseServerCommand extends AbstractDatabaseCommand
         $this
             ->setName(self::NAME)
             ->setDescription('Lock the database server which prevents it from being deleted')
-            ->addArgument('database', InputArgument::OPTIONAL, 'The ID or name of the database server to lock');
+            ->addArgument('server', InputArgument::OPTIONAL, 'The ID or name of the database server to lock');
     }
 
     /**

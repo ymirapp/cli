@@ -36,7 +36,7 @@ class ModifyDatabaseServerCommand extends AbstractDatabaseCommand
         $this
             ->setName(self::NAME)
             ->setDescription('Modify a database server')
-            ->addArgument('database', InputArgument::OPTIONAL, 'The ID or name of the database server to modify')
+            ->addArgument('server', InputArgument::OPTIONAL, 'The ID or name of the database server to modify')
             ->addOption('storage', null, InputOption::VALUE_REQUIRED, 'The maximum amount of storage (in GB) allocated to the database server')
             ->addOption('type', null, InputOption::VALUE_REQUIRED, 'The database server type');
     }

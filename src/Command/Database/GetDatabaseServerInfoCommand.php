@@ -35,7 +35,7 @@ class GetDatabaseServerInfoCommand extends AbstractDatabaseCommand
         $this
             ->setName(self::NAME)
             ->setDescription('Get information on a database server')
-            ->addArgument('database', InputArgument::OPTIONAL, 'The ID or name of the database server to fetch the information of');
+            ->addArgument('server', InputArgument::OPTIONAL, 'The ID or name of the database server to fetch the information of');
     }
 
     /**

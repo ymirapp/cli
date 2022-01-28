@@ -34,7 +34,7 @@ class ListDatabasesCommand extends AbstractDatabaseCommand
         $this
             ->setName(self::NAME)
             ->setDescription('List all the databases on a public database server')
-            ->addArgument('database', InputArgument::OPTIONAL, 'The ID or name of the database server to list databases from');
+            ->addArgument('server', InputArgument::OPTIONAL, 'The ID or name of the database server to list databases from');
     }
 
     /**

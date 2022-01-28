@@ -68,7 +68,7 @@ class DatabaseServerTunnelCommand extends AbstractDatabaseCommand
         $this
             ->setName(self::NAME)
             ->setDescription('Create a SSH tunnel to a database server')
-            ->addArgument('database', InputArgument::OPTIONAL, 'The ID or name of the database server to create a SSH tunnel to')
+            ->addArgument('server', InputArgument::OPTIONAL, 'The ID or name of the database server to create a SSH tunnel to')
             ->addOption('port', null, InputOption::VALUE_REQUIRED, 'The local port to use to connect to the database server', '3305');
     }
 

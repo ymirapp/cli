@@ -35,7 +35,7 @@ class DeleteDatabaseUserCommand extends AbstractDatabaseCommand
         $this
             ->setName(self::NAME)
             ->setDescription('Delete a user on a database')
-            ->addArgument('database', InputArgument::OPTIONAL, 'The ID or name of the database server where the database user will be deleted')
+            ->addArgument('server', InputArgument::OPTIONAL, 'The ID or name of the database server where the database user will be deleted')
             ->addArgument('username', InputArgument::OPTIONAL, 'The username of the database user to delete');
     }
 

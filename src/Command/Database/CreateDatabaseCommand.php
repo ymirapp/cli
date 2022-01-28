@@ -34,7 +34,7 @@ class CreateDatabaseCommand extends AbstractDatabaseCommand
         $this
             ->setName(self::NAME)
             ->setDescription('Create a new database on a public database server')
-            ->addArgument('database', InputArgument::OPTIONAL, 'The ID or name of the database server where the database will be created')
+            ->addArgument('server', InputArgument::OPTIONAL, 'The ID or name of the database server where the database will be created')
             ->addArgument('name', InputArgument::OPTIONAL, 'The name of the new database');
     }
 

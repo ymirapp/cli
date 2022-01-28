@@ -58,7 +58,7 @@ class ExportDatabaseCommand extends AbstractDatabaseCommand
         $this
             ->setName(self::NAME)
             ->setDescription('Export a database to a local .sql.gz file')
-            ->addArgument('database', InputArgument::OPTIONAL, 'The ID or name of the database server to export a database from')
+            ->addArgument('server', InputArgument::OPTIONAL, 'The ID or name of the database server to export a database from')
             ->addArgument('name', InputArgument::OPTIONAL, 'The name of the database to export')
             ->addArgument('user', InputArgument::OPTIONAL, 'The user used to connect to the database server')
             ->addArgument('password', InputArgument::OPTIONAL, 'The password of the user connecting to the database server');
