@@ -16,6 +16,7 @@ namespace Ymir\Cli\Command\Database;
 use Symfony\Component\Console\Exception\InvalidArgumentException;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Ymir\Cli\Command\Project\DeployProjectCommand;
 use Ymir\Cli\Command\Project\RedeployProjectCommand;
 use Ymir\Cli\Console\OutputInterface;
@@ -37,8 +38,8 @@ class RotateDatabaseUserPasswordCommand extends AbstractDatabaseCommand
         $this
             ->setName(self::NAME)
             ->setDescription('Rotate the password of a user on a database server')
-            ->addArgument('server', InputArgument::OPTIONAL, 'The ID or name of the database server where the database user is located')
-            ->addArgument('username', InputArgument::OPTIONAL, 'The username of the database user to rotate the password of');
+            ->addArgument('username', InputArgument::OPTIONAL, 'The username of the database user to rotate the password of')
+            ->addOption('server', null, InputOption::VALUE_REQUIRED, 'The ID or name of the database server where the database user is located');
     }
 
     /**

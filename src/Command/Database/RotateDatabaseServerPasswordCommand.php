@@ -19,7 +19,7 @@ use Ymir\Cli\Command\Project\DeployProjectCommand;
 use Ymir\Cli\Command\Project\RedeployProjectCommand;
 use Ymir\Cli\Console\OutputInterface;
 
-class RotateDatabaseServerPasswordCommand extends AbstractDatabaseCommand
+class RotateDatabaseServerPasswordCommand extends AbstractDatabaseServerCommand
 {
     /**
      * The name of the command.

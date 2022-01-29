@@ -19,7 +19,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Ymir\Cli\Console\OutputInterface;
 
-class ModifyDatabaseServerCommand extends AbstractDatabaseCommand
+class ModifyDatabaseServerCommand extends AbstractDatabaseServerCommand
 {
     /**
      * The name of the command.

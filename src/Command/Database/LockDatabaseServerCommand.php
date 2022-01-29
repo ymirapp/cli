@@ -17,7 +17,7 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Ymir\Cli\Console\OutputInterface;
 
-class LockDatabaseServerCommand extends AbstractDatabaseCommand
+class LockDatabaseServerCommand extends AbstractDatabaseServerCommand
 {
     /**
      * The name of the command.

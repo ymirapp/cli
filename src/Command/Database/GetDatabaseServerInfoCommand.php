@@ -18,7 +18,7 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Ymir\Cli\Console\OutputInterface;
 
-class GetDatabaseServerInfoCommand extends AbstractDatabaseCommand
+class GetDatabaseServerInfoCommand extends AbstractDatabaseServerCommand
 {
     /**
      * The name of the command.

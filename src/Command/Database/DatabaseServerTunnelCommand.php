@@ -26,7 +26,7 @@ use Ymir\Cli\ProjectConfiguration\ProjectConfiguration;
 use Ymir\Cli\Support\Arr;
 use Ymir\Cli\Tool\Ssh;
 
-class DatabaseServerTunnelCommand extends AbstractDatabaseCommand
+class DatabaseServerTunnelCommand extends AbstractDatabaseServerCommand
 {
     /**
      * The name of the command.

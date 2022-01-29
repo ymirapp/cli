@@ -30,10 +30,12 @@ abstract class AbstractDatabaseCommand extends AbstractCommand
     protected function determineDatabaseServer(string $question, InputInterface $input, OutputInterface $output): array
     {
         $databases = $this->apiClient->getDatabaseServers($this->cliConfiguration->getActiveTeamId());
-        $databaseIdOrName = $this->getStringArgument($input, 'server');
+        $databaseIdOrName = $this->getStringOption($input, 'server', true);
 
         if ($databases->isEmpty()) {
             throw new RuntimeException(sprintf('The currently active team has no database servers. You can create one with the "%s" command.', CreateDatabaseServerCommand::NAME));
+        } elseif (empty($databaseIdOrName) && 1 === $databases->count()) {
+            return $databases->first();
         } elseif (empty($databaseIdOrName)) {
             $databaseIdOrName = $output->choiceWithResourceDetails($question, $databases);
         }
@@ -54,7 +56,7 @@ abstract class AbstractDatabaseCommand extends AbstractCommand
      */
     protected function determinePassword(InputInterface $input, OutputInterface $output, string $user): string
     {
-        $password = $this->getStringArgument($input, 'password');
+        $password = $this->getStringOption($input, 'password', true);
 
         if (empty($password)) {
             $password = $output->askHidden(sprintf('What\'s the "<comment>%s</comment>" password?', $user));
@@ -68,7 +70,7 @@ abstract class AbstractDatabaseCommand extends AbstractCommand
      */
     protected function determineUser(InputInterface $input, OutputInterface $output): string
     {
-        $user = $this->getStringArgument($input, 'user');
+        $user = $this->getStringOption($input, 'user', true);
 
         if (empty($user)) {
             $user = $output->ask('Which user do you want to use to connect to the database server?', 'ymir');

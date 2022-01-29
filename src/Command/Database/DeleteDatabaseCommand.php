@@ -15,6 +15,7 @@ namespace Ymir\Cli\Command\Database;
 
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Ymir\Cli\Console\OutputInterface;
 
 class DeleteDatabaseCommand extends AbstractDatabaseCommand
@@ -34,8 +35,8 @@ class DeleteDatabaseCommand extends AbstractDatabaseCommand
         $this
             ->setName(self::NAME)
             ->setDescription('Delete a database on a public database server')
-            ->addArgument('server', InputArgument::OPTIONAL, 'The ID or name of the database server where the database will be deleted')
-            ->addArgument('name', InputArgument::OPTIONAL, 'The name of the database to delete');
+            ->addArgument('name', InputArgument::OPTIONAL, 'The name of the database to delete')
+            ->addOption('server', null, InputOption::VALUE_REQUIRED, 'The ID or name of the database server where the database will be deleted');
     }
 
     /**

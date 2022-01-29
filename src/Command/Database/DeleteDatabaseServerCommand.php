@@ -18,7 +18,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Ymir\Cli\Command\Network\RemoveNatGatewayCommand;
 use Ymir\Cli\Console\OutputInterface;
 
-class DeleteDatabaseServerCommand extends AbstractDatabaseCommand
+class DeleteDatabaseServerCommand extends AbstractDatabaseServerCommand
 {
     /**
      * The name of the command.

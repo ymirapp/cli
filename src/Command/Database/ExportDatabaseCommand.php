@@ -17,6 +17,7 @@ use Carbon\Carbon;
 use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Filesystem\Filesystem;
 use Ymir\Cli\ApiClient;
 use Ymir\Cli\CliConfiguration;
@@ -58,10 +59,10 @@ class ExportDatabaseCommand extends AbstractDatabaseCommand
         $this
             ->setName(self::NAME)
             ->setDescription('Export a database to a local .sql.gz file')
-            ->addArgument('server', InputArgument::OPTIONAL, 'The ID or name of the database server to export a database from')
             ->addArgument('name', InputArgument::OPTIONAL, 'The name of the database to export')
-            ->addArgument('user', InputArgument::OPTIONAL, 'The user used to connect to the database server')
-            ->addArgument('password', InputArgument::OPTIONAL, 'The password of the user connecting to the database server');
+            ->addOption('server', null, InputOption::VALUE_REQUIRED, 'The ID or name of the database server to export a database from')
+            ->addOption('user', null, InputOption::VALUE_REQUIRED, 'The user used to connect to the database server')
+            ->addOption('password', null, InputOption::VALUE_REQUIRED, 'The password of the user connecting to the database server');
     }
 
     /**

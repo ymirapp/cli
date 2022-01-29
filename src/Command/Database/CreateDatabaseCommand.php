@@ -15,6 +15,7 @@ namespace Ymir\Cli\Command\Database;
 
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Ymir\Cli\Console\OutputInterface;
 
 class CreateDatabaseCommand extends AbstractDatabaseCommand
@@ -34,8 +35,8 @@ class CreateDatabaseCommand extends AbstractDatabaseCommand
         $this
             ->setName(self::NAME)
             ->setDescription('Create a new database on a public database server')
-            ->addArgument('server', InputArgument::OPTIONAL, 'The ID or name of the database server where the database will be created')
-            ->addArgument('name', InputArgument::OPTIONAL, 'The name of the new database');
+            ->addArgument('name', InputArgument::OPTIONAL, 'The name of the new database')
+            ->addOption('server', null, InputOption::VALUE_REQUIRED, 'The ID or name of the database server where the database will be created');
     }
 
     /**
