@@ -45,7 +45,7 @@ class DeleteDatabaseServerCommand extends AbstractDatabaseServerCommand
     {
         $databaseServer = $this->determineDatabaseServer('Which database server would you like to delete', $input, $output);
 
-        if (!$output->confirm('Are you sure you want to delete this database server?', false)) {
+        if (!$output->confirm(sprintf('Are you sure you want to delete the "<comment>%s</comment>" database server?', $databaseServer['name']), false)) {
             return;
         }
 

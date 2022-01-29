@@ -61,7 +61,7 @@ class DeleteDatabaseUserCommand extends AbstractDatabaseCommand
             throw new InvalidArgumentException(sprintf('No database user found with the "%s" username', $username));
         }
 
-        if (!$output->confirm('Are you sure you want to delete this database user?', false)) {
+        if (!$output->confirm(sprintf('Are you sure you want to delete the "<comment>%s</comment>" database user?', $user['username']), false)) {
             return;
         }
 

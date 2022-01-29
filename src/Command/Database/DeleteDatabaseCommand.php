@@ -59,7 +59,7 @@ class DeleteDatabaseCommand extends AbstractDatabaseCommand
             })->values());
         }
 
-        if (!$output->confirm('Are you sure you want to delete this database?', false)) {
+        if (!$output->confirm(sprintf('Are you sure you want to delete the "<comment>%s</comment>" database?', $name), false)) {
             return;
         }
 
