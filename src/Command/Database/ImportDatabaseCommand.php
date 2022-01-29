@@ -117,7 +117,7 @@ class ImportDatabaseCommand extends AbstractDatabaseCommand
 
         if (!empty($name)) {
             return $name;
-        } elseif (empty($name) && !$databaseServer['publicly_accessible']) {
+        } elseif (!$databaseServer['publicly_accessible']) {
             throw new RuntimeException('You must specify the name of the database to import the SQL file to for a private database server');
         }
 
