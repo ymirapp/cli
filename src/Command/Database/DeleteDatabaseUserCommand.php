@@ -71,7 +71,8 @@ class DeleteDatabaseUserCommand extends AbstractDatabaseCommand
 
         if (!$databaseServer['publicly_accessible']) {
             $output->newLine();
-            $output->important('The database user needs to be manually deleted on the database server because it isn\'t publicly accessible');
+            $output->important('The database user needs to be manually deleted on the database server because it isn\'t publicly accessible. You can use the following query to delete it');
+            $output->writeln(sprintf('DROP USER IF EXISTS %s@\'%%\'', $user['username']));
         }
     }
 }
