@@ -47,9 +47,12 @@ class EnsurePluginIsInstalledStep extends AbstractBuildStep
      */
     public function perform(string $environment, ProjectConfiguration $projectConfiguration)
     {
-        $pluginsPaths = array_map(function (string $path) {
-            return $this->buildDirectory.$path;
-        }, 'bedrock' !== $projectConfiguration->getProjectType() ? ['/wp-content/mu-plugins', '/wp-content/plugins'] : ['/web/app/plugins', '/web/app/mu-plugins']);
+        $pluginsPaths = collect('bedrock' !== $projectConfiguration->getProjectType() ? ['/wp-content/mu-plugins', '/wp-content/plugins'] : ['/web/app/plugins', '/web/app/mu-plugins'])
+            ->map(function (string $relativePath) {
+                return $this->buildDirectory.$relativePath;
+            })->filter(function (string $path) {
+                return is_dir($path);
+            })->all();
 
         $finder = Finder::create()
                         ->files()
