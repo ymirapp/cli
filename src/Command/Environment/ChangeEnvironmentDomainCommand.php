@@ -63,7 +63,7 @@ class ChangeEnvironmentDomainCommand extends AbstractInvocationCommand
             $newDomain = $domainOption;
         } elseif (is_array($domainOption)) {
             $newDomain = (string) $output->choice(sprintf('Which mapped domain do you want to use as the new "<comment>%s</comment>" environment domain?', $environment), $domainOption);
-        } elseif (empty($domainOption) && $output->confirm(sprintf('Do you want to use the "<comment>%s</comment>" vanity domain as the new "<comment>%s</comment>" environment domain?', $vanityDomain, $environment))) {
+        } elseif (empty($domainOption) && $currentDomain !== $vanityDomain && $output->confirm(sprintf('Do you want to use the "<comment>%s</comment>" vanity domain as the new "<comment>%s</comment>" environment domain?', $vanityDomain, $environment))) {
             $newDomain = $vanityDomain;
         } elseif (empty($domainOption)) {
             $newDomain = (string) $output->ask(sprintf('What is the new domain that you want to use as the new "<comment>%s</comment>" environment domain?', $environment));
