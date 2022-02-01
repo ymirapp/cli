@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Ymir\Cli\Command\Database;
 
+use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Ymir\Cli\Console\OutputInterface;
@@ -42,9 +43,15 @@ class ListDatabasesCommand extends AbstractDatabaseServerCommand
      */
     protected function perform(InputInterface $input, OutputInterface $output)
     {
+        $databaseServer = $this->determineDatabaseServer('Which database server would you like to list databases from', $input, $output);
+
+        if (!$databaseServer['publicly_accessible']) {
+            throw new RuntimeException('Database on private database servers cannot be listed.');
+        }
+
         $output->table(
             ['Name'],
-            $this->apiClient->getDatabases($this->determineDatabaseServer('Which database server would you like to list databases from', $input, $output)['id'])->map(function (string $name) {
+            $this->apiClient->getDatabases($databaseServer['id'])->map(function (string $name) {
                 return [$name];
             })->all()
         );
