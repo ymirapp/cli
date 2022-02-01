@@ -18,6 +18,7 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Ymir\Cli\Command\AbstractInvocationCommand;
 use Ymir\Cli\Console\OutputInterface;
+use Ymir\Cli\ProjectConfiguration\DomainConfigurationChange;
 use Ymir\Cli\Support\Arr;
 
 class ChangeEnvironmentDomainCommand extends AbstractInvocationCommand
@@ -53,7 +54,7 @@ class ChangeEnvironmentDomainCommand extends AbstractInvocationCommand
         if (empty($currentDomain) && $output->confirm(sprintf('Do you want to use the "<comment>%s</comment>" vanity domain as the current environment domain to replace?', $vanityDomain))) {
             $currentDomain = $vanityDomain;
         } elseif (empty($currentDomain)) {
-            $currentDomain = (string) $output->ask('What is the current environment domain that you want to replace?');
+            $currentDomain = strtolower((string) $output->ask('What is the current environment domain that you want to replace?'));
         }
 
         $domainOption = Arr::get($this->projectConfiguration->getEnvironment($environment), 'domain');
@@ -62,11 +63,11 @@ class ChangeEnvironmentDomainCommand extends AbstractInvocationCommand
         if (is_string($domainOption)) {
             $newDomain = $domainOption;
         } elseif (is_array($domainOption)) {
-            $newDomain = (string) $output->choice(sprintf('Which mapped domain do you want to use as the new "<comment>%s</comment>" environment domain?', $environment), $domainOption);
+            $newDomain = strtolower((string) $output->choice(sprintf('Which mapped domain do you want to use as the new "<comment>%s</comment>" environment domain?', $environment), $domainOption));
         } elseif (empty($domainOption) && $currentDomain !== $vanityDomain && $output->confirm(sprintf('Do you want to use the "<comment>%s</comment>" vanity domain as the new "<comment>%s</comment>" environment domain?', $vanityDomain, $environment))) {
             $newDomain = $vanityDomain;
         } elseif (empty($domainOption)) {
-            $newDomain = (string) $output->ask(sprintf('What is the new domain that you want to use as the new "<comment>%s</comment>" environment domain?', $environment));
+            $newDomain = strtolower((string) $output->ask(sprintf('What is the new domain that you want to use as the new "<comment>%s</comment>" environment domain?', $environment)));
         }
 
         $currentDomain = parse_url($currentDomain, PHP_URL_HOST) ?? $currentDomain;
@@ -82,6 +83,10 @@ class ChangeEnvironmentDomainCommand extends AbstractInvocationCommand
 
         if (!$output->confirm(sprintf('Are you sure you want to change the "<comment>%s</comment>" environment domain from "<comment>%s</comment>" to "<comment>%s</comment>"?', $environment, $currentDomain, $newDomain), false)) {
             return;
+        }
+
+        if ($newDomain !== $vanityDomain && !Arr::has((array) $domainOption, $newDomain) && $output->confirm(sprintf('Do you want to add the "<comment>%s</comment>" domain to your "<comment>%s</comment>" environment configuration?', $newDomain, $environment))) {
+            $this->projectConfiguration->applyChangesToEnvironment($environment, new DomainConfigurationChange($newDomain));
         }
 
         $output->info(sprintf('Changing "<comment>%s</comment>" environment domain from "<comment>%s</comment>" to "<comment>%s</comment>"', $environment, $currentDomain, $newDomain));
