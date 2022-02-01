@@ -55,7 +55,7 @@ class DeleteDatabaseServerCommand extends AbstractDatabaseServerCommand
 
         if (!$databaseServer['publicly_accessible']) {
             $output->newLine();
-            $output->note(sprintf('If you have no other resources using the private subnet, you should remove the network\'s NAT gateway using the "%s" command', RemoveNatGatewayCommand::NAME));
+            $output->note(sprintf('If you have no other resources using the private subnet, you should remove the network\'s NAT gateway using the "<comment>%s</comment>" command', RemoveNatGatewayCommand::NAME));
         }
     }
 }

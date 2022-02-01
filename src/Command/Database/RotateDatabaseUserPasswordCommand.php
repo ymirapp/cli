@@ -80,7 +80,7 @@ class RotateDatabaseUserPasswordCommand extends AbstractDatabaseCommand
 
         if (!$databaseServer['publicly_accessible']) {
             $output->newLine();
-            $output->important(sprintf('The password of the "%s" database user needs to be manually changed on the "%s" database server because it isn\'t publicly accessible. You can use the following query to change it:', $newCredentials['username'], $databaseServer['name']));
+            $output->important(sprintf('The password of the "<comment>%s</comment>" database user needs to be manually changed on the "<comment>%s</comment>" database server because it isn\'t publicly accessible. You can use the following query to change it:', $newCredentials['username'], $databaseServer['name']));
             $output->writeln(sprintf('ALTER USER %s@\'%%\' IDENTIFIED BY %s', $newCredentials['username'], $newCredentials['password']));
         }
 

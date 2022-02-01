@@ -83,7 +83,7 @@ class RequestCertificateCommand extends AbstractCertificateCommand
             $output->warning('The SSL certificate won\'t be issued until these DNS record(s) are added');
         } elseif (!$isManaged && empty($validationRecords)) {
             $output->newLine();
-            $output->warning(sprintf('Unable to fetch the DNS record(s) to your DNS server to validate the SSL certificate. You can run the "%s" command to get them.', GetCertificateInfoCommand::NAME));
+            $output->warning(sprintf('Unable to fetch the DNS record(s) to your DNS server to validate the SSL certificate. You can run the "<comment>%s</comment>" command to get them.', GetCertificateInfoCommand::NAME));
         }
     }
 }
