@@ -20,14 +20,14 @@ use Ymir\Cli\Command\AbstractCommand;
 use Ymir\Cli\Console\OutputInterface;
 use Ymir\Cli\Tool\Docker;
 
-class PruneDockerImagesCommand extends AbstractCommand
+class DeleteDockerImagesCommand extends AbstractCommand
 {
     /**
      * The name of the command.
      *
      * @var string
      */
-    public const NAME = 'docker:prune';
+    public const NAME = 'docker:delete-images';
 
     /**
      * The grep pattern used with "--all" option.
@@ -43,8 +43,8 @@ class PruneDockerImagesCommand extends AbstractCommand
     {
         $this
             ->setName(self::NAME)
-            ->setDescription('Prune deployment docker images')
-            ->addOption('all', null, InputOption::VALUE_NONE, 'Delete all deployment docker images');
+            ->setDescription('Delete a project\'s deployment docker images')
+            ->addOption('all', null, InputOption::VALUE_NONE, 'Delete deployment docker images for all projects');
     }
 
     /**
@@ -58,13 +58,13 @@ class PruneDockerImagesCommand extends AbstractCommand
             $pattern = $this->determinePattern($input, $output);
         }
 
-        if (!is_string($pattern) || !$output->confirm(self::ALL_PATTERN === $pattern ? 'Are you sure you want to delete all deployment docker images?' : 'Are you sure you want to delete the project\'s deployment docker images?', false)) {
+        if (!is_string($pattern) || !$output->confirm(self::ALL_PATTERN === $pattern ? 'Are you sure you want to delete deployment docker images for all projects?' : 'Are you sure you want to delete the project\'s deployment docker images?', false)) {
             return;
         }
 
         Docker::rmigrep($pattern);
 
-        $output->info('Deployment docker images pruned successfully');
+        $output->info('Deployment docker images deleted successfully');
     }
 
     /**
