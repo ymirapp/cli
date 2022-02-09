@@ -172,7 +172,7 @@ class InitializeProjectCommand extends AbstractCommand
                 Arr::set($options, 'database', $databaseServer['name']);
             } elseif (!empty($databaseServer['name']) && !empty($databasePrefix)) {
                 Arr::set($options, 'database.server', $databaseServer['name']);
-                Arr::set($options, 'database.name', sprintf('%s_%s', $databasePrefix, $environment));
+                Arr::set($options, 'database.name', sprintf('%s_%s', rtrim($databasePrefix, '_'), $environment));
             }
 
             return $options;
