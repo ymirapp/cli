@@ -99,7 +99,7 @@ class ImportDatabaseCommand extends AbstractDatabaseCommand
 
         $command = sprintf('%s %s | mysql --host=%s --port=%s --user=%s --password=%s %s', str_ends_with($file, '.sql.gz') ? 'gunzip <' : 'cat', $file, $host, $port, $user, $password, $name);
 
-        Process::runShellCommandline($command);
+        Process::runShellCommandline($command, null, null);
 
         if ($tunnel instanceof Process) {
             $tunnel->stop();
