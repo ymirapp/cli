@@ -16,8 +16,13 @@ namespace Ymir\Cli\Command\Project;
 use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Tightenco\Collect\Support\Collection;
+use Ymir\Cli\ApiClient;
+use Ymir\Cli\CliConfiguration;
+use Ymir\Cli\Command\Import\ImportUploadsCommand;
 use Ymir\Cli\Console\OutputInterface;
+use Ymir\Cli\ProjectConfiguration\ProjectConfiguration;
 
 class DeployProjectCommand extends AbstractProjectDeploymentCommand
 {
@@ -36,6 +41,23 @@ class DeployProjectCommand extends AbstractProjectDeploymentCommand
     public const NAME = 'project:deploy';
 
     /**
+     * The build "uploads" directory.
+     *
+     * @var string
+     */
+    private $uploadsDirectory;
+
+    /**
+     * Constructor.
+     */
+    public function __construct(ApiClient $apiClient, CliConfiguration $cliConfiguration, ProjectConfiguration $projectConfiguration, string $uploadsDirectory, array $deploymentSteps = [])
+    {
+        parent::__construct($apiClient, $cliConfiguration, $projectConfiguration, $deploymentSteps);
+
+        $this->uploadsDirectory = $uploadsDirectory;
+    }
+
+    /**
      * {@inheritdoc}
      */
     protected function configure()
@@ -44,7 +66,8 @@ class DeployProjectCommand extends AbstractProjectDeploymentCommand
             ->setName(self::NAME)
             ->setDescription('Deploy project to an environment')
             ->setAliases([self::ALIAS])
-            ->addArgument('environment', InputArgument::OPTIONAL, 'The name of the environment to deploy to', 'staging');
+            ->addArgument('environment', InputArgument::OPTIONAL, 'The name of the environment to deploy to', 'staging')
+            ->addOption('with-uploads', null, InputOption::VALUE_NONE, 'Import the "uploads" directory during the deployment');
     }
 
     /**
@@ -54,9 +77,14 @@ class DeployProjectCommand extends AbstractProjectDeploymentCommand
     {
         $environment = $this->getStringArgument($input, 'environment');
         $projectId = $this->projectConfiguration->getProjectId();
+        $withUploadsOption = $this->getBooleanOption($input, 'with-uploads');
 
         $this->invoke($output, ValidateProjectCommand::NAME, ['environments' => $environment]);
-        $this->invoke($output, BuildProjectCommand::NAME, ['environment' => $environment]);
+        $this->invoke($output, BuildProjectCommand::NAME, array_merge(['environment' => $environment], $withUploadsOption ? ['--with-uploads' => null] : []));
+
+        if ($withUploadsOption) {
+            $this->invoke($output, ImportUploadsCommand::NAME, ['path' => $this->uploadsDirectory, '--environment' => $environment, '--force' => null]);
+        }
 
         $deployment = $this->apiClient->createDeployment($projectId, $environment, $this->projectConfiguration);
 

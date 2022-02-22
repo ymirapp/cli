@@ -98,6 +98,7 @@ class ImportUploadsCommand extends AbstractProjectCommand
             ->setDescription('Import files to the environment uploads directory')
             ->addArgument('path', InputArgument::REQUIRED, 'The path to the files to import')
             ->addOption('environment', null, InputOption::VALUE_REQUIRED, 'The environment to upload files to', 'staging')
+            ->addOption('force', null, InputOption::VALUE_NONE, 'Force the import to run')
             ->addOption('size', null, InputOption::VALUE_REQUIRED, 'The number of files to process at a time', '20');
     }
 
@@ -114,13 +115,13 @@ class ImportUploadsCommand extends AbstractProjectCommand
             throw new InvalidArgumentException('Cannot have a "size" smaller than 1');
         }
 
-        if (!$output->confirm('Importing files will overwrite any existing file in the environment uploads directory. Do you want to proceed?')) {
+        if (!$this->getBooleanOption($input, 'force') && !$output->confirm('Importing files will overwrite any existing file in the environment "uploads" directory. Do you want to proceed?')) {
             return;
         }
 
         $this->tempDirectory = $this->createTempDirectory();
 
-        $output->info(sprintf('Starting file import to "<comment>%s</comment>" environment', $environment));
+        $output->info(sprintf('Starting file import to the "<comment>%s</comment>" environment "uploads" directory', $environment));
 
         $progressBar = new ProgressBar($output);
         $progressBar->setFormat("Importing file (<comment>%filename%</comment>)\nTotal files imported: <comment>%total%</comment>\n");
@@ -156,7 +157,7 @@ class ImportUploadsCommand extends AbstractProjectCommand
             $progressBar->advance();
         });
 
-        $output->info(sprintf('Files imported successfully to "<comment>%s</comment>" environment', $environment));
+        $output->info(sprintf('Files imported successfully to the "<comment>%s</comment>" environment "uploads" directory', $environment));
     }
 
     /**
