@@ -11,7 +11,7 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace Ymir\Cli\Command\Import;
+namespace Ymir\Cli\Command\Uploads;
 
 use League\Flysystem\Filesystem;
 use League\Flysystem\FilesystemAdapter;
@@ -43,7 +43,7 @@ class ImportUploadsCommand extends AbstractProjectCommand
      *
      * @var string
      */
-    public const NAME = 'import:uploads';
+    public const NAME = 'uploads:import';
 
     /**
      * The temporary directory used for importing.
@@ -95,7 +95,7 @@ class ImportUploadsCommand extends AbstractProjectCommand
     {
         $this
             ->setName(self::NAME)
-            ->setDescription('Import files to the environment uploads directory')
+            ->setDescription('Import files to the environment "uploads" directory')
             ->addArgument('path', InputArgument::REQUIRED, 'The path to the files to import')
             ->addOption('environment', null, InputOption::VALUE_REQUIRED, 'The environment to upload files to', 'staging')
             ->addOption('force', null, InputOption::VALUE_NONE, 'Force the import to run')

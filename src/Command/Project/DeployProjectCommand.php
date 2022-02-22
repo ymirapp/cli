@@ -20,7 +20,7 @@ use Symfony\Component\Console\Input\InputOption;
 use Tightenco\Collect\Support\Collection;
 use Ymir\Cli\ApiClient;
 use Ymir\Cli\CliConfiguration;
-use Ymir\Cli\Command\Import\ImportUploadsCommand;
+use Ymir\Cli\Command\Uploads\ImportUploadsCommand;
 use Ymir\Cli\Console\OutputInterface;
 use Ymir\Cli\ProjectConfiguration\ProjectConfiguration;
 
