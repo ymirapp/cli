@@ -6,6 +6,7 @@ parameters:
   hidden_directory: '%working_directory%/.ymir'
   project_configuration_filepath: '%working_directory%/ymir.yml'
   stub_directory: '%application_directory%/stubs'
+  uploads_directory: '%hidden_directory%/uploads'
   version: '1.25.1'
 
 services:
@@ -21,6 +22,7 @@ services:
       string $homeDirectory: '%home_directory%'
       string $projectDirectory: '%working_directory%'
       string $stubDirectory: '%stub_directory%'
+      string $uploadsDirectory: '%uploads_directory%'
       string $version: '%version%'
 
   _instanceof:
@@ -67,6 +69,7 @@ services:
     arguments:
       $buildSteps:
         - '@Ymir\Cli\Build\CopyWordPressFilesStep'
+        - '@Ymir\Cli\Build\CopyUploadsDirectoryStep'
         - '@Ymir\Cli\Build\DownloadWpCliStep'
         - '@Ymir\Cli\Build\ExecuteBuildCommandsStep'
         - '@Ymir\Cli\Build\EnsurePluginIsInstalledStep'

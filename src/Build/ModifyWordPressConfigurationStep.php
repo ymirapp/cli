@@ -61,7 +61,7 @@ class ModifyWordPressConfigurationStep extends AbstractBuildStep
     /**
      * {@inheritdoc}
      */
-    public function isNeeded(string $environment, ProjectConfiguration $projectConfiguration): bool
+    public function isNeeded(array $buildOptions, ProjectConfiguration $projectConfiguration): bool
     {
         return 'wordpress' === $projectConfiguration->getProjectType();
     }

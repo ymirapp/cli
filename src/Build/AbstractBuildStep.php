@@ -20,7 +20,7 @@ abstract class AbstractBuildStep implements BuildStepInterface
     /**
      * {@inheritdoc}
      */
-    public function isNeeded(string $environment, ProjectConfiguration $projectConfiguration): bool
+    public function isNeeded(array $buildOptions, ProjectConfiguration $projectConfiguration): bool
     {
         return true;
     }

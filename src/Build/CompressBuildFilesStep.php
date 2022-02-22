@@ -55,9 +55,9 @@ class CompressBuildFilesStep implements BuildStepInterface
     /**
      * {@inheritdoc}
      */
-    public function isNeeded(string $environment, ProjectConfiguration $projectConfiguration): bool
+    public function isNeeded(array $buildOptions, ProjectConfiguration $projectConfiguration): bool
     {
-        return 'image' !== Arr::get($projectConfiguration->getEnvironment($environment), 'deployment');
+        return 'image' !== Arr::get($projectConfiguration->getEnvironment($buildOptions['environment']), 'deployment');
     }
 
     /**
@@ -90,7 +90,7 @@ class CompressBuildFilesStep implements BuildStepInterface
         $archive->close();
 
         if ($totalSize >= 147005412) {
-            throw new RuntimeException(sprintf("The uncompressed build is %s bytes. It must be less than 147005412 bytes to be able to deploy. You can avoid this error by switching to container image deployment.\n\nPlease refer to this guide: https://docs.ymirapp.com/guides/container-image-deployment.html", $totalSize));
+            throw new RuntimeException(sprintf("The uncompressed build is %s bytes. It must be less than 147005412 bytes to be able to deploy. You can avoid this error by switching to container image deployment.\n\nPlease refer to this guide to learn how: https://docs.ymirapp.com/guides/container-image-deployment.html", $totalSize));
         }
     }
 

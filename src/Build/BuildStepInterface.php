@@ -25,7 +25,7 @@ interface BuildStepInterface
     /**
      * Check if the build step needs to be performed for the given project environment.
      */
-    public function isNeeded(string $environment, ProjectConfiguration $projectConfiguration): bool;
+    public function isNeeded(array $buildOptions, ProjectConfiguration $projectConfiguration): bool;
 
     /**
      * Perform the build step.

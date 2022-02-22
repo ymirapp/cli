@@ -15,6 +15,7 @@ namespace Ymir\Cli\Command\Project;
 
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Ymir\Cli\ApiClient;
 use Ymir\Cli\Build\BuildStepInterface;
 use Ymir\Cli\CliConfiguration;
@@ -66,7 +67,8 @@ class BuildProjectCommand extends AbstractProjectCommand
             ->setName(self::NAME)
             ->setDescription('Build the project for deployment')
             ->setAliases([self::ALIAS])
-            ->addArgument('environment', InputArgument::OPTIONAL, 'The name of the environment to build', 'staging');
+            ->addArgument('environment', InputArgument::OPTIONAL, 'The name of the environment to build', 'staging')
+            ->addOption('with-uploads', null, InputOption::VALUE_NONE, 'Copy the "uploads" directory during the build');
     }
 
     /**
@@ -74,15 +76,18 @@ class BuildProjectCommand extends AbstractProjectCommand
      */
     protected function perform(InputInterface $input, OutputInterface $output)
     {
-        $environment = $this->getStringArgument($input, 'environment');
+        $buildOptions = [
+            'environment' => $this->getStringArgument($input, 'environment'),
+            'uploads' => $this->getBooleanOption($input, 'with-uploads'),
+        ];
 
         $output->info('Building project');
 
-        collect($this->buildSteps)->filter(function (BuildStepInterface $buildStep) use ($environment) {
-            return $buildStep->isNeeded($environment, $this->projectConfiguration);
-        })->each(function (BuildStepInterface $buildStep) use ($environment, $output) {
+        collect($this->buildSteps)->filter(function (BuildStepInterface $buildStep) use ($buildOptions) {
+            return $buildStep->isNeeded($buildOptions, $this->projectConfiguration);
+        })->each(function (BuildStepInterface $buildStep) use ($buildOptions, $output) {
             $output->writeStep($buildStep->getDescription());
-            $buildStep->perform($environment, $this->projectConfiguration);
+            $buildStep->perform($buildOptions['environment'], $this->projectConfiguration);
         });
 
         $output->info('Project built successfully');
