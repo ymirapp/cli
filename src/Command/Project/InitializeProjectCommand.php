@@ -144,7 +144,7 @@ class InitializeProjectCommand extends AbstractCommand
             }
 
             if ($output->confirm('Will you deploy this project using a container image?', false)) {
-                $this->invoke($output, CreateDockerfileCommand::NAME, ['--configure-project']);
+                $this->invoke($output, CreateDockerfileCommand::NAME, ['--configure-project' => null]);
             }
 
             if (WpCli::isInstalledGlobally() && WpCli::isWordPressInstalled() && $output->confirm('Do you want to have Ymir scan your plugins and themes and configure your project?')) {
