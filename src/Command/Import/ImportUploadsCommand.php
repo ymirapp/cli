@@ -21,12 +21,14 @@ use League\Flysystem\Local\LocalFilesystemAdapter;
 use League\Flysystem\PhpseclibV2\SftpAdapter;
 use League\Flysystem\PhpseclibV2\SftpConnectionProvider;
 use League\Flysystem\StorageAttributes;
+use Symfony\Component\Console\Exception\InvalidArgumentException;
 use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
-use Tightenco\Collect\Support\Collection;
+use Tightenco\Collect\Support\Enumerable;
+use Tightenco\Collect\Support\LazyCollection;
 use Ymir\Cli\ApiClient;
 use Ymir\Cli\CliConfiguration;
 use Ymir\Cli\Command\AbstractProjectCommand;
@@ -106,7 +108,11 @@ class ImportUploadsCommand extends AbstractProjectCommand
     {
         $environment = (string) $this->getStringOption($input, 'environment');
         $filesystem = new Filesystem($this->getAdapter($this->getStringArgument($input, 'path')));
-        $size = $this->getNumericOption($input, 'size');
+        $size = (int) $this->getNumericOption($input, 'size');
+
+        if ($size < 1) {
+            throw new InvalidArgumentException('Cannot have a "size" smaller than 1');
+        }
 
         if (!$output->confirm('Importing files will overwrite any existing file in the environment uploads directory. Do you want to proceed?')) {
             return;
@@ -122,23 +128,33 @@ class ImportUploadsCommand extends AbstractProjectCommand
         $total = 0;
         $progressBar->setMessage((string) $total, 'total');
 
-        foreach ($this->getFilesToImport($filesystem, (int) $size) as $files) {
-            $this->getSignedUploadRequest($environment, $files)->each(function (array $request, string $filePath) use ($filesystem, $progressBar, &$total) {
-                $tempFilePath = $this->tempDirectory.'/'.basename($filePath);
-
-                $progressBar->setMessage($filePath, 'filename');
-                $progressBar->advance();
-
-                file_put_contents($tempFilePath, $filesystem->readStream($filePath));
-
-                $this->uploader->uploadFile($tempFilePath, $request['uri'], $request['headers']);
-
-                unlink($tempFilePath);
-
-                $progressBar->setMessage((string) $total++, 'total');
-                $progressBar->advance();
+        LazyCollection::make(function () use ($filesystem) {
+            $files = $filesystem->listContents('', Filesystem::LIST_DEEP)->filter(function (StorageAttributes $attributes) {
+                return $attributes->isFile();
             });
-        }
+
+            foreach ($files as $file) {
+                yield $file->path();
+            }
+        })->chunk($size)->mapWithKeys(function (Enumerable $chunkedFiles) use ($environment) {
+            return $this->getSignedUploadRequest($environment, $chunkedFiles);
+        })->each(function (array $request, string $filePath) use ($filesystem, $progressBar, &$total) {
+            $tempFilePath = $this->tempDirectory.'/'.basename($filePath);
+
+            $progressBar->setMessage($filePath, 'filename');
+            $progressBar->advance();
+
+            file_put_contents($tempFilePath, $filesystem->readStream($filePath));
+
+            $this->uploader->uploadFile($tempFilePath, $request['uri'], $request['headers']);
+
+            unlink($tempFilePath);
+
+            ++$total;
+
+            $progressBar->setMessage((string) $total, 'total');
+            $progressBar->advance();
+        });
 
         $output->info(sprintf('Files imported successfully to "<comment>%s</comment>" environment', $environment));
     }
@@ -207,37 +223,12 @@ class ImportUploadsCommand extends AbstractProjectCommand
     }
 
     /**
-     * Get all the files to import split into chunks.
-     */
-    private function getFilesToImport(Filesystem $filesystem, int $size): iterable
-    {
-        if ($size < 1) {
-            throw new \InvalidArgumentException('Cannot have a "size" smaller than 1');
-        }
-
-        $files = $filesystem->listContents('', Filesystem::LIST_DEEP)->filter(function (StorageAttributes $attributes) {
-            return $attributes->isFile();
-        });
-
-        $collection = new Collection();
-
-        foreach ($files as $file) {
-            $collection->add($file->path());
-
-            if ($collection->count() >= $size) {
-                yield $collection;
-                $collection = new Collection();
-            }
-        }
-    }
-
-    /**
      * Get the signed upload request for the given environment and path.
      */
-    private function getSignedUploadRequest(string $environment, Collection $files): Collection
+    private function getSignedUploadRequest(string $environment, Enumerable $files): array
     {
         return $this->apiClient->getSignedUploadRequests($this->projectConfiguration->getProjectId(), $environment, $files->map(function (string $filePath) {
             return ['path' => $filePath];
-        })->all());
+        })->all())->all();
     }
 }
