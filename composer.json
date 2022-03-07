@@ -44,6 +44,9 @@
         "sebastian/phpcpd": "^6.0"
     },
     "config": {
+        "allow-plugins": {
+            "phpro/grumphp": true
+        },
         "optimize-autoloader": true,
         "preferred-install": "dist",
         "sort-packages": true
