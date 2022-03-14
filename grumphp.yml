@@ -1,7 +1,6 @@
 grumphp:
   process_timeout: 120
   tasks:
-    composer: ~
     git_commit_message:
       enforce_capitalized_subject: false
       max_subject_width: 72
@@ -34,7 +33,6 @@ grumphp:
   testsuites:
     code_quality:
       tasks:
-        - composer
         - phpcpd
         - phpcsfixer2
         - phplint
