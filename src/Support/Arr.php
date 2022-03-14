@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace Ymir\Cli\Support;
 
-use Tightenco\Collect\Support\Arr as LaravelArrHelper;
+use Illuminate\Support\Arr as LaravelArrHelper;
 
 class Arr extends LaravelArrHelper
 {

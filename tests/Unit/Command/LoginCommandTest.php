@@ -14,8 +14,8 @@ declare(strict_types=1);
 namespace Ymir\Cli\Tests\Unit\Command;
 
 use GuzzleHttp\Exception\ClientException;
+use Illuminate\Support\Collection;
 use Symfony\Component\Console\Tester\CommandTester;
-use Tightenco\Collect\Support\Collection;
 use Ymir\Cli\Command\LoginCommand;
 use Ymir\Cli\Exception\ApiClientException;
 use Ymir\Cli\Tests\Mock\ApiClientMockTrait;

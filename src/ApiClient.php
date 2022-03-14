@@ -17,9 +17,9 @@ use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Pool;
 use GuzzleHttp\Psr7\Request;
+use Illuminate\Support\Collection;
 use Psr\Http\Message\ResponseInterface;
 use Symfony\Component\Console\Exception\RuntimeException;
-use Tightenco\Collect\Support\Collection;
 use Ymir\Cli\Exception\ApiClientException;
 use Ymir\Cli\ProjectConfiguration\ProjectConfiguration;
 

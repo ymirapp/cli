@@ -14,9 +14,9 @@ declare(strict_types=1);
 namespace Ymir\Cli\Exception;
 
 use GuzzleHttp\Exception\ClientException;
+use Illuminate\Support\Collection;
 use Psr\Http\Message\ResponseInterface;
 use Symfony\Component\Console\Exception\RuntimeException;
-use Tightenco\Collect\Support\Collection;
 use Ymir\Cli\Command\LoginCommand;
 
 class ApiClientException extends RuntimeException
@@ -52,7 +52,7 @@ class ApiClientException extends RuntimeException
     public function getValidationErrors(): Collection
     {
         $body = collect(json_decode((string) $this->response->getBody(), true));
-        $errors = $body->only('errors')->collapse();
+        $errors = $body->only(['errors'])->collapse();
 
         if ($errors->isEmpty() && $body->has('message')) {
             $errors->add($body->get('message'));

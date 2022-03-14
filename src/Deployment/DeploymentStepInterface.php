@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace Ymir\Cli\Deployment;
 
-use Tightenco\Collect\Support\Collection;
+use Illuminate\Support\Collection;
 use Ymir\Cli\Console\OutputInterface;
 
 interface DeploymentStepInterface

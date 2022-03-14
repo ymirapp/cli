@@ -13,8 +13,8 @@ declare(strict_types=1);
 
 namespace Ymir\Cli\Command\Project;
 
+use Illuminate\Support\Collection;
 use Symfony\Component\Console\Input\InputInterface;
-use Tightenco\Collect\Support\Collection;
 use Ymir\Cli\ApiClient;
 use Ymir\Cli\CliConfiguration;
 use Ymir\Cli\Command\AbstractProjectCommand;
@@ -80,7 +80,7 @@ abstract class AbstractProjectDeploymentCommand extends AbstractProjectCommand
 
         $unmanagedDomains = $unmanagedDomains->filter(function (string $unmanagedDomain) use ($vanityDomainName) {
             try {
-                return !collect(dns_get_record($unmanagedDomain, DNS_CNAME))->contains('target', $vanityDomainName);
+                return !collect((array) dns_get_record($unmanagedDomain, DNS_CNAME))->contains('target', $vanityDomainName);
             } catch (\Throwable $exception) {
                 return true;
             }

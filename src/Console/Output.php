@@ -13,6 +13,8 @@ declare(strict_types=1);
 
 namespace Ymir\Cli\Console;
 
+use Illuminate\Support\Collection;
+use Illuminate\Support\Enumerable;
 use Symfony\Component\Console\Exception\InvalidArgumentException;
 use Symfony\Component\Console\Formatter\OutputFormatter;
 use Symfony\Component\Console\Formatter\OutputFormatterInterface;
@@ -26,8 +28,6 @@ use Symfony\Component\Console\Output\TrimmedBufferOutput;
 use Symfony\Component\Console\Question\ConfirmationQuestion;
 use Symfony\Component\Console\Question\Question;
 use Symfony\Component\Console\Terminal;
-use Tightenco\Collect\Support\Collection;
-use Tightenco\Collect\Support\Enumerable;
 use Ymir\Cli\Command\Project\DeployProjectCommand;
 use Ymir\Cli\Command\Project\RedeployProjectCommand;
 

@@ -13,13 +13,13 @@ declare(strict_types=1);
 
 namespace Ymir\Cli\Command\Database;
 
+use Illuminate\Support\Collection;
 use Symfony\Component\Console\Exception\InvalidArgumentException;
 use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Helper\TableSeparator;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
-use Tightenco\Collect\Support\Collection;
 use Ymir\Cli\Command\AbstractCommand;
 use Ymir\Cli\Console\OutputInterface;
 
@@ -127,7 +127,7 @@ class CreateDatabaseServerCommand extends AbstractCommand
         $types = $this->apiClient->getDatabaseServerTypes((int) $network['provider']['id']);
 
         if ($this->getBooleanOption($input, 'dev')) {
-            return $types->keys()->first();
+            return (string) $types->keys()->first();
         }
 
         $type = $this->getStringOption($input, 'type');

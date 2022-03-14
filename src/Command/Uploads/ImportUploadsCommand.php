@@ -13,6 +13,8 @@ declare(strict_types=1);
 
 namespace Ymir\Cli\Command\Uploads;
 
+use Illuminate\Support\Enumerable;
+use Illuminate\Support\LazyCollection;
 use League\Flysystem\Filesystem;
 use League\Flysystem\FilesystemAdapter;
 use League\Flysystem\Ftp\FtpAdapter;
@@ -27,8 +29,6 @@ use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
-use Tightenco\Collect\Support\Enumerable;
-use Tightenco\Collect\Support\LazyCollection;
 use Ymir\Cli\ApiClient;
 use Ymir\Cli\CliConfiguration;
 use Ymir\Cli\Command\AbstractProjectCommand;

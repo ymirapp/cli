@@ -13,12 +13,12 @@ declare(strict_types=1);
 
 namespace Ymir\Cli\ProjectConfiguration;
 
+use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Collection;
 use Symfony\Component\Console\Exception\InvalidArgumentException;
 use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Yaml\Yaml;
-use Tightenco\Collect\Contracts\Support\Arrayable;
-use Tightenco\Collect\Support\Collection;
 use Ymir\Cli\Command\Project\InitializeProjectCommand;
 
 class ProjectConfiguration implements Arrayable

@@ -13,8 +13,8 @@ declare(strict_types=1);
 
 namespace Ymir\Cli\Tool;
 
+use Illuminate\Support\Collection;
 use Symfony\Component\Console\Exception\RuntimeException;
-use Tightenco\Collect\Support\Collection;
 use Ymir\Cli\Exception\WpCliException;
 use Ymir\Cli\Process\Process;
 

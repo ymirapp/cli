@@ -14,8 +14,8 @@ declare(strict_types=1);
 namespace Ymir\Cli;
 
 use GuzzleHttp\ClientInterface;
+use Illuminate\Support\Collection;
 use Symfony\Component\Console\Exception\RuntimeException;
-use Tightenco\Collect\Support\Collection;
 
 class GitHubClient
 {

@@ -13,9 +13,9 @@ declare(strict_types=1);
 
 namespace Ymir\Cli\Deployment;
 
+use Illuminate\Support\Collection;
 use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Finder\Finder;
-use Tightenco\Collect\Support\Collection;
 use Ymir\Cli\ApiClient;
 use Ymir\Cli\Console\OutputInterface;
 use Ymir\Cli\FileUploader;

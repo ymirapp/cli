@@ -1,8 +1,10 @@
 parameters:
     level: max
+    checkGenericClassInNonGenericObjectType: false
     checkMissingIterableValueType: false
     ignoreErrors:
         - '#Access to an undefined property Tightenco\\Collect\\Support\\HigherOrder#'
         - '#Method [^\s]* has no return typehint specified.#'
         - '#Method [^\s]* has parameter \$[^\s]* with no typehint specified.#'
         - '#.*undefined.*ZipArchive.*#'
+        - '#Unable to resolve the template type (TValue|TKey) in call to function collect#'

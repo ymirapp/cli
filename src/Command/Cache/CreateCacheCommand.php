@@ -13,12 +13,12 @@ declare(strict_types=1);
 
 namespace Ymir\Cli\Command\Cache;
 
+use Illuminate\Support\Collection;
 use Symfony\Component\Console\Exception\InvalidArgumentException;
 use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
-use Tightenco\Collect\Support\Collection;
 use Ymir\Cli\Command\AbstractCommand;
 use Ymir\Cli\Console\OutputInterface;
 use Ymir\Cli\ProjectConfiguration\CacheConfigurationChange;

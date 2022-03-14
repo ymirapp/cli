@@ -13,9 +13,9 @@ declare(strict_types=1);
 
 namespace Ymir\Cli;
 
+use Illuminate\Support\Collection;
 use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Filesystem\Filesystem;
-use Tightenco\Collect\Support\Collection;
 use Ymir\Cli\Command\Team\SelectTeamCommand;
 
 class CliConfiguration

@@ -13,8 +13,8 @@ declare(strict_types=1);
 
 namespace Ymir\Cli\Console;
 
+use Illuminate\Support\Collection;
 use Symfony\Component\Console\Output\OutputInterface as SymfonyOutputInterface;
-use Tightenco\Collect\Support\Collection;
 
 interface OutputInterface extends SymfonyOutputInterface
 {
