@@ -38,10 +38,10 @@
         "fakerphp/faker": "^1.17",
         "friendsofphp/php-cs-fixer": "^3.0",
         "php-parallel-lint/php-parallel-lint": "^1.1",
-        "phpro/grumphp": "^0.19 || ^1.0",
-        "phpstan/phpstan": "^0.12.0",
+        "phpro/grumphp": "^1.0",
+        "phpstan/phpstan": "^0.12.99",
         "phpunit/phpunit": "^9.3",
-        "sebastian/phpcpd": "^6.0"
+        "sebastian/phpcpd": "^6.0.3"
     },
     "config": {
         "allow-plugins": {
