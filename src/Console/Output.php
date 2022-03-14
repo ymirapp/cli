@@ -198,7 +198,7 @@ class Output implements OutputInterface
     /**
      * {@inheritdoc}
      */
-    public function getFormatter()
+    public function getFormatter(): OutputFormatterInterface
     {
         return $this->output->getFormatter();
     }
@@ -206,7 +206,7 @@ class Output implements OutputInterface
     /**
      * {@inheritdoc}
      */
-    public function getVerbosity()
+    public function getVerbosity(): int
     {
         return $this->output->getVerbosity();
     }
@@ -285,7 +285,7 @@ class Output implements OutputInterface
     /**
      * {@inheritdoc}
      */
-    public function isDebug()
+    public function isDebug(): bool
     {
         return $this->output->isDebug();
     }
@@ -293,7 +293,7 @@ class Output implements OutputInterface
     /**
      * {@inheritdoc}
      */
-    public function isDecorated()
+    public function isDecorated(): bool
     {
         return $this->output->isDecorated();
     }
@@ -301,7 +301,7 @@ class Output implements OutputInterface
     /**
      * {@inheritdoc}
      */
-    public function isQuiet()
+    public function isQuiet(): bool
     {
         return $this->output->isQuiet();
     }
@@ -309,7 +309,7 @@ class Output implements OutputInterface
     /**
      * {@inheritdoc}
      */
-    public function isVerbose()
+    public function isVerbose(): bool
     {
         return $this->output->isVerbose();
     }
@@ -317,7 +317,7 @@ class Output implements OutputInterface
     /**
      * {@inheritdoc}
      */
-    public function isVeryVerbose()
+    public function isVeryVerbose(): bool
     {
         return $this->output->isVeryVerbose();
     }
@@ -330,7 +330,7 @@ class Output implements OutputInterface
         $this->newLine();
 
         foreach ($items as $item) {
-            $this->writeln(sprintf('  * %s', (string) $item));
+            $this->writeln(sprintf('  * %s', $item));
         }
     }
 

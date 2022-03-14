@@ -21,7 +21,7 @@ class InputDefinition extends SymfonyInputDefinition
     /**
      * {@inheritdoc}
      */
-    public function getOptions()
+    public function getOptions(): array
     {
         return array_filter(parent::getOptions(), function (InputOption $option) {
             return !$option instanceof HiddenInputOption;
