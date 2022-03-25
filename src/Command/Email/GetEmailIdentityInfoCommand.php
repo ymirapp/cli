@@ -50,16 +50,28 @@ class GetEmailIdentityInfoCommand extends AbstractEmailIdentityCommand
             [[$identity['name'], new TableSeparator(), $identity['provider']['name'], $identity['region'], new TableSeparator(), $identity['type'], $identity['status'], $output->formatBoolean($identity['managed'])]]
         );
 
-        if (!isset($identity['managed'], $identity['type'], $identity['validation_record']['name'], $identity['validation_record']['value']) || 'domain' !== $identity['type'] || true === $identity['managed']) {
+        if ('domain' !== $identity['type'] || true === $identity['managed']) {
             return;
         }
 
-        $output->newLine();
-        $output->important('The following DNS record needs to be exist on your DNS server at all times to keep the email identity active:');
-        $output->newLine();
-        $output->table(
-            ['Name', 'Value'],
-            [$identity['validation_record']]
-        );
+        if (!empty($identity['validation_record'])) {
+            $output->newLine();
+            $output->important('The following DNS record needs to exist on your DNS server at all times to keep the email identity active:');
+            $output->newLine();
+            $output->table(
+                ['Name', 'Type', 'Value'],
+                [$identity['validation_record']]
+            );
+        }
+
+        if (!empty($identity['dkim_authentication_records'])) {
+            $output->newLine();
+            $output->important('The following DNS records needs to exist on your DNS server at all times to authenticate the DKIM signature of the email identity:');
+            $output->newLine();
+            $output->table(
+                ['Name', 'Type', 'Value'],
+                $identity['dkim_authentication_records']
+            );
+        }
     }
 }
