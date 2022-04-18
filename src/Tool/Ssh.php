@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Ymir\Cli\Tool;
 
 use Symfony\Component\Console\Exception\InvalidArgumentException;
+use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Filesystem\Filesystem;
 use Ymir\Cli\Process\Process;
 
@@ -43,7 +44,15 @@ class Ssh extends CommandLineTool
         $command = sprintf('ec2-user@%s -i %s -o LogLevel=error -L %s:%s:%s -N', $bastionHost['endpoint'], $identityFilePath, $localPort, $remoteHost, $remotePort);
 
         $process = self::getProcess($command, $cwd, null);
-        $process->start();
+        $process->start(function ($type, $buffer) use ($localPort) {
+            if (Process::ERR !== $type) {
+                return;
+            }
+
+            if (false !== stripos($buffer, 'address already in use')) {
+                throw new RuntimeException(sprintf('Unable to create SSH tunnel. Port "%s" is already in use.', $localPort));
+            }
+        });
 
         return $process;
     }
