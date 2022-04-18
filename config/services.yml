@@ -7,7 +7,7 @@ parameters:
   project_configuration_filepath: '%working_directory%/ymir.yml'
   stub_directory: '%application_directory%/stubs'
   uploads_directory: '%hidden_directory%/uploads'
-  version: '1.30.0'
+  version: '1.30.1'
 
 services:
   _defaults:
