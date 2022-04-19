@@ -49,8 +49,8 @@ class Ssh extends CommandLineTool
                 return;
             }
 
-            if (false !== stripos($buffer, 'address already in use')) {
-                throw new RuntimeException(sprintf('Unable to create SSH tunnel. Port "%s" is already in use.', $localPort));
+            if (false !== stripos($buffer, sprintf('%s: address already in use', $localPort))) {
+                throw new RuntimeException(sprintf('Unable to create SSH tunnel. Local port "%s" is already in use.', $localPort));
             }
         });
 
