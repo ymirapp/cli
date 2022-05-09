@@ -195,9 +195,9 @@ abstract class AbstractCommand extends Command
 
         if ($regions->isEmpty()) {
             throw new RuntimeException('The Ymir API failed to return the cloud provider regions');
-        } elseif (!empty($region) && $regions->contains($region)) {
+        } elseif (!empty($region) && $regions->keys()->contains(strtolower($region))) {
             return $region;
-        } elseif (!empty($region) && !$regions->contains($region)) {
+        } elseif (!empty($region) && !$regions->keys()->contains(strtolower($region))) {
             throw new InvalidArgumentException('The given "region" isn\'t a valid cloud provider region');
         }
 
