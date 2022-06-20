@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Ymir\Cli\Command;
 
+use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -50,7 +51,7 @@ class WpCliCommand extends AbstractInvocationCommand
         $async = $this->getBooleanOption($input, 'async') || $this->getBooleanOption($input, 'yolo');
         $command = implode(' ', $this->getArrayArgument($input, 'wp-command'));
         $environment = (string) $this->getStringOption($input, 'environment');
-        $exitCode = 0;
+        $exitCode = Command::SUCCESS;
 
         if (empty($command)) {
             $command = $output->ask('Please enter the WP-CLI command to run');

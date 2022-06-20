@@ -215,7 +215,7 @@ abstract class AbstractCommand extends Command
             throw new RuntimeException(sprintf('Please authenticate using the "%s" command before using this command', LoginCommand::NAME));
         }
 
-        return $this->perform($input, new Output($input, $output)) ?? 0;
+        return $this->perform($input, new Output($input, $output)) ?? Command::SUCCESS;
     }
 
     /**
