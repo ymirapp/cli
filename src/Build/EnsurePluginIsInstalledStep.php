@@ -54,6 +54,10 @@ class EnsurePluginIsInstalledStep extends AbstractBuildStep
                 return is_dir($path);
             })->all();
 
+        if (empty($pluginsPaths)) {
+            throw new RuntimeException('No "plugins" or "mu-plugins" directory found in build directory');
+        }
+
         $finder = Finder::create()
                         ->files()
                         ->in($pluginsPaths)
@@ -62,7 +66,7 @@ class EnsurePluginIsInstalledStep extends AbstractBuildStep
                         ->contains('Plugin Name: Ymir');
 
         if (0 === $finder->count()) {
-            throw new RuntimeException('Ymir plugin not found');
+            throw new RuntimeException('Ymir plugin not found in build directory');
         }
     }
 }
