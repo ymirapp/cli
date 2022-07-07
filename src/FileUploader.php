@@ -63,7 +63,7 @@ class FileUploader
             }
         };
 
-        $pool = new Pool($this->client, $requests(), ['concurrency' => 10]);
+        $pool = new Pool($this->client, $requests());
         $pool->promise()->wait();
 
         if ($progressBar instanceof ProgressBar) {
