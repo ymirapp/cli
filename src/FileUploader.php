@@ -16,6 +16,7 @@ namespace Ymir\Cli;
 use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Pool;
 use GuzzleHttp\Psr7\Request;
+use Illuminate\Support\Enumerable;
 use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Helper\ProgressBar;
 
@@ -46,7 +47,7 @@ class FileUploader
     /**
      * Sends multiple requests concurrently.
      */
-    public function batch(string $method, array $requests, ?ProgressBar $progressBar = null)
+    public function batch(string $method, Enumerable $requests, ?ProgressBar $progressBar = null)
     {
         if ($progressBar instanceof ProgressBar) {
             $progressBar->start(count($requests));
@@ -58,7 +59,7 @@ class FileUploader
                     $progressBar->advance();
                 }
 
-                yield new Request($method, $request['uri'], array_merge(self::DEFAULT_HEADERS, $request['headers']));
+                yield new Request($method, $request['uri'], array_merge(self::DEFAULT_HEADERS, $request['headers']), $request['body'] ?? null);
             }
         };
 

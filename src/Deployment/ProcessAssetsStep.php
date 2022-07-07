@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Ymir\Cli\Deployment;
 
 use Illuminate\Support\Collection;
+use Illuminate\Support\LazyCollection;
 use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Finder\Finder;
 use Ymir\Cli\ApiClient;
@@ -79,19 +80,19 @@ class ProcessAssetsStep implements DeploymentStepInterface
             return isset($signedAssetRequests['copy'][$asset['relative_path']]);
         })->map(function (array $asset) use ($signedAssetRequests) {
             return $signedAssetRequests['copy'][$asset['relative_path']];
-        })->all(), $output);
+        }), $output);
 
         $this->uploadAssetFiles($assetFiles->filter(function (array $asset) use ($signedAssetRequests) {
             return isset($signedAssetRequests['store'][$asset['relative_path']]);
         })->mapWithKeys(function (array $asset) use ($signedAssetRequests) {
             return [$asset['real_path'] => $signedAssetRequests['store'][$asset['relative_path']]];
-        })->all(), $output);
+        }), $output);
     }
 
     /**
      * Send the given asset file copy requests.
      */
-    private function copyAssetFiles(array $requests, OutputInterface $output)
+    private function copyAssetFiles(Collection $requests, OutputInterface $output)
     {
         if (empty($requests)) {
             return;
@@ -129,7 +130,7 @@ class ProcessAssetsStep implements DeploymentStepInterface
     /**
      * Send the given asset file upload requests.
      */
-    private function uploadAssetFiles(array $requests, OutputInterface $output)
+    private function uploadAssetFiles(Collection $requests, OutputInterface $output)
     {
         if (empty($requests)) {
             return;
@@ -137,12 +138,14 @@ class ProcessAssetsStep implements DeploymentStepInterface
 
         $progressBar = new ProgressBar($output);
         $progressBar->setFormat('  > Uploading new asset files (<comment>%current%/%max%</comment>)');
-        $progressBar->start(count($requests));
 
-        foreach ($requests as $realFilePath => $request) {
-            $this->uploader->uploadFile((string) $realFilePath, (string) $request['uri'], $request['headers']);
-            $progressBar->advance();
-        }
+        $requests = LazyCollection::make($requests)->map(function (array $request, string $realFilePath) {
+            $request['body'] = fopen($realFilePath, 'r+');
+
+            return $request;
+        });
+
+        $this->uploader->batch('PUT', $requests, $progressBar);
 
         $output->newLine();
     }
