@@ -46,13 +46,6 @@ class ImportUploadsCommand extends AbstractProjectCommand
     public const NAME = 'uploads:import';
 
     /**
-     * The temporary directory used for importing.
-     *
-     * @var string
-     */
-    private $tempDirectory;
-
-    /**
      * The uploader used to upload files.
      *
      * @var FileUploader
@@ -70,25 +63,6 @@ class ImportUploadsCommand extends AbstractProjectCommand
     }
 
     /**
-     * Delete the temporary directory when we're done the execution.
-     */
-    public function __destruct()
-    {
-        if (!is_string($this->tempDirectory) || !is_dir($this->tempDirectory)) {
-            return;
-        }
-
-        $files = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($this->tempDirectory, \FilesystemIterator::SKIP_DOTS), \RecursiveIteratorIterator::CHILD_FIRST);
-
-        foreach ($files as $file) {
-            $function = $file->isDir() ? 'rmdir' : 'unlink';
-            $function($file->getRealPath());
-        }
-
-        rmdir($this->tempDirectory);
-    }
-
-    /**
      * {@inheritdoc}
      */
     protected function configure()
@@ -99,7 +73,7 @@ class ImportUploadsCommand extends AbstractProjectCommand
             ->addArgument('path', InputArgument::REQUIRED, 'The path to the files to import')
             ->addOption('environment', null, InputOption::VALUE_REQUIRED, 'The environment to upload files to', 'staging')
             ->addOption('force', null, InputOption::VALUE_NONE, 'Force the import to run')
-            ->addOption('size', null, InputOption::VALUE_REQUIRED, 'The number of files to process at a time', '20');
+            ->addOption('size', null, InputOption::VALUE_REQUIRED, 'The number of files to process at a time');
     }
 
     /**
@@ -107,9 +81,16 @@ class ImportUploadsCommand extends AbstractProjectCommand
      */
     protected function perform(InputInterface $input, OutputInterface $output)
     {
+        $adapter = $this->getAdapter($this->getStringArgument($input, 'path'));
         $environment = (string) $this->getStringOption($input, 'environment');
-        $filesystem = new Filesystem($this->getAdapter($this->getStringArgument($input, 'path')));
-        $size = (int) $this->getNumericOption($input, 'size');
+        $filesystem = new Filesystem($adapter);
+        $size = $this->getNumericOption($input, 'size');
+
+        if (null === $size && $adapter instanceof LocalFilesystemAdapter) {
+            $size = 1000;
+        } elseif (null === $size) {
+            $size = 100;
+        }
 
         if ($size < 1) {
             throw new InvalidArgumentException('Cannot have a "size" smaller than 1');
@@ -119,8 +100,6 @@ class ImportUploadsCommand extends AbstractProjectCommand
             return;
         }
 
-        $this->tempDirectory = $this->createTempDirectory();
-
         $output->info(sprintf('Starting file import to the "<comment>%s</comment>" environment "uploads" directory', $environment));
 
         $progressBar = new ProgressBar($output);
@@ -129,7 +108,7 @@ class ImportUploadsCommand extends AbstractProjectCommand
         $total = 0;
         $progressBar->setMessage((string) $total, 'total');
 
-        LazyCollection::make(function () use ($filesystem) {
+        $requests = LazyCollection::make(function () use ($filesystem) {
             $files = $filesystem->listContents('', Filesystem::LIST_DEEP)->filter(function (StorageAttributes $attributes) {
                 return $attributes->isFile();
             });
@@ -139,53 +118,21 @@ class ImportUploadsCommand extends AbstractProjectCommand
             }
         })->chunk($size)->mapWithKeys(function (Enumerable $chunkedFiles) use ($environment) {
             return $this->getSignedUploadRequest($environment, $chunkedFiles);
-        })->each(function (array $request, string $filePath) use ($filesystem, $progressBar, &$total) {
-            $tempFilePath = $this->tempDirectory.'/'.basename($filePath);
-
-            $progressBar->setMessage($filePath, 'filename');
-            $progressBar->advance();
-
-            file_put_contents($tempFilePath, $filesystem->readStream($filePath));
-
-            $this->uploader->uploadFile($tempFilePath, $request['uri'], $request['headers']);
-
-            unlink($tempFilePath);
+        })->map(function (array $request, string $filePath) use ($filesystem, $progressBar, &$total) {
+            $request['body'] = $filesystem->readStream($filePath);
 
             ++$total;
 
+            $progressBar->setMessage($filePath, 'filename');
             $progressBar->setMessage((string) $total, 'total');
             $progressBar->advance();
+
+            return $request;
         });
 
+        $this->uploader->batch('PUT', $requests);
+
         $output->info(sprintf('Files imported successfully to the "<comment>%s</comment>" environment "uploads" directory', $environment));
-    }
-
-    /**
-     * Create a temporary directory to copy over files temporarily.
-     */
-    private function createTempDirectory(): string
-    {
-        $baseDirectory = sys_get_temp_dir().'/';
-        $maxAttempts = 100;
-
-        if (!is_dir($baseDirectory)) {
-            throw new RuntimeException(sprintf('"%s" isn\'t a directory', $baseDirectory));
-        } elseif (!is_writable($baseDirectory)) {
-            throw new RuntimeException(sprintf('"%s" isn\'t writable', $baseDirectory));
-        }
-
-        $attempts = 0;
-
-        do {
-            ++$attempts;
-            $tmpDirectory = sprintf('%s%s%s', $baseDirectory, 'ymir_', mt_rand(100000, mt_getrandmax()));
-        } while (!mkdir($tmpDirectory) && $attempts < $maxAttempts);
-
-        if (!is_dir($tmpDirectory)) {
-            throw new RuntimeException('Failed to create a temporary directory');
-        }
-
-        return $tmpDirectory;
     }
 
     /**
