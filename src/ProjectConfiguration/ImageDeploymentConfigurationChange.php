@@ -20,6 +20,10 @@ class ImageDeploymentConfigurationChange implements ConfigurationChangeInterface
      */
     public function apply(array $options, string $projectType): array
     {
+        if (isset($options['php'])) {
+            unset($options['php']);
+        }
+
         return array_merge($options, ['deployment' => 'image']);
     }
 }
