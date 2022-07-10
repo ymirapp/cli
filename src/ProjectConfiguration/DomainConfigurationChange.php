@@ -38,7 +38,7 @@ class DomainConfigurationChange implements ConfigurationChangeInterface
         if (empty($options['domain'])) {
             $options['domain'] = $this->domain;
         } elseif (is_array($options['domain']) || (is_string($options['domain']) && strtolower($options['domain']) !== strtolower($this->domain))) {
-            $options['domain'] = collect($this->domain)->merge($options['domain'])->unique()->values()->all();
+            $options['domain'] = collect((array) $this->domain)->merge($options['domain'])->unique()->values()->all();
         }
 
         return $options;

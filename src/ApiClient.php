@@ -760,7 +760,7 @@ class ApiClient
     {
         $requests = $this->request('post', "/projects/{$projectId}/environments/{$environment}/signed-uploads", ['uploads' => $uploads]);
 
-        if (!empty($uploads) && empty($requests)) {
+        if (!empty($uploads) && $requests->isEmpty()) {
             throw new RuntimeException('Unable to get authorized uploads requests from the Ymir API');
         }
 
@@ -851,7 +851,7 @@ class ApiClient
     public function isAuthenticated(): bool
     {
         try {
-            return $this->cliConfiguration->hasAccessToken() && !empty($this->getUser());
+            return $this->cliConfiguration->hasAccessToken() && !$this->getUser()->isEmpty();
         } catch (ApiClientException $exception) {
             if (401 === $exception->getCode()) {
                 return false;

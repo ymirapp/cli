@@ -94,7 +94,7 @@ class ProcessAssetsStep implements DeploymentStepInterface
      */
     private function copyAssetFiles(Collection $requests, OutputInterface $output)
     {
-        if (empty($requests)) {
+        if ($requests->isEmpty()) {
             return;
         }
 
@@ -132,7 +132,7 @@ class ProcessAssetsStep implements DeploymentStepInterface
      */
     private function uploadAssetFiles(Collection $requests, OutputInterface $output)
     {
-        if (empty($requests)) {
+        if ($requests->isEmpty()) {
             return;
         }
 

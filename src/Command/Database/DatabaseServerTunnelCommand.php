@@ -17,12 +17,8 @@ use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
-use Symfony\Component\Filesystem\Filesystem;
-use Ymir\Cli\ApiClient;
-use Ymir\Cli\CliConfiguration;
 use Ymir\Cli\Command\Network\AddBastionHostCommand;
 use Ymir\Cli\Console\OutputInterface;
-use Ymir\Cli\ProjectConfiguration\ProjectConfiguration;
 use Ymir\Cli\Support\Arr;
 use Ymir\Cli\Tool\Ssh;
 
@@ -34,31 +30,6 @@ class DatabaseServerTunnelCommand extends AbstractDatabaseServerCommand
      * @var string
      */
     public const NAME = 'database:server:tunnel';
-
-    /**
-     * The file system.
-     *
-     * @var Filesystem
-     */
-    private $filesystem;
-
-    /**
-     * The path to the user's home directory.
-     *
-     * @var string
-     */
-    private $homeDirectory;
-
-    /**
-     * Constructor.
-     */
-    public function __construct(ApiClient $apiClient, CliConfiguration $cliConfiguration, Filesystem $filesystem, string $homeDirectory, ProjectConfiguration $projectConfiguration)
-    {
-        parent::__construct($apiClient, $cliConfiguration, $projectConfiguration);
-
-        $this->filesystem = $filesystem;
-        $this->homeDirectory = rtrim($homeDirectory, '/');
-    }
 
     /**
      * {@inheritdoc}

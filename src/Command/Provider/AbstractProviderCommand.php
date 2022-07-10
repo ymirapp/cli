@@ -66,7 +66,7 @@ abstract class AbstractProviderCommand extends AbstractCommand
 
         $parsedCredentials = collect(parse_ini_file($credentialsFilePath, true));
 
-        if (empty($parsedCredentials)) {
+        if ($parsedCredentials->isEmpty()) {
             return [];
         }
 
