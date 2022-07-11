@@ -939,6 +939,12 @@ class ApiClient
      */
     private function createRequest(string $method, string $uri, array $body = []): Request
     {
+        $body = in_array($method, ['delete', 'post', 'put']) ? json_encode($body) : null;
+
+        if (false === $body) {
+            throw new RuntimeException(sprintf('Unable to JSON encode request body: %s', json_last_error_msg()));
+        }
+
         $headers = [
             'Accept' => 'application/json',
             'Content-Type' => 'application/json',
@@ -949,7 +955,7 @@ class ApiClient
             $headers['Authorization'] = 'Bearer '.$this->cliConfiguration->getAccessToken();
         }
 
-        return new Request($method, $this->baseUrl.ltrim($uri, '/'), $headers, in_array($method, ['delete', 'post', 'put']) ? (string) json_encode($body) : null);
+        return new Request($method, $this->baseUrl.ltrim($uri, '/'), $headers, $body);
     }
 
     /**
