@@ -181,7 +181,7 @@ class InitializeProjectCommand extends AbstractCommand
                 return;
             }
 
-            $this->invoke((new NullOutput()), CreateDatabaseCommand::NAME, ['name' => Arr::get($options, 'database.name'), '--server' => Arr::get($options, 'database.server')]);
+            $this->invoke(new NullOutput(), CreateDatabaseCommand::NAME, ['name' => Arr::get($options, 'database.name'), '--server' => Arr::get($options, 'database.server')]);
         })->map(function (array $options) {
             if (empty($options)) {
                 $options = null;
