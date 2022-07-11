@@ -183,7 +183,7 @@ class ImportUploadsCommand extends AbstractProjectCommand
     private function getSignedUploadRequest(string $environment, Enumerable $files): array
     {
         return $this->apiClient->getSignedUploadRequests($this->projectConfiguration->getProjectId(), $environment, $files->map(function (string $filePath) {
-            return ['path' => $filePath];
+            return ['path' => utf8_encode($filePath)];
         })->all())->all();
     }
 }
