@@ -70,7 +70,7 @@ class ImportUploadsCommand extends AbstractProjectCommand
         $this
             ->setName(self::NAME)
             ->setDescription('Import files to the environment "uploads" directory')
-            ->addArgument('path', InputArgument::REQUIRED, 'The path to the files to import')
+            ->addArgument('path', InputArgument::OPTIONAL, 'The path to the files to import')
             ->addOption('environment', null, InputOption::VALUE_REQUIRED, 'The environment to upload files to', 'staging')
             ->addOption('force', null, InputOption::VALUE_NONE, 'Force the import to run')
             ->addOption('size', null, InputOption::VALUE_REQUIRED, 'The number of files to process at a time');
@@ -81,7 +81,16 @@ class ImportUploadsCommand extends AbstractProjectCommand
      */
     protected function perform(InputInterface $input, OutputInterface $output)
     {
-        $adapter = $this->getAdapter($this->getStringArgument($input, 'path'));
+        $path = $this->getStringArgument($input, 'path');
+        $projectType = $this->projectConfiguration->getProjectType();
+
+        if (empty($path) && 'bedrock' === $projectType) {
+            $path = 'web/app/uploads';
+        } elseif (empty($path) && 'wordpress' === $projectType) {
+            $path = 'wp-content/uploads';
+        }
+
+        $adapter = $this->getAdapter($path);
         $environment = (string) $this->getStringOption($input, 'environment');
         $filesystem = new Filesystem($adapter);
         $size = $this->getNumericOption($input, 'size');
