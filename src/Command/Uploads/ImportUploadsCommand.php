@@ -73,7 +73,7 @@ class ImportUploadsCommand extends AbstractProjectCommand
             ->addArgument('path', InputArgument::OPTIONAL, 'The path to the files to import')
             ->addOption('environment', null, InputOption::VALUE_REQUIRED, 'The environment to upload files to', 'staging')
             ->addOption('force', null, InputOption::VALUE_NONE, 'Force the import to run')
-            ->addOption('size', null, InputOption::VALUE_REQUIRED, 'The number of files to process at a time');
+            ->addOption('size', null, InputOption::VALUE_REQUIRED, 'The number of files to process at a time', 1000);
     }
 
     /**
@@ -95,12 +95,6 @@ class ImportUploadsCommand extends AbstractProjectCommand
         $filesystem = new Filesystem($adapter);
         $size = $this->getNumericOption($input, 'size');
 
-        if (null === $size && $adapter instanceof LocalFilesystemAdapter) {
-            $size = 1000;
-        } elseif (null === $size) {
-            $size = 100;
-        }
-
         if ($size < 1) {
             throw new InvalidArgumentException('Cannot have a "size" smaller than 1');
         }
@@ -116,6 +110,10 @@ class ImportUploadsCommand extends AbstractProjectCommand
 
         $total = 0;
         $progressBar->setMessage((string) $total, 'total');
+
+        if (!$adapter instanceof LocalFilesystemAdapter) {
+            $output->infoWithWarning('Scanning remote "uploads" directory', 'takes a few seconds');
+        }
 
         $requests = LazyCollection::make(function () use ($filesystem) {
             $files = $filesystem->listContents('', Filesystem::LIST_DEEP)->filter(function (StorageAttributes $attributes) {
