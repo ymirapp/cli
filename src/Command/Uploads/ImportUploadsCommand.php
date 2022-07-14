@@ -126,7 +126,7 @@ class ImportUploadsCommand extends AbstractProjectCommand
         })->chunk($size)->mapWithKeys(function (Enumerable $chunkedFiles) use ($environment) {
             return $this->getSignedUploadRequest($environment, $chunkedFiles);
         })->map(function (array $request, string $filePath) use ($filesystem, $progressBar, &$total) {
-            $request['body'] = $filesystem->readStream($filePath);
+            $request['body'] = $filesystem->readStream(utf8_decode($filePath));
 
             ++$total;
 
