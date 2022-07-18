@@ -13,12 +13,13 @@ declare(strict_types=1);
 
 namespace Ymir\Cli\Command\Project;
 
+use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
-use Ymir\Cli\Command\AbstractProjectCommand;
+use Ymir\Cli\Command\AbstractCommand;
 use Ymir\Cli\Command\Environment\GetEnvironmentInfoCommand;
 use Ymir\Cli\Console\OutputInterface;
 
-class GetProjectInfoCommand extends AbstractProjectCommand
+class GetProjectInfoCommand extends AbstractCommand
 {
     /**
      * The alias of the command.
@@ -42,6 +43,7 @@ class GetProjectInfoCommand extends AbstractProjectCommand
         $this
             ->setName(self::NAME)
             ->setDescription('Get information on the project')
+            ->addArgument('project', InputArgument::OPTIONAL, 'The ID or name of the project to fetch the information of')
             ->setAliases([self::ALIAS]);
     }
 
@@ -50,7 +52,13 @@ class GetProjectInfoCommand extends AbstractProjectCommand
      */
     protected function perform(InputInterface $input, OutputInterface $output)
     {
-        $project = $this->apiClient->getProject($this->projectConfiguration->getProjectId());
+        $projectId = $this->projectConfiguration->exists() ? $this->projectConfiguration->getProjectId() : null;
+
+        if (null === $projectId) {
+            $projectId = $this->determineProject('Which project would you like to fetch the information on', $input, $output);
+        }
+
+        $project = $this->apiClient->getProject($projectId);
 
         $output->horizontalTable(
             ['Name', 'Provider', 'Region'],
