@@ -65,6 +65,23 @@ function ymir_ensure_plugin_loaded_first_on_network($active_plugins)
 add_filter('pre_update_site_option_active_sitewide_plugins', 'ymir_ensure_plugin_loaded_first_on_network', PHP_INT_MAX);
 
 /**
+ * Removes the Ymir plugin from the list of active plugins to fool network installation.
+ */
+function ymir_remove_plugin_from_active_plugins_when_installing_network($value)
+{
+    // Return early if we're not installing the network or didn't deactivate all the other plugins.
+    if (!defined('WP_INSTALLING_NETWORK') || !WP_INSTALLING_NETWORK || !is_array($value) || 1 !== count($value)) {
+        return $value;
+    }
+
+    $backtrace = debug_backtrace();
+    $backtrace = end($backtrace);
+
+    return (!isset($backtrace['function']) || 'network_step1' !== $backtrace['function']) ? $value : [];
+}
+add_filter('option_active_plugins', 'ymir_remove_plugin_from_active_plugins_when_installing_network');
+
+/**
  * Load Ymir plugin right away if it's in "mu-plugins".
  */
 function ymir_maybe_load_mu_plugin()
