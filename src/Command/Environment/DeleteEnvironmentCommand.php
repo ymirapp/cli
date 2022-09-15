@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Ymir\Cli\Command\Environment;
 
+use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Ymir\Cli\Command\AbstractProjectCommand;
@@ -43,21 +44,40 @@ class DeleteEnvironmentCommand extends AbstractProjectCommand
      */
     protected function perform(InputInterface $input, OutputInterface $output)
     {
-        $name = $this->getStringArgument($input, 'name');
+        $environment = $this->determineEnvironment($input, $output);
 
-        if (!empty($name) && !$output->confirm('Are you sure you want to delete this environment?', false)) {
+        if (!$output->confirm(sprintf('Are you sure you want to delete the "<comment>%s</comment>" environment?', $environment), false)) {
             return;
-        } elseif (empty($name)) {
-            $name = $output->choice('Please choose an environment to delete', $this->apiClient->getEnvironments($this->projectConfiguration->getProjectId())->pluck(['name']));
         }
 
         $deleteResources = $output->confirm('Do you want to delete all the environment resources on the cloud provider?', false);
 
-        $this->apiClient->deleteEnvironment($this->projectConfiguration->getProjectId(), $name, $deleteResources);
+        $this->apiClient->deleteEnvironment($this->projectConfiguration->getProjectId(), $environment, $deleteResources);
 
-        $this->projectConfiguration->deleteEnvironment($name);
+        $this->projectConfiguration->deleteEnvironment($environment);
 
         $message = 'Environment deleted';
         $deleteResources ? $output->infoWithDelayWarning($message) : $output->info($message);
+    }
+
+    /**
+     * Determine the environment we want to delete.
+     */
+    private function determineEnvironment(InputInterface $input, OutputInterface $output): string
+    {
+        $environment = $this->getStringArgument($input, 'environment');
+        $environments = $this->apiClient->getEnvironments($this->projectConfiguration->getProjectId())->pluck('name');
+
+        if ($environments->isEmpty()) {
+            throw new RuntimeException(sprintf('The current project doesn\'t have any environments. You can create one with the "%s" command.', CreateEnvironmentCommand::class));
+        } elseif (empty($environment)) {
+            $environment = $output->choice('Please choose an environment to delete', $environments);
+        }
+
+        if (!$environments->contains($environment)) {
+            throw new RuntimeException(sprintf('The "%s" environment doesn\'t exist.', $environment));
+        }
+
+        return $environment;
     }
 }
