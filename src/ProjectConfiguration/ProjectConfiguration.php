@@ -31,7 +31,7 @@ class ProjectConfiguration implements Arrayable
     private $configuration;
 
     /**
-     * The path to the configuration file.
+     * The path to the Ymir project configuration file.
      *
      * @var string
      */
@@ -47,11 +47,11 @@ class ProjectConfiguration implements Arrayable
     /**
      * Constructor.
      */
-    public function __construct(string $configurationFilePath, Filesystem $filesystem)
+    public function __construct(Filesystem $filesystem, string $configurationFilePath = '')
     {
-        $this->configurationFilePath = $configurationFilePath;
         $this->filesystem = $filesystem;
-        $this->configuration = $this->load($configurationFilePath);
+
+        $this->loadConfiguration($configurationFilePath);
     }
 
     /**
@@ -115,8 +115,12 @@ class ProjectConfiguration implements Arrayable
      */
     public function delete()
     {
+        if ($this->exists()) {
+            $this->filesystem->remove($this->configurationFilePath);
+        }
+
         $this->configuration = [];
-        $this->filesystem->remove($this->configurationFilePath);
+        $this->configurationFilePath = '';
     }
 
     /**
@@ -130,11 +134,11 @@ class ProjectConfiguration implements Arrayable
     }
 
     /**
-     * Checks if the project configuration file exists.
+     * Checks if the Ymir project configuration file exists.
      */
     public function exists(): bool
     {
-        return $this->filesystem->exists($this->configurationFilePath);
+        return !empty($this->configurationFilePath) && $this->filesystem->exists($this->configurationFilePath);
     }
 
     /**
@@ -143,7 +147,7 @@ class ProjectConfiguration implements Arrayable
     public function getEnvironment(string $environment): array
     {
         if (!$this->hasEnvironment($environment)) {
-            throw new InvalidArgumentException(sprintf('Environment "%s" not found in ymir.yml file', $environment));
+            throw new InvalidArgumentException(sprintf('Environment "%s" not found in Ymir project configuration file', $environment));
         }
 
         return (array) $this->configuration['environments'][$environment];
@@ -163,7 +167,7 @@ class ProjectConfiguration implements Arrayable
     public function getProjectId(): int
     {
         if (empty($this->configuration['id'])) {
-            throw new RuntimeException('No "id" found in ymir.yml file');
+            throw new RuntimeException('No "id" found in Ymir project configuration file');
         }
 
         return (int) $this->configuration['id'];
@@ -175,7 +179,7 @@ class ProjectConfiguration implements Arrayable
     public function getProjectName(): string
     {
         if (empty($this->configuration['name'])) {
-            throw new RuntimeException('No "name" found in ymir.yml file');
+            throw new RuntimeException('No "name" found in Ymir project configuration file');
         }
 
         return (string) $this->configuration['name'];
@@ -187,7 +191,7 @@ class ProjectConfiguration implements Arrayable
     public function getProjectType(): string
     {
         if (empty($this->configuration['type'])) {
-            throw new RuntimeException('No "type" found in ymir.yml file');
+            throw new RuntimeException('No "type" found in Ymir project configuration file');
         }
 
         return (string) $this->configuration['type'];
@@ -199,6 +203,25 @@ class ProjectConfiguration implements Arrayable
     public function hasEnvironment(string $environment): bool
     {
         return array_key_exists($environment, $this->configuration['environments']);
+    }
+
+    /**
+     * Load the given Ymir project configuration file.
+     */
+    public function loadConfiguration(string $configurationFilePath)
+    {
+        $configuration = [];
+
+        if ($this->filesystem->exists($configurationFilePath)) {
+            $configuration = Yaml::parse((string) file_get_contents($configurationFilePath));
+        }
+
+        if (!empty($configuration) && !is_array($configuration)) {
+            throw new RuntimeException('Error parsing Ymir project configuration file');
+        }
+
+        $this->configuration = $configuration;
+        $this->configurationFilePath = $configurationFilePath;
     }
 
     /**
@@ -215,34 +238,16 @@ class ProjectConfiguration implements Arrayable
     public function validate()
     {
         if (!$this->exists()) {
-            throw new RuntimeException(sprintf('No Ymir project found in the current directory. You can initialize one with the "%s" command.', InitializeProjectCommand::ALIAS));
+            throw new RuntimeException(sprintf('No Ymir project configuration file found. You can create one by initializing a project with the "%s" command.', InitializeProjectCommand::ALIAS));
         } elseif (empty($this->configuration['id'])) {
-            throw new RuntimeException('The ymir.yml file must have an "id"');
+            throw new RuntimeException('The Ymir project configuration file must have an "id"');
         } elseif (empty($this->configuration['environments'])) {
-            throw new RuntimeException('The ymir.yml file must have at least one environment');
+            throw new RuntimeException('The Ymir project configuration file must have at least one environment');
         } elseif (empty($this->configuration['type'])) {
-            throw new RuntimeException('The ymir.yml file must have a "type"');
+            throw new RuntimeException('The Ymir project configuration file must have a "type"');
         } elseif (!in_array($this->configuration['type'], ['bedrock', 'wordpress'])) {
             throw new RuntimeException('The allowed project "type" are "bedrock" or "wordpress"');
         }
-    }
-
-    /**
-     * Load the options from the configuration file.
-     */
-    private function load(string $configurationFilePath): array
-    {
-        $configuration = [];
-
-        if ($this->filesystem->exists($configurationFilePath)) {
-            $configuration = Yaml::parse((string) file_get_contents($configurationFilePath));
-        }
-
-        if (!empty($configuration) && !is_array($configuration)) {
-            throw new RuntimeException('Error parsing ymir.yml file');
-        }
-
-        return $configuration;
     }
 
     /**
@@ -250,6 +255,10 @@ class ProjectConfiguration implements Arrayable
      */
     private function save()
     {
+        if (empty($this->configurationFilePath)) {
+            throw new RuntimeException('No Ymir project configuration file path set');
+        }
+
         $this->filesystem->dumpFile($this->configurationFilePath, str_replace('!!float 8', '8.0', Yaml::dump($this->configuration, 20, 2, Yaml::DUMP_NULL_AS_TILDE)));
     }
 }

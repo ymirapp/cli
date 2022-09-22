@@ -4,7 +4,6 @@ parameters:
   build_artifact_path: '%hidden_directory%/build.zip'
   cli_configuration_filepath: '%home_directory%/.ymir/config.json'
   hidden_directory: '%working_directory%/.ymir'
-  project_configuration_filepath: '%working_directory%/ymir.yml'
   stub_directory: '%application_directory%/stubs'
   uploads_directory: '%hidden_directory%/uploads'
   version: '1.32.4'
@@ -57,14 +56,6 @@ services:
     arguments:
       $configurationFilePath: '%cli_configuration_filepath%'
 
-  Ymir\Cli\EventDispatcher\AutowiredEventDispatcher:
-    arguments:
-      - !tagged subscriber
-
-  Ymir\Cli\ProjectConfiguration\ProjectConfiguration:
-    arguments:
-      $configurationFilePath: '%project_configuration_filepath%'
-
   Ymir\Cli\Command\Project\BuildProjectCommand:
     arguments:
       $buildSteps:
@@ -99,3 +90,7 @@ services:
     arguments:
       $deploymentSteps:
         - '@Ymir\Cli\Deployment\StartAndMonitorDeploymentStep'
+
+  Ymir\Cli\EventDispatcher\AutowiredEventDispatcher:
+    arguments:
+      - !tagged subscriber

@@ -14,6 +14,8 @@ declare(strict_types=1);
 namespace Ymir\Cli;
 
 use Symfony\Component\Console\Application as BaseApplication;
+use Symfony\Component\Console\Input\InputDefinition;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Ymir\Cli\Exception\CommandCancelledException;
 
@@ -41,5 +43,17 @@ class Application extends BaseApplication
         }
 
         parent::renderThrowable($exception, $output);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function getDefaultInputDefinition(): InputDefinition
+    {
+        $definition = parent::getDefaultInputDefinition();
+
+        $definition->addOption(new InputOption('ymir-file', null, InputOption::VALUE_OPTIONAL, 'Path to Ymir project configuration file', 'ymir.yml'));
+
+        return $definition;
     }
 }
