@@ -223,7 +223,7 @@ class InitializeProjectCommand extends AbstractCommand
             $database = $output->choiceWithResourceDetails('Which database server would you like to use?', $databases);
         } elseif (
             (!$databases->isEmpty() && $output->confirm('Would you like to create a new one for this project instead?'))
-            || ($databases->isEmpty() && $output->confirm('Your team doesn\'t have any configured database servers. Would you like to create one for this team first?'))
+            || ($databases->isEmpty() && $output->confirm(sprintf('Your team doesn\'t have any configured database servers in the "<comment>%s</comment>" region. Would you like to create one for this team first?', $region)))
         ) {
             $this->retryApi(function () use ($output) {
                 $this->invoke($output, CreateDatabaseServerCommand::NAME);
