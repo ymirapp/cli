@@ -41,9 +41,9 @@ class ListEmailIdentitiesCommand extends AbstractEmailIdentityCommand
     protected function perform(InputInterface $input, OutputInterface $output)
     {
         $output->table(
-            ['Id', 'Name', 'Type', 'Provider', 'Region', 'Status', 'Managed'],
+            ['Id', 'Name', 'Type', 'Provider', 'Region', 'Verified', 'Managed'],
             $this->apiClient->getEmailIdentities($this->cliConfiguration->getActiveTeamId())->map(function (array $identity) use ($output) {
-                return [$identity['id'], $identity['name'], $identity['type'], $identity['provider']['name'], $identity['region'], $identity['status'], $output->formatBoolean($identity['managed'])];
+                return [$identity['id'], $identity['name'], $identity['type'], $identity['provider']['name'], $identity['region'], $output->formatBoolean($identity['verified']), $output->formatBoolean($identity['managed'])];
             })->all()
         );
     }

@@ -49,4 +49,26 @@ abstract class AbstractEmailIdentityCommand extends AbstractCommand
 
         return $identity;
     }
+
+    /**
+     * Display warning about DNS records required to authenticate the DKIM signature and verify it.
+     */
+    protected function displayDkimAuthenticationRecords(array $identity, OutputInterface $output)
+    {
+        if (empty($identity['dkim_authentication_records']) || $identity['managed']) {
+            return;
+        }
+
+        $output->newLine();
+        $output->important('The following DNS records needs to exist on your DNS server at all times to verify the email identity and authenticate its DKIM signature:');
+        $output->newLine();
+        $output->table(
+            ['Name', 'Type', 'Value'],
+            collect($identity['dkim_authentication_records'])->map(function (array $dkimRecord) {
+                $dkimRecord['type'] = strtoupper($dkimRecord['type']);
+
+                return $dkimRecord;
+            })->all()
+        );
+    }
 }
