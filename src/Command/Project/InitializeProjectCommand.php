@@ -217,7 +217,7 @@ class InitializeProjectCommand extends AbstractCommand
     private function determineDatabaseServer(OutputInterface $output, string $region): ?array
     {
         $database = null;
-        $databases = $this->apiClient->getDatabaseServers($this->cliConfiguration->getActiveTeamId())->where('region', $region)->whereNotIn('status', ['deleting', 'failed']);
+        $databases = $this->apiClient->getDatabaseServers($this->cliConfiguration->getActiveTeamId())->where('region', $region)->whereNotIn('status', ['deleting', 'failed'])->values();
 
         if (!$databases->isEmpty() && $output->confirm('Would you like to use an existing database server for this project?')) {
             $database = $output->choiceWithResourceDetails('Which database server would you like to use?', $databases);
