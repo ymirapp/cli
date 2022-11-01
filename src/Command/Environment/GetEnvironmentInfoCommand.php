@@ -67,10 +67,19 @@ class GetEnvironmentInfoCommand extends AbstractProjectCommand
     {
         $database = $this->getEnvironmentDatabase($environment);
         $environment = $this->apiClient->getEnvironment($this->projectConfiguration->getProjectId(), $environment);
-        $headers = ['Name', 'Domain', strtoupper($environment['gateway']['type']).' Gateway', 'CDN', 'Public assets'];
+
+        $headers = ['Name', 'Domain'];
         $row = $environment->only(['name', 'vanity_domain_name'])->values()->all();
 
-        $row[] = $environment['gateway']['domain_name'] ?? '<fg=red>Unavailable</>';
+        if (!empty($environment['gateway'])) {
+            $headers[] = strtoupper($environment['gateway']['type']).' Gateway';
+            $row[] = $environment['gateway']['domain_name'] ?? '<fg=red>Unavailable</>';
+        } else {
+            $headers[] = 'Gateway';
+            $row[] = '<fg=red>Disabled</>';
+        }
+
+        $headers = array_merge($headers, ['CDN', 'Public assets']);
 
         if (empty($environment['content_delivery_network'])) {
             $row[] = '<fg=red>Unavailable</>';
