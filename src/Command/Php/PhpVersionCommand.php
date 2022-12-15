@@ -43,7 +43,7 @@ class PhpVersionCommand extends AbstractInvocationCommand
      */
     protected function perform(InputInterface $input, OutputInterface $output)
     {
-        $environment = (string) $this->getStringOption($input, 'environment');
+        $environment = $this->getStringArgument($input, 'environment');
 
         $output->info(sprintf('Getting PHP version information from the "<comment>%s</comment>" environment', $environment));
 
