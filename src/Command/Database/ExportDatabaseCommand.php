@@ -113,7 +113,9 @@ class ExportDatabaseCommand extends AbstractDatabaseCommand
 
         if (!empty($name)) {
             return $name;
-        } elseif (empty($name) && !$databaseServer['publicly_accessible']) {
+        }
+
+        if (!$databaseServer['publicly_accessible']) {
             throw new RuntimeException('You must specify the name of the database to export for a private database server');
         }
 

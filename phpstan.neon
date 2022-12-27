@@ -1,4 +1,11 @@
+includes:
+    - vendor/phpstan/phpstan-phpunit/extension.neon
 parameters:
+    paths:
+        - src/
+        - tests/
+    excludePaths:
+        - stubs/activate-ymir-plugin.php
     level: 5
     checkGenericClassInNonGenericObjectType: false
     checkMissingIterableValueType: false

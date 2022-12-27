@@ -20,6 +20,8 @@ trait PsrResponseInterfaceMockTrait
 {
     /**
      * Get a mock of a ResponseInterface object.
+     *
+     * @return \PHPUnit\Framework\MockObject\MockObject&\Psr\Http\Message\ResponseInterface
      */
     private function getResponseInterfaceMock(): MockObject
     {

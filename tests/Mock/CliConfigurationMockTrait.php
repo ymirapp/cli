@@ -20,6 +20,8 @@ trait CliConfigurationMockTrait
 {
     /**
      * Get a mock of a CliConfiguration object.
+     *
+     * @return \PHPUnit\Framework\MockObject\MockObject&\Ymir\Cli\CliConfiguration
      */
     private function getCliConfigurationMock(): MockObject
     {

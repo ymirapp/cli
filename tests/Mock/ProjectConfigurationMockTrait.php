@@ -20,6 +20,8 @@ trait ProjectConfigurationMockTrait
 {
     /**
      * Get a mock of a ProjectConfiguration object.
+     *
+     * @return \PHPUnit\Framework\MockObject\MockObject&\Ymir\Cli\ProjectConfiguration\ProjectConfiguration
      */
     private function getProjectConfigurationMock(): MockObject
     {

@@ -20,6 +20,8 @@ trait ApiClientMockTrait
 {
     /**
      * Get a mock of a ApiClient object.
+     *
+     * @return \PHPUnit\Framework\MockObject\MockObject&\Ymir\Cli\ApiClient
      */
     private function getApiClientMock(): MockObject
     {
