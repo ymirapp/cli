@@ -63,7 +63,7 @@ class DeleteProjectCommand extends AbstractCommand
             return;
         }
 
-        $deleteResources = (bool) $output->confirm('Do you want to delete all the project resources on the cloud provider?', false);
+        $deleteResources = $output->confirm('Do you want to delete all the project resources on the cloud provider?', false);
 
         $this->apiClient->deleteProject($projectId, $deleteResources);
 
