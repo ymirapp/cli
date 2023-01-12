@@ -51,12 +51,7 @@ class DeleteProjectCommand extends AbstractCommand
      */
     protected function perform(InputInterface $input, OutputInterface $output)
     {
-        $projectId = $this->projectConfiguration->exists() ? $this->projectConfiguration->getProjectId() : null;
-
-        if (null === $projectId) {
-            $projectId = $this->determineProject('Which project would you like to delete', $input, $output);
-        }
-
+        $projectId = $this->determineProject('Which project would you like to delete', $input, $output);
         $project = $this->apiClient->getProject($projectId);
 
         if (!$output->confirm(sprintf('Are you sure you want to delete the <comment>%s</comment> project?', $project['name']), false)) {

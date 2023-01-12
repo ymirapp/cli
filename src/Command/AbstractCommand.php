@@ -170,9 +170,13 @@ abstract class AbstractCommand extends Command
 
         $projectIdOrName = $this->getStringArgument($input, 'project');
 
-        if (empty($projectIdOrName)) {
+        if (empty($projectIdOrName) && $this->projectConfiguration->exists()) {
+            $projectIdOrName = $this->projectConfiguration->getProjectId();
+        } elseif (empty($projectIdOrName)) {
             $projectIdOrName = $output->choiceWithId($question, $projects);
-        } elseif (1 < $projects->where('name', $projectIdOrName)->count()) {
+        }
+
+        if (1 < $projects->where('name', $projectIdOrName)->count()) {
             throw new RuntimeException(sprintf('Unable to select a project because more than one project has the name "%s"', $projectIdOrName));
         }
 
