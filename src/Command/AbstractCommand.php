@@ -138,7 +138,7 @@ abstract class AbstractCommand extends Command
     /**
      * Determine the network to use or create one otherwise.
      */
-    protected function determineOrCreateNetwork(string $question, InputInterface $input, OutputInterface $output)
+    protected function determineOrCreateNetwork(string $question, InputInterface $input, OutputInterface $output): int
     {
         $networks = $this->apiClient->getTeamNetworks($this->cliConfiguration->getActiveTeamId())->whereNotIn('status', ['deleting', 'failed']);
 
