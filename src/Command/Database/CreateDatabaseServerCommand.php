@@ -41,7 +41,6 @@ class CreateDatabaseServerCommand extends AbstractCommand
             ->setName(self::NAME)
             ->setDescription('Create a new database server')
             ->addArgument('name', InputArgument::OPTIONAL, 'The name of the database server')
-            ->addOption('dev', null, InputOption::VALUE_NONE, 'Create a development database server (overrides all other options)')
             ->addOption('network', null, InputOption::VALUE_REQUIRED, 'The ID or name of the network on which the database will be created')
             ->addOption('public', null, InputOption::VALUE_NONE, 'Whether the created database server should be publicly accessible')
             ->addOption('storage', null, InputOption::VALUE_REQUIRED, 'The maximum amount of storage (in GB) allocated to the database server')
@@ -86,8 +85,7 @@ class CreateDatabaseServerCommand extends AbstractCommand
      */
     private function determinePublic(InputInterface $input, OutputInterface $output): bool
     {
-        return $this->getBooleanOption($input, 'dev')
-            || $this->getBooleanOption($input, 'public')
+        return $this->getBooleanOption($input, 'public')
             || $output->confirm('Should the database server be publicly accessible?');
     }
 
@@ -96,10 +94,6 @@ class CreateDatabaseServerCommand extends AbstractCommand
      */
     private function determineStorage(InputInterface $input, OutputInterface $output): int
     {
-        if ($this->getBooleanOption($input, 'dev')) {
-            return 25;
-        }
-
         $storage = $this->getNumericOption($input, 'storage');
 
         while (!is_numeric($storage)) {
@@ -124,13 +118,8 @@ class CreateDatabaseServerCommand extends AbstractCommand
             throw new RuntimeException('The Ymir API failed to return information on the cloud provider');
         }
 
-        $types = $this->apiClient->getDatabaseServerTypes((int) $network['provider']['id']);
-
-        if ($this->getBooleanOption($input, 'dev')) {
-            return (string) $types->keys()->first();
-        }
-
         $type = $this->getStringOption($input, 'type');
+        $types = $this->apiClient->getDatabaseServerTypes((int) $network['provider']['id']);
 
         if (null !== $type && !$types->has($type)) {
             throw new InvalidArgumentException(sprintf('The type "%s" isn\'t a valid database type', $type));
