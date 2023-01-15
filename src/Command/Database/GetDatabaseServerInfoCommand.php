@@ -59,7 +59,7 @@ class GetDatabaseServerInfoCommand extends AbstractDatabaseServerCommand
                 $databaseServer['region'],
                 $databaseServer['type'],
                 $databaseServer['storage'] ? $databaseServer['storage'].'GB' : 'N/A',
-                $databaseServer['endpoint'],
+                $databaseServer['endpoint'] ?? 'pending',
             ]]
         );
     }
