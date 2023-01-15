@@ -26,7 +26,8 @@ grumphp:
       allow_risky: true
       config: '.php-cs-fixer.dist.php'
     phplint: ~
-    phpstan: ~
+    phpstan:
+      ignore_patterns: ['/^(?!src)/']
     phpunit:
       always_execute: true
   testsuites:
