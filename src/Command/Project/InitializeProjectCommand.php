@@ -168,9 +168,9 @@ class InitializeProjectCommand extends AbstractCommand
         }
 
         return $environments->map(function (array $options, string $environment) use ($databasePrefix, $databaseServer) {
-            if (!empty($databaseServer['name']) && empty($databasePrefix)) {
+            if (empty($databasePrefix)) {
                 Arr::set($options, 'database', $databaseServer['name']);
-            } elseif (!empty($databaseServer['name']) && !empty($databasePrefix)) {
+            } else {
                 Arr::set($options, 'database.server', $databaseServer['name']);
                 Arr::set($options, 'database.name', sprintf('%s_%s', rtrim($databasePrefix, '_'), $environment));
             }
