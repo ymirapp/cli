@@ -42,7 +42,8 @@ class CreateDatabaseServerCommand extends AbstractCommand
             ->setDescription('Create a new database server')
             ->addArgument('name', InputArgument::OPTIONAL, 'The name of the database server')
             ->addOption('network', null, InputOption::VALUE_REQUIRED, 'The ID or name of the network on which the database will be created')
-            ->addOption('public', null, InputOption::VALUE_NONE, 'Whether the created database server should be publicly accessible')
+            ->addOption('private', null, InputOption::VALUE_NONE, 'The created database server won\'t be publicly accessible')
+            ->addOption('public', null, InputOption::VALUE_NONE, 'The created database server will be publicly accessible')
             ->addOption('storage', null, InputOption::VALUE_REQUIRED, 'The maximum amount of storage (in GB) allocated to the database server')
             ->addOption('type', null, InputOption::VALUE_REQUIRED, 'The database server type to create on the cloud provider');
     }
@@ -85,8 +86,13 @@ class CreateDatabaseServerCommand extends AbstractCommand
      */
     private function determinePublic(InputInterface $input, OutputInterface $output): bool
     {
-        return $this->getBooleanOption($input, 'public')
-            || $output->confirm('Should the database server be publicly accessible?');
+        if ($this->getBooleanOption($input, 'public')) {
+            return true;
+        } elseif ($this->getBooleanOption($input, 'private')) {
+            return false;
+        }
+
+        return $output->confirm('Should the database server be publicly accessible?');
     }
 
     /**
