@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace Ymir\Cli\Command\Database;
 
-use Illuminate\Support\Collection;
 use Symfony\Component\Console\Exception\InvalidArgumentException;
 use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Helper\TableSeparator;
@@ -22,6 +21,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Ymir\Cli\Command\AbstractCommand;
 use Ymir\Cli\Console\OutputInterface;
+use Ymir\Cli\Exception\CommandCancelledException;
 
 class CreateDatabaseServerCommand extends AbstractCommand
 {
@@ -44,6 +44,7 @@ class CreateDatabaseServerCommand extends AbstractCommand
             ->addOption('network', null, InputOption::VALUE_REQUIRED, 'The ID or name of the network on which the database will be created')
             ->addOption('private', null, InputOption::VALUE_NONE, 'The created database server won\'t be publicly accessible')
             ->addOption('public', null, InputOption::VALUE_NONE, 'The created database server will be publicly accessible')
+            ->addOption('serverless', null, InputOption::VALUE_NONE, 'Create an Aurora serverless database cluster (overrides all other options)')
             ->addOption('storage', null, InputOption::VALUE_REQUIRED, 'The maximum amount of storage (in GB) allocated to the database server')
             ->addOption('type', null, InputOption::VALUE_REQUIRED, 'The database server type to create on the cloud provider');
     }
@@ -60,12 +61,19 @@ class CreateDatabaseServerCommand extends AbstractCommand
         }
 
         $network = $this->apiClient->getNetwork($this->determineOrCreateNetwork('On what network should the database server be created?', $input, $output));
-        $type = $this->determineType($network, $input, $output);
-        $storage = $this->determineStorage($input, $output);
-        $public = $this->determinePublic($input, $output);
 
-        if (!$public && !$network->get('has_nat_gateway') && !$output->confirm('A private database server will require Ymir to add a NAT gateway to your network (~$32/month). Would you like to proceed? (Answering "no" will make the database server publicly accessible.)')) {
+        if (!isset($network['provider']['id'])) {
+            throw new RuntimeException('The Ymir API failed to return information on the cloud provider');
+        }
+
+        $type = $this->determineType($input, $output, (int) $network['provider']['id']);
+        $storage = 'aurora-mysql' !== $type ? $this->determineStorage($input, $output) : null;
+        $public = 'aurora-mysql' !== $type && $this->determinePublic($input, $output);
+
+        if (!$public && !$network->get('has_nat_gateway') && !$output->confirm('A private database server requires that Ymir add a NAT gateway (~$32/month) to your network. Would you like to proceed? <fg=default>(Answering "<comment>no</comment>" will make the database server publicly accessible.)</>')) {
             $public = true;
+        } elseif ('aurora-mysql' !== $type && !$network->get('has_nat_gateway') && !$output->confirm('An Aurora serverless database cluster requires that Ymir add a NAT gateway (~$32/month) to your network. Would you like to proceed? <fg=default>(Answering "<comment>no</comment>" will cancel the command.)</>')) {
+            throw new CommandCancelledException();
         }
 
         $database = $this->apiClient->createDatabaseServer($name, (int) $network['id'], $type, $storage, $public);
@@ -75,7 +83,7 @@ class CreateDatabaseServerCommand extends AbstractCommand
 
         $output->horizontalTable(
             ['Database Sever', new TableSeparator(), 'Username', 'Password', new TableSeparator(), 'Type', 'Public', 'Storage (in GB)'],
-            [[$database['name'], new TableSeparator(), $database['username'], $database['password'], new TableSeparator(), $database['type'], $output->formatBoolean($database['publicly_accessible']), $database['storage']]]
+            [[$database['name'], new TableSeparator(), $database['username'], $database['password'], new TableSeparator(), $database['type'], $output->formatBoolean($database['publicly_accessible']), $database['storage'] ?? 'N/A']]
         );
 
         $output->infoWithDelayWarning('Database server created');
@@ -118,16 +126,14 @@ class CreateDatabaseServerCommand extends AbstractCommand
     /**
      * Determine the database server type to create.
      */
-    private function determineType(Collection $network, InputInterface $input, OutputInterface $output): string
+    private function determineType(InputInterface $input, OutputInterface $output, int $providerId): string
     {
-        if (!isset($network['provider']['id'])) {
-            throw new RuntimeException('The Ymir API failed to return information on the cloud provider');
-        }
+        $type = !$this->getBooleanOption($input, 'serverless') ? $this->getStringOption($input, 'type') : 'aurora-mysql';
+        $types = $this->apiClient->getDatabaseServerTypes($providerId);
 
-        $type = $this->getStringOption($input, 'type');
-        $types = $this->apiClient->getDatabaseServerTypes((int) $network['provider']['id']);
-
-        if (null !== $type && !$types->has($type)) {
+        if ($types->isEmpty()) {
+            throw new RuntimeException('The Ymir API failed to return database server types');
+        } elseif (null !== $type && !$types->has($type)) {
             throw new InvalidArgumentException(sprintf('The type "%s" isn\'t a valid database type', $type));
         } elseif (null === $type) {
             $type = (string) $output->choice('What should the database server type be?', $types);

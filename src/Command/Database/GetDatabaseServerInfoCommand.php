@@ -58,7 +58,7 @@ class GetDatabaseServerInfoCommand extends AbstractDatabaseServerCommand
                 $databaseServer['network']['name'],
                 $databaseServer['region'],
                 $databaseServer['type'],
-                $databaseServer['storage'].'GB',
+                $databaseServer['storage'] ? $databaseServer['storage'].'GB' : 'N/A',
                 $databaseServer['endpoint'],
             ]]
         );

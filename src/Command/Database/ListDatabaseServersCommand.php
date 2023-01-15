@@ -54,7 +54,7 @@ class ListDatabaseServersCommand extends AbstractCommand
                     $output->formatBoolean($database['locked']),
                     $output->formatBoolean($database['publicly_accessible']),
                     $database['type'],
-                    $database['storage'].'GB',
+                    $database['storage'] ? $database['storage'].'GB' : 'N/A',
                 ];
             })->all()
         );

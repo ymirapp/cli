@@ -161,14 +161,25 @@ class ApiClient
     /**
      * Create a new database on the given network.
      */
-    public function createDatabaseServer(string $name, int $networkId, string $type, int $storage = 100, bool $public = false): Collection
+    public function createDatabaseServer(string $name, int $networkId, string $type, ?int $storage = 50, bool $public = false): Collection
     {
-        return $this->request('post', "/networks/{$networkId}/database-servers", [
+        if ('aurora-mysql' === $type && null !== $storage) {
+            throw new \InvalidArgumentException('Cannot specify a "storage" value for "aurora-mysql" database server');
+        } elseif ('aurora-mysql' === $type && $public) {
+            throw new \InvalidArgumentException('An "aurora-mysql" database server cannot be public');
+        }
+
+        $databaseServer = [
             'name' => $name,
-            'publicly_accessible' => $public,
-            'storage' => $storage,
             'type' => $type,
-        ]);
+        ];
+
+        if ('aurora-mysql' !== $type) {
+            $databaseServer['publicly_accessible'] = $public;
+            $databaseServer['storage'] = $storage;
+        }
+
+        return $this->request('post', "/networks/{$networkId}/database-servers", $databaseServer);
     }
 
     /**
