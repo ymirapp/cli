@@ -257,7 +257,7 @@ abstract class AbstractCommand extends Command
     }
 
     /**
-     * Get the value of a option that should be boolean.
+     * Get the value of an option that should be boolean.
      */
     protected function getBooleanOption(InputInterface $input, string $option): bool
     {
