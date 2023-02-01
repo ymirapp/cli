@@ -68,6 +68,10 @@ class VersionCheckSubscriber implements EventSubscriberInterface
      */
     public function onConsoleCommand(ConsoleCommandEvent $event)
     {
+        if ($this->isRunningOnContinuousIntegrationEnvironment()) {
+            return;
+        }
+
         $time = time();
 
         if ($time - $this->cliConfiguration->getGitHubLastCheckedTimestamp() > 3600) {
@@ -78,5 +82,17 @@ class VersionCheckSubscriber implements EventSubscriberInterface
         if (version_compare($this->cliConfiguration->getGitHubCliVersion(), $this->version, '>')) {
             $event->getOutput()->writeln('<comment>A new version of the Ymir CLI is available</comment>');
         }
+    }
+
+    /**
+     * Check if the CLI is running on a continuous integration environment.
+     */
+    private function isRunningOnContinuousIntegrationEnvironment(): bool
+    {
+        return getenv('GITHUB_ACTIONS')
+            || getenv('TRAVIS')
+            || getenv('CIRCLECI')
+            || getenv('GITLAB_CI')
+            || getenv('CI');
     }
 }
