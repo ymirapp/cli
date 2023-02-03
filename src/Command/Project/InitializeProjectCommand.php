@@ -165,7 +165,7 @@ class InitializeProjectCommand extends AbstractCommand
         }
 
         $databasePrefix = trim($output->askSlug('What database prefix would you like to use for this project?', $projectName));
-        $environments->map(function (array $options, string $environment) use ($databasePrefix, $databaseServer) {
+        $environments = $environments->map(function (array $options, string $environment) use ($databasePrefix, $databaseServer) {
             Arr::set($options, 'database.server', $databaseServer['name']);
             Arr::set($options, 'database.name', $databasePrefix ? sprintf('%s_%s', rtrim($databasePrefix, '_'), $environment) : $environment);
 
@@ -175,12 +175,6 @@ class InitializeProjectCommand extends AbstractCommand
         if (!empty($databaseServer['publicly_accessible']) && $output->confirm(sprintf('Would you like to create the staging and production databases for your project on the "<comment>%s</comment>" database server?', $databaseServer['name']))) {
             $environments->each(function (array $options) {
                 $this->invoke(new NullOutput(), CreateDatabaseCommand::NAME, ['name' => Arr::get($options, 'database.name'), '--server' => Arr::get($options, 'database.server')]);
-            });
-        }
-
-        if (empty($databaseServer['publicly_accessible']) || !$output->confirm(sprintf('Would you like to create staging and production databases for your project on the "<comment>%s</comment>" database server?', $databaseServer['name']))) {
-            return $environments->map(function (array $options) use ($databaseServer) {
-                Arr::set($options, 'database', $databaseServer['name']);
             });
         }
 
