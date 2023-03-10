@@ -1,7 +1,7 @@
 <?php
 
 function ymir_activate_plugin() {
-    if (defined('WP_INSTALLING') && WP_INSTALLING) {
+    if (class_exists('\\Ymir\\Plugin\\Plugin') || (defined('WP_INSTALLING') && WP_INSTALLING)) {
         return;
     } elseif (!function_exists('get_plugins')) {
         require_once ABSPATH.'wp-admin/includes/plugin.php';
