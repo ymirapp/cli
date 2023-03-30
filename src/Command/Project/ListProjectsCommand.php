@@ -41,7 +41,7 @@ class ListProjectsCommand extends AbstractCommand
      */
     protected function perform(InputInterface $input, OutputInterface $output)
     {
-        $projects = $this->apiClient->getTeamProjects($this->cliConfiguration->getActiveTeamId());
+        $projects = $this->apiClient->getProjects($this->cliConfiguration->getActiveTeamId());
 
         $output->table(
             ['Id', 'Name', 'Provider', 'Region'],

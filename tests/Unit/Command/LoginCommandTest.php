@@ -13,17 +13,17 @@ declare(strict_types=1);
 
 namespace Ymir\Cli\Tests\Unit\Command;
 
-use GuzzleHttp\Exception\ClientException;
+use GuzzleHttp\Exception\ClientException as GuzzleClientException;
 use Illuminate\Support\Collection;
 use Symfony\Component\Console\Tester\CommandTester;
 use Ymir\Cli\Command\LoginCommand;
-use Ymir\Cli\Exception\ApiClientException;
 use Ymir\Cli\Tests\Mock\ApiClientMockTrait;
 use Ymir\Cli\Tests\Mock\CliConfigurationMockTrait;
 use Ymir\Cli\Tests\Mock\ProjectConfigurationMockTrait;
 use Ymir\Cli\Tests\Mock\PsrRequestInterfaceMockTrait;
 use Ymir\Cli\Tests\Mock\PsrResponseInterfaceMockTrait;
 use Ymir\Cli\Tests\Unit\TestCase;
+use Ymir\Sdk\Exception\ClientException;
 
 /**
  * @covers \Ymir\Cli\Command\LoginCommand
@@ -133,7 +133,7 @@ class LoginCommandTest extends TestCase
                       [$this->identicalTo($email), $this->identicalTo($password), $this->identicalTo('authentication_code')]
                   )
                   ->willReturnOnConsecutiveCalls(
-                      $this->throwException(new ApiClientException(new ClientException('', $this->getRequestInterfaceMock(), $response))),
+                      $this->throwException(new ClientException(new GuzzleClientException('', $this->getRequestInterfaceMock(), $response))),
                       'access_token'
                   );
 

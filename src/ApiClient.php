@@ -13,25 +13,15 @@ declare(strict_types=1);
 
 namespace Ymir\Cli;
 
-use GuzzleHttp\ClientInterface;
-use GuzzleHttp\Exception\ClientException;
-use GuzzleHttp\Pool;
-use GuzzleHttp\Psr7\Request;
 use Illuminate\Support\Collection;
-use Psr\Http\Message\ResponseInterface;
 use Symfony\Component\Console\Exception\RuntimeException;
-use Ymir\Cli\Exception\ApiClientException;
 use Ymir\Cli\ProjectConfiguration\ProjectConfiguration;
+use Ymir\Sdk\Client;
+use Ymir\Sdk\Exception\ClientException;
+use Ymir\Sdk\Exception\UnexpectedApiResponseException;
 
 class ApiClient
 {
-    /**
-     * The base URL used to interact with the Ymir API.
-     *
-     * @var string
-     */
-    private $baseUrl;
-
     /**
      * The global Ymir CLI configuration.
      *
@@ -40,20 +30,23 @@ class ApiClient
     private $cliConfiguration;
 
     /**
-     * The HTTP client used to interact with the Ymir API.
+     * The Ymir API client.
      *
-     * @var ClientInterface
+     * @var Client
      */
     private $client;
 
     /**
      * Constructor.
      */
-    public function __construct(string $baseUrl, ClientInterface $client, CliConfiguration $cliConfiguration)
+    public function __construct(Client $client, CliConfiguration $cliConfiguration)
     {
-        $this->baseUrl = rtrim($baseUrl, '/').'/';
         $this->client = $client;
         $this->cliConfiguration = $cliConfiguration;
+
+        if ($this->cliConfiguration->hasAccessToken()) {
+            $this->client->setAccessToken($this->cliConfiguration->getAccessToken());
+        }
     }
 
     /**
@@ -61,7 +54,7 @@ class ApiClient
      */
     public function addBastionHost(int $networkId): Collection
     {
-        return $this->request('post', "/networks/{$networkId}/bastion-host");
+        return $this->client->addBastionHost($networkId);
     }
 
     /**
@@ -69,7 +62,7 @@ class ApiClient
      */
     public function addNatGateway(int $networkId)
     {
-        $this->request('post', "/networks/{$networkId}/nat");
+        $this->client->addNatGateway($networkId);
     }
 
     /**
@@ -77,17 +70,15 @@ class ApiClient
      */
     public function cancelDeployment(int $deploymentId)
     {
-        $this->request('post', "/deployments/{$deploymentId}/cancel");
+        $this->client->cancelDeployment($deploymentId);
     }
 
     /**
      * Change the lock of the given database server.
      */
-    public function changeDatabaseServerLock(int $databaseServerId, bool $locked): Collection
+    public function changeDatabaseServerLock(int $databaseServerId, bool $locked)
     {
-        return $this->request('post', "/database-servers/{$databaseServerId}/lock", [
-            'locked' => $locked,
-        ]);
+        $this->client->changeDatabaseServerLock($databaseServerId, $locked);
     }
 
     /**
@@ -97,44 +88,31 @@ class ApiClient
     {
         $zone = $this->getDnsZone($zoneIdOrName);
 
-        $this->request('put', "/zones/{$zone['id']}/records", [
-            'type' => $type,
-            'name' => $name,
-            'value' => $value,
-        ]);
+        $this->client->changeDnsRecord($zone['id'], $type, $name, $value);
     }
 
     /**
      * Change the environment variables of the given project environment.
      */
-    public function changeEnvironmentVariables(int $projectId, string $environment, array $variables, bool $overwrite = false): Collection
+    public function changeEnvironmentVariables(int $projectId, string $environment, array $variables, bool $overwrite = false)
     {
-        return $this->request('put', "/projects/{$projectId}/environments/{$environment}/variables", [
-            'variables' => $variables,
-            'overwrite' => $overwrite,
-        ]);
+        $this->client->changeEnvironmentVariables($projectId, $environment, $variables, $overwrite);
     }
 
     /**
      * Change the value of the given secret for the given project environment.
      */
-    public function changeSecret(int $projectId, string $environment, string $name, string $value): Collection
+    public function changeSecret(int $projectId, string $environment, string $name, string $value)
     {
-        return $this->request('put', "/projects/{$projectId}/environments/{$environment}/secrets", [
-            'name' => $name,
-            'value' => $value,
-        ]);
+        $this->client->changeSecret($projectId, $environment, $name, $value);
     }
 
     /**
      * Create a new cache on the given network.
      */
-    public function createCache(string $name, int $networkId, string $type): Collection
+    public function createCache(int $networkId, string $name, string $type): Collection
     {
-        return $this->request('post', "/networks/{$networkId}/caches", [
-            'name' => $name,
-            'type' => $type,
-        ]);
+        return $this->client->createCache($networkId, $name, $type);
     }
 
     /**
@@ -142,10 +120,7 @@ class ApiClient
      */
     public function createCertificate(int $providerId, array $domains, string $region): Collection
     {
-        return $this->request('post', "/providers/{$providerId}/certificates", [
-            'domains' => $domains,
-            'region' => $region,
-        ]);
+        return $this->client->createCertificate($providerId, $domains, $region);
     }
 
     /**
@@ -153,33 +128,15 @@ class ApiClient
      */
     public function createDatabase(int $databaseServerId, string $name): Collection
     {
-        return $this->request('post', "/database-servers/{$databaseServerId}/databases", [
-            'name' => $name,
-        ]);
+        return $this->client->createDatabase($databaseServerId, $name);
     }
 
     /**
      * Create a new database on the given network.
      */
-    public function createDatabaseServer(string $name, int $networkId, string $type, ?int $storage = 50, bool $public = false): Collection
+    public function createDatabaseServer(int $networkId, string $name, string $type, ?int $storage = 50, bool $public = false): Collection
     {
-        if ('aurora-mysql' === $type && null !== $storage) {
-            throw new \InvalidArgumentException('Cannot specify a "storage" value for "aurora-mysql" database server');
-        } elseif ('aurora-mysql' === $type && $public) {
-            throw new \InvalidArgumentException('An "aurora-mysql" database server cannot be public');
-        }
-
-        $databaseServer = [
-            'name' => $name,
-            'type' => $type,
-        ];
-
-        if ('aurora-mysql' !== $type) {
-            $databaseServer['publicly_accessible'] = $public;
-            $databaseServer['storage'] = $storage;
-        }
-
-        return $this->request('post', "/networks/{$networkId}/database-servers", $databaseServer);
+        return $this->client->createDatabaseServer($networkId, $name, $type, $storage, $public);
     }
 
     /**
@@ -187,10 +144,7 @@ class ApiClient
      */
     public function createDatabaseUser(int $databaseServerId, string $username, array $databases = []): Collection
     {
-        return $this->request('post', "/database-servers/{$databaseServerId}/users", [
-            'databases' => $databases,
-            'username' => $username,
-        ]);
+        return $this->client->createDatabaseUser($databaseServerId, $username, $databases);
     }
 
     /**
@@ -198,9 +152,7 @@ class ApiClient
      */
     public function createDeployment(int $projectId, string $environment, ProjectConfiguration $projectConfiguration): Collection
     {
-        return $this->request('post', "/projects/{$projectId}/environments/{$environment}/deployments", [
-            'configuration' => $projectConfiguration->toArray(),
-        ]);
+        return $this->client->createDeployment($projectId, $environment, $projectConfiguration->toArray());
     }
 
     /**
@@ -208,9 +160,7 @@ class ApiClient
      */
     public function createDnsZone(int $providerId, string $name): Collection
     {
-        return $this->request('post', "/providers/{$providerId}/zones", [
-            'domain_name' => $name,
-        ]);
+        return $this->client->createDnsZone($providerId, $name);
     }
 
     /**
@@ -218,12 +168,7 @@ class ApiClient
      */
     public function createEmailIdentity(int $providerId, string $name, string $region): Collection
     {
-        $type = filter_var($name, FILTER_VALIDATE_EMAIL) ? 'email' : 'domain';
-
-        return $this->request('post', "/providers/{$providerId}/email-identities", [
-            $type => $name,
-            'region' => $region,
-        ]);
+        return $this->client->createEmailIdentity($providerId, $name, $region);
     }
 
     /**
@@ -231,9 +176,7 @@ class ApiClient
      */
     public function createEnvironment(int $projectId, string $name): Collection
     {
-        return $this->request('post', "/projects/{$projectId}/environments", [
-            'name' => $name,
-        ]);
+        return $this->client->createEnvironment($projectId, $name);
     }
 
     /**
@@ -241,9 +184,7 @@ class ApiClient
      */
     public function createInvocation(int $projectId, string $environment, array $payload): Collection
     {
-        return $this->request('post', "/projects/{$projectId}/environments/{$environment}/invocations", [
-            'payload' => $payload,
-        ]);
+        return $this->client->createInvocation($projectId, $environment, $payload);
     }
 
     /**
@@ -251,10 +192,7 @@ class ApiClient
      */
     public function createNetwork(int $providerId, string $name, string $region): Collection
     {
-        return $this->request('post', "/providers/{$providerId}/networks", [
-            'name' => $name,
-            'region' => $region,
-        ]);
+        return $this->client->createNetwork($providerId, $name, $region);
     }
 
     /**
@@ -262,21 +200,15 @@ class ApiClient
      */
     public function createProject(int $providerId, string $name, string $region): Collection
     {
-        return $this->request('post', "/providers/{$providerId}/projects", [
-            'name' => $name,
-            'region' => $region,
-        ]);
+        return $this->client->createProject($providerId, $name, $region);
     }
 
     /**
      * Create a new cloud provider with the given name and credentials.
      */
-    public function createProvider(string $name, array $credentials, int $teamId): Collection
+    public function createProvider(int $teamId, string $name, array $credentials): Collection
     {
-        return $this->request('post', "/teams/{$teamId}/providers", [
-            'name' => $name,
-            'credentials' => $credentials,
-        ]);
+        return $this->client->createProvider($teamId, $name, $credentials);
     }
 
     /**
@@ -284,7 +216,7 @@ class ApiClient
      */
     public function createRedeployment(int $projectId, string $environment): Collection
     {
-        return $this->request('post', "/projects/{$projectId}/environments/{$environment}/redeployments");
+        return $this->client->createRedeployment($projectId, $environment);
     }
 
     /**
@@ -292,9 +224,7 @@ class ApiClient
      */
     public function createRollback(int $projectId, string $environment, int $deploymentId): Collection
     {
-        return $this->request('post', "/projects/{$projectId}/environments/{$environment}/rollbacks", [
-            'deployment' => $deploymentId,
-        ]);
+        return $this->client->createRollback($projectId, $environment, $deploymentId);
     }
 
     /**
@@ -302,9 +232,7 @@ class ApiClient
      */
     public function createTeam(string $name): Collection
     {
-        return $this->request('post', '/teams', [
-            'name' => $name,
-        ]);
+        return $this->client->createTeam($name);
     }
 
     /**
@@ -312,7 +240,7 @@ class ApiClient
      */
     public function deleteCache(int $cacheId)
     {
-        $this->request('delete', "/caches/{$cacheId}");
+        $this->client->deleteCache($cacheId);
     }
 
     /**
@@ -320,15 +248,15 @@ class ApiClient
      */
     public function deleteCertificate(int $certificateId)
     {
-        $this->request('delete', "/certificates/{$certificateId}");
+        $this->client->deleteCertificate($certificateId);
     }
 
     /**
-     * Delete a the given database on the given database server.
+     * Delete the given database on the given database server.
      */
-    public function deleteDatabase(int $databaseServerId, string $name): Collection
+    public function deleteDatabase(int $databaseServerId, string $name)
     {
-        return $this->request('delete', "/database-servers/{$databaseServerId}/databases/{$name}");
+        $this->client->deleteDatabase($databaseServerId, $name);
     }
 
     /**
@@ -336,15 +264,15 @@ class ApiClient
      */
     public function deleteDatabaseServer(int $databaseServerId)
     {
-        $this->request('delete', "/database-servers/{$databaseServerId}");
+        $this->client->deleteDatabaseServer($databaseServerId);
     }
 
     /**
      * Delete the given database user on the given database server.
      */
-    public function deleteDatabaseUser(int $databaseServerId, int $userId): Collection
+    public function deleteDatabaseUser(int $databaseServerId, int $userId)
     {
-        return $this->request('delete', "/database-servers/{$databaseServerId}/users/{$userId}");
+        $this->client->deleteDatabaseUser($databaseServerId, $userId);
     }
 
     /**
@@ -352,7 +280,7 @@ class ApiClient
      */
     public function deleteDnsRecord(int $zoneId, int $recordId)
     {
-        $this->request('delete', "/zones/{$zoneId}/records/{$recordId}");
+        $this->client->deleteDnsRecord($zoneId, $recordId);
     }
 
     /**
@@ -360,7 +288,7 @@ class ApiClient
      */
     public function deleteDnsZone(int $zoneId)
     {
-        $this->request('delete', "/zones/{$zoneId}");
+        $this->client->deleteDnsZone($zoneId);
     }
 
     /**
@@ -368,7 +296,7 @@ class ApiClient
      */
     public function deleteEmailIdentity(int $identityId)
     {
-        $this->request('delete', "/email-identities/{$identityId}");
+        $this->client->deleteEmailIdentity($identityId);
     }
 
     /**
@@ -376,9 +304,7 @@ class ApiClient
      */
     public function deleteEnvironment(int $projectId, string $environment, bool $deleteResources = false)
     {
-        $this->request('delete', "/projects/{$projectId}/environments/{$environment}", [
-            'delete_resources' => $deleteResources,
-        ]);
+        $this->client->deleteEnvironment($projectId, $environment, $deleteResources);
     }
 
     /**
@@ -386,7 +312,7 @@ class ApiClient
      */
     public function deleteNetwork(int $networkId)
     {
-        $this->request('delete', "/networks/{$networkId}");
+        $this->client->deleteNetwork($networkId);
     }
 
     /**
@@ -394,9 +320,7 @@ class ApiClient
      */
     public function deleteProject(int $projectId, bool $deleteResources = false)
     {
-        $this->request('delete', "/projects/{$projectId}", [
-            'delete_resources' => $deleteResources,
-        ]);
+        $this->client->deleteProject($projectId, $deleteResources);
     }
 
     /**
@@ -404,7 +328,7 @@ class ApiClient
      */
     public function deleteProvider(int $providerId)
     {
-        $this->request('delete', "/providers/{$providerId}");
+        $this->client->deleteProvider($providerId);
     }
 
     /**
@@ -412,7 +336,7 @@ class ApiClient
      */
     public function deleteSecret($secretId)
     {
-        $this->request('delete', "/secrets/{$secretId}");
+        $this->client->deleteSecret($secretId);
     }
 
     /**
@@ -420,18 +344,11 @@ class ApiClient
      */
     public function getAccessToken(string $email, string $password, ?string $authenticationCode = null): string
     {
-        $response = $this->request('post', '/token', [
-            'host' => gethostname(),
-            'email' => $email,
-            'password' => $password,
-            'authentication_code' => $authenticationCode,
-        ]);
-
-        if (empty($response['access_token'])) {
-            throw new RuntimeException('The Ymir API didn\'t return an access token');
+        try {
+            return $this->client->getAccessToken($email, $password, $authenticationCode);
+        } catch (UnexpectedApiResponseException $exception) {
+            throw new RuntimeException($exception->getMessage(), $exception->getCode(), $exception);
         }
-
-        return $response['access_token'];
     }
 
     /**
@@ -439,7 +356,7 @@ class ApiClient
      */
     public function getActiveTeam(): Collection
     {
-        return $this->request('get', '/teams/active');
+        return $this->client->getActiveTeam();
     }
 
     /**
@@ -447,13 +364,19 @@ class ApiClient
      */
     public function getArtifactUploadUrl(int $deploymentId): string
     {
-        $uploadUrl = (string) $this->request('get', "/deployments/{$deploymentId}/artifact")->get('upload_url');
-
-        if (empty($uploadUrl)) {
-            throw new RuntimeException('Unable to get an artifact upload URL from the Ymir API');
+        try {
+            return $this->client->getArtifactUploadUrl($deploymentId);
+        } catch (UnexpectedApiResponseException $exception) {
+            throw new RuntimeException($exception->getMessage(), $exception->getCode(), $exception);
         }
+    }
 
-        return $uploadUrl;
+    /**
+     * Get the authenticated user.
+     */
+    public function getAuthenticatedUser(): Collection
+    {
+        return $this->client->getAuthenticatedUser();
     }
 
     /**
@@ -461,7 +384,7 @@ class ApiClient
      */
     public function getBastionHost(int $bastionHostId): Collection
     {
-        return $this->request('get', "/bastion-hosts/{$bastionHostId}");
+        return $this->client->getBastionHost($bastionHostId);
     }
 
     /**
@@ -469,7 +392,7 @@ class ApiClient
      */
     public function getCaches(int $teamId): Collection
     {
-        return $this->request('get', "/teams/{$teamId}/caches");
+        return $this->client->getCaches($teamId);
     }
 
     /**
@@ -477,13 +400,11 @@ class ApiClient
      */
     public function getCacheTypes(int $providerId): Collection
     {
-        $types = $this->request('get', "/providers/{$providerId}/caches/types");
-
-        if ($types->isEmpty()) {
-            throw new RuntimeException('The Ymir API failed to return information on the cache types');
+        try {
+            return $this->client->getCacheTypes($providerId);
+        } catch (UnexpectedApiResponseException $exception) {
+            throw new RuntimeException($exception->getMessage(), $exception->getCode(), $exception);
         }
-
-        return $types;
     }
 
     /**
@@ -491,7 +412,7 @@ class ApiClient
      */
     public function getCertificate(int $certificateId): Collection
     {
-        return $this->request('get', "/certificates/{$certificateId}");
+        return $this->client->getCertificate($certificateId);
     }
 
     /**
@@ -499,7 +420,7 @@ class ApiClient
      */
     public function getCertificates(int $teamId): Collection
     {
-        return $this->request('get', "/teams/{$teamId}/certificates");
+        return $this->client->getCertificates($teamId);
     }
 
     /**
@@ -507,7 +428,7 @@ class ApiClient
      */
     public function getDatabases(int $databaseServerId): Collection
     {
-        return $this->request('get', "/database-servers/{$databaseServerId}/databases");
+        return $this->client->getDatabases($databaseServerId);
     }
 
     /**
@@ -515,7 +436,7 @@ class ApiClient
      */
     public function getDatabaseServer(int $databaseServerId): Collection
     {
-        return $this->request('get', "/database-servers/{$databaseServerId}");
+        return $this->client->getDatabaseServer($databaseServerId);
     }
 
     /**
@@ -523,7 +444,7 @@ class ApiClient
      */
     public function getDatabaseServers(int $teamId): Collection
     {
-        return $this->request('get', "/teams/{$teamId}/database-servers");
+        return $this->client->getDatabaseServers($teamId);
     }
 
     /**
@@ -531,13 +452,11 @@ class ApiClient
      */
     public function getDatabaseServerTypes(int $providerId): Collection
     {
-        $types = $this->request('get', "/providers/{$providerId}/database-servers/types");
-
-        if ($types->isEmpty()) {
-            throw new RuntimeException('The Ymir API failed to return information on the database instance types');
+        try {
+            return $this->client->getDatabaseServerTypes($providerId);
+        } catch (UnexpectedApiResponseException $exception) {
+            throw new RuntimeException($exception->getMessage(), $exception->getCode(), $exception);
         }
-
-        return $types;
     }
 
     /**
@@ -545,7 +464,7 @@ class ApiClient
      */
     public function getDatabaseUsers(int $databaseServerId): Collection
     {
-        return $this->request('get', "/database-servers/{$databaseServerId}/users");
+        return $this->client->getDatabaseUsers($databaseServerId);
     }
 
     /**
@@ -553,7 +472,7 @@ class ApiClient
      */
     public function getDeployment(int $deploymentId): Collection
     {
-        return $this->request('get', "/deployments/{$deploymentId}");
+        return $this->client->getDeployment($deploymentId);
     }
 
     /**
@@ -561,7 +480,7 @@ class ApiClient
      */
     public function getDeploymentImage(int $deploymentId): Collection
     {
-        return $this->request('get', "/deployments/{$deploymentId}/image");
+        return $this->client->getDeploymentImage($deploymentId);
     }
 
     /**
@@ -569,7 +488,7 @@ class ApiClient
      */
     public function getDeployments(int $projectId, string $environment): Collection
     {
-        return $this->request('get', "/projects/{$projectId}/environments/{$environment}/deployments");
+        return $this->client->getDeployments($projectId, $environment);
     }
 
     /**
@@ -579,18 +498,18 @@ class ApiClient
     {
         $zone = $this->getDnsZone($zoneIdOrName);
 
-        return $this->request('get', "/zones/{$zone['id']}/records");
+        return $this->client->getDnsRecords($zone['id']);
     }
 
     /**
      * Get the DNS zone information from the given zone ID or name.
      */
-    public function getDnsZone($idOrName): array
+    public function getDnsZone($idOrName): Collection
     {
         $zone = null;
 
         if (is_numeric($idOrName)) {
-            $zone = $this->request('get', "/zones/{$idOrName}")->toArray();
+            $zone = $this->client->getDnsZone((int) $idOrName)->toArray();
         } elseif (is_string($idOrName)) {
             $zone = $this->getDnsZones($this->cliConfiguration->getActiveTeamId())->firstWhere('domain_name', $idOrName);
         }
@@ -599,7 +518,7 @@ class ApiClient
             throw new RuntimeException(sprintf('Unable to find a DNS zone with "%s" as the ID or name', $idOrName));
         }
 
-        return $zone;
+        return collect($zone);
     }
 
     /**
@@ -607,7 +526,7 @@ class ApiClient
      */
     public function getDnsZones(int $teamId): Collection
     {
-        return $this->request('get', "/teams/{$teamId}/zones");
+        return $this->client->getDnsZones($teamId);
     }
 
     /**
@@ -615,27 +534,7 @@ class ApiClient
      */
     public function getEmailIdentities(int $teamId): Collection
     {
-        return $this->request('get', "/teams/{$teamId}/email-identities");
-    }
-
-    /**
-     * Get the email identity information from the given zone ID or name.
-     */
-    public function getEmailIdentity($idOrName): array
-    {
-        $identity = null;
-
-        if (is_numeric($idOrName)) {
-            $identity = $this->request('get', "/email-identities/{$idOrName}")->toArray();
-        } elseif (is_string($idOrName)) {
-            $identity = $this->getEmailIdentities($this->cliConfiguration->getActiveTeamId())->firstWhere('name', $idOrName);
-        }
-
-        if (!is_array($identity) || !isset($identity['id']) || !is_numeric($identity['id'])) {
-            throw new RuntimeException(sprintf('Unable to find a email identity with "%s" as the ID or name', $idOrName));
-        }
-
-        return $identity;
+        return $this->client->getEmailIdentities($teamId);
     }
 
     /**
@@ -643,15 +542,15 @@ class ApiClient
      */
     public function getEnvironment(int $projectId, string $environment): Collection
     {
-        return $this->request('get', "/projects/{$projectId}/environments/{$environment}");
+        return $this->client->getEnvironment($projectId, $environment);
     }
 
     /**
-     * Get the the project environment's metrics.
+     * Get the project environment's metrics.
      */
     public function getEnvironmentMetrics(int $projectId, string $environment, string $period): Collection
     {
-        return $this->request('get', "/projects/{$projectId}/environments/{$environment}/metrics?period={$period}");
+        return $this->client->getEnvironmentMetrics($projectId, $environment, $period);
     }
 
     /**
@@ -659,7 +558,7 @@ class ApiClient
      */
     public function getEnvironments(int $projectId): Collection
     {
-        return $this->request('get', "/projects/{$projectId}/environments");
+        return $this->client->getEnvironments($projectId);
     }
 
     /**
@@ -681,7 +580,7 @@ class ApiClient
      */
     public function getEnvironmentVariables(int $projectId, string $environment): Collection
     {
-        return $this->request('get', "/projects/{$projectId}/environments/{$environment}/variables");
+        return $this->client->getEnvironmentVariables($projectId, $environment);
     }
 
     /**
@@ -689,7 +588,7 @@ class ApiClient
      */
     public function getInvocation(int $invocationId): Collection
     {
-        return $this->request('get', "/invocations/{$invocationId}");
+        return $this->client->getInvocation($invocationId);
     }
 
     /**
@@ -697,7 +596,15 @@ class ApiClient
      */
     public function getNetwork(int $networkId): Collection
     {
-        return $this->request('get', "/networks/{$networkId}");
+        return $this->client->getNetwork($networkId);
+    }
+
+    /**
+     * Get the networks that belong to the given team.
+     */
+    public function getNetworks(int $teamId): Collection
+    {
+        return $this->client->getNetworks($teamId);
     }
 
     /**
@@ -705,7 +612,15 @@ class ApiClient
      */
     public function getProject(int $projectId): Collection
     {
-        return $this->request('get', "/projects/{$projectId}");
+        return $this->client->getProject($projectId);
+    }
+
+    /**
+     * Get the projects that belong to the given team.
+     */
+    public function getProjects(int $teamId): Collection
+    {
+        return $this->client->getProjects($teamId);
     }
 
     /**
@@ -713,7 +628,7 @@ class ApiClient
      */
     public function getProvider(int $providerId): Collection
     {
-        return $this->request('get', "/providers/{$providerId}");
+        return $this->client->getProvider($providerId);
     }
 
     /**
@@ -721,7 +636,7 @@ class ApiClient
      */
     public function getProviders(int $teamId): Collection
     {
-        return $this->request('get', "/teams/{$teamId}/providers");
+        return $this->client->getProviders($teamId);
     }
 
     /**
@@ -729,7 +644,7 @@ class ApiClient
      */
     public function getRegions(int $providerId): Collection
     {
-        return $this->request('get', "/providers/{$providerId}/regions");
+        return $this->client->getRegions($providerId);
     }
 
     /**
@@ -737,7 +652,7 @@ class ApiClient
      */
     public function getSecrets(int $projectId, string $environment): Collection
     {
-        return $this->request('get', "/projects/{$projectId}/environments/{$environment}/secrets");
+        return $this->client->getSecrets($projectId, $environment);
     }
 
     /**
@@ -745,23 +660,11 @@ class ApiClient
      */
     public function getSignedAssetRequests(int $deploymentId, array $assets): Collection
     {
-        $requests = function (array $assets) use ($deploymentId) {
-            foreach (array_chunk($assets, 500) as $chunkedAssets) {
-                yield $this->createRequest('post', "/deployments/{$deploymentId}/signed-assets", ['assets' => $chunkedAssets]);
-            }
-        };
-        $signedAssetRequests = [];
-
-        $pool = new Pool($this->client, $requests($assets), [
-            'concurrency' => 10,
-            'fulfilled' => function (ResponseInterface $response) use (&$signedAssetRequests) {
-                $signedAssetRequests[] = $this->decodeResponse($response);
-            },
-            'options' => ['verify' => false],
-        ]);
-        $pool->promise()->wait();
-
-        return collect($signedAssetRequests)->collapse();
+        try {
+            return $this->client->getSignedAssetRequests($deploymentId, $assets);
+        } catch (UnexpectedApiResponseException $exception) {
+            throw new RuntimeException($exception->getMessage(), $exception->getCode(), $exception);
+        }
     }
 
     /**
@@ -769,13 +672,11 @@ class ApiClient
      */
     public function getSignedUploadRequests(int $projectId, string $environment, array $uploads): Collection
     {
-        $requests = $this->request('post', "/projects/{$projectId}/environments/{$environment}/signed-uploads", ['uploads' => $uploads]);
-
-        if (!empty($uploads) && $requests->isEmpty()) {
-            throw new RuntimeException('Unable to get authorized uploads requests from the Ymir API');
+        try {
+            return $this->client->getSignedUploadRequests($projectId, $environment, $uploads);
+        } catch (UnexpectedApiResponseException $exception) {
+            throw new RuntimeException($exception->getMessage(), $exception->getCode(), $exception);
         }
-
-        return $requests;
     }
 
     /**
@@ -783,39 +684,7 @@ class ApiClient
      */
     public function getTeam($teamId): Collection
     {
-        return $this->request('get', '/teams/'.$teamId);
-    }
-
-    /**
-     * Get the caches that the team has access to.
-     */
-    public function getTeamCaches($teamId): Collection
-    {
-        return $this->request('get', "/teams/{$teamId}/caches");
-    }
-
-    /**
-     * Get the database servers that the team has access to.
-     */
-    public function getTeamDatabaseServers($teamId): Collection
-    {
-        return $this->request('get', "/teams/{$teamId}/database-servers");
-    }
-
-    /**
-     * Get the networks that belong to the given team.
-     */
-    public function getTeamNetworks(int $teamId): Collection
-    {
-        return $this->request('get', "/teams/{$teamId}/networks");
-    }
-
-    /**
-     * Get the projects that belong to the given team.
-     */
-    public function getTeamProjects(int $teamId): Collection
-    {
-        return $this->request('get', "/teams/{$teamId}/projects");
+        return $this->client->getTeam($teamId);
     }
 
     /**
@@ -823,27 +692,17 @@ class ApiClient
      */
     public function getTeams(): Collection
     {
-        return $this->request('get', '/teams');
-    }
-
-    /**
-     * Get the authenticated user.
-     */
-    public function getUser(): Collection
-    {
-        return $this->request('get', '/user');
+        return $this->client->getTeams();
     }
 
     /**
      * Change the value of the DNS record in the given DNS zone ID or name.
      */
-    public function importDnsRecord($zoneIdOrName, array $subdomains = [])
+    public function importDnsRecords($zoneIdOrName, array $subdomains = [])
     {
         $zone = $this->getDnsZone($zoneIdOrName);
 
-        $this->request('post', "/zones/{$zone['id']}/import-records", [
-            'subdomains' => array_filter($subdomains),
-        ]);
+        $this->client->importDnsRecords($zone['id'], $subdomains);
     }
 
     /**
@@ -851,9 +710,7 @@ class ApiClient
      */
     public function invalidateCache(int $projectId, string $environment, array $paths)
     {
-        $this->request('post', "/projects/{$projectId}/environments/{$environment}/invalidate-cache", [
-            'paths' => $paths,
-        ]);
+        $this->client->invalidateCache($projectId, $environment, $paths);
     }
 
     /**
@@ -862,8 +719,8 @@ class ApiClient
     public function isAuthenticated(): bool
     {
         try {
-            return $this->cliConfiguration->hasAccessToken() && !$this->getUser()->isEmpty();
-        } catch (ApiClientException $exception) {
+            return $this->cliConfiguration->hasAccessToken() && !$this->getAuthenticatedUser()->isEmpty();
+        } catch (ClientException $exception) {
             if (401 === $exception->getCode()) {
                 return false;
             }
@@ -877,7 +734,7 @@ class ApiClient
      */
     public function removeBastionHost(int $networkId)
     {
-        $this->request('delete', "/networks/{$networkId}/bastion-host");
+        $this->client->removeBastionHost($networkId);
     }
 
     /**
@@ -885,7 +742,7 @@ class ApiClient
      */
     public function removeNatGateway(int $networkId)
     {
-        $this->request('delete', "/networks/{$networkId}/nat");
+        $this->client->removeNatGateway($networkId);
     }
 
     /**
@@ -893,7 +750,7 @@ class ApiClient
      */
     public function rotateDatabaseServerPassword(int $databaseServerId): Collection
     {
-        return $this->request('post', "/database-servers/{$databaseServerId}/rotate-password");
+        return $this->client->rotateDatabaseServerPassword($databaseServerId);
     }
 
     /**
@@ -901,7 +758,7 @@ class ApiClient
      */
     public function rotateDatabaseUserPassword(int $databaseServerId, int $userId): Collection
     {
-        return $this->request('post', "/database-servers/{$databaseServerId}/users/{$userId}/rotate-password");
+        return $this->client->rotateDatabaseUserPassword($databaseServerId, $userId);
     }
 
     /**
@@ -909,7 +766,7 @@ class ApiClient
      */
     public function startDeployment(int $deploymentId)
     {
-        $this->request('post', "/deployments/{$deploymentId}/start");
+        $this->client->startDeployment($deploymentId);
     }
 
     /**
@@ -917,10 +774,7 @@ class ApiClient
      */
     public function updateDatabaseServer(int $databaseServerId, int $storage, string $type)
     {
-        $this->request('put', "/database-servers/{$databaseServerId}", [
-            'storage' => $storage,
-            'type' => $type,
-        ]);
+        $this->client->updateDatabaseServer($databaseServerId, $storage, $type);
     }
 
     /**
@@ -928,10 +782,7 @@ class ApiClient
      */
     public function updateProvider(int $providerId, array $credentials, string $name)
     {
-        $this->request('put', "/providers/{$providerId}", [
-            'name' => $name,
-            'credentials' => $credentials,
-        ]);
+        $this->client->updateProvider($providerId, $credentials, $name);
     }
 
     /**
@@ -939,55 +790,6 @@ class ApiClient
      */
     public function validateProjectConfiguration(ProjectConfiguration $projectConfiguration, array $environments = [])
     {
-        $this->request('post', "/projects/{$projectConfiguration->getProjectId()}/validate-configuration", [
-            'configuration' => $projectConfiguration->toArray(),
-            'environments' => $environments,
-        ]);
-    }
-
-    /**
-     * Create a PSR request object.
-     */
-    private function createRequest(string $method, string $uri, array $body = []): Request
-    {
-        $body = in_array($method, ['delete', 'post', 'put']) ? json_encode($body) : null;
-
-        if (false === $body) {
-            throw new RuntimeException(sprintf('Unable to JSON encode request body: %s', json_last_error_msg()));
-        }
-
-        $headers = [
-            'Accept' => 'application/json',
-            'Content-Type' => 'application/json',
-        ];
-        $method = strtolower($method);
-
-        if ($this->cliConfiguration->hasAccessToken()) {
-            $headers['Authorization'] = 'Bearer '.$this->cliConfiguration->getAccessToken();
-        }
-
-        return new Request($method, $this->baseUrl.ltrim($uri, '/'), $headers, $body);
-    }
-
-    /**
-     * Decode response returned by the Ymir API.
-     */
-    private function decodeResponse(ResponseInterface $response): Collection
-    {
-        return collect(json_decode((string) $response->getBody(), true));
-    }
-
-    /**
-     * Send a request to the Ymir API.
-     */
-    private function request(string $method, string $uri, array $body = []): Collection
-    {
-        try {
-            $response = $this->client->send($this->createRequest($method, $uri, $body), ['verify' => false]);
-        } catch (ClientException $exception) {
-            throw new ApiClientException($exception);
-        }
-
-        return $this->decodeResponse($response);
+        $this->client->validateProjectConfiguration($projectConfiguration->getProjectId(), $projectConfiguration->toArray(), $environments);
     }
 }

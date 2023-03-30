@@ -44,7 +44,7 @@ class ConnectProviderCommand extends AbstractProviderCommand
 
         $credentials = $this->getAwsCredentials($output);
 
-        $this->apiClient->createProvider($name, $credentials, $this->cliConfiguration->getActiveTeamId());
+        $this->apiClient->createProvider($this->cliConfiguration->getActiveTeamId(), $name, $credentials);
 
         $output->info('Cloud provider connected');
     }

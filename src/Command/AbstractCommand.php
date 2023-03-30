@@ -28,10 +28,10 @@ use Ymir\Cli\Console\HiddenInputOption;
 use Ymir\Cli\Console\InputDefinition;
 use Ymir\Cli\Console\Output;
 use Ymir\Cli\Console\OutputInterface;
-use Ymir\Cli\Exception\ApiClientException;
 use Ymir\Cli\Exception\CommandCancelledException;
 use Ymir\Cli\ProjectConfiguration\ProjectConfiguration;
 use Ymir\Cli\Support\Arr;
+use Ymir\Sdk\Exception\ClientException;
 
 abstract class AbstractCommand extends Command
 {
@@ -118,7 +118,7 @@ abstract class AbstractCommand extends Command
             $networkIdOrName = $this->getStringOption($input, 'network', true);
         }
 
-        $networks = $this->apiClient->getTeamNetworks($this->cliConfiguration->getActiveTeamId());
+        $networks = $this->apiClient->getNetworks($this->cliConfiguration->getActiveTeamId());
 
         if (empty($networkIdOrName)) {
             $networkIdOrName = $output->choiceWithResourceDetails($question, $networks);
@@ -140,7 +140,7 @@ abstract class AbstractCommand extends Command
      */
     protected function determineOrCreateNetwork(string $question, InputInterface $input, OutputInterface $output): int
     {
-        $networks = $this->apiClient->getTeamNetworks($this->cliConfiguration->getActiveTeamId())->whereNotIn('status', ['deleting', 'failed']);
+        $networks = $this->apiClient->getNetworks($this->cliConfiguration->getActiveTeamId())->whereNotIn('status', ['deleting', 'failed']);
 
         if ($networks->isEmpty() && !$output->confirm('Your team doesn\'t have any provisioned networks. Would you like to create one first? <fg=default>(Answering "<comment>no</comment>" will cancel the command.)</>')) {
             throw new CommandCancelledException();
@@ -151,7 +151,7 @@ abstract class AbstractCommand extends Command
                 $this->invoke($output, CreateNetworkCommand::NAME);
             }, 'Do you want to try creating a network again?', $output);
 
-            return (int) Arr::get($this->apiClient->getTeamNetworks($this->cliConfiguration->getActiveTeamId())->last(), 'id');
+            return (int) Arr::get($this->apiClient->getNetworks($this->cliConfiguration->getActiveTeamId())->last(), 'id');
         }
 
         return $this->determineNetwork($question, $input, $output);
@@ -162,7 +162,7 @@ abstract class AbstractCommand extends Command
      */
     protected function determineProject(string $question, InputInterface $input, OutputInterface $output): int
     {
-        $projects = $this->apiClient->getTeamProjects($this->cliConfiguration->getActiveTeamId());
+        $projects = $this->apiClient->getProjects($this->cliConfiguration->getActiveTeamId());
 
         if ($projects->isEmpty()) {
             throw new RuntimeException('There are no projects on the currently active team.');
@@ -366,7 +366,7 @@ abstract class AbstractCommand extends Command
         while (true) {
             try {
                 return $callable();
-            } catch (ApiClientException $exception) {
+            } catch (ClientException $exception) {
                 $output->newLine();
                 $output->exception($exception);
 

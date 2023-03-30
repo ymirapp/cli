@@ -48,7 +48,7 @@ class CurrentTeamCommand extends AbstractCommand
             throw new RuntimeException('Unable to get the details on your currently active team');
         }
 
-        $user = $this->apiClient->getUser();
+        $user = $this->apiClient->getAuthenticatedUser();
 
         $output->info('Your currently active team is:');
         $output->horizontalTable(

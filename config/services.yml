@@ -41,6 +41,9 @@ services:
   Symfony\Component\Filesystem\:
     resource: '%vendor_directory%/symfony/filesystem'
 
+  Ymir\Sdk\:
+    resource: '%vendor_directory%/ymirapp/ymir-sdk-php/src'
+
   Ymir\Cli\:
     lazy: true
     resource: '../src'

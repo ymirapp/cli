@@ -43,7 +43,7 @@ class ListCachesCommand extends AbstractCommand
     {
         $output->table(
             ['Id', 'Name', 'Provider', 'Network', 'Region', 'Status', 'Type'],
-            $this->apiClient->getTeamCaches($this->cliConfiguration->getActiveTeamId())->map(function (array $cache) use ($output) {
+            $this->apiClient->getCaches($this->cliConfiguration->getActiveTeamId())->map(function (array $cache) use ($output) {
                 return [
                     $cache['id'],
                     $cache['name'],

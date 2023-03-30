@@ -64,7 +64,7 @@ class CreateCacheCommand extends AbstractCommand
 
         $type = $this->determineType($network, $input, $output);
 
-        $this->apiClient->createCache($name, (int) $network->get('id'), $type);
+        $this->apiClient->createCache((int) $network->get('id'), $name, $type);
 
         $output->infoWithDelayWarning('Cache cluster created');
 

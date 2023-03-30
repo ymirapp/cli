@@ -49,7 +49,7 @@ class ImportDnsRecordsCommand extends AbstractDnsCommand
             $subdomains = explode(',', (string) $output->ask('Please enter a comma-separated list of subdomains to import DNS records from (leave blank to import the root DNS records)'));
         }
 
-        $this->apiClient->importDnsRecord($this->getStringArgument($input, 'zone'), $subdomains);
+        $this->apiClient->importDnsRecords($this->getStringArgument($input, 'zone'), $subdomains);
 
         $output->info('DNS records imported');
     }

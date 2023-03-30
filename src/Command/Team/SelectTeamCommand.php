@@ -56,7 +56,7 @@ class SelectTeamCommand extends AbstractCommand
         if (0 !== $teamId && !$teams->contains('id', $teamId)) {
             throw new RuntimeException(sprintf('You\'re not on a team with ID %s', $teamId));
         } elseif (0 === $teamId) {
-            $user = $this->apiClient->getUser();
+            $user = $this->apiClient->getAuthenticatedUser();
 
             $teamId = $output->choiceWithId('Enter the ID of the team that you want to switch to', $teams->map(function (array $team) use ($user) {
                 $owner = (string) Arr::get($team, 'owner.name');

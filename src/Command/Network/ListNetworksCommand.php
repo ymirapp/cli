@@ -41,7 +41,7 @@ class ListNetworksCommand extends AbstractCommand
      */
     protected function perform(InputInterface $input, OutputInterface $output)
     {
-        $networks = $this->apiClient->getTeamNetworks($this->cliConfiguration->getActiveTeamId());
+        $networks = $this->apiClient->getNetworks($this->cliConfiguration->getActiveTeamId());
 
         $output->table(
             ['Id', 'Name', 'Provider', 'Region', 'Status', 'NAT Gateway'],

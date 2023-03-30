@@ -32,7 +32,8 @@
         "symfony/finder": "^5.4.3|^6.0.3",
         "symfony/polyfill-php80": "^1.24",
         "symfony/process": "^5.4|^6.0",
-        "symfony/yaml": "^5.4|^6.0"
+        "symfony/yaml": "^5.4|^6.0",
+        "ymirapp/ymir-sdk-php": "^0.1.0"
     },
     "require-dev": {
         "fakerphp/faker": "^1.17",

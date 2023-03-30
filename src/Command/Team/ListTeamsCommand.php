@@ -43,7 +43,7 @@ class ListTeamsCommand extends AbstractCommand
     {
         $output->info('You are on the following teams:');
 
-        $user = $this->apiClient->getUser();
+        $user = $this->apiClient->getAuthenticatedUser();
 
         $output->table(
             ['Id', 'Name', 'Owner'],

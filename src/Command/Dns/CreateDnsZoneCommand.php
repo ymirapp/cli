@@ -60,7 +60,7 @@ class CreateDnsZoneCommand extends AbstractDnsCommand
         $zone = $this->apiClient->createDnsZone($providerId, $name);
 
         $nameServers = $this->wait(function () use ($zone) {
-            return $this->apiClient->getDnsZone($zone['id'])['name_servers'] ?? [];
+            return $this->apiClient->getDnsZone($zone['id'])->get('name_servers', []);
         });
 
         if (!empty($nameServers)) {
@@ -73,7 +73,7 @@ class CreateDnsZoneCommand extends AbstractDnsCommand
         $output->info('DNS zone created');
 
         if ($output->confirm('Do you want to import the root DNS records for this domain', false)) {
-            $this->apiClient->importDnsRecord($zone['id']);
+            $this->apiClient->importDnsRecords($zone['id']);
         }
 
         if ($output->confirm('Do you want to import DNS records for subdomains of this domain', false)) {

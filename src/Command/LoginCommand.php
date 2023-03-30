@@ -15,7 +15,7 @@ namespace Ymir\Cli\Command;
 
 use Symfony\Component\Console\Input\InputInterface;
 use Ymir\Cli\Console\OutputInterface;
-use Ymir\Cli\Exception\ApiClientException;
+use Ymir\Sdk\Exception\ClientException;
 
 class LoginCommand extends AbstractCommand
 {
@@ -52,7 +52,7 @@ class LoginCommand extends AbstractCommand
 
         try {
             $accessToken = $this->apiClient->getAccessToken($email, $password);
-        } catch (ApiClientException $exception) {
+        } catch (ClientException $exception) {
             if (!$exception->getValidationErrors()->has('authentication_code')) {
                 throw $exception;
             }
