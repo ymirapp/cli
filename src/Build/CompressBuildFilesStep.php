@@ -70,6 +70,7 @@ class CompressBuildFilesStep implements BuildStepInterface
         $environment = $projectConfiguration->getEnvironment($environment);
         $files = Finder::create()
                        ->append($this->getRequiredFiles())
+                       ->append($this->getRequiredThemeFiles())
                        ->append($this->getRequiredFileTypes())
                        ->append($this->getWordPressCoreFiles($projectConfiguration->getProjectType()));
         $totalSize = 0;
@@ -135,8 +136,6 @@ class CompressBuildFilesStep implements BuildStepInterface
         return $this->getBaseFinder()
             ->path([
                 '/^wp-cli\.yml/',
-                '/themes\/[^\/]*\/screenshot\.(gif|jpe?g|png)$/',
-                '/themes\/[^\/]*\/style\.css$/',
             ]);
     }
 
@@ -147,6 +146,21 @@ class CompressBuildFilesStep implements BuildStepInterface
     {
         return $this->getBaseFinder()
             ->name(['*.mo', '*.php']);
+    }
+
+    /**
+     * Get the Finder object for finding all the required theme files.
+     */
+    private function getRequiredThemeFiles(): Finder
+    {
+        return $this->getBaseFinder()
+            ->path([
+                '/themes\/[^\/]*\/screenshot\.(gif|jpe?g|png)$/',
+                '/themes\/[^\/]*\/style\.css$/',
+                '/themes\/[^\/]*\/theme\.json$/',
+                '/themes\/[^\/]*\/[^\/]*\/.*\.html/',
+                '/themes\/[^\/]*\/[^\/]*\/.*\.json$/',
+            ]);
     }
 
     /**
