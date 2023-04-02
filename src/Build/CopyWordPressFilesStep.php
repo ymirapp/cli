@@ -74,6 +74,10 @@ class CopyWordPressFilesStep extends AbstractBuildStep
         $environment = $projectConfiguration->getEnvironment($environment);
         $files = $this->getProjectFiles($projectConfiguration->getProjectType());
 
+        if ('image' === Arr::get($environment, 'deployment')) {
+            $files->append([$this->getSplFileInfo('/.dockerignore')]);
+        }
+
         if (Arr::has($environment, 'build.include')) {
             $files->append($this->getIncludedFiles(Arr::get($environment, 'build.include')));
         }
@@ -130,7 +134,9 @@ class CopyWordPressFilesStep extends AbstractBuildStep
 
         if ('wordpress' === $projectType) {
             $finder->exclude('wp-content/uploads');
-            $finder->append($this->getWordPressFilesToAppend());
+
+            // wp-config.php is often in .gitignore, so we need to add it back
+            $finder->append([$this->getSplFileInfo('/wp-config.php')]);
         } elseif ('bedrock' === $projectType) {
             $finder->exclude('web/app/uploads');
         }
@@ -139,11 +145,10 @@ class CopyWordPressFilesStep extends AbstractBuildStep
     }
 
     /**
-     * List of WordPress files we need to append manually.
+     * Get a SplFileInfo object for a project file.
      */
-    private function getWordPressFilesToAppend(): array
+    private function getSplFileInfo(string $path): SplFileInfo
     {
-        // wp-config.php is often in .gitignore so we need to add it back
-        return [new SplFileInfo($this->projectDirectory.'/wp-config.php', $this->projectDirectory, '/wp-config.php')];
+        return new SplFileInfo($this->projectDirectory.$path, $this->projectDirectory, $path);
     }
 }
