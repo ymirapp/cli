@@ -200,7 +200,7 @@ class ApiClient
      */
     public function createProject(int $providerId, string $name, string $region): Collection
     {
-        return $this->client->createProject($providerId, $name, $region);
+        return $this->client->createProject($providerId, $name, $region, ['staging', 'production']);
     }
 
     /**
