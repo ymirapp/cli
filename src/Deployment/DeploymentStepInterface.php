@@ -21,5 +21,5 @@ interface DeploymentStepInterface
     /**
      * Perform the deployment step and generate the console output.
      */
-    public function perform(Collection $deployment, OutputInterface $output);
+    public function perform(Collection $deployment, string $environment, OutputInterface $output);
 }

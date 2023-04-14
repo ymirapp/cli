@@ -20,6 +20,7 @@ use Symfony\Component\Finder\Finder;
 use Ymir\Cli\ApiClient;
 use Ymir\Cli\Console\OutputInterface;
 use Ymir\Cli\FileUploader;
+use Ymir\Cli\ProjectConfiguration\ProjectConfiguration;
 
 class ProcessAssetsStep implements DeploymentStepInterface
 {
@@ -38,6 +39,13 @@ class ProcessAssetsStep implements DeploymentStepInterface
     private $assetsDirectory;
 
     /**
+     * The Ymir project configuration.
+     *
+     * @var ProjectConfiguration
+     */
+    private $projectConfiguration;
+
+    /**
      * The uploader used to upload all the build files.
      *
      * @var FileUploader
@@ -47,18 +55,29 @@ class ProcessAssetsStep implements DeploymentStepInterface
     /**
      * Constructor.
      */
-    public function __construct(ApiClient $apiClient, string $assetsDirectory, FileUploader $uploader)
+    public function __construct(ApiClient $apiClient, string $assetsDirectory, ProjectConfiguration $projectConfiguration, FileUploader $uploader)
     {
         $this->apiClient = $apiClient;
         $this->assetsDirectory = $assetsDirectory;
+        $this->projectConfiguration = $projectConfiguration;
         $this->uploader = $uploader;
     }
 
     /**
      * {@inheritdoc}
      */
-    public function perform(Collection $deployment, OutputInterface $output)
+    public function perform(Collection $deployment, string $environment, OutputInterface $output)
     {
+        $deploymentWithAssetsHash = $this->apiClient->getDeployments($this->projectConfiguration->getProjectId(), $environment)
+            ->where('status', 'finished')
+            ->firstWhere('assets_hash', $deployment->get('assets_hash'));
+
+        if (null !== $deploymentWithAssetsHash) {
+            $output->infoWithWarning('No assets change detected', 'skipping processing assets');
+
+            return;
+        }
+
         $output->info('Processing assets');
 
         $output->writeStep('Getting signed asset URLs');

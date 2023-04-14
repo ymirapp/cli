@@ -41,6 +41,13 @@ class DeployProjectCommand extends AbstractProjectDeploymentCommand
     public const NAME = 'project:deploy';
 
     /**
+     * The assets directory where the asset files were copied to.
+     *
+     * @var string
+     */
+    private $assetsDirectory;
+
+    /**
      * The build "uploads" directory.
      *
      * @var string
@@ -50,10 +57,11 @@ class DeployProjectCommand extends AbstractProjectDeploymentCommand
     /**
      * Constructor.
      */
-    public function __construct(ApiClient $apiClient, CliConfiguration $cliConfiguration, ProjectConfiguration $projectConfiguration, string $uploadsDirectory, array $deploymentSteps = [])
+    public function __construct(ApiClient $apiClient, string $assetsDirectory, CliConfiguration $cliConfiguration, ProjectConfiguration $projectConfiguration, string $uploadsDirectory, array $deploymentSteps = [])
     {
         parent::__construct($apiClient, $cliConfiguration, $projectConfiguration, $deploymentSteps);
 
+        $this->assetsDirectory = $assetsDirectory;
         $this->uploadsDirectory = $uploadsDirectory;
     }
 
@@ -86,7 +94,7 @@ class DeployProjectCommand extends AbstractProjectDeploymentCommand
             $this->invoke($output, ImportUploadsCommand::NAME, ['path' => $this->uploadsDirectory, '--environment' => $environment, '--force' => null]);
         }
 
-        $deployment = $this->apiClient->createDeployment($projectId, $environment, $this->projectConfiguration);
+        $deployment = $this->apiClient->createDeployment($projectId, $environment, $this->projectConfiguration, $this->generateDirectoryHash($this->assetsDirectory));
 
         if (!$deployment->has('id')) {
             throw new RuntimeException('There was an error creating the deployment');
@@ -101,5 +109,21 @@ class DeployProjectCommand extends AbstractProjectDeploymentCommand
     protected function getSuccessMessage(string $environment): string
     {
         return sprintf('Project deployed successfully to "<comment>%s</comment>" environment', $environment);
+    }
+
+    /**
+     * Generate a hash for the content of the given directory.
+     */
+    private function generateDirectoryHash(string $directory): string
+    {
+        $iterator = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($directory), \RecursiveIteratorIterator::SELF_FIRST);
+
+        return hash('sha256', collect($iterator)->filter(function (\SplFileInfo $file) {
+            return $file->isFile();
+        })->mapWithKeys(function (\SplFileInfo $file) {
+            return [substr($file->getRealPath(), (int) strrpos($file->getRealPath(), '.ymir')) => $file->getRealPath()];
+        })->map(function (string $realPath, string $relativePath) {
+            return sprintf('%s|%s', $relativePath, hash_file('sha256', $realPath));
+        })->implode(''));
     }
 }

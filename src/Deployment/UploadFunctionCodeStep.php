@@ -74,10 +74,9 @@ class UploadFunctionCodeStep implements DeploymentStepInterface
     /**
      * {@inheritdoc}
      */
-    public function perform(Collection $deployment, OutputInterface $output)
+    public function perform(Collection $deployment, string $environment, OutputInterface $output)
     {
         $configuration = $deployment->get('configuration');
-        $environment = Arr::first(array_keys($configuration['environments']));
         $deploymentType = Arr::get($configuration, sprintf('environments.%s.deployment', $environment), 'zip');
 
         if ('image' === $deploymentType) {

@@ -38,7 +38,7 @@ class StartAndMonitorDeploymentStep implements DeploymentStepInterface
     /**
      * {@inheritdoc}
      */
-    public function perform(Collection $deployment, OutputInterface $output)
+    public function perform(Collection $deployment, string $environment, OutputInterface $output)
     {
         $output->info(sprintf('%s starting', ucfirst($deployment->get('type', 'deployment'))));
 

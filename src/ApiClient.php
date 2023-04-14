@@ -150,9 +150,9 @@ class ApiClient
     /**
      * Create a new deployment for the given project on the given environment.
      */
-    public function createDeployment(int $projectId, string $environment, ProjectConfiguration $projectConfiguration): Collection
+    public function createDeployment(int $projectId, string $environment, ProjectConfiguration $projectConfiguration, ?string $assetsHash = null): Collection
     {
-        return $this->client->createDeployment($projectId, $environment, $projectConfiguration->toArray());
+        return $this->client->createDeployment($projectId, $environment, $projectConfiguration->toArray(), $assetsHash);
     }
 
     /**
