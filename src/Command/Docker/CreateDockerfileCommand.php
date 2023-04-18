@@ -97,22 +97,19 @@ class CreateDockerfileCommand extends AbstractProjectCommand
         }
 
         $dockerfilePath = $this->projectDirectory.'/'.$dockerfileStub;
-
-        if ($this->filesystem->exists($dockerfilePath) && !$output->confirm('Dockerfile already exists. Do you want to overwrite it?', false)) {
-            return;
-        }
-
-        $this->filesystem->copy($dockerfileStubPath, $dockerfilePath);
-
         $message = 'Dockerfile created';
 
         if (!empty($environment)) {
             $message .= sprintf(' for "<comment>%s</comment>" environment', $environment);
         }
 
-        $output->info($message);
+        if (!$this->filesystem->exists($dockerfilePath) || $output->confirm('Dockerfile already exists. Do you want to overwrite it?', false)) {
+            $this->filesystem->copy($dockerfileStubPath, $dockerfilePath);
 
-        if (!$this->getBooleanOption($input, 'configure-project') && !$output->confirm('Would you like to configure your project for container image deployment?')) {
+            $output->info($message);
+        }
+
+        if (!$this->getBooleanOption($input, 'configure-project') && !$output->confirm('Would you also like to configure your project for container image deployment?')) {
             return;
         }
 
