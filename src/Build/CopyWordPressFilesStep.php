@@ -110,12 +110,29 @@ class CopyWordPressFilesStep extends AbstractBuildStep
     }
 
     /**
-     * Get files from "include" node.
+     * Get the Finder object for finding the all the files from "build.include" configuration node.
      */
-    private function getIncludedFiles(array $paths): Finder
+    private function getIncludedFiles(array $patterns): Finder
     {
+        $patterns = collect($patterns)->map(function (string $pattern) {
+            return '/'.ltrim($pattern, '/');
+        });
+
+        $files = $patterns->map(function (string $pattern) {
+            return '/'.ltrim($pattern, '/');
+        })->filter(function (string $pattern) {
+            return is_file($this->projectDirectory.$pattern);
+        })->map(function (string $pattern) {
+            return $this->getSplFileInfo($pattern);
+        });
+
+        $paths = $patterns->filter(function (string $pattern) {
+            return !is_file($this->projectDirectory.$pattern);
+        });
+
         return $this->getBaseFinder()
-            ->path($paths)
+            ->path($paths->all())
+            ->append($files->all())
             ->followLinks();
     }
 
