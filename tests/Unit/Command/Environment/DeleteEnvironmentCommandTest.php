@@ -31,124 +31,49 @@ class DeleteEnvironmentCommandTest extends TestCase
 
     public function testDeletesEnvironment()
     {
-        $apiClient = $this->getApiClientMock();
-        $apiClient->expects($this->once())
-                  ->method('isAuthenticated')
-                  ->willReturn(true);
-        $cliConfiguration = $this->getCliConfigurationMock();
-        $projectConfiguration = $this->getProjectConfigurationMock();
-
         $environment = $this->faker->word;
+        $inputs = ['yes', 'no'];
+        $input = ['environment' => $environment];
+        $interactive = true;
+        $expectedWithResourcesValue = false;
 
-        $apiClient->expects($this->once())
-                  ->method('getEnvironments')
-                  ->with($this->equalTo($projectConfiguration->getProjectId()))
-                  ->willReturn(collect([['name' => $environment]]));
-
-        $apiClient->expects($this->once())
-                  ->method('deleteEnvironment')
-                  ->with($this->equalTo($projectConfiguration->getProjectId()), $this->equalTo($environment), $this->equalTo(false));
-
-        $projectConfiguration->expects($this->once())
-                             ->method('deleteEnvironment')
-                             ->with($this->equalTo($environment));
-
-        $commandTester = new CommandTester(new DeleteEnvironmentCommand($apiClient, $cliConfiguration, $projectConfiguration));
-
-        $commandTester->setInputs([
-            'yes',
-            'no',
-        ]);
-
-        $commandTester->execute([
-            'environment' => $environment,
-        ], [
-            'interactive' => true,
-        ]);
-
-        $commandTester->assertCommandIsSuccessful();
-
-        $this->assertStringContainsString('Environment deleted', $commandTester->getDisplay());
+        $this->assertDeletesEnvironment($environment, $inputs, $input, $interactive, $expectedWithResourcesValue);
     }
 
     public function testDeletesEnvironmentWithoutInteraction()
     {
-        $apiClient = $this->getApiClientMock();
-        $apiClient->expects($this->once())
-                  ->method('isAuthenticated')
-                  ->willReturn(true);
-        $cliConfiguration = $this->getCliConfigurationMock();
-        $projectConfiguration = $this->getProjectConfigurationMock();
-
         $environment = $this->faker->word;
+        $inputs = [];
+        $input = ['environment' => $environment];
+        $interactive = false;
+        $expectedWithResourcesValue = false;
 
-        $apiClient->expects($this->once())
-                  ->method('getEnvironments')
-                  ->with($this->equalTo($projectConfiguration->getProjectId()))
-                  ->willReturn(collect([['name' => $environment]]));
-
-        $apiClient->expects($this->once())
-            ->method('deleteEnvironment')
-            ->with($this->equalTo($projectConfiguration->getProjectId()), $this->equalTo($environment), $this->equalTo(false));
-
-        $projectConfiguration->expects($this->once())
-                             ->method('deleteEnvironment')
-                             ->with($this->equalTo($environment));
-
-        $commandTester = new CommandTester(new DeleteEnvironmentCommand($apiClient, $cliConfiguration, $projectConfiguration));
-
-        $commandTester->execute([
-            'environment' => $environment,
-            '--confirm' => null,
-        ], [
-            'interactive' => false,
-        ]);
-
-        $commandTester->assertCommandIsSuccessful();
-
-        $this->assertStringContainsString('Environment deleted', $commandTester->getDisplay());
+        $this->assertDeletesEnvironment($environment, $inputs, $input, $interactive, $expectedWithResourcesValue);
     }
 
     public function testDeletesEnvironmentWithoutInteractionWithResources()
     {
-        $apiClient = $this->getApiClientMock();
-        $apiClient->expects($this->once())
-            ->method('isAuthenticated')
-            ->willReturn(true);
-        $cliConfiguration = $this->getCliConfigurationMock();
-        $projectConfiguration = $this->getProjectConfigurationMock();
-
         $environment = $this->faker->word;
+        $inputs = [];
+        $input = ['environment' => $environment, '--delete-resources' => null];
+        $interactive = false;
+        $expectedWithResourcesValue = true;
 
-        $apiClient->expects($this->once())
-                  ->method('getEnvironments')
-                  ->with($this->equalTo($projectConfiguration->getProjectId()))
-                  ->willReturn(collect([['name' => $environment]]));
-
-        $apiClient->expects($this->once())
-                  ->method('deleteEnvironment')
-                  ->with($this->equalTo($projectConfiguration->getProjectId()), $this->equalTo($environment), $this->equalTo(true));
-
-        $projectConfiguration->expects($this->once())
-                             ->method('deleteEnvironment')
-                             ->with($this->equalTo($environment));
-
-        $commandTester = new CommandTester(new DeleteEnvironmentCommand($apiClient, $cliConfiguration, $projectConfiguration));
-
-        $commandTester->execute([
-            'environment' => $environment,
-            '--confirm' => null,
-            '--delete-resources' => null,
-        ], [
-            'interactive' => false,
-        ]);
-
-        $commandTester->assertCommandIsSuccessful();
-
-        $this->assertStringContainsString('Environment deleted', $commandTester->getDisplay());
+        $this->assertDeletesEnvironment($environment, $inputs, $input, $interactive, $expectedWithResourcesValue);
     }
 
     public function testDeletesEnvironmentWithResources()
+    {
+        $environment = $this->faker->word;
+        $inputs = ['yes', 'yes'];
+        $input = ['environment' => $environment];
+        $interactive = true;
+        $expectedWithResourcesValue = true;
+
+        $this->assertDeletesEnvironment($environment, $inputs, $input, $interactive, $expectedWithResourcesValue);
+    }
+
+    private function assertDeletesEnvironment(string $environment, array $inputs, array $input, bool $interactive, bool $expectedWithResourcesValue)
     {
         $apiClient = $this->getApiClientMock();
         $apiClient->expects($this->once())
@@ -157,8 +82,6 @@ class DeleteEnvironmentCommandTest extends TestCase
         $cliConfiguration = $this->getCliConfigurationMock();
         $projectConfiguration = $this->getProjectConfigurationMock();
 
-        $environment = $this->faker->word;
-
         $apiClient->expects($this->once())
                   ->method('getEnvironments')
                   ->with($this->equalTo($projectConfiguration->getProjectId()))
@@ -166,7 +89,7 @@ class DeleteEnvironmentCommandTest extends TestCase
 
         $apiClient->expects($this->once())
                   ->method('deleteEnvironment')
-                  ->with($this->equalTo($projectConfiguration->getProjectId()), $this->equalTo($environment), $this->equalTo(true));
+                  ->with($this->equalTo($projectConfiguration->getProjectId()), $this->equalTo($environment), $this->equalTo($expectedWithResourcesValue));
 
         $projectConfiguration->expects($this->once())
                              ->method('deleteEnvironment')
@@ -174,16 +97,9 @@ class DeleteEnvironmentCommandTest extends TestCase
 
         $commandTester = new CommandTester(new DeleteEnvironmentCommand($apiClient, $cliConfiguration, $projectConfiguration));
 
-        $commandTester->setInputs([
-            'yes',
-            'yes',
-        ]);
+        $commandTester->setInputs($inputs);
 
-        $commandTester->execute([
-            'environment' => $environment,
-        ], [
-            'interactive' => true,
-        ]);
+        $commandTester->execute($input, ['interactive' => $interactive]);
 
         $commandTester->assertCommandIsSuccessful();
 
