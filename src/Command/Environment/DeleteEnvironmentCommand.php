@@ -38,8 +38,7 @@ class DeleteEnvironmentCommand extends AbstractProjectCommand
             ->setName(self::NAME)
             ->setDescription('Delete an environment')
             ->addArgument('environment', InputArgument::OPTIONAL, 'The name of the environment to delete')
-            ->addOption('--confirm', null, InputOption::VALUE_NONE)
-            ->addOption('--delete-resources', null, InputOption::VALUE_NONE);
+            ->addOption('--delete-resources', null);
     }
 
     /**
@@ -49,13 +48,11 @@ class DeleteEnvironmentCommand extends AbstractProjectCommand
     {
         $environment = $this->determineEnvironment($input, $output);
 
-        $confirm = $input->getOption('confirm') ?: $output->confirm(sprintf('Are you sure you want to delete the "<comment>%s</comment>" environment?', $environment), false);
-
-        if (!$confirm) {
+        if (!$output->confirm(sprintf('Are you sure you want to delete the "<comment>%s</comment>" environment?', $environment), !$input->isInteractive())) {
             return;
         }
 
-        $deleteResources = $input->getOption('delete-resources') ?: $output->confirm('Do you want to delete all the environment resources on the cloud provider?', false);
+        $deleteResources = $this->getBooleanOption($input, 'delete-resources') || $output->confirm('Do you want to delete all the environment resources on the cloud provider?', false);
 
         $this->apiClient->deleteEnvironment($this->projectConfiguration->getProjectId(), $environment, $deleteResources);
 
