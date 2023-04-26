@@ -16,6 +16,7 @@ namespace Ymir\Cli\Command\Environment;
 use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Ymir\Cli\Command\AbstractProjectCommand;
 use Ymir\Cli\Console\OutputInterface;
 
@@ -36,7 +37,9 @@ class DeleteEnvironmentCommand extends AbstractProjectCommand
         $this
             ->setName(self::NAME)
             ->setDescription('Delete an environment')
-            ->addArgument('environment', InputArgument::OPTIONAL, 'The name of the environment to delete');
+            ->addArgument('environment', InputArgument::OPTIONAL, 'The name of the environment to delete')
+            ->addOption('--confirm', null, InputOption::VALUE_NONE)
+            ->addOption('--delete-resources', null, InputOption::VALUE_NONE);
     }
 
     /**
@@ -46,11 +49,13 @@ class DeleteEnvironmentCommand extends AbstractProjectCommand
     {
         $environment = $this->determineEnvironment($input, $output);
 
-        if (!$output->confirm(sprintf('Are you sure you want to delete the "<comment>%s</comment>" environment?', $environment), false)) {
+        $confirm = $input->getOption('confirm') ?: $output->confirm(sprintf('Are you sure you want to delete the "<comment>%s</comment>" environment?', $environment), false);
+
+        if (!$confirm) {
             return;
         }
 
-        $deleteResources = $output->confirm('Do you want to delete all the environment resources on the cloud provider?', false);
+        $deleteResources = $input->getOption('delete-resources') ?: $output->confirm('Do you want to delete all the environment resources on the cloud provider?', false);
 
         $this->apiClient->deleteEnvironment($this->projectConfiguration->getProjectId(), $environment, $deleteResources);
 
