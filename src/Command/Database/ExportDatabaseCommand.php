@@ -95,7 +95,7 @@ class ExportDatabaseCommand extends AbstractDatabaseCommand
 
         $output->infoWithDelayWarning(sprintf('Exporting "<comment>%s</comment>" database', $name));
 
-        Process::runShellCommandline(sprintf('mysqldump --quick --single-transaction --default-character-set=utf8mb4 --host=%s --port=%s --user=%s --password=%s %s | gzip > %s', $host, $port, $user, $password, $name, $filename), null, null);
+        Process::runShellCommandline(sprintf('mysqldump --quick --single-transaction --skip-add-locks --default-character-set=utf8mb4 --host=%s --port=%s --user=%s --password=%s %s | gzip > %s', $host, $port, $user, $password, $name, $filename), null, null);
 
         if ($tunnel instanceof Process) {
             $tunnel->stop();
