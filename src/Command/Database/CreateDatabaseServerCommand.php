@@ -70,7 +70,7 @@ class CreateDatabaseServerCommand extends AbstractCommand
         $storage = 'aurora-mysql' !== $type ? $this->determineStorage($input, $output) : null;
         $public = 'aurora-mysql' !== $type && $this->determinePublic($input, $output);
 
-        if (!$public && !$network->get('has_nat_gateway') && !$output->confirm('A private database server requires that Ymir add a NAT gateway (~$32/month) to your network. Would you like to proceed? <fg=default>(Answering "<comment>no</comment>" will make the database server publicly accessible.)</>')) {
+        if ('aurora-mysql' !== $type && !$public && !$network->get('has_nat_gateway') && !$output->confirm('A private database server requires that Ymir add a NAT gateway (~$32/month) to your network. Would you like to proceed? <fg=default>(Answering "<comment>no</comment>" will make the database server publicly accessible.)</>')) {
             $public = true;
         } elseif ('aurora-mysql' === $type && !$network->get('has_nat_gateway') && !$output->confirm('An Aurora serverless database cluster requires that Ymir add a NAT gateway (~$32/month) to your network. Would you like to proceed? <fg=default>(Answering "<comment>no</comment>" will cancel the command.)</>')) {
             throw new CommandCancelledException();
