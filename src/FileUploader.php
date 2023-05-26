@@ -47,7 +47,7 @@ class FileUploader
     /**
      * Sends multiple requests concurrently.
      */
-    public function batch(string $method, Enumerable $requests, ?ProgressBar $progressBar = null)
+    public function batch(string $method, Enumerable $requests, ProgressBar $progressBar = null)
     {
         if ($progressBar instanceof ProgressBar) {
             $progressBar->start(count($requests));
@@ -74,7 +74,7 @@ class FileUploader
     /**
      * Upload the given file to the given URL.
      */
-    public function uploadFile(string $filePath, string $url, array $headers = [], ?ProgressBar $progressBar = null)
+    public function uploadFile(string $filePath, string $url, array $headers = [], ProgressBar $progressBar = null)
     {
         if (!is_readable($filePath)) {
             throw new RuntimeException(sprintf('Cannot read the "%s" file', $filePath));

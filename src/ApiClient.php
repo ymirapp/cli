@@ -150,7 +150,7 @@ class ApiClient
     /**
      * Create a new deployment for the given project on the given environment.
      */
-    public function createDeployment(int $projectId, string $environment, ProjectConfiguration $projectConfiguration, ?string $assetsHash = null): Collection
+    public function createDeployment(int $projectId, string $environment, ProjectConfiguration $projectConfiguration, string $assetsHash = null): Collection
     {
         return $this->client->createDeployment($projectId, $environment, $projectConfiguration->toArray(), $assetsHash);
     }
@@ -342,7 +342,7 @@ class ApiClient
     /**
      * Get an access token for the given email and password.
      */
-    public function getAccessToken(string $email, string $password, ?string $authenticationCode = null): string
+    public function getAccessToken(string $email, string $password, string $authenticationCode = null): string
     {
         try {
             return $this->client->getAccessToken($email, $password, $authenticationCode);

@@ -23,7 +23,7 @@ class WpCli extends CommandLineTool
     /**
      * Download WordPress.
      */
-    public static function downloadWordPress(?string $cwd = null)
+    public static function downloadWordPress(string $cwd = null)
     {
         self::runCommand('core download', $cwd);
     }
@@ -31,7 +31,7 @@ class WpCli extends CommandLineTool
     /**
      * Checks if WordPress is installed.
      */
-    public static function isWordPressInstalled(?string $cwd = null): bool
+    public static function isWordPressInstalled(string $cwd = null): bool
     {
         try {
             self::runCommand('core is-installed', $cwd);
@@ -45,7 +45,7 @@ class WpCli extends CommandLineTool
     /**
      * Checks if the Ymir plugin is installed.
      */
-    public static function isYmirPluginInstalled(?string $cwd = null): bool
+    public static function isYmirPluginInstalled(string $cwd = null): bool
     {
         try {
             return self::listPlugins($cwd)->contains(function (array $plugin) {
@@ -59,7 +59,7 @@ class WpCli extends CommandLineTool
     /**
      * List all the installed plugins.
      */
-    public static function listPlugins(?string $cwd = null): Collection
+    public static function listPlugins(string $cwd = null): Collection
     {
         $process = self::runCommand('plugin list --fields=file,name,status,title,version --format=json', $cwd);
 
@@ -91,7 +91,7 @@ class WpCli extends CommandLineTool
     /**
      * {@inheritdoc}
      */
-    protected static function runCommand(string $command, ?string $cwd = null): Process
+    protected static function runCommand(string $command, string $cwd = null): Process
     {
         if (function_exists('posix_geteuid') && 0 === posix_geteuid()) {
             throw new RuntimeException('WP-CLI commands can only be run as a non-root user');

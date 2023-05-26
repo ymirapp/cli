@@ -20,7 +20,7 @@ class Docker extends CommandLineTool
     /**
      * Build a docker image.
      */
-    public static function build(string $file, string $tag, ?string $cwd = null)
+    public static function build(string $file, string $tag, string $cwd = null)
     {
         self::runCommand(sprintf('build --pull --file=%s --tag=%s .', $file, $tag), $cwd);
     }
@@ -28,7 +28,7 @@ class Docker extends CommandLineTool
     /**
      * Login to a Docker registry.
      */
-    public static function login(string $username, string $password, string $server, ?string $cwd = null)
+    public static function login(string $username, string $password, string $server, string $cwd = null)
     {
         self::runCommand(sprintf('login --username %s --password %s %s', $username, $password, $server), $cwd);
     }
@@ -36,7 +36,7 @@ class Docker extends CommandLineTool
     /**
      * Push a docker image.
      */
-    public static function push(string $image, ?string $cwd = null)
+    public static function push(string $image, string $cwd = null)
     {
         self::runCommand(sprintf('push %s', $image), $cwd);
     }
@@ -44,7 +44,7 @@ class Docker extends CommandLineTool
     /**
      * Remove all images matching grep pattern.
      */
-    public static function rmigrep(string $pattern, ?string $cwd = null)
+    public static function rmigrep(string $pattern, string $cwd = null)
     {
         try {
             self::runCommand(sprintf('rmi -f $(docker images | grep \'%s\')', $pattern), $cwd);
@@ -65,7 +65,7 @@ class Docker extends CommandLineTool
     /**
      * Create a docker image tag.
      */
-    public static function tag(string $sourceImage, string $targetImage, ?string $cwd = null)
+    public static function tag(string $sourceImage, string $targetImage, string $cwd = null)
     {
         self::runCommand(sprintf('tag %s %s', $sourceImage, $targetImage), $cwd);
     }

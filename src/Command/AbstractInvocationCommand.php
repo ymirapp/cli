@@ -24,7 +24,7 @@ abstract class AbstractInvocationCommand extends AbstractProjectCommand
     /**
      * Invokes the environment console function with the given PHP command and returns the output.
      */
-    protected function invokePhpCommand(string $command, string $environment, ?int $timeout = null): array
+    protected function invokePhpCommand(string $command, string $environment, int $timeout = null): array
     {
         return $this->invokeEnvironmentFunction($environment, [
             'php' => $command,
@@ -34,7 +34,7 @@ abstract class AbstractInvocationCommand extends AbstractProjectCommand
     /**
      * Invokes the environment console function with the given WP-CLI command and returns the output.
      */
-    protected function invokeWpCliCommand(string $command, string $environment, ?int $timeout = null): array
+    protected function invokeWpCliCommand(string $command, string $environment, int $timeout = null): array
     {
         if ('wp ' === substr($command, 0, 3)) {
             $command = substr($command, 3);
@@ -48,7 +48,7 @@ abstract class AbstractInvocationCommand extends AbstractProjectCommand
     /**
      * Invokes the given environment console function with the given payload and returns the output.
      */
-    private function invokeEnvironmentFunction(string $environment, array $payload, ?int $timeout = null): array
+    private function invokeEnvironmentFunction(string $environment, array $payload, int $timeout = null): array
     {
         $invocationId = $this->apiClient->createInvocation($this->projectConfiguration->getProjectId(), $environment, $payload)->get('id');
 

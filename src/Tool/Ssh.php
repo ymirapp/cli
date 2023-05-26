@@ -23,7 +23,7 @@ class Ssh extends CommandLineTool
     /**
      * Creates an SSH tunnel to a bastion host and returns the running process.
      */
-    public static function tunnelBastionHost(array $bastionHost, int $localPort, string $remoteHost, int $remotePort, ?string $cwd = null): Process
+    public static function tunnelBastionHost(array $bastionHost, int $localPort, string $remoteHost, int $remotePort, string $cwd = null): Process
     {
         if (!isset($bastionHost['endpoint'], $bastionHost['private_key'])) {
             throw new InvalidArgumentException('Invalid bastion host given');
