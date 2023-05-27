@@ -36,7 +36,7 @@ abstract class AbstractInvocationCommand extends AbstractProjectCommand
      */
     protected function invokeWpCliCommand(string $command, string $environment, int $timeout = null): array
     {
-        if ('wp ' === substr($command, 0, 3)) {
+        if (str_starts_with($command, 'wp ')) {
             $command = substr($command, 3);
         }
 
