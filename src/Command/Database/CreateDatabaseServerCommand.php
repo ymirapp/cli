@@ -19,11 +19,10 @@ use Symfony\Component\Console\Helper\TableSeparator;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
-use Ymir\Cli\Command\AbstractCommand;
 use Ymir\Cli\Console\OutputInterface;
 use Ymir\Cli\Exception\CommandCancelledException;
 
-class CreateDatabaseServerCommand extends AbstractCommand
+class CreateDatabaseServerCommand extends AbstractDatabaseServerCommand
 {
     /**
      * The name of the command.
@@ -67,12 +66,12 @@ class CreateDatabaseServerCommand extends AbstractCommand
         }
 
         $type = $this->determineType($input, $output, (int) $network['provider']['id']);
-        $storage = 'aurora-mysql' !== $type ? $this->determineStorage($input, $output) : null;
-        $public = 'aurora-mysql' !== $type && $this->determinePublic($input, $output);
+        $storage = self::AURORA_DATABASE_TYPE !== $type ? $this->determineStorage($input, $output) : null;
+        $public = self::AURORA_DATABASE_TYPE !== $type && $this->determinePublic($input, $output);
 
-        if ('aurora-mysql' !== $type && !$public && !$network->get('has_nat_gateway') && !$output->confirm('A private database server requires that Ymir add a NAT gateway (~$32/month) to your network. Would you like to proceed? <fg=default>(Answering "<comment>no</comment>" will make the database server publicly accessible.)</>')) {
+        if (self::AURORA_DATABASE_TYPE !== $type && !$public && !$network->get('has_nat_gateway') && !$output->confirm('A private database server requires that Ymir add a NAT gateway (~$32/month) to your network. Would you like to proceed? <fg=default>(Answering "<comment>no</comment>" will make the database server publicly accessible.)</>')) {
             $public = true;
-        } elseif ('aurora-mysql' === $type && !$network->get('has_nat_gateway') && !$output->confirm('An Aurora serverless database cluster requires that Ymir add a NAT gateway (~$32/month) to your network. Would you like to proceed? <fg=default>(Answering "<comment>no</comment>" will cancel the command.)</>')) {
+        } elseif (self::AURORA_DATABASE_TYPE === $type && !$network->get('has_nat_gateway') && !$output->confirm('An Aurora serverless database cluster requires that Ymir add a NAT gateway (~$32/month) to your network. Would you like to proceed? <fg=default>(Answering "<comment>no</comment>" will cancel the command.)</>')) {
             throw new CommandCancelledException();
         }
 
@@ -128,7 +127,7 @@ class CreateDatabaseServerCommand extends AbstractCommand
      */
     private function determineType(InputInterface $input, OutputInterface $output, int $providerId): string
     {
-        $type = !$this->getBooleanOption($input, 'serverless') ? $this->getStringOption($input, 'type') : 'aurora-mysql';
+        $type = !$this->getBooleanOption($input, 'serverless') ? $this->getStringOption($input, 'type') : self::AURORA_DATABASE_TYPE;
         $types = $this->apiClient->getDatabaseServerTypes($providerId);
 
         if ($types->isEmpty()) {

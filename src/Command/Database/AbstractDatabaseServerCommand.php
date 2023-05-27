@@ -21,6 +21,13 @@ use Ymir\Cli\Console\OutputInterface;
 abstract class AbstractDatabaseServerCommand extends AbstractCommand
 {
     /**
+     * The name of the Aurora database type.
+     *
+     * @var string
+     */
+    protected const AURORA_DATABASE_TYPE = 'aurora-mysql';
+
+    /**
      * Determine the database server that the command is interacting with.
      */
     protected function determineDatabaseServer(string $question, InputInterface $input, OutputInterface $output): array
