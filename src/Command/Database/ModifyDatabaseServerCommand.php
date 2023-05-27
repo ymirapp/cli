@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Ymir\Cli\Command\Database;
 
 use Symfony\Component\Console\Exception\InvalidArgumentException;
+use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -47,6 +48,10 @@ class ModifyDatabaseServerCommand extends AbstractDatabaseServerCommand
     protected function perform(InputInterface $input, OutputInterface $output)
     {
         $databaseServer = $this->determineDatabaseServer('Which database server would you like to modify?', $input, $output);
+
+        if (self::AURORA_DATABASE_TYPE === $databaseServer['type']) {
+            throw new RuntimeException('You cannot modify an Aurora database server');
+        }
 
         $this->apiClient->updateDatabaseServer((int) $databaseServer['id'], $this->determineStorage($input, $output, (int) $databaseServer['storage']), $this->determineType($input, $output, $databaseServer['network']['provider']['id'], $databaseServer['type']));
 
