@@ -59,6 +59,8 @@ class WpCliCommand extends AbstractInvocationCommand
 
         if (in_array($command, ['shell'])) {
             throw new RuntimeException(sprintf('The "wp %s" command isn\'t available remotely', $command));
+        } elseif (in_array($command, ['db import', 'db export'])) {
+            throw new RuntimeException(sprintf('Please use the "ymir database:%s" command instead of the "wp %s" command', substr($command, 3), $command));
         }
 
         $output->info(sprintf('Running "<comment>wp %s</comment>" %s "<comment>%s</comment>" environment', $command, $async ? 'asynchronously on' : 'on', $environment));
