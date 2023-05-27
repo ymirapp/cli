@@ -82,7 +82,7 @@ class ProcessAssetsStep implements DeploymentStepInterface
 
         $output->writeStep('Getting signed asset URLs');
         $assetFiles = $this->getAssetFiles();
-        $signedAssetRequests = $this->apiClient->getSignedAssetRequests($deployment->get('id'), $assetFiles->map(function (array $asset) {
+        $signedAssetRequests = $this->apiClient->getSignedAssetRequests((int) $deployment->get('id'), $assetFiles->map(function (array $asset) {
             return [
                 'path' => utf8_encode($asset['relative_path']),
                 'hash' => $asset['hash'],

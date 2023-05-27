@@ -91,10 +91,10 @@ class UploadFunctionCodeStep implements DeploymentStepInterface
      */
     private function pushImage(Collection $deployment, string $environment, OutputInterface $output)
     {
-        $image = $this->apiClient->getDeploymentImage($deployment->get('id'));
-        $imageUri = $image->get('image_uri');
+        $image = $this->apiClient->getDeploymentImage((int) $deployment->get('id'));
+        $imageUri = (string) $image->get('image_uri');
 
-        list($user, $password) = explode(':', base64_decode($image->get('authorization_token')));
+        list($user, $password) = explode(':', base64_decode((string) $image->get('authorization_token')));
 
         $output->infoWithDelayWarning('Pushing container image');
 
@@ -113,7 +113,7 @@ class UploadFunctionCodeStep implements DeploymentStepInterface
         $progressBar->setFormat('<info>%message%</info> (<comment>%percent%%</comment>)');
         $progressBar->setMessage('Uploading build');
 
-        $this->uploader->uploadFile($this->buildArtifactPath, $this->apiClient->getArtifactUploadUrl($deployment->get('id')), [], $progressBar);
+        $this->uploader->uploadFile($this->buildArtifactPath, $this->apiClient->getArtifactUploadUrl((int) $deployment->get('id')), [], $progressBar);
 
         $output->newLine();
     }

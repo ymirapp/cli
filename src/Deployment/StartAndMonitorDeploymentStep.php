@@ -44,13 +44,13 @@ class StartAndMonitorDeploymentStep implements DeploymentStepInterface
 
         $this->registerCancellationHandler($deployment, $output);
 
-        $this->apiClient->startDeployment($deployment->get('id'));
+        $this->apiClient->startDeployment((int) $deployment->get('id'));
 
-        $this->waitForDeploymentStatusChange($deployment->get('id'), 'pending');
+        $this->waitForDeploymentStatusChange((int) $deployment->get('id'), 'pending');
 
-        $this->getDeploymentSteps($deployment->get('id'))->each(function (array $step) use ($deployment, $output) {
+        $this->getDeploymentSteps((int) $deployment->get('id'))->each(function (array $step) use ($deployment, $output) {
             $output->writeStep($this->getFormattedDeploymentStepName($step['task']));
-            $this->waitForDeploymentStepToFinish($deployment->get('id'), $step['id']);
+            $this->waitForDeploymentStepToFinish((int) $deployment->get('id'), $step['id']);
         });
     }
 
@@ -116,8 +116,8 @@ class StartAndMonitorDeploymentStep implements DeploymentStepInterface
             $output->newLine();
             $output->comment(sprintf('Attempting to cancel the %s', $deployment->get('type', 'deployment')));
 
-            $this->apiClient->cancelDeployment($deployment->get('id'));
-            $this->waitForDeploymentStatusChange($deployment->get('id'), 'cancelling');
+            $this->apiClient->cancelDeployment((int) $deployment->get('id'));
+            $this->waitForDeploymentStatusChange((int) $deployment->get('id'), 'cancelling');
 
             $output->info(sprintf('%s cancelled', ucfirst($deployment->get('type', 'deployment'))));
 

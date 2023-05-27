@@ -70,7 +70,7 @@ abstract class AbstractProjectDeploymentCommand extends AbstractProjectCommand
             return;
         }
 
-        $unmanagedDomains = collect($this->apiClient->getDeployment($deployment->get('id'))->get('unmanaged_domains'));
+        $unmanagedDomains = collect($this->apiClient->getDeployment((int) $deployment->get('id'))->get('unmanaged_domains'));
 
         if ($unmanagedDomains->isEmpty()) {
             return;
