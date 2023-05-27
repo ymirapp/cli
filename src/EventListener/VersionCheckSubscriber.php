@@ -79,8 +79,10 @@ class VersionCheckSubscriber implements EventSubscriberInterface
             $this->cliConfiguration->setGitHubLastCheckedTimestamp($time);
         }
 
-        if (version_compare($this->cliConfiguration->getGitHubCliVersion(), $this->version, '>')) {
-            $event->getOutput()->writeln('<comment>A new version of the Ymir CLI is available</comment>');
+        $latestVersion = $this->cliConfiguration->getGitHubCliVersion();
+
+        if (version_compare($latestVersion, $this->version, '>')) {
+            $event->getOutput()->writeln(sprintf('<comment>A new version of the Ymir CLI is available:</comment> <info>%s</info> → <info>%s</info>', $this->version, $latestVersion));
         }
     }
 
