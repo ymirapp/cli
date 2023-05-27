@@ -40,6 +40,7 @@ class WooCommerceConfigurationChangeTest extends TestCase
             'cdn' => [
                 'cookies_whitelist' => ['foo_cookie', 'woocommerce_cart_hash', 'woocommerce_items_in_cart', 'woocommerce_recently_viewed', 'wp_woocommerce_session_*'],
                 'excluded_paths' => ['/addons', '/cart', '/checkout', '/foo', '/my-account'],
+                'forwarded_headers' => ['authorization', 'origin', 'x-http-method-override', 'x-wp-nonce'],
             ],
         ], $this->configurationChange->apply([
             'build' => ['include' => [
@@ -62,6 +63,7 @@ class WooCommerceConfigurationChangeTest extends TestCase
             'cdn' => [
                 'cookies_whitelist' => ['foo_cookie', 'woocommerce_cart_hash', 'woocommerce_items_in_cart', 'woocommerce_recently_viewed', 'wp_woocommerce_session_*'],
                 'excluded_paths' => ['/addons', '/cart', '/checkout', '/foo', '/my-account'],
+                'forwarded_headers' => ['authorization', 'origin', 'x-http-method-override', 'x-wp-nonce'],
             ],
         ], $this->configurationChange->apply([
             'build' => ['include' => ['wp-content/plugins/foo']],
@@ -78,6 +80,7 @@ class WooCommerceConfigurationChangeTest extends TestCase
             'cdn' => [
                 'cookies_whitelist' => ['woocommerce_cart_hash', 'woocommerce_items_in_cart', 'woocommerce_recently_viewed', 'wp_woocommerce_session_*'],
                 'excluded_paths' => ['/addons', '/cart', '/checkout', '/my-account'],
+                'forwarded_headers' => ['authorization', 'origin', 'x-http-method-override', 'x-wp-nonce'],
             ],
             'deployment' => 'image',
         ], $this->configurationChange->apply(['deployment' => 'image'], 'bedrock'));
@@ -90,6 +93,7 @@ class WooCommerceConfigurationChangeTest extends TestCase
             'cdn' => [
                 'cookies_whitelist' => ['woocommerce_cart_hash', 'woocommerce_items_in_cart', 'woocommerce_recently_viewed', 'wp_woocommerce_session_*'],
                 'excluded_paths' => ['/addons', '/cart', '/checkout', '/my-account'],
+                'forwarded_headers' => ['authorization', 'origin', 'x-http-method-override', 'x-wp-nonce'],
             ],
         ], $this->configurationChange->apply([], 'bedrock'));
     }
@@ -100,6 +104,7 @@ class WooCommerceConfigurationChangeTest extends TestCase
             'cdn' => [
                 'cookies_whitelist' => ['woocommerce_cart_hash', 'woocommerce_items_in_cart', 'woocommerce_recently_viewed', 'wp_woocommerce_session_*'],
                 'excluded_paths' => ['/addons', '/cart', '/checkout', '/my-account'],
+                'forwarded_headers' => ['authorization', 'origin', 'x-http-method-override', 'x-wp-nonce'],
             ],
             'deployment' => 'image',
         ], $this->configurationChange->apply(['deployment' => 'image'], 'wordpress'));
@@ -112,6 +117,7 @@ class WooCommerceConfigurationChangeTest extends TestCase
             'cdn' => [
                 'cookies_whitelist' => ['woocommerce_cart_hash', 'woocommerce_items_in_cart', 'woocommerce_recently_viewed', 'wp_woocommerce_session_*'],
                 'excluded_paths' => ['/addons', '/cart', '/checkout', '/my-account'],
+                'forwarded_headers' => ['authorization', 'origin', 'x-http-method-override', 'x-wp-nonce'],
             ],
         ], $this->configurationChange->apply([], 'wordpress'));
     }
