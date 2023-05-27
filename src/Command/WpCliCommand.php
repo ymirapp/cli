@@ -57,6 +57,10 @@ class WpCliCommand extends AbstractInvocationCommand
             $command = $output->ask('Please enter the WP-CLI command to run');
         }
 
+        if (str_starts_with($command, 'wp ')) {
+            $command = substr($command, 3);
+        }
+
         if (in_array($command, ['shell'])) {
             throw new RuntimeException(sprintf('The "wp %s" command isn\'t available remotely', $command));
         } elseif (in_array($command, ['db import', 'db export'])) {
