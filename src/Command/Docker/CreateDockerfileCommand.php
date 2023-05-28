@@ -13,15 +13,14 @@ declare(strict_types=1);
 
 namespace Ymir\Cli\Command\Docker;
 
-use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
-use Symfony\Component\Filesystem\Filesystem;
 use Ymir\Cli\ApiClient;
 use Ymir\Cli\CliConfiguration;
 use Ymir\Cli\Command\AbstractProjectCommand;
 use Ymir\Cli\Console\OutputInterface;
+use Ymir\Cli\Dockerfile;
 use Ymir\Cli\ProjectConfiguration\ImageDeploymentConfigurationChange;
 use Ymir\Cli\ProjectConfiguration\ProjectConfiguration;
 
@@ -35,36 +34,20 @@ class CreateDockerfileCommand extends AbstractProjectCommand
     public const NAME = 'docker:create';
 
     /**
-     * The file system.
+     * The project Dockerfile.
      *
-     * @var Filesystem
+     * @var Dockerfile
      */
-    private $filesystem;
-
-    /**
-     * The project directory where the project files are copied from.
-     *
-     * @var string
-     */
-    private $projectDirectory;
-
-    /**
-     * The directory where the stub files are.
-     *
-     * @var string
-     */
-    private $stubDirectory;
+    private $dockerfile;
 
     /**
      * Constructor.
      */
-    public function __construct(ApiClient $apiClient, CliConfiguration $cliConfiguration, Filesystem $filesystem, ProjectConfiguration $projectConfiguration, string $projectDirectory, string $stubDirectory)
+    public function __construct(ApiClient $apiClient, CliConfiguration $cliConfiguration, Dockerfile $dockerfile, ProjectConfiguration $projectConfiguration)
     {
         parent::__construct($apiClient, $cliConfiguration, $projectConfiguration);
 
-        $this->filesystem = $filesystem;
-        $this->projectDirectory = rtrim($projectDirectory, '/');
-        $this->stubDirectory = rtrim($stubDirectory, '/');
+        $this->dockerfile = $dockerfile;
     }
 
     /**
@@ -84,27 +67,15 @@ class CreateDockerfileCommand extends AbstractProjectCommand
      */
     protected function perform(InputInterface $input, OutputInterface $output)
     {
-        $dockerfileStub = 'Dockerfile';
-        $dockerfileStubPath = $this->stubDirectory.'/'.$dockerfileStub;
         $environment = $this->getStringArgument($input, 'environment', false);
-
-        if (!empty($environment)) {
-            $dockerfileStub = $environment.'.'.$dockerfileStub;
-        }
-
-        if (!$this->filesystem->exists($dockerfileStubPath)) {
-            throw new RuntimeException(sprintf('Cannot find "%s" stub file', $dockerfileStub));
-        }
-
-        $dockerfilePath = $this->projectDirectory.'/'.$dockerfileStub;
         $message = 'Dockerfile created';
 
         if (!empty($environment)) {
             $message .= sprintf(' for "<comment>%s</comment>" environment', $environment);
         }
 
-        if (!$this->filesystem->exists($dockerfilePath) || $output->confirm('Dockerfile already exists. Do you want to overwrite it?', false)) {
-            $this->filesystem->copy($dockerfileStubPath, $dockerfilePath);
+        if (!$this->dockerfile->exists($environment) || $output->confirm('Dockerfile already exists. Do you want to overwrite it?', false)) {
+            $this->dockerfile->create($environment);
 
             $output->info($message);
         }
