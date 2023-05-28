@@ -65,18 +65,16 @@ class BuildContainerImageStep implements BuildStepInterface
      */
     public function perform(string $environment, ProjectConfiguration $projectConfiguration)
     {
-        $file = 'Dockerfile';
+        $dockerfileName = 'Dockerfile';
 
-        if ($this->filesystem->exists($this->buildDirectory.sprintf('/.%s.Dockerfile', $environment))) {
-            $file = sprintf('.%s.Dockerfile', $environment);
-        } elseif ($this->filesystem->exists($this->buildDirectory.sprintf('/%s.Dockerfile', $environment))) {
-            $file = sprintf('%s.Dockerfile', $environment);
+        if ($this->filesystem->exists($this->buildDirectory.'/'.$environment.'.'.$dockerfileName)) {
+            $dockerfileName = $environment.'.'.$dockerfileName;
         }
 
-        if (!$this->filesystem->exists($this->buildDirectory.'/'.$file)) {
-            throw new RuntimeException('Unable to find a Dockerfile to build the container image');
+        if (!$this->filesystem->exists($this->buildDirectory.'/'.$dockerfileName)) {
+            throw new RuntimeException('Unable to find a "Dockerfile" to build the container image');
         }
 
-        Docker::build($file, sprintf('%s:%s', $projectConfiguration->getProjectName(), $environment), $this->buildDirectory);
+        Docker::build($dockerfileName, sprintf('%s:%s', $projectConfiguration->getProjectName(), $environment), $this->buildDirectory);
     }
 }
