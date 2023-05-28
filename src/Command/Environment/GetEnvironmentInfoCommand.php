@@ -52,7 +52,7 @@ class GetEnvironmentInfoCommand extends AbstractProjectCommand
 
         if (empty($environments)) {
             $output->info('Listing information on all environments found in <comment>ymir.yml</comment> file');
-            $environments = $this->projectConfiguration->getEnvironments();
+            $environments = $this->projectConfiguration->getEnvironments()->keys()->all();
         }
 
         foreach ($environments as $environment) {

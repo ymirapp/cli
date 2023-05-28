@@ -58,7 +58,7 @@ class Dockerfile
      */
     public function create(string $environment = '')
     {
-        $this->filesystem->copy($this->dockerfileStubPath, $this->getDockerfilePath($environment));
+        $this->filesystem->copy($this->dockerfileStubPath, $this->generateDockerfilePath($environment));
     }
 
     /**
@@ -66,14 +66,36 @@ class Dockerfile
      */
     public function exists(string $environment = ''): bool
     {
-        return $this->filesystem->exists($this->getDockerfilePath())
-            || $this->filesystem->exists($this->getDockerfilePath($environment));
+        return $this->filesystem->exists($this->generateDockerfilePath())
+            || $this->filesystem->exists($this->generateDockerfilePath($environment));
     }
 
     /**
-     * Get the path to the Dockerfile.
+     * Validate the Dockerfile.
      */
-    private function getDockerfilePath(string $environment = ''): string
+    public function validate(string $environment, string $architecture = '')
+    {
+        if (!$this->exists($environment)) {
+            throw new RuntimeException('Unable to find a "Dockerfile" in the project directory"');
+        }
+
+        $fromLine = (string) collect(file($this->getDockerfilePath($environment)))->first(function (string $line) {
+            return 1 === preg_match('/^[\s]*FROM/i', $line);
+        });
+
+        if (empty($fromLine)) {
+            return;
+        } elseif ('arm64' === $architecture && 1 === preg_match('/ymirapp\/php-runtime/i', $fromLine)) {
+            throw new RuntimeException('You must use the "ymirapp/arm-php-runtime" image with the "arm64" architecture');
+        } elseif ('arm64' !== $architecture && 1 === preg_match('/ymirapp\/arm-php-runtime/i', $fromLine)) {
+            throw new RuntimeException('You must use the "ymirapp/php-runtime" image with the "arm64" architecture');
+        }
+    }
+
+    /**
+     * Generate the path to the Dockerfile.
+     */
+    private function generateDockerfilePath(string $environment = ''): string
     {
         $dockerfileName = 'Dockerfile';
 
@@ -82,5 +104,19 @@ class Dockerfile
         }
 
         return $this->projectDirectory.'/'.$dockerfileName;
+    }
+
+    /**
+     * Get the path to the Dockerfile.
+     */
+    private function getDockerfilePath(string $environment = ''): string
+    {
+        $dockerfilePath = $this->generateDockerfilePath();
+
+        if ($this->filesystem->exists($this->generateDockerfilePath($environment))) {
+            $dockerfilePath = $this->generateDockerfilePath($environment);
+        }
+
+        return $dockerfilePath;
     }
 }

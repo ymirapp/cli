@@ -15,8 +15,13 @@ namespace Ymir\Cli\Command\Project;
 
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
+use Ymir\Cli\ApiClient;
+use Ymir\Cli\CliConfiguration;
 use Ymir\Cli\Command\AbstractProjectCommand;
 use Ymir\Cli\Console\OutputInterface;
+use Ymir\Cli\Dockerfile;
+use Ymir\Cli\ProjectConfiguration\ProjectConfiguration;
+use Ymir\Cli\Support\Arr;
 
 class ValidateProjectCommand extends AbstractProjectCommand
 {
@@ -35,6 +40,20 @@ class ValidateProjectCommand extends AbstractProjectCommand
     public const NAME = 'project:validate';
 
     /**
+     * The project Dockerfile.
+     *
+     * @var Dockerfile
+     */
+    private $dockerfile;
+
+    public function __construct(ApiClient $apiClient, CliConfiguration $cliConfiguration, Dockerfile $dockerfile, ProjectConfiguration $projectConfiguration)
+    {
+        parent::__construct($apiClient, $cliConfiguration, $projectConfiguration);
+
+        $this->dockerfile = $dockerfile;
+    }
+
+    /**
      * {@inheritdoc}
      */
     protected function configure()
@@ -51,13 +70,18 @@ class ValidateProjectCommand extends AbstractProjectCommand
      */
     protected function perform(InputInterface $input, OutputInterface $output)
     {
-        $environments = $input->getArgument('environments');
+        $environments = (array) $input->getArgument('environments');
+        $environments = $this->projectConfiguration->getEnvironments()->filter(function (array $configuration, string $environment) use ($environments) {
+            return empty($environments) || in_array($environment, $environments);
+        });
 
-        if (!is_array($environments)) {
-            $environments = (array) $environments;
-        }
+        $environments->filter(function (array $configuration) {
+            return 'image' === Arr::get($configuration, 'deployment');
+        })->each(function (array $configuration, string $environment) {
+            $this->dockerfile->validate($environment, Arr::get($configuration, 'architecture', ''));
+        });
 
-        $this->apiClient->validateProjectConfiguration($this->projectConfiguration, $environments);
+        $this->apiClient->validateProjectConfiguration($this->projectConfiguration, $environments->keys()->all());
 
         $output->info('Project <comment>ymir.yml</comment> file is valid');
     }

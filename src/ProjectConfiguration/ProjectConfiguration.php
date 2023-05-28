@@ -91,9 +91,9 @@ class ProjectConfiguration implements Arrayable
      */
     public function applyChangesToEnvironments(ConfigurationChangeInterface $configurationChange)
     {
-        foreach ($this->getEnvironments() as $environment) {
+        $this->getEnvironments()->keys()->each(function (string $environment) use ($configurationChange) {
             $this->applyChangesToEnvironment($environment, $configurationChange);
-        }
+        });
     }
 
     /**
@@ -156,9 +156,9 @@ class ProjectConfiguration implements Arrayable
     /**
      * Get the environments in the project configuration.
      */
-    public function getEnvironments(): array
+    public function getEnvironments(): Collection
     {
-        return array_keys($this->configuration['environments']);
+        return collect($this->configuration['environments']);
     }
 
     /**
