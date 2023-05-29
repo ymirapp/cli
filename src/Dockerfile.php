@@ -83,9 +83,7 @@ class Dockerfile
             return 1 === preg_match('/^[\s]*FROM/i', $line);
         });
 
-        if (empty($fromLine)) {
-            return;
-        } elseif ('arm64' === $architecture && 1 === preg_match('/ymirapp\/php-runtime/i', $fromLine)) {
+        if ('arm64' === $architecture && 1 === preg_match('/ymirapp\/php-runtime/i', $fromLine)) {
             throw new RuntimeException('You must use the "ymirapp/arm-php-runtime" image with the "arm64" architecture');
         } elseif ('arm64' !== $architecture && 1 === preg_match('/ymirapp\/arm-php-runtime/i', $fromLine)) {
             throw new RuntimeException('You must use the "ymirapp/php-runtime" image with the "arm64" architecture');
