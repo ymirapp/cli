@@ -70,6 +70,7 @@ class CompressBuildFilesStep implements BuildStepInterface
         $environment = $projectConfiguration->getEnvironment($environment);
         $files = Finder::create()
                        ->append($this->getRequiredFiles())
+                       ->append($this->getRequiredPluginFiles())
                        ->append($this->getRequiredThemeFiles())
                        ->append($this->getRequiredFileTypes())
                        ->append($this->getWordPressCoreFiles($projectConfiguration->getProjectType()));
@@ -149,6 +150,17 @@ class CompressBuildFilesStep implements BuildStepInterface
     }
 
     /**
+     * Get the Finder object for finding all the required plugin files.
+     */
+    private function getRequiredPluginFiles(): Finder
+    {
+        return $this->getBaseFinder()
+            ->path([
+                '/plugins\/[^\/]*\/block\.json$/',
+            ]);
+    }
+
+    /**
      * Get the Finder object for finding all the required theme files.
      */
     private function getRequiredThemeFiles(): Finder
@@ -157,6 +169,7 @@ class CompressBuildFilesStep implements BuildStepInterface
             ->path([
                 '/themes\/[^\/]*\/screenshot\.(gif|jpe?g|png)$/',
                 '/themes\/[^\/]*\/style\.css$/',
+                '/themes\/[^\/]*\/block\.json$/',
                 '/themes\/[^\/]*\/theme\.json$/',
                 '/themes\/[^\/]*\/[^\/]*\/.*\.html/',
                 '/themes\/[^\/]*\/[^\/]*\/.*\.json$/',
