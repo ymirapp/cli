@@ -73,7 +73,7 @@ class WpCliCommand extends AbstractInvocationCommand
 
         if (!$async) {
             $output->newLine();
-            $output->write("${result['output']}");
+            $output->write("{$result['output']}");
 
             $exitCode = $result['exitCode'];
         }

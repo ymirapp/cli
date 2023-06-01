@@ -50,7 +50,7 @@ class PhpVersionCommand extends AbstractInvocationCommand
         $result = $this->invokePhpCommand('--version', $environment);
 
         $output->newLine();
-        $output->write("${result['output']}");
+        $output->write("{$result['output']}");
 
         return $result['exitCode'];
     }

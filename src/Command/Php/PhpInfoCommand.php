@@ -50,7 +50,7 @@ class PhpInfoCommand extends AbstractInvocationCommand
         $result = $this->invokePhpCommand('--info', $environment);
 
         $output->newLine();
-        $output->write("${result['output']}");
+        $output->write("{$result['output']}");
 
         return $result['exitCode'];
     }
