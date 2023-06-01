@@ -59,7 +59,7 @@ abstract class AbstractDatabaseCommand extends AbstractCommand
         $password = $this->getStringOption($input, 'password', true);
 
         if (empty($password)) {
-            $password = $output->askHidden(sprintf('What\'s the "<comment>%s</comment>" password?', $user));
+            $password = (string) $output->askHidden(sprintf('What\'s the "<comment>%s</comment>" password?', $user));
         }
 
         return $password;
