@@ -98,7 +98,7 @@ class ImportDatabaseCommand extends AbstractDatabaseCommand
 
         $output->infoWithDelayWarning(sprintf('Importing "<comment>%s</comment>" to the "<comment>%s</comment>" database', $file, $name));
 
-        $command = sprintf('%s %s | mysql %s --protocol=TCP --host=%s --port=%s --user=%s --password=%s %s', str_ends_with($file, '.sql.gz') ? 'gunzip <' : 'cat', $file, $this->getBooleanOption($input, 'force') ? '--force' : '', $host, $port, $user, $password, $name);
+        $command = sprintf('set -o pipefail && %s %s | mysql %s --protocol=TCP --host=%s --port=%s --user=%s --password=%s %s', str_ends_with($file, '.sql.gz') ? 'gunzip <' : 'cat', $file, $this->getBooleanOption($input, 'force') ? '--force' : '', $host, $port, $user, $password, $name);
 
         Process::runShellCommandline($command, null, null);
 
