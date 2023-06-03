@@ -135,7 +135,7 @@ class InitializeProjectCommand extends AbstractCommand
             // needs an empty directory.
             $this->checkForWordPress($output, $projectType);
 
-            $this->projectConfiguration->createNew($this->apiClient->createProject($providerId, $projectName, $region), $environments->all(), $projectType);
+            $this->projectConfiguration->createNew($this->apiClient->createProject($providerId, $projectName, $region, $environments->keys()->all()), $environments->all(), $projectType);
 
             $output->infoWithDelayWarning('Project initialized');
 

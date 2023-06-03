@@ -198,9 +198,9 @@ class ApiClient
     /**
      * Create a new project with the given cloud provider.
      */
-    public function createProject(int $providerId, string $name, string $region): Collection
+    public function createProject(int $providerId, string $name, string $region, array $environments = []): Collection
     {
-        return $this->client->createProject($providerId, $name, $region, ['staging', 'production']);
+        return $this->client->createProject($providerId, $name, $region, $environments);
     }
 
     /**
