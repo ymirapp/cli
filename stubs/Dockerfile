@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 ymirapp/php-runtime:php-74
+FROM --platform=linux/arm64 ymirapp/arm-php-runtime:php-74
 
 ENTRYPOINT []
 

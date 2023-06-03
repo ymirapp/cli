@@ -253,8 +253,15 @@ class InitializeProjectCommand extends AbstractCommand
     private function getBaseEnvironmentsConfiguration(string $projectType): Collection
     {
         $environments = [
-            'production' => [],
-            'staging' => ['cdn' => ['caching' => 'assets'], 'cron' => false, 'warmup' => false],
+            'production' => [
+                'architecture' => 'arm64',
+            ],
+            'staging' => [
+                'architecture' => 'arm64',
+                'cdn' => ['caching' => 'assets'],
+                'cron' => false,
+                'warmup' => false,
+            ],
         ];
 
         if ('bedrock' === $projectType) {
