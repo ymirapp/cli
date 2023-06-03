@@ -265,8 +265,8 @@ class InitializeProjectCommand extends AbstractCommand
         ];
 
         if ('bedrock' === $projectType) {
-            Arr::set($environments, 'staging.build', ['COMPOSER_MIRROR_PATH_REPOS=1 composer install']);
             Arr::set($environments, 'production.build', ['COMPOSER_MIRROR_PATH_REPOS=1 composer install --no-dev']);
+            Arr::set($environments, 'staging.build', ['COMPOSER_MIRROR_PATH_REPOS=1 composer install']);
         }
 
         return collect($environments);
