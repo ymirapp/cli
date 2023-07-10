@@ -38,3 +38,4 @@ define('AUTOMATIC_UPDATER_DISABLED', true);
 define('DISABLE_WP_CRON', (bool) getenv('DISABLE_WP_CRON'));
 define('DISALLOW_FILE_EDIT', true);
 define('DISALLOW_FILE_MODS', true);
+define('FS_METHOD', 'direct');
