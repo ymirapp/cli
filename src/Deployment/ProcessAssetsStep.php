@@ -84,7 +84,7 @@ class ProcessAssetsStep implements DeploymentStepInterface
         $assetFiles = $this->getAssetFiles();
         $signedAssetRequests = $this->apiClient->getSignedAssetRequests((int) $deployment->get('id'), $assetFiles->map(function (array $asset) {
             return [
-                'path' => utf8_encode($asset['relative_path']),
+                'path' => mb_convert_encoding($asset['relative_path'], 'UTF-8'),
                 'hash' => $asset['hash'],
             ];
         })->all());

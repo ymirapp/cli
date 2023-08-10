@@ -126,7 +126,7 @@ class ImportUploadsCommand extends AbstractProjectCommand
         })->chunk($size)->mapWithKeys(function (Enumerable $chunkedFiles) use ($environment) {
             return $this->getSignedUploadRequest($environment, $chunkedFiles);
         })->map(function (array $request, string $filePath) use ($filesystem, $progressBar, &$total) {
-            $request['body'] = $filesystem->readStream(utf8_decode($filePath));
+            $request['body'] = $filesystem->readStream(mb_convert_encoding($filePath, 'UTF-8'));
 
             ++$total;
 
@@ -183,7 +183,7 @@ class ImportUploadsCommand extends AbstractProjectCommand
     private function getSignedUploadRequest(string $environment, Enumerable $files): array
     {
         return $this->apiClient->getSignedUploadRequests($this->projectConfiguration->getProjectId(), $environment, $files->map(function (string $filePath) {
-            return ['path' => utf8_encode($filePath)];
+            return ['path' => mb_convert_encoding($filePath, 'UTF-8')];
         })->all())->all();
     }
 }
