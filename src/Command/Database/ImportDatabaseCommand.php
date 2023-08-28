@@ -23,6 +23,7 @@ use Ymir\Cli\CliConfiguration;
 use Ymir\Cli\Console\OutputInterface;
 use Ymir\Cli\Process\Process;
 use Ymir\Cli\ProjectConfiguration\ProjectConfiguration;
+use Ymir\Cli\Tool\Mysql;
 
 class ImportDatabaseCommand extends AbstractDatabaseCommand
 {
@@ -82,7 +83,7 @@ class ImportDatabaseCommand extends AbstractDatabaseCommand
         $databaseServer = $this->determineDatabaseServer('Which database server would you like to import a database to?', $input, $output);
         $host = $databaseServer['endpoint'];
         $name = $this->determineDatabaseName($databaseServer, $input, $output);
-        $port = 3306;
+        $port = '3306';
         $tunnel = null;
 
         $user = $this->determineUser($input, $output);
@@ -98,9 +99,7 @@ class ImportDatabaseCommand extends AbstractDatabaseCommand
 
         $output->infoWithDelayWarning(sprintf('Importing "<comment>%s</comment>" to the "<comment>%s</comment>" database', $file, $name));
 
-        $command = sprintf('set -o pipefail && %s %s | mysql %s --protocol=TCP --host=%s --port=%s --user=%s --password=%s %s', str_ends_with($file, '.sql.gz') ? 'gunzip <' : 'cat', $file, $this->getBooleanOption($input, 'force') ? '--force' : '', $host, $port, $user, $password, $name);
-
-        Process::runShellCommandline($command, null, null);
+        Mysql::import($file, $host, $port, $user, $password, $name, $this->getBooleanOption($input, 'force'));
 
         if ($tunnel instanceof Process) {
             $tunnel->stop();

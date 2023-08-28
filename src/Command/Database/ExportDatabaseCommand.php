@@ -24,6 +24,7 @@ use Ymir\Cli\CliConfiguration;
 use Ymir\Cli\Console\OutputInterface;
 use Ymir\Cli\Process\Process;
 use Ymir\Cli\ProjectConfiguration\ProjectConfiguration;
+use Ymir\Cli\Tool\Mysql;
 
 class ExportDatabaseCommand extends AbstractDatabaseCommand
 {
@@ -82,7 +83,7 @@ class ExportDatabaseCommand extends AbstractDatabaseCommand
         }
 
         $host = $databaseServer['endpoint'];
-        $port = 3306;
+        $port = '3306';
         $tunnel = null;
 
         if (!$databaseServer['publicly_accessible']) {
@@ -95,7 +96,7 @@ class ExportDatabaseCommand extends AbstractDatabaseCommand
 
         $output->infoWithDelayWarning(sprintf('Exporting "<comment>%s</comment>" database', $name));
 
-        Process::runShellCommandline(sprintf('set -o pipefail && mysqldump --quick --single-transaction --skip-add-locks --default-character-set=utf8mb4 --host=%s --port=%s --user=%s --password=%s %s | gzip > %s', $host, $port, $user, $password, $name, $filename), null, null);
+        Mysql::export($filename, $host, $port, $user, $password, $name);
 
         if ($tunnel instanceof Process) {
             $tunnel->stop();
