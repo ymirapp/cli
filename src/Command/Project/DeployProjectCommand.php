@@ -75,6 +75,7 @@ class DeployProjectCommand extends AbstractProjectDeploymentCommand
             ->setDescription('Deploy project to an environment')
             ->setAliases([self::ALIAS])
             ->addArgument('environment', InputArgument::OPTIONAL, 'The name of the environment to deploy to', 'staging')
+            ->addOption('pause-after-build', null, InputOption::VALUE_NONE, 'Pause deployment after the build step')
             ->addOption('with-uploads', null, InputOption::VALUE_NONE, 'Import the "uploads" directory during the deployment');
     }
 
@@ -89,6 +90,10 @@ class DeployProjectCommand extends AbstractProjectDeploymentCommand
 
         $this->invoke($output, ValidateProjectCommand::NAME, ['environments' => $environment]);
         $this->invoke($output, BuildProjectCommand::NAME, array_merge(['environment' => $environment], $withUploadsOption ? ['--with-uploads' => null] : []));
+
+        if ($this->getBooleanOption($input, 'pause-after-build')) {
+            $output->ask('Deployment paused. Press <comment>Enter</comment> to continue');
+        }
 
         if ($withUploadsOption) {
             $this->invoke($output, ImportUploadsCommand::NAME, ['path' => $this->uploadsDirectory, '--environment' => $environment, '--force' => null]);
