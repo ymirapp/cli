@@ -68,6 +68,7 @@ class BuildProjectCommand extends AbstractProjectCommand
             ->setDescription('Build the project for deployment')
             ->setAliases([self::ALIAS])
             ->addArgument('environment', InputArgument::OPTIONAL, 'The name of the environment to build', 'staging')
+            ->addOption('debug', null, InputOption::VALUE_NONE, 'Run the build in debug mode')
             ->addOption('with-uploads', null, InputOption::VALUE_NONE, 'Copy the "uploads" directory during the build');
     }
 
@@ -77,6 +78,7 @@ class BuildProjectCommand extends AbstractProjectCommand
     protected function perform(InputInterface $input, OutputInterface $output)
     {
         $buildOptions = [
+            'debug' => $this->getBooleanOption($input, 'debug'),
             'environment' => $this->getStringArgument($input, 'environment'),
             'uploads' => $this->getBooleanOption($input, 'with-uploads'),
         ];

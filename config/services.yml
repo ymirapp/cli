@@ -69,6 +69,7 @@ services:
         - '@Ymir\Cli\Build\EnsurePluginIsInstalledStep'
         - '@Ymir\Cli\Build\CopyMustUsePluginStep'
         - '@Ymir\Cli\Build\ModifyWordPressConfigurationStep'
+        - '@Ymir\Cli\Build\DebugBuildStep'
         - '@Ymir\Cli\Build\ExtractAssetFilesStep'
         - '@Ymir\Cli\Build\CompressBuildFilesStep'
         - '@Ymir\Cli\Build\BuildContainerImageStep'
