@@ -546,6 +546,14 @@ class ApiClient
     }
 
     /**
+     * Get the recent logs from a project environment's function.
+     */
+    public function getEnvironmentLogs(int $projectId, string $environment, string $function, int $since, string $order = null): Collection
+    {
+        return $this->client->getEnvironmentLogs($projectId, $environment, $function, $since, $order);
+    }
+
+    /**
      * Get the project environment's metrics.
      */
     public function getEnvironmentMetrics(int $projectId, string $environment, string $period): Collection

@@ -2,5 +2,9 @@ parameters:
     level: 5
     checkGenericClassInNonGenericObjectType: false
     checkMissingIterableValueType: false
+    reportUnmatchedIgnoredErrors: false
     paths:
-      - src/
+        - src/
+    ignoreErrors:
+        - message: '#While loop condition is always true#'
+          path: src/Command/Environment/WatchEnvironmentLogsCommand.php
