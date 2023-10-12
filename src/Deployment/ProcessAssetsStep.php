@@ -88,9 +88,10 @@ class ProcessAssetsStep implements DeploymentStepInterface
                 'hash' => $asset['hash'],
             ];
         })->all());
+        $UnprocessedAssetFiles = count($assetFiles) - count($signedAssetRequests);
 
-        if (count($assetFiles) !== count($signedAssetRequests)) {
-            $output->warning('Not all asset files were processed successfully');
+        if (0 !== $UnprocessedAssetFiles) {
+            $output->warning(sprintf('Unable to process %s asset files', $UnprocessedAssetFiles));
         }
 
         $signedAssetRequests = $signedAssetRequests->groupBy('command', true);
