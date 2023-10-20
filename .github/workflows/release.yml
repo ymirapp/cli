@@ -16,3 +16,5 @@ jobs:
         with:
           release-type: php
           package-name: cli
+          pull-request-title-pattern: 'chore: release ${version}'
+          
