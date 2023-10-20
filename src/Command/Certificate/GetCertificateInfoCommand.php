@@ -15,8 +15,8 @@ namespace Ymir\Cli\Command\Certificate;
 
 use Symfony\Component\Console\Helper\TableSeparator;
 use Symfony\Component\Console\Input\InputArgument;
-use Symfony\Component\Console\Input\InputInterface;
-use Ymir\Cli\Console\OutputInterface;
+use Ymir\Cli\Console\Input;
+use Ymir\Cli\Console\Output;
 
 class GetCertificateInfoCommand extends AbstractCertificateCommand
 {
@@ -41,7 +41,7 @@ class GetCertificateInfoCommand extends AbstractCertificateCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(InputInterface $input, OutputInterface $output)
+    protected function perform(Input $input, Output $output)
     {
         $certificate = $this->apiClient->getCertificate($this->getCertificateArgument($input));
 

@@ -15,9 +15,9 @@ namespace Ymir\Cli\Command\Environment;
 
 use Carbon\Carbon;
 use Symfony\Component\Console\Input\InputArgument;
-use Symfony\Component\Console\Input\InputInterface;
 use Ymir\Cli\Command\AbstractProjectCommand;
-use Ymir\Cli\Console\OutputInterface;
+use Ymir\Cli\Console\Input;
+use Ymir\Cli\Console\Output;
 
 class ListEnvironmentSecretsCommand extends AbstractProjectCommand
 {
@@ -42,11 +42,11 @@ class ListEnvironmentSecretsCommand extends AbstractProjectCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(InputInterface $input, OutputInterface $output)
+    protected function perform(Input $input, Output $output)
     {
         $output->table(
             ['Id', 'Name', 'Last Updated'],
-            $this->apiClient->getSecrets($this->projectConfiguration->getProjectId(), $this->getStringArgument($input, 'environment'))->map(function (array $secret) {
+            $this->apiClient->getSecrets($this->projectConfiguration->getProjectId(), $input->getStringArgument('environment'))->map(function (array $secret) {
                 return [$secret['id'], $secret['name'], Carbon::parse($secret['updated_at'])->diffForHumans()];
             })->all()
         );

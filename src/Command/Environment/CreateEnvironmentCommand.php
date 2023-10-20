@@ -14,10 +14,10 @@ declare(strict_types=1);
 namespace Ymir\Cli\Command\Environment;
 
 use Symfony\Component\Console\Input\InputArgument;
-use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Ymir\Cli\Command\AbstractProjectCommand;
-use Ymir\Cli\Console\OutputInterface;
+use Ymir\Cli\Console\Input;
+use Ymir\Cli\Console\Output;
 
 class CreateEnvironmentCommand extends AbstractProjectCommand
 {
@@ -43,13 +43,13 @@ class CreateEnvironmentCommand extends AbstractProjectCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(InputInterface $input, OutputInterface $output)
+    protected function perform(Input $input, Output $output)
     {
-        $name = $this->getStringArgument($input, 'name') ?: $output->ask('What is the name of the environment');
+        $name = $input->getStringArgument('name') ?: $output->ask('What is the name of the environment');
 
         $this->apiClient->createEnvironment($this->projectConfiguration->getProjectId(), $name);
 
-        $this->projectConfiguration->addEnvironment($name, $this->getBooleanOption($input, 'use-image') ? ['deployment' => 'image'] : null);
+        $this->projectConfiguration->addEnvironment($name, $input->getBooleanOption('use-image') ? ['deployment' => 'image'] : null);
 
         $output->info('Environment created');
     }

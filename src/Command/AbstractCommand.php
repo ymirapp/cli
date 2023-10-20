@@ -19,15 +19,15 @@ use Symfony\Component\Console\Exception\InvalidArgumentException;
 use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Output\OutputInterface as SymfonyOutputInterface;
+use Symfony\Component\Console\Output\OutputInterface;
 use Ymir\Cli\ApiClient;
 use Ymir\Cli\CliConfiguration;
 use Ymir\Cli\Command\Network\CreateNetworkCommand;
 use Ymir\Cli\Command\Provider\ConnectProviderCommand;
 use Ymir\Cli\Console\HiddenInputOption;
+use Ymir\Cli\Console\Input;
 use Ymir\Cli\Console\InputDefinition;
 use Ymir\Cli\Console\Output;
-use Ymir\Cli\Console\OutputInterface;
 use Ymir\Cli\Exception\CommandCancelledException;
 use Ymir\Cli\ProjectConfiguration\ProjectConfiguration;
 use Ymir\Cli\Support\Arr;
@@ -83,9 +83,9 @@ abstract class AbstractCommand extends Command
     /**
      * Determine the cloud provider to use.
      */
-    protected function determineCloudProvider(string $question, InputInterface $input, OutputInterface $output): int
+    protected function determineCloudProvider(string $question, Input $input, Output $output): int
     {
-        $providerId = $this->getStringOption($input, 'provider', true);
+        $providerId = $input->getStringOption('provider', true);
         $providers = $this->apiClient->getProviders($this->cliConfiguration->getActiveTeamId());
 
         if (is_numeric($providerId) && $providers->contains('id', $providerId)) {
@@ -108,14 +108,14 @@ abstract class AbstractCommand extends Command
     /**
      * Determine the network to use.
      */
-    protected function determineNetwork(string $question, InputInterface $input, OutputInterface $output): int
+    protected function determineNetwork(string $question, Input $input, Output $output): int
     {
         $networkIdOrName = null;
 
         if ($input->hasArgument('network')) {
-            $networkIdOrName = $this->getStringArgument($input, 'network');
+            $networkIdOrName = $input->getStringArgument('network');
         } elseif ($input->hasOption('network')) {
-            $networkIdOrName = $this->getStringOption($input, 'network', true);
+            $networkIdOrName = $input->getStringOption('network', true);
         }
 
         $networks = $this->apiClient->getNetworks($this->cliConfiguration->getActiveTeamId());
@@ -138,7 +138,7 @@ abstract class AbstractCommand extends Command
     /**
      * Determine the network to use or create one otherwise.
      */
-    protected function determineOrCreateNetwork(string $question, InputInterface $input, OutputInterface $output): int
+    protected function determineOrCreateNetwork(string $question, Input $input, Output $output): int
     {
         $networks = $this->apiClient->getNetworks($this->cliConfiguration->getActiveTeamId())->whereNotIn('status', ['deleting', 'failed']);
 
@@ -160,7 +160,7 @@ abstract class AbstractCommand extends Command
     /**
      * Determine the project to use.
      */
-    protected function determineProject(string $question, InputInterface $input, OutputInterface $output): int
+    protected function determineProject(string $question, Input $input, Output $output): int
     {
         $projects = $this->apiClient->getProjects($this->cliConfiguration->getActiveTeamId());
 
@@ -168,7 +168,7 @@ abstract class AbstractCommand extends Command
             throw new RuntimeException('There are no projects on the currently active team.');
         }
 
-        $projectIdOrName = $this->getStringArgument($input, 'project');
+        $projectIdOrName = $input->getStringArgument('project');
 
         if (empty($projectIdOrName) && $this->projectConfiguration->exists()) {
             $projectIdOrName = $this->projectConfiguration->getProjectId();
@@ -192,9 +192,9 @@ abstract class AbstractCommand extends Command
     /**
      * Determine the cloud provider region to use.
      */
-    protected function determineRegion(string $question, int $providerId, InputInterface $input, OutputInterface $output): string
+    protected function determineRegion(string $question, int $providerId, Input $input, Output $output): string
     {
-        $region = $this->getStringOption($input, 'region', true);
+        $region = $input->getStringOption('region', true);
         $regions = $this->apiClient->getRegions($providerId);
 
         if ($regions->isEmpty()) {
@@ -211,7 +211,7 @@ abstract class AbstractCommand extends Command
     /**
      * {@inheritdoc}
      */
-    protected function execute(InputInterface $input, SymfonyOutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output)
     {
         if (!$input->isInteractive() && $this->mustBeInteractive()) {
             throw new RuntimeException(sprintf('Cannot run "%s" command in non-interactive mode', $input->getFirstArgument()));
@@ -219,101 +219,7 @@ abstract class AbstractCommand extends Command
             throw new RuntimeException(sprintf('Please authenticate using the "%s" command before using this command', LoginCommand::NAME));
         }
 
-        return $this->perform($input, new Output($input, $output)) ?? Command::SUCCESS;
-    }
-
-    /**
-     * Get the value of an argument that should be an array.
-     */
-    protected function getArrayArgument(InputInterface $input, string $argument, bool $requiredNonInteractive = true): array
-    {
-        $value = $input->getArgument($argument);
-
-        if (null === $value && $requiredNonInteractive && !$input->isInteractive()) {
-            throw new InvalidArgumentException(sprintf('You must pass a "%s" argument when running in non-interactive mode', $argument));
-        } elseif (null !== $value && !is_array($value)) {
-            throw new InvalidArgumentException(sprintf('The "%s" argument must be an array value', $argument));
-        }
-
-        return (array) $value;
-    }
-
-    /**
-     * Get the value of a option that should be an array.
-     */
-    protected function getArrayOption(InputInterface $input, string $option): array
-    {
-        $value = [];
-
-        if ($input->hasOption($option)) {
-            $value = $input->getOption($option);
-        }
-
-        if (!is_array($value)) {
-            throw new InvalidArgumentException(sprintf('The "--%s" option must be an array', $option));
-        }
-
-        return $value;
-    }
-
-    /**
-     * Get the value of an option that should be boolean.
-     */
-    protected function getBooleanOption(InputInterface $input, string $option): bool
-    {
-        return $input->hasOption($option) && $input->getOption($option);
-    }
-
-    /**
-     * Get the value of an argument that should be numeric.
-     */
-    protected function getNumericArgument(InputInterface $input, string $argument, bool $requiredNonInteractive = true): int
-    {
-        $value = $input->getArgument($argument);
-
-        if (null === $value && $requiredNonInteractive && !$input->isInteractive()) {
-            throw new InvalidArgumentException(sprintf('You must pass a "%s" argument when running in non-interactive mode', $argument));
-        } elseif (null !== $value && !is_numeric($value)) {
-            throw new InvalidArgumentException(sprintf('The "%s" argument must be a numeric value', $argument));
-        }
-
-        return (int) $value;
-    }
-
-    /**
-     * Get the value of a option that should be numeric. Returns null if not present.
-     */
-    protected function getNumericOption(InputInterface $input, string $option): ?int
-    {
-        $value = null;
-
-        if ($input->hasOption($option)) {
-            $value = $input->getOption($option);
-        }
-
-        if (null === $value) {
-            return $value;
-        } elseif (is_array($value) || !is_numeric($value)) {
-            throw new InvalidArgumentException(sprintf('The "--%s" option must be a numeric value', $option));
-        }
-
-        return (int) $value;
-    }
-
-    /**
-     * Get the value of an argument that should be a string.
-     */
-    protected function getStringArgument(InputInterface $input, string $argument, bool $requiredNonInteractive = true): string
-    {
-        $value = $input->getArgument($argument);
-
-        if (null === $value && $requiredNonInteractive && !$input->isInteractive()) {
-            throw new InvalidArgumentException(sprintf('You must pass a "%s" argument when running in non-interactive mode', $argument));
-        } elseif (null !== $value && !is_string($value)) {
-            throw new InvalidArgumentException(sprintf('The "%s" argument must be a string value', $argument));
-        }
-
-        return (string) $value;
+        return $this->perform(new Input($input), new Output($input, $output)) ?? Command::SUCCESS;
     }
 
     /**
@@ -339,7 +245,7 @@ abstract class AbstractCommand extends Command
     /**
      * Invoke another console command.
      */
-    protected function invoke(SymfonyOutputInterface $output, string $command, array $arguments = []): int
+    protected function invoke(OutputInterface $output, string $command, array $arguments = []): int
     {
         $application = $this->getApplication();
 
@@ -361,7 +267,7 @@ abstract class AbstractCommand extends Command
     /**
      * Retry an API operation.
      */
-    protected function retryApi(callable $callable, string $message, OutputInterface $output)
+    protected function retryApi(callable $callable, string $message, Output $output)
     {
         while (true) {
             try {
@@ -397,5 +303,5 @@ abstract class AbstractCommand extends Command
     /**
      * Perform the command.
      */
-    abstract protected function perform(InputInterface $input, OutputInterface $output);
+    abstract protected function perform(Input $input, Output $output);
 }

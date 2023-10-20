@@ -14,11 +14,11 @@ declare(strict_types=1);
 namespace Ymir\Cli\Command\Project;
 
 use Symfony\Component\Console\Input\InputArgument;
-use Symfony\Component\Console\Input\InputInterface;
 use Ymir\Cli\ApiClient;
 use Ymir\Cli\CliConfiguration;
 use Ymir\Cli\Command\AbstractProjectCommand;
-use Ymir\Cli\Console\OutputInterface;
+use Ymir\Cli\Console\Input;
+use Ymir\Cli\Console\Output;
 use Ymir\Cli\Dockerfile;
 use Ymir\Cli\ProjectConfiguration\ProjectConfiguration;
 use Ymir\Cli\Support\Arr;
@@ -68,7 +68,7 @@ class ValidateProjectCommand extends AbstractProjectCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(InputInterface $input, OutputInterface $output)
+    protected function perform(Input $input, Output $output)
     {
         $environments = (array) $input->getArgument('environments');
         $environments = $this->projectConfiguration->getEnvironments()->filter(function (array $configuration, string $environment) use ($environments) {

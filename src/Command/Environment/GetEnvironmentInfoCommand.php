@@ -15,9 +15,9 @@ namespace Ymir\Cli\Command\Environment;
 
 use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Input\InputArgument;
-use Symfony\Component\Console\Input\InputInterface;
 use Ymir\Cli\Command\AbstractProjectCommand;
-use Ymir\Cli\Console\OutputInterface;
+use Ymir\Cli\Console\Input;
+use Ymir\Cli\Console\Output;
 
 class GetEnvironmentInfoCommand extends AbstractProjectCommand
 {
@@ -42,7 +42,7 @@ class GetEnvironmentInfoCommand extends AbstractProjectCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(InputInterface $input, OutputInterface $output)
+    protected function perform(Input $input, Output $output)
     {
         $environments = $input->getArgument('environment');
 
@@ -63,7 +63,7 @@ class GetEnvironmentInfoCommand extends AbstractProjectCommand
     /**
      * Display the table with the environment information.
      */
-    private function displayEnvironmentTable(OutputInterface $output, string $environment)
+    private function displayEnvironmentTable(Output $output, string $environment)
     {
         $database = $this->getEnvironmentDatabase($environment);
         $environment = $this->apiClient->getEnvironment($this->projectConfiguration->getProjectId(), $environment);

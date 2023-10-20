@@ -14,9 +14,9 @@ declare(strict_types=1);
 namespace Ymir\Cli\Command\Dns;
 
 use Symfony\Component\Console\Input\InputArgument;
-use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
-use Ymir\Cli\Console\OutputInterface;
+use Ymir\Cli\Console\Input;
+use Ymir\Cli\Console\Output;
 
 class DeleteDnsRecordCommand extends AbstractDnsCommand
 {
@@ -45,18 +45,18 @@ class DeleteDnsRecordCommand extends AbstractDnsCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(InputInterface $input, OutputInterface $output)
+    protected function perform(Input $input, Output $output)
     {
-        $zoneIdOrName = $this->getStringArgument($input, 'zone');
+        $zoneIdOrName = $input->getStringArgument('zone');
 
         if (!$output->confirm('Are you sure you want to delete these DNS record(s)?', false)) {
             return;
         }
 
-        $name = $this->getStringOption($input, 'name');
-        $recordId = $this->getNumericArgument($input, 'record');
-        $type = $this->getStringOption($input, 'type');
-        $value = $this->getStringOption($input, 'value');
+        $name = $input->getStringOption('name');
+        $recordId = $input->getNumericArgument('record');
+        $type = $input->getStringOption('type');
+        $value = $input->getStringOption('value');
         $zone = $this->apiClient->getDnsZone($zoneIdOrName);
 
         if (empty($name) && empty($recordId) && empty($type) && empty($value) && !$output->confirm('You are about to delete all DNS records. Do you want to proceed?', false)) {

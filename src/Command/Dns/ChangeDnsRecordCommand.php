@@ -14,8 +14,8 @@ declare(strict_types=1);
 namespace Ymir\Cli\Command\Dns;
 
 use Symfony\Component\Console\Input\InputArgument;
-use Symfony\Component\Console\Input\InputInterface;
-use Ymir\Cli\Console\OutputInterface;
+use Ymir\Cli\Console\Input;
+use Ymir\Cli\Console\Output;
 
 class ChangeDnsRecordCommand extends AbstractDnsCommand
 {
@@ -43,9 +43,9 @@ class ChangeDnsRecordCommand extends AbstractDnsCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(InputInterface $input, OutputInterface $output)
+    protected function perform(Input $input, Output $output)
     {
-        $this->apiClient->changeDnsRecord($this->getStringArgument($input, 'zone'), $this->getStringArgument($input, 'type'), $this->getStringArgument($input, 'name'), $this->getStringArgument($input, 'value'));
+        $this->apiClient->changeDnsRecord($input->getStringArgument('zone'), $input->getStringArgument('type'), $input->getStringArgument('name'), $input->getStringArgument('value'));
 
         $output->info('DNS record change applied');
     }

@@ -14,13 +14,13 @@ declare(strict_types=1);
 namespace Ymir\Cli\Command\Project;
 
 use Illuminate\Support\Collection;
-use Symfony\Component\Console\Input\InputInterface;
 use Ymir\Cli\ApiClient;
 use Ymir\Cli\CliConfiguration;
 use Ymir\Cli\Command\AbstractProjectCommand;
 use Ymir\Cli\Command\Email\CreateEmailIdentityCommand;
 use Ymir\Cli\Command\Environment\GetEnvironmentUrlCommand;
-use Ymir\Cli\Console\OutputInterface;
+use Ymir\Cli\Console\Input;
+use Ymir\Cli\Console\Output;
 use Ymir\Cli\Deployment\DeploymentStepInterface;
 use Ymir\Cli\ProjectConfiguration\ProjectConfiguration;
 
@@ -50,10 +50,10 @@ abstract class AbstractProjectDeploymentCommand extends AbstractProjectCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(InputInterface $input, OutputInterface $output)
+    protected function perform(Input $input, Output $output)
     {
         $deployment = $this->createDeployment($input, $output);
-        $environment = $this->getStringArgument($input, 'environment');
+        $environment = $input->getStringArgument('environment');
 
         foreach ($this->deploymentSteps as $deploymentStep) {
             $deploymentStep->perform($deployment, $environment, $output);
@@ -104,7 +104,7 @@ abstract class AbstractProjectDeploymentCommand extends AbstractProjectCommand
     /**
      * Create the deployment and return its ID.
      */
-    abstract protected function createDeployment(InputInterface $input, OutputInterface $output): Collection;
+    abstract protected function createDeployment(Input $input, Output $output): Collection;
 
     /**
      * Get the message to display when a deployment was successful.

@@ -17,9 +17,9 @@ use Carbon\Carbon;
 use Illuminate\Support\Collection;
 use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Input\InputArgument;
-use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
-use Ymir\Cli\Console\OutputInterface;
+use Ymir\Cli\Console\Input;
+use Ymir\Cli\Console\Output;
 use Ymir\Cli\Support\Arr;
 
 class RollbackProjectCommand extends AbstractProjectDeploymentCommand
@@ -54,9 +54,9 @@ class RollbackProjectCommand extends AbstractProjectDeploymentCommand
     /**
      * {@inheritdoc}
      */
-    protected function createDeployment(InputInterface $input, OutputInterface $output): Collection
+    protected function createDeployment(Input $input, Output $output): Collection
     {
-        $environment = $this->getStringArgument($input, 'environment');
+        $environment = $input->getStringArgument('environment');
         $projectId = $this->projectConfiguration->getProjectId();
 
         $deployments = $this->apiClient->getDeployments($projectId, $environment);
@@ -71,11 +71,11 @@ class RollbackProjectCommand extends AbstractProjectDeploymentCommand
             throw new RuntimeException(sprintf('The "%s" environment has no successful deployments to rollback to', $environment));
         }
 
-        $deploymentId = !$this->getBooleanOption($input, 'select') ? $deployments[0]['id'] : $output->choice('Please select a deployment to rollback to', $deployments->mapWithKeys(function (array $deployment) {
+        $deploymentId = !$input->getBooleanOption('select') ? $deployments[0]['id'] : $output->choice('Please select a deployment to rollback to', $deployments->mapWithKeys(function (array $deployment) {
             return [$deployment['id'] => $this->getDeploymentChoiceDisplayName($deployment)];
         }));
 
-        $rollback = $this->apiClient->createRollback($this->projectConfiguration->getProjectId(), $this->getStringArgument($input, 'environment'), (int) $deploymentId);
+        $rollback = $this->apiClient->createRollback($this->projectConfiguration->getProjectId(), $environment, (int) $deploymentId);
 
         if (!$rollback->has('id')) {
             throw new RuntimeException('There was an error creating the rollback');

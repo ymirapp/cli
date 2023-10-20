@@ -17,11 +17,11 @@ use Illuminate\Support\Collection;
 use Symfony\Component\Console\Exception\InvalidArgumentException;
 use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Input\InputArgument;
-use Symfony\Component\Console\Input\InputInterface;
 use Ymir\Cli\ApiClient;
 use Ymir\Cli\CliConfiguration;
 use Ymir\Cli\Command\AbstractProjectCommand;
-use Ymir\Cli\Console\OutputInterface;
+use Ymir\Cli\Console\Input;
+use Ymir\Cli\Console\Output;
 use Ymir\Cli\ProjectConfiguration\ProjectConfiguration;
 use Ymir\Cli\ProjectConfiguration\WordPressConfigurationChangeInterface;
 use Ymir\Cli\Support\Arr;
@@ -79,7 +79,7 @@ class ConfigureProjectCommand extends AbstractProjectCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(InputInterface $input, OutputInterface $output)
+    protected function perform(Input $input, Output $output)
     {
         if (!WpCli::isInstalledGlobally()) {
             throw new RuntimeException('WP-CLI needs to be available globally to scan your project');
@@ -87,7 +87,7 @@ class ConfigureProjectCommand extends AbstractProjectCommand
             throw new RuntimeException('WordPress needs to be installed and connected to a database to scan your project');
         }
 
-        $environment = $this->getStringArgument($input, 'environment', false);
+        $environment = $input->getStringArgument('environment', false);
 
         if (!empty($environment) && !$this->projectConfiguration->hasEnvironment($environment)) {
             throw new InvalidArgumentException(sprintf('Environment "%s" not found in ymir.yml file', $environment));
@@ -117,7 +117,7 @@ class ConfigureProjectCommand extends AbstractProjectCommand
     /**
      * Apply the given configuration changes to the given environment.
      */
-    private function applyConfigurationChanges(string $message, Collection $plugins, OutputInterface $output, string $environment = '', bool $apply = true)
+    private function applyConfigurationChanges(string $message, Collection $plugins, Output $output, string $environment = '', bool $apply = true)
     {
         $filteredConfigurationChanges = $this->configurationChanges->filter(function (WordPressConfigurationChangeInterface $configurationChange) use ($plugins) {
             return $plugins->contains('name', $configurationChange->getName());

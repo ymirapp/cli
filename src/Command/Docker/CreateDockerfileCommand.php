@@ -14,12 +14,12 @@ declare(strict_types=1);
 namespace Ymir\Cli\Command\Docker;
 
 use Symfony\Component\Console\Input\InputArgument;
-use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Ymir\Cli\ApiClient;
 use Ymir\Cli\CliConfiguration;
 use Ymir\Cli\Command\AbstractProjectCommand;
-use Ymir\Cli\Console\OutputInterface;
+use Ymir\Cli\Console\Input;
+use Ymir\Cli\Console\Output;
 use Ymir\Cli\Dockerfile;
 use Ymir\Cli\ProjectConfiguration\ImageDeploymentConfigurationChange;
 use Ymir\Cli\ProjectConfiguration\ProjectConfiguration;
@@ -65,9 +65,9 @@ class CreateDockerfileCommand extends AbstractProjectCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(InputInterface $input, OutputInterface $output)
+    protected function perform(Input $input, Output $output)
     {
-        $environment = $this->getStringArgument($input, 'environment', false);
+        $environment = $input->getStringArgument('environment', false);
         $message = 'Dockerfile created';
 
         if (!empty($environment)) {
@@ -80,7 +80,7 @@ class CreateDockerfileCommand extends AbstractProjectCommand
             $output->info($message);
         }
 
-        if (!$this->getBooleanOption($input, 'configure-project') && !$output->confirm('Would you also like to configure your project for container image deployment?')) {
+        if (!$input->getBooleanOption('configure-project') && !$output->confirm('Would you also like to configure your project for container image deployment?')) {
             return;
         }
 

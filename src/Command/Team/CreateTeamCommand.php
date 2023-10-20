@@ -14,9 +14,9 @@ declare(strict_types=1);
 namespace Ymir\Cli\Command\Team;
 
 use Symfony\Component\Console\Input\InputArgument;
-use Symfony\Component\Console\Input\InputInterface;
 use Ymir\Cli\Command\AbstractCommand;
-use Ymir\Cli\Console\OutputInterface;
+use Ymir\Cli\Console\Input;
+use Ymir\Cli\Console\Output;
 
 class CreateTeamCommand extends AbstractCommand
 {
@@ -41,9 +41,9 @@ class CreateTeamCommand extends AbstractCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(InputInterface $input, OutputInterface $output)
+    protected function perform(Input $input, Output $output)
     {
-        $name = $this->getStringArgument($input, 'name');
+        $name = $input->getStringArgument('name');
 
         if (empty($name)) {
             $name = (string) $output->ask('What is the name of the team');

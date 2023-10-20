@@ -14,8 +14,8 @@ declare(strict_types=1);
 namespace Ymir\Cli\Command\Dns;
 
 use Symfony\Component\Console\Input\InputArgument;
-use Symfony\Component\Console\Input\InputInterface;
-use Ymir\Cli\Console\OutputInterface;
+use Ymir\Cli\Console\Input;
+use Ymir\Cli\Console\Output;
 
 class ImportDnsRecordsCommand extends AbstractDnsCommand
 {
@@ -41,15 +41,15 @@ class ImportDnsRecordsCommand extends AbstractDnsCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(InputInterface $input, OutputInterface $output)
+    protected function perform(Input $input, Output $output)
     {
-        $subdomains = $this->getArrayArgument($input, 'subdomain', false);
+        $subdomains = $input->getArrayArgument('subdomain', false);
 
         if (empty($subdomains)) {
             $subdomains = explode(',', (string) $output->ask('Please enter a comma-separated list of subdomains to import DNS records from (leave blank to import the root DNS records)'));
         }
 
-        $this->apiClient->importDnsRecords($this->getStringArgument($input, 'zone'), $subdomains);
+        $this->apiClient->importDnsRecords($input->getStringArgument('zone'), $subdomains);
 
         $output->info('DNS records imported');
     }

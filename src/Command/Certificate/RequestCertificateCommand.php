@@ -14,9 +14,9 @@ declare(strict_types=1);
 namespace Ymir\Cli\Command\Certificate;
 
 use Symfony\Component\Console\Input\InputArgument;
-use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
-use Ymir\Cli\Console\OutputInterface;
+use Ymir\Cli\Console\Input;
+use Ymir\Cli\Console\Output;
 
 class RequestCertificateCommand extends AbstractCertificateCommand
 {
@@ -43,9 +43,9 @@ class RequestCertificateCommand extends AbstractCertificateCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(InputInterface $input, OutputInterface $output)
+    protected function perform(Input $input, Output $output)
     {
-        $domains = $this->getArrayArgument($input, 'domains');
+        $domains = $input->getArrayArgument('domains');
 
         if (empty($domains)) {
             $domains = array_map('trim', explode(',', (string) $output->ask('Please enter a comma-separated list of domains for the certificate')));

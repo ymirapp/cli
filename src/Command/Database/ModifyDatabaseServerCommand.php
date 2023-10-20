@@ -16,9 +16,9 @@ namespace Ymir\Cli\Command\Database;
 use Symfony\Component\Console\Exception\InvalidArgumentException;
 use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Input\InputArgument;
-use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
-use Ymir\Cli\Console\OutputInterface;
+use Ymir\Cli\Console\Input;
+use Ymir\Cli\Console\Output;
 
 class ModifyDatabaseServerCommand extends AbstractDatabaseServerCommand
 {
@@ -45,7 +45,7 @@ class ModifyDatabaseServerCommand extends AbstractDatabaseServerCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(InputInterface $input, OutputInterface $output)
+    protected function perform(Input $input, Output $output)
     {
         $databaseServer = $this->determineDatabaseServer('Which database server would you like to modify?', $input, $output);
 
@@ -61,13 +61,13 @@ class ModifyDatabaseServerCommand extends AbstractDatabaseServerCommand
     /**
      * Determine the new maximum amount of storage allocated to the database.
      */
-    private function determineStorage(InputInterface $input, OutputInterface $output, int $storage): int
+    private function determineStorage(Input $input, Output $output, int $storage): int
     {
-        $storageOption = $this->getNumericOption($input, 'storage');
+        $storageOption = $input->getNumericOption('storage');
 
         if (null !== $storageOption) {
             return $storageOption;
-        } elseif (null === $storageOption && !$input->isInteractive()) {
+        } elseif (!$input->isInteractive()) {
             return $storage;
         }
 
@@ -83,9 +83,9 @@ class ModifyDatabaseServerCommand extends AbstractDatabaseServerCommand
     /**
      * Determine the new database server type.
      */
-    private function determineType(InputInterface $input, OutputInterface $output, int $providerId, string $type): string
+    private function determineType(Input $input, Output $output, int $providerId, string $type): string
     {
-        $typeOption = $this->getStringOption($input, 'type');
+        $typeOption = $input->getStringOption('type');
 
         if (null === $typeOption && !$input->isInteractive()) {
             return $type;

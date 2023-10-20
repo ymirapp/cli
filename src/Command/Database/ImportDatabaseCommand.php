@@ -15,12 +15,12 @@ namespace Ymir\Cli\Command\Database;
 
 use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Input\InputArgument;
-use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Filesystem\Filesystem;
 use Ymir\Cli\ApiClient;
 use Ymir\Cli\CliConfiguration;
-use Ymir\Cli\Console\OutputInterface;
+use Ymir\Cli\Console\Input;
+use Ymir\Cli\Console\Output;
 use Ymir\Cli\Process\Process;
 use Ymir\Cli\ProjectConfiguration\ProjectConfiguration;
 use Ymir\Cli\Tool\Mysql;
@@ -70,9 +70,9 @@ class ImportDatabaseCommand extends AbstractDatabaseCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(InputInterface $input, OutputInterface $output)
+    protected function perform(Input $input, Output $output)
     {
-        $file = $this->getStringArgument($input, 'file');
+        $file = $input->getStringArgument('file');
 
         if (!str_ends_with($file, '.sql') && !str_ends_with($file, '.sql.gz')) {
             throw new RuntimeException('You may only import .sql or .sql.gz files');
@@ -99,7 +99,7 @@ class ImportDatabaseCommand extends AbstractDatabaseCommand
 
         $output->infoWithDelayWarning(sprintf('Importing "<comment>%s</comment>" to the "<comment>%s</comment>" database', $file, $name));
 
-        Mysql::import($file, $host, $port, $user, $password, $name, $this->getBooleanOption($input, 'force'));
+        Mysql::import($file, $host, $port, $user, $password, $name, $input->getBooleanOption('force'));
 
         if ($tunnel instanceof Process) {
             $tunnel->stop();
@@ -111,9 +111,9 @@ class ImportDatabaseCommand extends AbstractDatabaseCommand
     /**
      * Determine the name of the database to export.
      */
-    private function determineDatabaseName(array $databaseServer, InputInterface $input, OutputInterface $output): string
+    private function determineDatabaseName(array $databaseServer, Input $input, Output $output): string
     {
-        $name = $this->getStringArgument($input, 'name');
+        $name = $input->getStringArgument('name');
 
         if (!empty($name)) {
             return $name;

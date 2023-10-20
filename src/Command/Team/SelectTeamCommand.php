@@ -15,9 +15,9 @@ namespace Ymir\Cli\Command\Team;
 
 use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Input\InputArgument;
-use Symfony\Component\Console\Input\InputInterface;
 use Ymir\Cli\Command\AbstractCommand;
-use Ymir\Cli\Console\OutputInterface;
+use Ymir\Cli\Console\Input;
+use Ymir\Cli\Console\Output;
 use Ymir\Cli\Support\Arr;
 
 class SelectTeamCommand extends AbstractCommand
@@ -43,7 +43,7 @@ class SelectTeamCommand extends AbstractCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(InputInterface $input, OutputInterface $output)
+    protected function perform(Input $input, Output $output)
     {
         $teams = $this->apiClient->getTeams();
 
@@ -51,7 +51,7 @@ class SelectTeamCommand extends AbstractCommand
             throw new RuntimeException('You\'re not on any team');
         }
 
-        $teamId = $this->getNumericArgument($input, 'team');
+        $teamId = $input->getNumericArgument('team');
 
         if (0 !== $teamId && !$teams->contains('id', $teamId)) {
             throw new RuntimeException(sprintf('You\'re not on a team with ID %s', $teamId));

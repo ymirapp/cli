@@ -16,7 +16,7 @@ namespace Ymir\Cli\Deployment;
 use Illuminate\Support\Collection;
 use Symfony\Component\Console\Helper\ProgressBar;
 use Ymir\Cli\ApiClient;
-use Ymir\Cli\Console\OutputInterface;
+use Ymir\Cli\Console\Output;
 use Ymir\Cli\FileUploader;
 use Ymir\Cli\ProjectConfiguration\ProjectConfiguration;
 use Ymir\Cli\Support\Arr;
@@ -74,7 +74,7 @@ class UploadFunctionCodeStep implements DeploymentStepInterface
     /**
      * {@inheritdoc}
      */
-    public function perform(Collection $deployment, string $environment, OutputInterface $output)
+    public function perform(Collection $deployment, string $environment, Output $output)
     {
         $configuration = $deployment->get('configuration');
         $deploymentType = Arr::get($configuration, sprintf('environments.%s.deployment', $environment), 'zip');
@@ -89,7 +89,7 @@ class UploadFunctionCodeStep implements DeploymentStepInterface
     /**
      * Push image to deploy to project container repository.
      */
-    private function pushImage(Collection $deployment, string $environment, OutputInterface $output)
+    private function pushImage(Collection $deployment, string $environment, Output $output)
     {
         $image = $this->apiClient->getDeploymentImage((int) $deployment->get('id'));
         $imageUri = (string) $image->get('image_uri');
@@ -106,7 +106,7 @@ class UploadFunctionCodeStep implements DeploymentStepInterface
     /**
      * Upload the build artifact to deploy.
      */
-    private function uploadArtifact(Collection $deployment, OutputInterface $output)
+    private function uploadArtifact(Collection $deployment, Output $output)
     {
         $progressBar = new ProgressBar($output);
 

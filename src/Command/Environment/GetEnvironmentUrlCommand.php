@@ -14,10 +14,10 @@ declare(strict_types=1);
 namespace Ymir\Cli\Command\Environment;
 
 use Symfony\Component\Console\Input\InputArgument;
-use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Process\Process;
 use Ymir\Cli\Command\AbstractProjectCommand;
-use Ymir\Cli\Console\OutputInterface;
+use Ymir\Cli\Console\Input;
+use Ymir\Cli\Console\Output;
 
 class GetEnvironmentUrlCommand extends AbstractProjectCommand
 {
@@ -42,15 +42,15 @@ class GetEnvironmentUrlCommand extends AbstractProjectCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(InputInterface $input, OutputInterface $output)
+    protected function perform(Input $input, Output $output)
     {
-        $this->displayEnvironmentUrlAndCopyToClipboard($output, $this->apiClient->getEnvironmentVanityDomainName($this->projectConfiguration->getProjectId(), $this->getStringArgument($input, 'environment')));
+        $this->displayEnvironmentUrlAndCopyToClipboard($output, $this->apiClient->getEnvironmentVanityDomainName($this->projectConfiguration->getProjectId(), $input->getStringArgument('environment')));
     }
 
     /**
      * Generate the environment URL, copy it to the clipboard and then displays it in the console.
      */
-    private function displayEnvironmentUrlAndCopyToClipboard(OutputInterface $output, string $domainName)
+    private function displayEnvironmentUrlAndCopyToClipboard(Output $output, string $domainName)
     {
         $clipboardCommand = 'WIN' === strtoupper(substr(PHP_OS, 0, 3)) ? 'clip' : 'pbcopy';
         $url = 'https://'.$domainName;

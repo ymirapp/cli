@@ -18,7 +18,7 @@ use Illuminate\Support\LazyCollection;
 use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Finder\Finder;
 use Ymir\Cli\ApiClient;
-use Ymir\Cli\Console\OutputInterface;
+use Ymir\Cli\Console\Output;
 use Ymir\Cli\FileUploader;
 use Ymir\Cli\ProjectConfiguration\ProjectConfiguration;
 
@@ -66,7 +66,7 @@ class ProcessAssetsStep implements DeploymentStepInterface
     /**
      * {@inheritdoc}
      */
-    public function perform(Collection $deployment, string $environment, OutputInterface $output)
+    public function perform(Collection $deployment, string $environment, Output $output)
     {
         $deploymentWithAssetsHash = $this->apiClient->getDeployments($this->projectConfiguration->getProjectId(), $environment)
             ->where('status', 'finished')
@@ -112,7 +112,7 @@ class ProcessAssetsStep implements DeploymentStepInterface
     /**
      * Send the given asset file copy requests.
      */
-    private function copyAssetFiles(Collection $requests, OutputInterface $output)
+    private function copyAssetFiles(Collection $requests, Output $output)
     {
         if ($requests->isEmpty()) {
             return;
@@ -150,7 +150,7 @@ class ProcessAssetsStep implements DeploymentStepInterface
     /**
      * Send the given asset file upload requests.
      */
-    private function uploadAssetFiles(Collection $requests, OutputInterface $output)
+    private function uploadAssetFiles(Collection $requests, Output $output)
     {
         if ($requests->isEmpty()) {
             return;

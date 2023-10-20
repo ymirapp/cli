@@ -16,7 +16,7 @@ namespace Ymir\Cli\Deployment;
 use Illuminate\Support\Collection;
 use Symfony\Component\Console\Exception\RuntimeException;
 use Ymir\Cli\ApiClient;
-use Ymir\Cli\Console\OutputInterface;
+use Ymir\Cli\Console\Output;
 
 class StartAndMonitorDeploymentStep implements DeploymentStepInterface
 {
@@ -38,7 +38,7 @@ class StartAndMonitorDeploymentStep implements DeploymentStepInterface
     /**
      * {@inheritdoc}
      */
-    public function perform(Collection $deployment, string $environment, OutputInterface $output)
+    public function perform(Collection $deployment, string $environment, Output $output)
     {
         $output->info(sprintf('%s starting', ucfirst($deployment->get('type', 'deployment'))));
 
@@ -104,7 +104,7 @@ class StartAndMonitorDeploymentStep implements DeploymentStepInterface
     /**
      * Register a signal handler to handle deployment cancellation.
      */
-    private function registerCancellationHandler(Collection $deployment, OutputInterface $output)
+    private function registerCancellationHandler(Collection $deployment, Output $output)
     {
         if (!extension_loaded('pcntl')) {
             return;

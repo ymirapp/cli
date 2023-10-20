@@ -15,9 +15,9 @@ namespace Ymir\Cli\Command\Environment;
 
 use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Input\InputArgument;
-use Symfony\Component\Console\Input\InputInterface;
 use Ymir\Cli\Command\AbstractProjectCommand;
-use Ymir\Cli\Console\OutputInterface;
+use Ymir\Cli\Console\Input;
+use Ymir\Cli\Console\Output;
 
 class DeleteEnvironmentCommand extends AbstractProjectCommand
 {
@@ -43,7 +43,7 @@ class DeleteEnvironmentCommand extends AbstractProjectCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(InputInterface $input, OutputInterface $output)
+    protected function perform(Input $input, Output $output)
     {
         $environment = $this->determineEnvironment($input, $output);
 
@@ -51,7 +51,7 @@ class DeleteEnvironmentCommand extends AbstractProjectCommand
             return;
         }
 
-        $deleteResources = $this->getBooleanOption($input, 'delete-resources') || $output->confirm('Do you want to delete all the environment resources on the cloud provider?', false);
+        $deleteResources = $input->getBooleanOption('delete-resources') || $output->confirm('Do you want to delete all the environment resources on the cloud provider?', false);
 
         $this->apiClient->deleteEnvironment($this->projectConfiguration->getProjectId(), $environment, $deleteResources);
 
@@ -64,9 +64,9 @@ class DeleteEnvironmentCommand extends AbstractProjectCommand
     /**
      * Determine the environment we want to delete.
      */
-    private function determineEnvironment(InputInterface $input, OutputInterface $output): string
+    private function determineEnvironment(Input $input, Output $output): string
     {
-        $environment = $this->getStringArgument($input, 'environment');
+        $environment = $input->getStringArgument('environment');
         $environments = $this->apiClient->getEnvironments($this->projectConfiguration->getProjectId())->pluck('name');
 
         if ($environments->isEmpty()) {

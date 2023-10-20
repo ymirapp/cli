@@ -17,9 +17,9 @@ use Symfony\Component\Console\Exception\InvalidArgumentException;
 use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Helper\TableSeparator;
 use Symfony\Component\Console\Input\InputArgument;
-use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
-use Ymir\Cli\Console\OutputInterface;
+use Ymir\Cli\Console\Input;
+use Ymir\Cli\Console\Output;
 use Ymir\Cli\Exception\CommandCancelledException;
 
 class CreateDatabaseServerCommand extends AbstractDatabaseServerCommand
@@ -51,9 +51,9 @@ class CreateDatabaseServerCommand extends AbstractDatabaseServerCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(InputInterface $input, OutputInterface $output)
+    protected function perform(Input $input, Output $output)
     {
-        $name = $this->getStringArgument($input, 'name');
+        $name = $input->getStringArgument('name');
 
         if (empty($name)) {
             $name = $output->askSlug('What is the name of the database server');
@@ -91,11 +91,11 @@ class CreateDatabaseServerCommand extends AbstractDatabaseServerCommand
     /**
      * Determine whether the database should be publicly accessible or not.
      */
-    private function determinePublic(InputInterface $input, OutputInterface $output): bool
+    private function determinePublic(Input $input, Output $output): bool
     {
-        if ($this->getBooleanOption($input, 'public')) {
+        if ($input->getBooleanOption('public')) {
             return true;
-        } elseif ($this->getBooleanOption($input, 'private')) {
+        } elseif ($input->getBooleanOption('private')) {
             return false;
         }
 
@@ -105,9 +105,9 @@ class CreateDatabaseServerCommand extends AbstractDatabaseServerCommand
     /**
      * Determine the maximum amount of storage allocated to the database.
      */
-    private function determineStorage(InputInterface $input, OutputInterface $output): int
+    private function determineStorage(Input $input, Output $output): int
     {
-        $storage = $this->getNumericOption($input, 'storage');
+        $storage = $input->getNumericOption('storage');
 
         while (!is_numeric($storage)) {
             $storage = $output->ask('What should the maximum amount of storage (in GB) allocated to the database server be?', '50', function ($storage) {
@@ -125,9 +125,9 @@ class CreateDatabaseServerCommand extends AbstractDatabaseServerCommand
     /**
      * Determine the database server type to create.
      */
-    private function determineType(InputInterface $input, OutputInterface $output, int $providerId): string
+    private function determineType(Input $input, Output $output, int $providerId): string
     {
-        $type = !$this->getBooleanOption($input, 'serverless') ? $this->getStringOption($input, 'type') : self::AURORA_DATABASE_TYPE;
+        $type = !$input->getBooleanOption('serverless') ? $input->getStringOption('type') : self::AURORA_DATABASE_TYPE;
         $types = $this->apiClient->getDatabaseServerTypes($providerId);
 
         if ($types->isEmpty()) {

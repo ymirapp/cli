@@ -15,12 +15,12 @@ namespace Ymir\Cli\Command\Environment;
 
 use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Input\InputArgument;
-use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Filesystem\Filesystem;
 use Ymir\Cli\ApiClient;
 use Ymir\Cli\CliConfiguration;
 use Ymir\Cli\Command\AbstractProjectCommand;
-use Ymir\Cli\Console\OutputInterface;
+use Ymir\Cli\Console\Input;
+use Ymir\Cli\Console\Output;
 use Ymir\Cli\ProjectConfiguration\ProjectConfiguration;
 
 class UploadEnvironmentVariablesCommand extends AbstractProjectCommand
@@ -71,9 +71,9 @@ class UploadEnvironmentVariablesCommand extends AbstractProjectCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(InputInterface $input, OutputInterface $output)
+    protected function perform(Input $input, Output $output)
     {
-        $environment = $this->getStringArgument($input, 'environment');
+        $environment = $input->getStringArgument('environment');
         $fileName = sprintf('.env.%s', $environment);
         $filePath = $this->projectDirectory.'/'.$fileName;
 

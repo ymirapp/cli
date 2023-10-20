@@ -14,9 +14,9 @@ declare(strict_types=1);
 namespace Ymir\Cli\Command\Cache;
 
 use Symfony\Component\Console\Input\InputArgument;
-use Symfony\Component\Console\Input\InputInterface;
 use Ymir\Cli\Command\Network\RemoveNatGatewayCommand;
-use Ymir\Cli\Console\OutputInterface;
+use Ymir\Cli\Console\Input;
+use Ymir\Cli\Console\Output;
 
 class DeleteCacheCommand extends AbstractCacheCommand
 {
@@ -41,7 +41,7 @@ class DeleteCacheCommand extends AbstractCacheCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(InputInterface $input, OutputInterface $output)
+    protected function perform(Input $input, Output $output)
     {
         $cache = $this->determineCache('Which cache cluster would you like to delete', $input, $output);
 

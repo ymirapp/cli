@@ -14,9 +14,9 @@ declare(strict_types=1);
 namespace Ymir\Cli\Command\Php;
 
 use Symfony\Component\Console\Input\InputArgument;
-use Symfony\Component\Console\Input\InputInterface;
 use Ymir\Cli\Command\AbstractInvocationCommand;
-use Ymir\Cli\Console\OutputInterface;
+use Ymir\Cli\Console\Input;
+use Ymir\Cli\Console\Output;
 
 class PhpInfoCommand extends AbstractInvocationCommand
 {
@@ -41,9 +41,9 @@ class PhpInfoCommand extends AbstractInvocationCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(InputInterface $input, OutputInterface $output)
+    protected function perform(Input $input, Output $output)
     {
-        $environment = $this->getStringArgument($input, 'environment');
+        $environment = $input->getStringArgument('environment');
 
         $output->info(sprintf('Getting information about PHP from the "<comment>%s</comment>" environment', $environment));
 

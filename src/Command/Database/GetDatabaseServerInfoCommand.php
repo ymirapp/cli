@@ -15,8 +15,8 @@ namespace Ymir\Cli\Command\Database;
 
 use Symfony\Component\Console\Helper\TableSeparator;
 use Symfony\Component\Console\Input\InputArgument;
-use Symfony\Component\Console\Input\InputInterface;
-use Ymir\Cli\Console\OutputInterface;
+use Ymir\Cli\Console\Input;
+use Ymir\Cli\Console\Output;
 
 class GetDatabaseServerInfoCommand extends AbstractDatabaseServerCommand
 {
@@ -41,7 +41,7 @@ class GetDatabaseServerInfoCommand extends AbstractDatabaseServerCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(InputInterface $input, OutputInterface $output)
+    protected function perform(Input $input, Output $output)
     {
         $databaseServer = $this->determineDatabaseServer('Which database server would you like to get information about', $input, $output);
 

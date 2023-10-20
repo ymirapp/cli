@@ -14,10 +14,10 @@ declare(strict_types=1);
 namespace Ymir\Cli\Command\Docker;
 
 use Symfony\Component\Console\Exception\RuntimeException;
-use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Ymir\Cli\Command\AbstractCommand;
-use Ymir\Cli\Console\OutputInterface;
+use Ymir\Cli\Console\Input;
+use Ymir\Cli\Console\Output;
 use Ymir\Cli\Tool\Docker;
 
 class DeleteDockerImagesCommand extends AbstractCommand
@@ -50,9 +50,9 @@ class DeleteDockerImagesCommand extends AbstractCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(InputInterface $input, OutputInterface $output)
+    protected function perform(Input $input, Output $output)
     {
-        $pattern = $this->getBooleanOption($input, 'all') ? self::ALL_PATTERN : null;
+        $pattern = $input->getBooleanOption('all') ? self::ALL_PATTERN : null;
 
         if (!is_string($pattern)) {
             $pattern = $this->determinePattern($input, $output);
@@ -70,7 +70,7 @@ class DeleteDockerImagesCommand extends AbstractCommand
     /**
      * Determine the grep pattern to use.
      */
-    private function determinePattern(InputInterface $input, OutputInterface $output): ?string
+    private function determinePattern(Input $input, Output $output): ?string
     {
         $project = $this->projectConfiguration->exists() ? $this->apiClient->getProject($this->projectConfiguration->getProjectId()) : null;
 

@@ -13,8 +13,8 @@ declare(strict_types=1);
 
 namespace Ymir\Cli\Command\Certificate;
 
-use Symfony\Component\Console\Input\InputInterface;
-use Ymir\Cli\Console\OutputInterface;
+use Ymir\Cli\Console\Input;
+use Ymir\Cli\Console\Output;
 
 class ListCertificatesCommand extends AbstractCertificateCommand
 {
@@ -38,7 +38,7 @@ class ListCertificatesCommand extends AbstractCertificateCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(InputInterface $input, OutputInterface $output)
+    protected function perform(Input $input, Output $output)
     {
         $certificates = $this->apiClient->getCertificates($this->cliConfiguration->getActiveTeamId());
 

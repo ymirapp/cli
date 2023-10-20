@@ -17,9 +17,9 @@ use Carbon\Carbon;
 use Carbon\CarbonInterval;
 use Symfony\Component\Console\Exception\InvalidArgumentException;
 use Symfony\Component\Console\Input\InputArgument;
-use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
-use Ymir\Cli\Console\OutputInterface;
+use Ymir\Cli\Console\Input;
+use Ymir\Cli\Console\Output;
 
 class QueryEnvironmentLogsCommand extends AbstractEnvironmentLogsCommand
 {
@@ -49,12 +49,12 @@ class QueryEnvironmentLogsCommand extends AbstractEnvironmentLogsCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(InputInterface $input, OutputInterface $output)
+    protected function perform(Input $input, Output $output)
     {
-        $environment = $this->getStringArgument($input, 'environment');
-        $function = strtolower($this->getStringArgument($input, 'function'));
-        $lines = (int) $this->getNumericOption($input, 'lines');
-        $order = strtolower($this->getStringOption($input, 'order'));
+        $environment = $input->getStringArgument('environment');
+        $function = strtolower($input->getStringArgument('function'));
+        $lines = (int) $input->getNumericOption('lines');
+        $order = strtolower($input->getStringOption('order'));
 
         if ($lines < 1) {
             throw new InvalidArgumentException('The number of lines must be at least 1');
@@ -62,7 +62,7 @@ class QueryEnvironmentLogsCommand extends AbstractEnvironmentLogsCommand
             throw new InvalidArgumentException('The order must be either "asc" or "desc"');
         }
 
-        $logs = $this->apiClient->getEnvironmentLogs($this->projectConfiguration->getProjectId(), $environment, $function, Carbon::now()->sub(CarbonInterval::fromString($this->getStringOption($input, 'period')))->getTimestampMs(), 'desc');
+        $logs = $this->apiClient->getEnvironmentLogs($this->projectConfiguration->getProjectId(), $environment, $function, Carbon::now()->sub(CarbonInterval::fromString($input->getStringOption('period')))->getTimestampMs(), 'desc');
 
         if ($logs->isEmpty()) {
             $output->info('No logs found for the given period');
@@ -76,6 +76,6 @@ class QueryEnvironmentLogsCommand extends AbstractEnvironmentLogsCommand
             $logs = $logs->reverse();
         }
 
-        $this->writeLogs($logs, $output, $this->getStringOption($input, 'timezone'));
+        $this->writeLogs($logs, $output, $input->getStringOption('timezone'));
     }
 }

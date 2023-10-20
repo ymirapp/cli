@@ -16,9 +16,9 @@ namespace Ymir\Cli\Command\Environment;
 use Symfony\Component\Console\Exception\InvalidArgumentException;
 use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Input\InputArgument;
-use Symfony\Component\Console\Input\InputInterface;
 use Ymir\Cli\Command\AbstractProjectCommand;
-use Ymir\Cli\Console\OutputInterface;
+use Ymir\Cli\Console\Input;
+use Ymir\Cli\Console\Output;
 
 class DeleteEnvironmentSecretCommand extends AbstractProjectCommand
 {
@@ -44,16 +44,16 @@ class DeleteEnvironmentSecretCommand extends AbstractProjectCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(InputInterface $input, OutputInterface $output)
+    protected function perform(Input $input, Output $output)
     {
-        $environment = $this->getStringArgument($input, 'environment');
+        $environment = $input->getStringArgument('environment');
         $secrets = $this->apiClient->getSecrets($this->projectConfiguration->getProjectId(), $environment);
 
         if ($secrets->isEmpty()) {
             throw new RuntimeException(sprintf('The "%s" environment has no secrets', $environment));
         }
 
-        $secretIdOrName = $this->getStringArgument($input, 'secret');
+        $secretIdOrName = $input->getStringArgument('secret');
 
         if (empty($secretIdOrName)) {
             $secretIdOrName = (string) $output->choice('Which secret would you like to delete', $secrets->pluck('name'));

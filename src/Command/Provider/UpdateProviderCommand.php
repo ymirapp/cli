@@ -14,8 +14,8 @@ declare(strict_types=1);
 namespace Ymir\Cli\Command\Provider;
 
 use Symfony\Component\Console\Input\InputArgument;
-use Symfony\Component\Console\Input\InputInterface;
-use Ymir\Cli\Console\OutputInterface;
+use Ymir\Cli\Console\Input;
+use Ymir\Cli\Console\Output;
 
 class UpdateProviderCommand extends AbstractProviderCommand
 {
@@ -40,9 +40,9 @@ class UpdateProviderCommand extends AbstractProviderCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(InputInterface $input, OutputInterface $output)
+    protected function perform(Input $input, Output $output)
     {
-        $provider = $this->apiClient->getProvider($this->getNumericArgument($input, 'provider'));
+        $provider = $this->apiClient->getProvider($input->getNumericArgument('provider'));
 
         $name = (string) $output->ask('Please enter a name for the cloud provider connection', $provider->get('name'));
 

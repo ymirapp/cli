@@ -14,13 +14,13 @@ declare(strict_types=1);
 namespace Ymir\Cli\Command\Project;
 
 use Symfony\Component\Console\Input\InputArgument;
-use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Ymir\Cli\ApiClient;
 use Ymir\Cli\Build\BuildStepInterface;
 use Ymir\Cli\CliConfiguration;
 use Ymir\Cli\Command\AbstractProjectCommand;
-use Ymir\Cli\Console\OutputInterface;
+use Ymir\Cli\Console\Input;
+use Ymir\Cli\Console\Output;
 use Ymir\Cli\ProjectConfiguration\ProjectConfiguration;
 
 class BuildProjectCommand extends AbstractProjectCommand
@@ -75,12 +75,12 @@ class BuildProjectCommand extends AbstractProjectCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(InputInterface $input, OutputInterface $output)
+    protected function perform(Input $input, Output $output)
     {
         $buildOptions = [
-            'debug' => $this->getBooleanOption($input, 'debug'),
-            'environment' => $this->getStringArgument($input, 'environment'),
-            'uploads' => $this->getBooleanOption($input, 'with-uploads'),
+            'debug' => $input->getBooleanOption('debug'),
+            'environment' => $input->getStringArgument('environment'),
+            'uploads' => $input->getBooleanOption('with-uploads'),
         ];
 
         $output->info('Building project');

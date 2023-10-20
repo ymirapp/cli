@@ -15,10 +15,10 @@ namespace Ymir\Cli\Command\Cache;
 
 use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Input\InputArgument;
-use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Ymir\Cli\Command\Network\AddBastionHostCommand;
-use Ymir\Cli\Console\OutputInterface;
+use Ymir\Cli\Console\Input;
+use Ymir\Cli\Console\Output;
 use Ymir\Cli\Support\Arr;
 use Ymir\Cli\Tool\Ssh;
 
@@ -46,7 +46,7 @@ class CacheTunnelCommand extends AbstractCacheCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(InputInterface $input, OutputInterface $output)
+    protected function perform(Input $input, Output $output)
     {
         $cache = $this->determineCache('Which cache cluster would you like to connect to', $input, $output);
 
@@ -60,7 +60,7 @@ class CacheTunnelCommand extends AbstractCacheCommand
             throw new RuntimeException(sprintf('The cache network does\'t have a bastion host to connect to. You can add one to the network with the "%s" command.', AddBastionHostCommand::NAME));
         }
 
-        $localPort = (int) $this->getNumericOption($input, 'port');
+        $localPort = (int) $input->getNumericOption('port');
 
         if (6379 === $localPort) {
             throw new RuntimeException('Cannot use port 6379 as the local port for the SSH tunnel to the cache cluster');

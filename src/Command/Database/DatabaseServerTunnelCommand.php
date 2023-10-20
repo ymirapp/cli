@@ -15,10 +15,10 @@ namespace Ymir\Cli\Command\Database;
 
 use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Input\InputArgument;
-use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Ymir\Cli\Command\Network\AddBastionHostCommand;
-use Ymir\Cli\Console\OutputInterface;
+use Ymir\Cli\Console\Input;
+use Ymir\Cli\Console\Output;
 use Ymir\Cli\Support\Arr;
 use Ymir\Cli\Tool\Ssh;
 
@@ -46,7 +46,7 @@ class DatabaseServerTunnelCommand extends AbstractDatabaseServerCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(InputInterface $input, OutputInterface $output)
+    protected function perform(Input $input, Output $output)
     {
         $databaseServer = $this->determineDatabaseServer('Which database server would you like to connect to', $input, $output);
 
@@ -62,7 +62,7 @@ class DatabaseServerTunnelCommand extends AbstractDatabaseServerCommand
             throw new RuntimeException(sprintf('The database server network does\'t have a bastion host to connect to. You can add one to the network with the "%s" command.', AddBastionHostCommand::NAME));
         }
 
-        $localPort = (int) $this->getNumericOption($input, 'port');
+        $localPort = (int) $input->getNumericOption('port');
 
         if (3306 === $localPort) {
             throw new RuntimeException('Cannot use port 3306 as the local port for the SSH tunnel to the database server');

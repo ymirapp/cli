@@ -14,7 +14,6 @@ declare(strict_types=1);
 namespace Ymir\Cli\Command\Project;
 
 use Illuminate\Support\Collection;
-use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\NullOutput;
 use Symfony\Component\Filesystem\Filesystem;
 use Ymir\Cli\ApiClient;
@@ -25,7 +24,8 @@ use Ymir\Cli\Command\Database\CreateDatabaseServerCommand;
 use Ymir\Cli\Command\Docker\CreateDockerfileCommand;
 use Ymir\Cli\Command\InstallPluginCommand;
 use Ymir\Cli\Command\Provider\ConnectProviderCommand;
-use Ymir\Cli\Console\OutputInterface;
+use Ymir\Cli\Console\Input;
+use Ymir\Cli\Console\Output;
 use Ymir\Cli\Process\Process;
 use Ymir\Cli\ProjectConfiguration\ProjectConfiguration;
 use Ymir\Cli\Support\Arr;
@@ -86,7 +86,7 @@ class InitializeProjectCommand extends AbstractCommand
     /**
      * {@inheritdoc}
      */
-    protected function determineCloudProvider(string $question, InputInterface $input, OutputInterface $output): int
+    protected function determineCloudProvider(string $question, Input $input, Output $output): int
     {
         $providers = $this->apiClient->getProviders($this->cliConfiguration->getActiveTeamId());
 
@@ -112,7 +112,7 @@ class InitializeProjectCommand extends AbstractCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(InputInterface $input, OutputInterface $output)
+    protected function perform(Input $input, Output $output)
     {
         if ($this->projectConfiguration->exists()
             && !$output->confirm('A project already exists in this directory. Do you want to overwrite it?', false)
@@ -124,7 +124,7 @@ class InitializeProjectCommand extends AbstractCommand
 
         $this->retryApi(function () use ($input, $output) {
             $projectName = $output->askSlug('What is the name of the project', basename(getcwd() ?: '') ?: null);
-            $projectType = $this->determineProjectType($input, $output);
+            $projectType = $this->determineProjectType($output);
             $providerId = $this->determineCloudProvider('Enter the ID of the cloud provider that the project will use', $input, $output);
             $region = $this->determineRegion('Enter the name of the region that the project will be in', $providerId, $input, $output);
 
@@ -156,7 +156,7 @@ class InitializeProjectCommand extends AbstractCommand
     /**
      * Add the "database" nodes to all the environments.
      */
-    private function addEnvironmentDatabaseNodes(Collection $environments, OutputInterface $output, string $projectName, string $region): Collection
+    private function addEnvironmentDatabaseNodes(Collection $environments, Output $output, string $projectName, string $region): Collection
     {
         $databaseServer = $this->determineDatabaseServer($output, $region);
 
@@ -184,7 +184,7 @@ class InitializeProjectCommand extends AbstractCommand
     /**
      * Check for WordPress and offer to install it if it's not detected.
      */
-    private function checkForWordPress(OutputInterface $output, string $projectType)
+    private function checkForWordPress(Output $output, string $projectType)
     {
         if (!$this->isWordPressDownloadable($projectType) || !$output->confirm('WordPress wasn\'t detected in the project directory. Would you like to download it?')) {
             return;
@@ -204,7 +204,7 @@ class InitializeProjectCommand extends AbstractCommand
     /**
      * Determine the database server to use for this project.
      */
-    private function determineDatabaseServer(OutputInterface $output, string $region): ?array
+    private function determineDatabaseServer(Output $output, string $region): ?array
     {
         $database = null;
         $databases = $this->apiClient->getDatabaseServers($this->cliConfiguration->getActiveTeamId())->where('region', $region)->whereNotIn('status', ['deleting', 'failed'])->values();
@@ -228,7 +228,7 @@ class InitializeProjectCommand extends AbstractCommand
     /**
      * Determine the type of project being initialized.
      */
-    private function determineProjectType(InputInterface $input, OutputInterface $output): string
+    private function determineProjectType(Output $output): string
     {
         $type = '';
 

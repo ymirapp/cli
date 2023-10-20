@@ -16,12 +16,12 @@ namespace Ymir\Cli\Command\Project;
 use Illuminate\Support\Collection;
 use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Input\InputArgument;
-use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Ymir\Cli\ApiClient;
 use Ymir\Cli\CliConfiguration;
 use Ymir\Cli\Command\Uploads\ImportUploadsCommand;
-use Ymir\Cli\Console\OutputInterface;
+use Ymir\Cli\Console\Input;
+use Ymir\Cli\Console\Output;
 use Ymir\Cli\ProjectConfiguration\ProjectConfiguration;
 
 class DeployProjectCommand extends AbstractProjectDeploymentCommand
@@ -82,14 +82,14 @@ class DeployProjectCommand extends AbstractProjectDeploymentCommand
     /**
      * {@inheritdoc}
      */
-    protected function createDeployment(InputInterface $input, OutputInterface $output): Collection
+    protected function createDeployment(Input $input, Output $output): Collection
     {
-        $environment = $this->getStringArgument($input, 'environment');
+        $environment = $input->getStringArgument('environment');
         $projectId = $this->projectConfiguration->getProjectId();
-        $withUploadsOption = $this->getBooleanOption($input, 'with-uploads');
+        $withUploadsOption = $input->getBooleanOption('with-uploads');
 
         $this->invoke($output, ValidateProjectCommand::NAME, ['environments' => $environment]);
-        $this->invoke($output, BuildProjectCommand::NAME, array_merge(['environment' => $environment], $this->getBooleanOption($input, 'debug-build') ? ['--debug' => null] : [], $withUploadsOption ? ['--with-uploads' => null] : []));
+        $this->invoke($output, BuildProjectCommand::NAME, array_merge(['environment' => $environment], $input->getBooleanOption('debug-build') ? ['--debug' => null] : [], $withUploadsOption ? ['--with-uploads' => null] : []));
 
         if ($withUploadsOption) {
             $this->invoke($output, ImportUploadsCommand::NAME, ['path' => $this->uploadsDirectory, '--environment' => $environment, '--force' => null]);

@@ -14,12 +14,12 @@ declare(strict_types=1);
 namespace Ymir\Cli\Deployment;
 
 use Illuminate\Support\Collection;
-use Ymir\Cli\Console\OutputInterface;
+use Ymir\Cli\Console\Output;
 
 interface DeploymentStepInterface
 {
     /**
      * Perform the deployment step and generate the console output.
      */
-    public function perform(Collection $deployment, string $environment, OutputInterface $output);
+    public function perform(Collection $deployment, string $environment, Output $output);
 }

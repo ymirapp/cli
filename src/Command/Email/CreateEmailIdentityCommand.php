@@ -14,9 +14,9 @@ declare(strict_types=1);
 namespace Ymir\Cli\Command\Email;
 
 use Symfony\Component\Console\Input\InputArgument;
-use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
-use Ymir\Cli\Console\OutputInterface;
+use Ymir\Cli\Console\Input;
+use Ymir\Cli\Console\Output;
 
 class CreateEmailIdentityCommand extends AbstractEmailIdentityCommand
 {
@@ -43,9 +43,9 @@ class CreateEmailIdentityCommand extends AbstractEmailIdentityCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(InputInterface $input, OutputInterface $output)
+    protected function perform(Input $input, Output $output)
     {
-        $name = $this->getStringArgument($input, 'name');
+        $name = $input->getStringArgument('name');
 
         if (empty($name)) {
             $name = $output->ask('What is the name of the email identity');

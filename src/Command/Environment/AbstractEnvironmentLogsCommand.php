@@ -18,14 +18,14 @@ use Carbon\Exceptions\InvalidTimeZoneException;
 use Illuminate\Support\Collection;
 use Symfony\Component\Console\Exception\InvalidArgumentException;
 use Ymir\Cli\Command\AbstractProjectCommand;
-use Ymir\Cli\Console\OutputInterface;
+use Ymir\Cli\Console\Output;
 
 abstract class AbstractEnvironmentLogsCommand extends AbstractProjectCommand
 {
     /**
      * Write the logs to the console output.
      */
-    protected function writeLogs(Collection $logs, OutputInterface $output, string $timezone = null)
+    protected function writeLogs(Collection $logs, Output $output, string $timezone = null)
     {
         $logs->each(function (array $log) use ($timezone, $output) {
             $timestamp = Carbon::createFromTimestamp($log['timestamp'] / 1000);

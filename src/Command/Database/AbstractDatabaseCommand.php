@@ -14,10 +14,10 @@ declare(strict_types=1);
 namespace Ymir\Cli\Command\Database;
 
 use Symfony\Component\Console\Exception\RuntimeException;
-use Symfony\Component\Console\Input\InputInterface;
 use Ymir\Cli\Command\AbstractCommand;
 use Ymir\Cli\Command\Network\AddBastionHostCommand;
-use Ymir\Cli\Console\OutputInterface;
+use Ymir\Cli\Console\Input;
+use Ymir\Cli\Console\Output;
 use Ymir\Cli\Process\Process;
 use Ymir\Cli\Support\Arr;
 use Ymir\Cli\Tool\Ssh;
@@ -27,10 +27,10 @@ abstract class AbstractDatabaseCommand extends AbstractCommand
     /**
      * Determine the database server that the command is interacting with.
      */
-    protected function determineDatabaseServer(string $question, InputInterface $input, OutputInterface $output): array
+    protected function determineDatabaseServer(string $question, Input $input, Output $output): array
     {
         $databases = $this->apiClient->getDatabaseServers($this->cliConfiguration->getActiveTeamId());
-        $databaseIdOrName = $this->getStringOption($input, 'server', true);
+        $databaseIdOrName = $input->getStringOption('server', true);
 
         if ($databases->isEmpty()) {
             throw new RuntimeException(sprintf('The currently active team has no database servers. You can create one with the "%s" command.', CreateDatabaseServerCommand::NAME));
@@ -40,6 +40,7 @@ abstract class AbstractDatabaseCommand extends AbstractCommand
             $databaseIdOrName = $output->choiceWithResourceDetails($question, $databases);
         }
 
+        // Need to improve this since you can have the same name in different regions
         $database = $databases->firstWhere('id', $databaseIdOrName) ?? $databases->firstWhere('name', $databaseIdOrName);
 
         if (1 < $databases->where('name', $databaseIdOrName)->count()) {
@@ -54,9 +55,9 @@ abstract class AbstractDatabaseCommand extends AbstractCommand
     /**
      * Determine the password to use to connect to the database server with the given user.
      */
-    protected function determinePassword(InputInterface $input, OutputInterface $output, string $user): string
+    protected function determinePassword(Input $input, Output $output, string $user): string
     {
-        $password = $this->getStringOption($input, 'password', true);
+        $password = $input->getStringOption('password', true);
 
         if (empty($password)) {
             $password = (string) $output->askHidden(sprintf('What\'s the "<comment>%s</comment>" password?', $user));
@@ -68,9 +69,9 @@ abstract class AbstractDatabaseCommand extends AbstractCommand
     /**
      * Determine the user to use to connect to the database server.
      */
-    protected function determineUser(InputInterface $input, OutputInterface $output): string
+    protected function determineUser(Input $input, Output $output): string
     {
-        $user = $this->getStringOption($input, 'user', true);
+        $user = $input->getStringOption('user', true);
 
         if (empty($user)) {
             $user = $output->ask('Which user do you want to use to connect to the database server?', 'ymir');

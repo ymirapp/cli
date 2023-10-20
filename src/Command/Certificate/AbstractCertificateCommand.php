@@ -14,17 +14,17 @@ declare(strict_types=1);
 namespace Ymir\Cli\Command\Certificate;
 
 use Symfony\Component\Console\Exception\InvalidArgumentException;
-use Symfony\Component\Console\Input\InputInterface;
 use Ymir\Cli\Command\AbstractCommand;
+use Ymir\Cli\Console\Input;
 
 abstract class AbstractCertificateCommand extends AbstractCommand
 {
     /**
      * Get the "certificate" argument.
      */
-    protected function getCertificateArgument(InputInterface $input): int
+    protected function getCertificateArgument(Input $input): int
     {
-        $certificateId = $this->getStringArgument($input, 'certificate');
+        $certificateId = $input->getStringArgument('certificate');
 
         if (!is_numeric($certificateId)) {
             throw new InvalidArgumentException('The "certificate" argument must be the ID of the SSL certificate');

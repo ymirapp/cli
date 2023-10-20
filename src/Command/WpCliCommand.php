@@ -16,9 +16,9 @@ namespace Ymir\Cli\Command;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Input\InputArgument;
-use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
-use Ymir\Cli\Console\OutputInterface;
+use Ymir\Cli\Console\Input;
+use Ymir\Cli\Console\Output;
 
 class WpCliCommand extends AbstractInvocationCommand
 {
@@ -46,11 +46,11 @@ class WpCliCommand extends AbstractInvocationCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(InputInterface $input, OutputInterface $output)
+    protected function perform(Input $input, Output $output)
     {
-        $async = $this->getBooleanOption($input, 'async') || $this->getBooleanOption($input, 'yolo');
-        $command = implode(' ', $this->getArrayArgument($input, 'wp-command'));
-        $environment = (string) $this->getStringOption($input, 'environment');
+        $async = $input->getBooleanOption('async') || $input->getBooleanOption('yolo');
+        $command = implode(' ', $input->getArrayArgument('wp-command'));
+        $environment = (string) $input->getStringOption('environment');
         $exitCode = Command::SUCCESS;
 
         if (empty($command)) {

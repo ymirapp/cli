@@ -23,7 +23,7 @@ use Symfony\Component\Console\Helper\SymfonyQuestionHelper;
 use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\ConsoleOutputInterface;
-use Symfony\Component\Console\Output\OutputInterface as SymfonyOutputInterface;
+use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Output\TrimmedBufferOutput;
 use Symfony\Component\Console\Question\ConfirmationQuestion;
 use Symfony\Component\Console\Question\Question;
@@ -64,11 +64,11 @@ class Output implements OutputInterface
     /**
      * Symfony console output.
      *
-     * @var SymfonyOutputInterface
+     * @var OutputInterface
      */
     private $output;
 
-    public function __construct(InputInterface $input, SymfonyOutputInterface $output)
+    public function __construct(InputInterface $input, OutputInterface $output)
     {
         $this->bufferedOutput = new TrimmedBufferOutput(\DIRECTORY_SEPARATOR === '\\' ? 4 : 2, $output->getVerbosity(), false, clone $output->getFormatter());
         $this->input = $input;
@@ -79,7 +79,7 @@ class Output implements OutputInterface
     }
 
     /**
-     * {@inheritdoc}
+     * Asks a question.
      */
     public function ask(string $question, string $default = null, callable $validator = null)
     {
@@ -90,7 +90,7 @@ class Output implements OutputInterface
     }
 
     /**
-     * {@inheritdoc}
+     * Asks a question with the user input hidden.
      */
     public function askHidden(string $question)
     {
@@ -102,7 +102,7 @@ class Output implements OutputInterface
     }
 
     /**
-     * {@inheritdoc}
+     * Asks a choice question.
      */
     public function askSlug(string $question, string $default = null): string
     {
@@ -110,7 +110,7 @@ class Output implements OutputInterface
     }
 
     /**
-     * {@inheritdoc}
+     * Ask a choice question that uses the ID for answers.
      */
     public function choice($question, $choices, $default = null)
     {
@@ -125,7 +125,7 @@ class Output implements OutputInterface
     }
 
     /**
-     * {@inheritdoc}
+     * Ask a choice question that uses the ID for answers.
      */
     public function choiceWithId(string $question, Collection $collection): int
     {
@@ -138,7 +138,7 @@ class Output implements OutputInterface
     }
 
     /**
-     * {@inheritdoc}
+     * Ask a choice question with the resource details.
      */
     public function choiceWithResourceDetails(string $question, Collection $collection): string
     {
@@ -148,7 +148,7 @@ class Output implements OutputInterface
     }
 
     /**
-     * {@inheritdoc}
+     * Write out a comment message.
      */
     public function comment(string $message)
     {
@@ -156,7 +156,7 @@ class Output implements OutputInterface
     }
 
     /**
-     * {@inheritdoc}
+     * Asks for confirmation.
      */
     public function confirm(string $question, bool $default = true): bool
     {
@@ -172,7 +172,7 @@ class Output implements OutputInterface
     }
 
     /**
-     * {@inheritdoc}
+     * Format a boolean value.
      */
     public function formatBoolean(bool $bool): string
     {
@@ -180,7 +180,7 @@ class Output implements OutputInterface
     }
 
     /**
-     * {@inheritdoc}
+     * Format the status of a resource for display.
      */
     public function formatStatus(string $status): string
     {
@@ -212,7 +212,7 @@ class Output implements OutputInterface
     }
 
     /**
-     * {@inheritdoc}
+     * Formats a horizontal table.
      */
     public function horizontalTable(array $headers, array $rows)
     {
@@ -227,7 +227,7 @@ class Output implements OutputInterface
     }
 
     /**
-     * {@inheritdoc}
+     * Write out an important message.
      */
     public function important(string $message)
     {
@@ -235,7 +235,7 @@ class Output implements OutputInterface
     }
 
     /**
-     * {@inheritdoc}
+     * Write out an informational message.
      */
     public function info(string $message)
     {
@@ -243,7 +243,7 @@ class Output implements OutputInterface
     }
 
     /**
-     * {@inheritdoc}
+     * Write out an informational message with an accompanied warning about a delay.
      */
     public function infoWithDelayWarning(string $message)
     {
@@ -251,7 +251,7 @@ class Output implements OutputInterface
     }
 
     /**
-     * {@inheritdoc}
+     * Write out an informational message with an accompanied warning about having to redeploy an environment.
      */
     public function infoWithRedeployWarning(string $message, string $environment)
     {
@@ -261,7 +261,7 @@ class Output implements OutputInterface
     }
 
     /**
-     * {@inheritdoc}
+     * Write out an informational message followed by a value and an optional comment.
      */
     public function infoWithValue(string $message, string $value, string $comment = '')
     {
@@ -275,7 +275,7 @@ class Output implements OutputInterface
     }
 
     /**
-     * {@inheritdoc}
+     * Write out an informational message with an accompanied warning.
      */
     public function infoWithWarning(string $message, string $warning)
     {
@@ -323,7 +323,7 @@ class Output implements OutputInterface
     }
 
     /**
-     * {@inheritdoc}
+     * Write out a list of items.
      */
     public function list(iterable $items)
     {
@@ -353,7 +353,7 @@ class Output implements OutputInterface
     }
 
     /**
-     * {@inheritdoc}
+     * Add newline(s).
      */
     public function newLine(int $count = 1)
     {
@@ -361,7 +361,7 @@ class Output implements OutputInterface
     }
 
     /**
-     * {@inheritdoc}
+     * Write out a note message.
      */
     public function note(string $message)
     {
@@ -393,7 +393,7 @@ class Output implements OutputInterface
     }
 
     /**
-     * {@inheritdoc}
+     * Formats a table.
      */
     public function table(array $headers, array $rows)
     {
@@ -407,7 +407,7 @@ class Output implements OutputInterface
     }
 
     /**
-     * {@inheritdoc}
+     * Write out a warning message.
      */
     public function warning(string $message)
     {
@@ -431,7 +431,7 @@ class Output implements OutputInterface
     }
 
     /**
-     * {@inheritdoc}
+     * Write the build step message.
      */
     public function writeStep(string $step)
     {

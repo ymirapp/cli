@@ -14,20 +14,20 @@ declare(strict_types=1);
 namespace Ymir\Cli\Command\Dns;
 
 use Symfony\Component\Console\Exception\RuntimeException;
-use Symfony\Component\Console\Input\InputInterface;
 use Ymir\Cli\Command\AbstractCommand;
-use Ymir\Cli\Console\OutputInterface;
+use Ymir\Cli\Console\Input;
+use Ymir\Cli\Console\Output;
 
 abstract class AbstractDnsCommand extends AbstractCommand
 {
     /**
      * Determine the DNS zone that the command is interacting with.
      */
-    protected function determineDnsZone(string $question, InputInterface $input, OutputInterface $output): array
+    protected function determineDnsZone(string $question, Input $input, Output $output): array
     {
         $zone = null;
         $zones = $this->apiClient->getDnsZones($this->cliConfiguration->getActiveTeamId());
-        $zoneIdOrName = $this->getStringArgument($input, 'zone');
+        $zoneIdOrName = $input->getStringArgument('zone');
 
         if ($zones->isEmpty()) {
             throw new RuntimeException(sprintf('The currently active team has no DNS zones. You can create one with the "%s" command.', CreateDnsZoneCommand::NAME));

@@ -16,12 +16,12 @@ namespace Ymir\Cli\Command\Database;
 use Carbon\Carbon;
 use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Input\InputArgument;
-use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Filesystem\Filesystem;
 use Ymir\Cli\ApiClient;
 use Ymir\Cli\CliConfiguration;
-use Ymir\Cli\Console\OutputInterface;
+use Ymir\Cli\Console\Input;
+use Ymir\Cli\Console\Output;
 use Ymir\Cli\Process\Process;
 use Ymir\Cli\ProjectConfiguration\ProjectConfiguration;
 use Ymir\Cli\Tool\Mysql;
@@ -69,7 +69,7 @@ class ExportDatabaseCommand extends AbstractDatabaseCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(InputInterface $input, OutputInterface $output)
+    protected function perform(Input $input, Output $output)
     {
         $databaseServer = $this->determineDatabaseServer('Which database server would you like to export a database from?', $input, $output);
         $name = $this->determineDatabaseName($databaseServer, $input, $output);
@@ -108,9 +108,9 @@ class ExportDatabaseCommand extends AbstractDatabaseCommand
     /**
      * Determine the name of the database to export.
      */
-    private function determineDatabaseName(array $databaseServer, InputInterface $input, OutputInterface $output): string
+    private function determineDatabaseName(array $databaseServer, Input $input, Output $output): string
     {
-        $name = $this->getStringArgument($input, 'name');
+        $name = $input->getStringArgument('name');
 
         if (!empty($name)) {
             return $name;

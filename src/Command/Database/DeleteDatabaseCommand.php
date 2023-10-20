@@ -15,9 +15,9 @@ namespace Ymir\Cli\Command\Database;
 
 use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Input\InputArgument;
-use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
-use Ymir\Cli\Console\OutputInterface;
+use Ymir\Cli\Console\Input;
+use Ymir\Cli\Console\Output;
 
 class DeleteDatabaseCommand extends AbstractDatabaseCommand
 {
@@ -43,7 +43,7 @@ class DeleteDatabaseCommand extends AbstractDatabaseCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(InputInterface $input, OutputInterface $output)
+    protected function perform(Input $input, Output $output)
     {
         $databaseServer = $this->determineDatabaseServer('On which database server would you like to delete a database?', $input, $output);
 
@@ -51,7 +51,7 @@ class DeleteDatabaseCommand extends AbstractDatabaseCommand
             throw new RuntimeException('Database on private database servers need to be manually deleted.');
         }
 
-        $name = $this->getStringArgument($input, 'name');
+        $name = $input->getStringArgument('name');
 
         if (empty($name)) {
             $name = (string) $output->choice('Which database would you like to delete', $this->apiClient->getDatabases($databaseServer['id'])->filter(function (string $name) {

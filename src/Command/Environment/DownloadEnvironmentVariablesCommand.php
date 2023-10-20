@@ -14,12 +14,12 @@ declare(strict_types=1);
 namespace Ymir\Cli\Command\Environment;
 
 use Symfony\Component\Console\Input\InputArgument;
-use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Filesystem\Filesystem;
 use Ymir\Cli\ApiClient;
 use Ymir\Cli\CliConfiguration;
 use Ymir\Cli\Command\AbstractProjectCommand;
-use Ymir\Cli\Console\OutputInterface;
+use Ymir\Cli\Console\Input;
+use Ymir\Cli\Console\Output;
 use Ymir\Cli\ProjectConfiguration\ProjectConfiguration;
 
 class DownloadEnvironmentVariablesCommand extends AbstractProjectCommand
@@ -70,9 +70,9 @@ class DownloadEnvironmentVariablesCommand extends AbstractProjectCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(InputInterface $input, OutputInterface $output)
+    protected function perform(Input $input, Output $output)
     {
-        $environment = $this->getStringArgument($input, 'environment');
+        $environment = $input->getStringArgument('environment');
         $filename = sprintf('.env.%s', $environment);
 
         $this->filesystem->dumpFile($this->projectDirectory.'/'.$filename, $this->apiClient->getEnvironmentVariables($this->projectConfiguration->getProjectId(), $environment)->sortKeys()->map(function (string $value, string $key) {

@@ -15,9 +15,9 @@ namespace Ymir\Cli\Command\Environment;
 
 use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Input\InputArgument;
-use Symfony\Component\Console\Input\InputInterface;
 use Ymir\Cli\Command\AbstractInvocationCommand;
-use Ymir\Cli\Console\OutputInterface;
+use Ymir\Cli\Console\Input;
+use Ymir\Cli\Console\Output;
 use Ymir\Cli\ProjectConfiguration\DomainConfigurationChange;
 use Ymir\Cli\Support\Arr;
 
@@ -45,10 +45,10 @@ class ChangeEnvironmentDomainCommand extends AbstractInvocationCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(InputInterface $input, OutputInterface $output)
+    protected function perform(Input $input, Output $output)
     {
-        $currentDomain = $this->getStringArgument($input, 'domain');
-        $environment = $this->getStringArgument($input, 'environment');
+        $currentDomain = $input->getStringArgument('domain');
+        $environment = $input->getStringArgument('environment');
         $vanityDomain = $this->apiClient->getEnvironmentVanityDomainName($this->projectConfiguration->getProjectId(), $environment);
 
         if (empty($currentDomain) && $output->confirm(sprintf('Do you want to use the "<comment>%s</comment>" vanity domain as the current environment domain to replace?', $vanityDomain))) {

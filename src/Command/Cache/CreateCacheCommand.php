@@ -17,10 +17,10 @@ use Illuminate\Support\Collection;
 use Symfony\Component\Console\Exception\InvalidArgumentException;
 use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Input\InputArgument;
-use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Ymir\Cli\Command\AbstractCommand;
-use Ymir\Cli\Console\OutputInterface;
+use Ymir\Cli\Console\Input;
+use Ymir\Cli\Console\Output;
 use Ymir\Cli\ProjectConfiguration\CacheConfigurationChange;
 
 class CreateCacheCommand extends AbstractCommand
@@ -48,9 +48,9 @@ class CreateCacheCommand extends AbstractCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(InputInterface $input, OutputInterface $output)
+    protected function perform(Input $input, Output $output)
     {
-        $name = $this->getStringArgument($input, 'name');
+        $name = $input->getStringArgument('name');
 
         if (empty($name)) {
             $name = $output->askSlug('What is the name of the cache cluster');
@@ -76,13 +76,13 @@ class CreateCacheCommand extends AbstractCommand
     /**
      * Determine the cache cluster type to create.
      */
-    private function determineType(Collection $network, InputInterface $input, OutputInterface $output): string
+    private function determineType(Collection $network, Input $input, Output $output): string
     {
         if (!isset($network['provider']['id'])) {
             throw new RuntimeException('The Ymir API failed to return information on the cloud provider');
         }
 
-        $type = $this->getStringOption($input, 'type');
+        $type = $input->getStringOption('type');
         $types = $this->apiClient->getCacheTypes((int) $network['provider']['id']);
 
         if (null !== $type && !$types->has($type)) {

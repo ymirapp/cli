@@ -27,12 +27,12 @@ use Symfony\Component\Console\Exception\InvalidArgumentException;
 use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Console\Input\InputArgument;
-use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Ymir\Cli\ApiClient;
 use Ymir\Cli\CliConfiguration;
 use Ymir\Cli\Command\AbstractProjectCommand;
-use Ymir\Cli\Console\OutputInterface;
+use Ymir\Cli\Console\Input;
+use Ymir\Cli\Console\Output;
 use Ymir\Cli\FileUploader;
 use Ymir\Cli\ProjectConfiguration\ProjectConfiguration;
 
@@ -79,9 +79,9 @@ class ImportUploadsCommand extends AbstractProjectCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(InputInterface $input, OutputInterface $output)
+    protected function perform(Input $input, Output $output)
     {
-        $path = $this->getStringArgument($input, 'path');
+        $path = $input->getStringArgument('path');
         $projectType = $this->projectConfiguration->getProjectType();
 
         if (empty($path) && 'bedrock' === $projectType) {
@@ -91,15 +91,15 @@ class ImportUploadsCommand extends AbstractProjectCommand
         }
 
         $adapter = $this->getAdapter($path);
-        $environment = (string) $this->getStringOption($input, 'environment');
+        $environment = (string) $input->getStringOption('environment');
         $filesystem = new Filesystem($adapter);
-        $size = $this->getNumericOption($input, 'size');
+        $size = $input->getNumericOption('size');
 
         if ($size < 1) {
             throw new InvalidArgumentException('Cannot have a "size" smaller than 1');
         }
 
-        if (!$this->getBooleanOption($input, 'force') && !$output->confirm('Importing files will overwrite any existing file in the environment "uploads" directory. Do you want to proceed?')) {
+        if (!$input->getBooleanOption('force') && !$output->confirm('Importing files will overwrite any existing file in the environment "uploads" directory. Do you want to proceed?')) {
             return;
         }
 

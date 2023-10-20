@@ -14,8 +14,8 @@ declare(strict_types=1);
 namespace Ymir\Cli\Command\Provider;
 
 use Symfony\Component\Console\Input\InputArgument;
-use Symfony\Component\Console\Input\InputInterface;
-use Ymir\Cli\Console\OutputInterface;
+use Ymir\Cli\Console\Input;
+use Ymir\Cli\Console\Output;
 
 class DeleteProviderCommand extends AbstractProviderCommand
 {
@@ -40,15 +40,13 @@ class DeleteProviderCommand extends AbstractProviderCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(InputInterface $input, OutputInterface $output)
+    protected function perform(Input $input, Output $output)
     {
-        $providerId = $this->getNumericArgument($input, 'provider');
-
         if (!$output->confirm('Are you sure you want to delete this cloud provider? All resources associated to it will also be deleted on Ymir. They won\'t be deleted on your cloud provider.', false)) {
             return;
         }
 
-        $this->apiClient->deleteProvider($providerId);
+        $this->apiClient->deleteProvider($input->getNumericArgument('provider'));
 
         $output->info('Cloud provider deleted');
     }

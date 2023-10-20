@@ -16,7 +16,7 @@ namespace Ymir\Cli\Command\Provider;
 use Ymir\Cli\ApiClient;
 use Ymir\Cli\CliConfiguration;
 use Ymir\Cli\Command\AbstractCommand;
-use Ymir\Cli\Console\OutputInterface;
+use Ymir\Cli\Console\Output;
 use Ymir\Cli\ProjectConfiguration\ProjectConfiguration;
 
 abstract class AbstractProviderCommand extends AbstractCommand
@@ -41,7 +41,7 @@ abstract class AbstractProviderCommand extends AbstractCommand
     /**
      * Get the AWS credentials.
      */
-    protected function getAwsCredentials(OutputInterface $output): array
+    protected function getAwsCredentials(Output $output): array
     {
         $credentials = $this->getAwsCredentialsFromFile($output);
 
@@ -54,7 +54,7 @@ abstract class AbstractProviderCommand extends AbstractCommand
     /**
      * Get the AWS credentials from the credentials file.
      */
-    private function getAwsCredentialsFromFile(OutputInterface $output): array
+    private function getAwsCredentialsFromFile(Output $output): array
     {
         $credentialsFilePath = $this->homeDirectory.'/.aws/credentials';
 

@@ -15,8 +15,8 @@ namespace Ymir\Cli\Command\Database;
 
 use Carbon\Carbon;
 use Symfony\Component\Console\Input\InputArgument;
-use Symfony\Component\Console\Input\InputInterface;
-use Ymir\Cli\Console\OutputInterface;
+use Ymir\Cli\Console\Input;
+use Ymir\Cli\Console\Output;
 
 class ListDatabaseUsersCommand extends AbstractDatabaseServerCommand
 {
@@ -41,7 +41,7 @@ class ListDatabaseUsersCommand extends AbstractDatabaseServerCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(InputInterface $input, OutputInterface $output)
+    protected function perform(Input $input, Output $output)
     {
         $output->table(
             ['Id', 'Username', 'Created At'],
