@@ -18,6 +18,7 @@ use Illuminate\Support\LazyCollection;
 use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Finder\Finder;
 use Ymir\Cli\ApiClient;
+use Ymir\Cli\Console\Input;
 use Ymir\Cli\Console\Output;
 use Ymir\Cli\FileUploader;
 use Ymir\Cli\ProjectConfiguration\ProjectConfiguration;
@@ -66,11 +67,15 @@ class ProcessAssetsStep implements DeploymentStepInterface
     /**
      * {@inheritdoc}
      */
-    public function perform(Collection $deployment, string $environment, Output $output)
+    public function perform(Collection $deployment, string $environment, Input $input, Output $output)
     {
-        $deploymentWithAssetsHash = $this->apiClient->getDeployments($this->projectConfiguration->getProjectId(), $environment)
-            ->where('status', 'finished')
-            ->firstWhere('assets_hash', $deployment->get('assets_hash'));
+        $deploymentWithAssetsHash = null;
+
+        if (!$input->getBooleanOption('force-assets')) {
+            $deploymentWithAssetsHash = $this->apiClient->getDeployments($this->projectConfiguration->getProjectId(), $environment)
+                ->where('status', 'finished')
+                ->firstWhere('assets_hash', $deployment->get('assets_hash'));
+        }
 
         if (null !== $deploymentWithAssetsHash) {
             $output->infoWithWarning('No assets change detected', 'skipping processing assets');

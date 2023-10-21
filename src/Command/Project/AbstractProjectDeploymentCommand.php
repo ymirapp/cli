@@ -56,7 +56,7 @@ abstract class AbstractProjectDeploymentCommand extends AbstractProjectCommand
         $environment = $input->getStringArgument('environment');
 
         foreach ($this->deploymentSteps as $deploymentStep) {
-            $deploymentStep->perform($deployment, $environment, $output);
+            $deploymentStep->perform($deployment, $environment, $input, $output);
         }
 
         $output->info($this->getSuccessMessage($environment));

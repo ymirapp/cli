@@ -16,6 +16,7 @@ namespace Ymir\Cli\Deployment;
 use Illuminate\Support\Collection;
 use Symfony\Component\Console\Exception\RuntimeException;
 use Ymir\Cli\ApiClient;
+use Ymir\Cli\Console\Input;
 use Ymir\Cli\Console\Output;
 
 class StartAndMonitorDeploymentStep implements DeploymentStepInterface
@@ -38,7 +39,7 @@ class StartAndMonitorDeploymentStep implements DeploymentStepInterface
     /**
      * {@inheritdoc}
      */
-    public function perform(Collection $deployment, string $environment, Output $output)
+    public function perform(Collection $deployment, string $environment, Input $input, Output $output)
     {
         $output->info(sprintf('%s starting', ucfirst($deployment->get('type', 'deployment'))));
 

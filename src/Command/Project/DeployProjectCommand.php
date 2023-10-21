@@ -76,6 +76,7 @@ class DeployProjectCommand extends AbstractProjectDeploymentCommand
             ->setAliases([self::ALIAS])
             ->addArgument('environment', InputArgument::OPTIONAL, 'The name of the environment to deploy to', 'staging')
             ->addOption('debug-build', null, InputOption::VALUE_NONE, 'Run the deployment build in debug mode')
+            ->addOption('force-assets', null, InputOption::VALUE_NONE, 'Force processing assets')
             ->addOption('with-uploads', null, InputOption::VALUE_NONE, 'Import the "uploads" directory during the deployment');
     }
 

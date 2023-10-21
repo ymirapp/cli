@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Ymir\Cli\Deployment;
 
 use Illuminate\Support\Collection;
+use Ymir\Cli\Console\Input;
 use Ymir\Cli\Console\Output;
 
 interface DeploymentStepInterface
@@ -21,5 +22,5 @@ interface DeploymentStepInterface
     /**
      * Perform the deployment step and generate the console output.
      */
-    public function perform(Collection $deployment, string $environment, Output $output);
+    public function perform(Collection $deployment, string $environment, Input $input, Output $output);
 }

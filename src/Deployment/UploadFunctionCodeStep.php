@@ -16,6 +16,7 @@ namespace Ymir\Cli\Deployment;
 use Illuminate\Support\Collection;
 use Symfony\Component\Console\Helper\ProgressBar;
 use Ymir\Cli\ApiClient;
+use Ymir\Cli\Console\Input;
 use Ymir\Cli\Console\Output;
 use Ymir\Cli\FileUploader;
 use Ymir\Cli\ProjectConfiguration\ProjectConfiguration;
@@ -74,7 +75,7 @@ class UploadFunctionCodeStep implements DeploymentStepInterface
     /**
      * {@inheritdoc}
      */
-    public function perform(Collection $deployment, string $environment, Output $output)
+    public function perform(Collection $deployment, string $environment, Input $input, Output $output)
     {
         $configuration = $deployment->get('configuration');
         $deploymentType = Arr::get($configuration, sprintf('environments.%s.deployment', $environment), 'zip');
