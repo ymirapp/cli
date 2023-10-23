@@ -15,5 +15,17 @@ jobs:
       - uses: google-github-actions/release-please-action@v3
         with:
           release-type: php
-          package-name: cli
           pull-request-title-pattern: 'chore: release ${version}'
+          skip-labeling: true
+      - uses: actions/checkout@v2
+      - name: update version in services.yml
+        if: ${{ steps.release.outputs.release_created }}
+        uses: mikefarah/yq@v4
+        with:
+          cmd: yq '.parameters.version = "${{ steps.release.outputs.major }}.${{ steps.release.outputs.minor }}.${{ steps.release.outputs.patch }}"' -i config/services.yml
+      - name: Commit version change
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add config/services.yml
+          git commit -m "chore: update version in services.yml to ${{ steps.release.outputs.major }}.${{ steps.release.outputs.minor }}.${{ steps.release.outputs.patch }}"
