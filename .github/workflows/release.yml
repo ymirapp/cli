@@ -15,5 +15,5 @@ jobs:
       - uses: google-github-actions/release-please-action@v3
         with:
           release-type: php
-          package-name: cli
           pull-request-title-pattern: 'chore: release ${version}'
+          skip-labeling: true
