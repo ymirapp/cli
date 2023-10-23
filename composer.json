@@ -1,9 +1,9 @@
 {
     "name": "ymirapp/cli",
     "description": "Ymir command-line tool",
-    "type" : "project",
+    "type": "project",
     "license": "MIT",
-    "authors" : [
+    "authors": [
         {
             "name": "Carl Alexander",
             "email": "support@ymirapp.com",
