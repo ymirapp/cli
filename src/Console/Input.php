@@ -184,6 +184,6 @@ class Input
      */
     public function isInteractive(): bool
     {
-        return $this->isInteractive();
+        return $this->input->isInteractive();
     }
 }
