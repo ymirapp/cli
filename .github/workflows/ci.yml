@@ -1,6 +1,8 @@
 name: Continuous Integration
 on:
   push:
+    branches-ignore:
+      - 'release-please**'
   pull_request:
     branches-ignore:
       - 'release-please**'
