@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.43.1](https://github.com/ymirapp/cli/compare/v1.43.0...v1.43.1) (2023-10-24)
+
+
+### Bug Fixes
+
+* fix infinite loop with `isInteractive` method call ([8b65d02](https://github.com/ymirapp/cli/commit/8b65d0285d1de1d4563742be60616b363e1eeaeb))
+
 ## [1.43.0](https://github.com/ymirapp/cli/compare/v1.42.0...v1.43.0) (2023-10-23)
 
 
