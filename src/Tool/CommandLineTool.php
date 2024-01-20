@@ -24,7 +24,7 @@ class CommandLineTool
      */
     public static function isInstalledGlobally(): bool
     {
-        return 0 === Process::fromShellCommandline(sprintf('command -v %s', static::getCommand()))->run();
+        return 0 === Process::fromShellCommandline(sprintf('which %s', static::getCommand()))->run();
     }
 
     /**
