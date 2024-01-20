@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.43.2](https://github.com/ymirapp/cli/compare/v1.43.1...v1.43.2) (2024-01-20)
+
+
+### Bug Fixes
+
+* use `which` instead of `command -v` for windows compatibility ([f01e5a8](https://github.com/ymirapp/cli/commit/f01e5a8ed9de0637490d911536ecefa79f6ccdcf))
+
 ## [1.43.1](https://github.com/ymirapp/cli/compare/v1.43.0...v1.43.1) (2023-10-24)
 
 
