@@ -81,7 +81,7 @@ class Output implements OutputInterface
     /**
      * Asks a question.
      */
-    public function ask(string $question, string $default = null, callable $validator = null)
+    public function ask(string $question, ?string $default = null, ?callable $validator = null)
     {
         $question = new Question($question, $default);
         $question->setValidator($validator);
@@ -104,7 +104,7 @@ class Output implements OutputInterface
     /**
      * Asks a choice question.
      */
-    public function askSlug(string $question, string $default = null): string
+    public function askSlug(string $question, ?string $default = null): string
     {
         return (string) preg_replace('/[^a-z0-9-_]+/i', '-', strtolower(trim($this->ask($question, $default))));
     }
@@ -474,7 +474,7 @@ class Output implements OutputInterface
     /**
      * Formats a message as a block of text.
      */
-    private function block($messages, string $type = null, string $style = null, string $prefix = ' ', bool $padding = false, bool $escape = true)
+    private function block($messages, ?string $type = null, ?string $style = null, string $prefix = ' ', bool $padding = false, bool $escape = true)
     {
         $messages = \is_array($messages) ? array_values($messages) : [$messages];
 
@@ -486,7 +486,7 @@ class Output implements OutputInterface
     /**
      * Create a block.
      */
-    private function createBlock(array $messages, string $type = null, string $style = null, string $prefix = ' ', bool $padding = false, bool $escape = false): array
+    private function createBlock(array $messages, ?string $type = null, ?string $style = null, string $prefix = ' ', bool $padding = false, bool $escape = false): array
     {
         $indentLength = 0;
         $prefixLength = Helper::width(Helper::removeDecoration($this->output->getFormatter(), $prefix));

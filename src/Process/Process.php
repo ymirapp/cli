@@ -21,7 +21,7 @@ class Process extends SymfonyProcess
     /**
      * Run a command-line in a shell wrapper.
      */
-    public static function runShellCommandline(string $command, string $cwd = null, ?float $timeout = 60): self
+    public static function runShellCommandline(string $command, ?string $cwd = null, ?float $timeout = 60): self
     {
         $process = self::fromShellCommandline($command, $cwd, null, null, $timeout);
         $process->run();

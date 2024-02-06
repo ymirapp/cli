@@ -20,7 +20,7 @@ class HiddenInputOption extends InputOption
     /**
      * Constructor.
      */
-    public function __construct(string $name, $shortcut = null, int $mode = null, $default = null)
+    public function __construct(string $name, $shortcut = null, ?int $mode = null, $default = null)
     {
         parent::__construct($name, $shortcut, $mode, '', $default);
     }

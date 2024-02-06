@@ -25,7 +25,7 @@ abstract class AbstractEnvironmentLogsCommand extends AbstractProjectCommand
     /**
      * Write the logs to the console output.
      */
-    protected function writeLogs(Collection $logs, Output $output, string $timezone = null)
+    protected function writeLogs(Collection $logs, Output $output, ?string $timezone = null)
     {
         $logs->each(function (array $log) use ($timezone, $output) {
             $timestamp = Carbon::createFromTimestamp($log['timestamp'] / 1000);
