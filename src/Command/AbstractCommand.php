@@ -223,26 +223,6 @@ abstract class AbstractCommand extends Command
     }
 
     /**
-     * Get the value of a option that should be a string. Returns null if not present.
-     */
-    protected function getStringOption(InputInterface $input, string $option, bool $requiredNonInteractive = false): ?string
-    {
-        $value = null;
-
-        if ($input->hasOption($option)) {
-            $value = $input->getOption($option);
-        }
-
-        if (null === $value && $requiredNonInteractive && !$input->isInteractive()) {
-            throw new InvalidArgumentException(sprintf('You must use the "--%s" option when running in non-interactive mode', $option));
-        } elseif (null !== $value && !is_string($value)) {
-            throw new InvalidArgumentException(sprintf('The "--%s" option must be a string value', $option));
-        }
-
-        return $value;
-    }
-
-    /**
      * Invoke another console command.
      */
     protected function invoke(OutputInterface $output, string $command, array $arguments = []): int
