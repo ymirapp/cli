@@ -13,11 +13,11 @@ declare(strict_types=1);
 
 namespace Ymir\Cli\Command\Environment;
 
-use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Input\InputArgument;
 use Ymir\Cli\Command\AbstractProjectCommand;
 use Ymir\Cli\Console\Input;
 use Ymir\Cli\Console\Output;
+use Ymir\Cli\Exception\InvalidInputException;
 
 class GetEnvironmentInfoCommand extends AbstractProjectCommand
 {
@@ -119,7 +119,7 @@ class GetEnvironmentInfoCommand extends AbstractProjectCommand
         $database = $this->apiClient->getDatabaseServers($this->cliConfiguration->getActiveTeamId())->firstWhere('name', $databaseName);
 
         if (!is_array($database)) {
-            throw new RuntimeException(sprintf('There is no "%s" database on your current team', $databaseName));
+            throw new InvalidInputException(sprintf('There is no "%s" database server on your current team', $databaseName));
         }
 
         if (!empty($database['status']) && 'available' !== $database['status']) {

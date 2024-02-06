@@ -17,6 +17,7 @@ use Symfony\Component\Console\Exception\RuntimeException;
 use Ymir\Cli\Command\AbstractCommand;
 use Ymir\Cli\Console\Input;
 use Ymir\Cli\Console\Output;
+use Ymir\Cli\Exception\InvalidInputException;
 
 abstract class AbstractCacheCommand extends AbstractCommand
 {
@@ -39,7 +40,7 @@ abstract class AbstractCacheCommand extends AbstractCommand
         if (1 < $caches->where('name', $cacheIdOrName)->count()) {
             throw new RuntimeException(sprintf('Unable to select a cache cluster because more than one cache cluster has the name "%s"', $cacheIdOrName));
         } elseif (!is_array($cache) || empty($cache['id'])) {
-            throw new RuntimeException(sprintf('Unable to find a cache cluster with "%s" as the ID or name', $cacheIdOrName));
+            throw new InvalidInputException(sprintf('Unable to find a cache cluster with "%s" as the ID or name', $cacheIdOrName));
         }
 
         return $cache;

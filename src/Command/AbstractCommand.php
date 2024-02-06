@@ -129,7 +129,7 @@ abstract class AbstractCommand extends Command
         $network = $networks->firstWhere('name', $networkIdOrName) ?? $networks->firstWhere('id', $networkIdOrName);
 
         if (empty($network['id'])) {
-            throw new RuntimeException(sprintf('Unable to find a network with "%s" as the ID or name', $networkIdOrName));
+            throw new InvalidInputException(sprintf('Unable to find a network with "%s" as the ID or name', $networkIdOrName));
         }
 
         return (int) $network['id'];
@@ -183,7 +183,7 @@ abstract class AbstractCommand extends Command
         $project = $projects->firstWhere('name', $projectIdOrName) ?? $projects->firstWhere('id', $projectIdOrName);
 
         if (empty($project['id'])) {
-            throw new RuntimeException(sprintf('Unable to find a project with "%s" as the ID or name', $projectIdOrName));
+            throw new InvalidInputException(sprintf('Unable to find a project with "%s" as the ID or name', $projectIdOrName));
         }
 
         return (int) $project['id'];

@@ -18,6 +18,7 @@ use Symfony\Component\Console\Input\InputArgument;
 use Ymir\Cli\Command\AbstractProjectCommand;
 use Ymir\Cli\Console\Input;
 use Ymir\Cli\Console\Output;
+use Ymir\Cli\Exception\InvalidInputException;
 
 class DeleteEnvironmentCommand extends AbstractProjectCommand
 {
@@ -76,7 +77,7 @@ class DeleteEnvironmentCommand extends AbstractProjectCommand
         }
 
         if (!$environments->contains($environment)) {
-            throw new RuntimeException(sprintf('The "%s" environment doesn\'t exist.', $environment));
+            throw new InvalidInputException(sprintf('The "%s" environment doesn\'t exist.', $environment));
         }
 
         return $environment;

@@ -21,6 +21,7 @@ use Ymir\Cli\ApiClient;
 use Ymir\Cli\CliConfiguration;
 use Ymir\Cli\Console\Input;
 use Ymir\Cli\Console\Output;
+use Ymir\Cli\Exception\InvalidInputException;
 use Ymir\Cli\Process\Process;
 use Ymir\Cli\ProjectConfiguration\ProjectConfiguration;
 use Ymir\Cli\Tool\Mysql;
@@ -75,9 +76,9 @@ class ImportDatabaseCommand extends AbstractDatabaseCommand
         $file = $input->getStringArgument('file');
 
         if (!str_ends_with($file, '.sql') && !str_ends_with($file, '.sql.gz')) {
-            throw new RuntimeException('You may only import .sql or .sql.gz files');
+            throw new InvalidInputException('You may only import .sql or .sql.gz files');
         } elseif (!$this->filesystem->exists($file)) {
-            throw new RuntimeException(sprintf('File "%s" doesn\'t exist', $file));
+            throw new InvalidInputException(sprintf('File "%s" doesn\'t exist', $file));
         }
 
         $databaseServer = $this->determineDatabaseServer('Which database server would you like to import a database to?', $input, $output);

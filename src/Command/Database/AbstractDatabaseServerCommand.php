@@ -17,6 +17,7 @@ use Symfony\Component\Console\Exception\RuntimeException;
 use Ymir\Cli\Command\AbstractCommand;
 use Ymir\Cli\Console\Input;
 use Ymir\Cli\Console\Output;
+use Ymir\Cli\Exception\InvalidInputException;
 
 abstract class AbstractDatabaseServerCommand extends AbstractCommand
 {
@@ -46,7 +47,7 @@ abstract class AbstractDatabaseServerCommand extends AbstractCommand
         if (1 < $databases->where('name', $databaseIdOrName)->count()) {
             throw new RuntimeException(sprintf('Unable to select a database server because more than one database server has the name "%s"', $databaseIdOrName));
         } elseif (empty($database['id'])) {
-            throw new RuntimeException(sprintf('Unable to find a database server with "%s" as the ID or name', $databaseIdOrName));
+            throw new InvalidInputException(sprintf('Unable to find a database server with "%s" as the ID or name', $databaseIdOrName));
         }
 
         return $database;
