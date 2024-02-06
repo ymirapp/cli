@@ -778,6 +778,14 @@ class ApiClient
     }
 
     /**
+     * Update the given cache cluster.
+     */
+    public function updateCache(int $cacheId, string $type)
+    {
+        $this->client->updateCache($cacheId, $type);
+    }
+
+    /**
      * Update the given database server.
      */
     public function updateDatabaseServer(int $databaseServerId, int $storage, string $type)
