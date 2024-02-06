@@ -13,11 +13,12 @@ declare(strict_types=1);
 
 namespace Ymir\Cli\Command\Database;
 
-use Symfony\Component\Console\Exception\InvalidArgumentException;
+use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
 use Ymir\Cli\Console\Input;
 use Ymir\Cli\Console\Output;
+use Ymir\Cli\Exception\InvalidInputException;
 
 class DeleteDatabaseUserCommand extends AbstractDatabaseCommand
 {
@@ -50,7 +51,7 @@ class DeleteDatabaseUserCommand extends AbstractDatabaseCommand
         $users = $this->apiClient->getDatabaseUsers($databaseServer['id']);
 
         if ($users->isEmpty()) {
-            throw new InvalidArgumentException('The database server doesn\'t have any managed database users');
+            throw new RuntimeException('The database server doesn\'t have any managed database users');
         } elseif (empty($username)) {
             $username = (string) $output->choice('Which database user would you like to delete', $users->pluck('username'));
         }
@@ -58,7 +59,7 @@ class DeleteDatabaseUserCommand extends AbstractDatabaseCommand
         $user = $users->firstWhere('username', $username);
 
         if (empty($user['id'])) {
-            throw new InvalidArgumentException(sprintf('No database user found with the "%s" username', $username));
+            throw new InvalidInputException(sprintf('No database user found with the "%s" username', $username));
         }
 
         if (!$output->confirm(sprintf('Are you sure you want to delete the "<comment>%s</comment>" database user?', $user['username']), false)) {

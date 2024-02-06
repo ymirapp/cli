@@ -13,13 +13,13 @@ declare(strict_types=1);
 
 namespace Ymir\Cli\Command\Environment;
 
-use Symfony\Component\Console\Exception\InvalidArgumentException;
 use Symfony\Component\Console\Helper\TableSeparator;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
 use Ymir\Cli\Command\AbstractProjectCommand;
 use Ymir\Cli\Console\Input;
 use Ymir\Cli\Console\Output;
+use Ymir\Cli\Exception\InvalidInputException;
 
 class GetEnvironmentMetricsCommand extends AbstractProjectCommand
 {
@@ -50,7 +50,7 @@ class GetEnvironmentMetricsCommand extends AbstractProjectCommand
         $period = strtolower((string) $input->getStringOption('period'));
 
         if (!in_array($period, ['1m', '5m', '30m', '1h', '8h', '1d', '3d', '7d', '1mo'])) {
-            throw new InvalidArgumentException('The given "period" is invalid. You may use: 1m, 5m, 30m, 1h, 8h, 1d, 3d, 7d, 1mo');
+            throw new InvalidInputException('The given "period" is invalid. You may use: 1m, 5m, 30m, 1h, 8h, 1d, 3d, 7d, 1mo');
         }
 
         $environment = $input->getStringArgument('environment');

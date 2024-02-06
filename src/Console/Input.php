@@ -13,8 +13,8 @@ declare(strict_types=1);
 
 namespace Ymir\Cli\Console;
 
-use Symfony\Component\Console\Exception\InvalidArgumentException;
 use Symfony\Component\Console\Input\InputInterface as SymfonyInputInterface;
+use Ymir\Cli\Exception\InvalidInputException;
 use Ymir\Cli\Exception\NonInteractiveRequiredArgumentException;
 use Ymir\Cli\Exception\NonInteractiveRequiredOptionException;
 
@@ -53,7 +53,7 @@ class Input
         if (null === $value && $requiredNonInteractive && !$this->isInteractive()) {
             throw new NonInteractiveRequiredArgumentException($argument);
         } elseif (null !== $value && !is_array($value)) {
-            throw new InvalidArgumentException(sprintf('The "%s" argument must be an array value', $argument));
+            throw new InvalidInputException(sprintf('The "%s" argument must be an array value', $argument));
         }
 
         return (array) $value;
@@ -71,7 +71,7 @@ class Input
         }
 
         if (!is_array($value)) {
-            throw new InvalidArgumentException(sprintf('The "--%s" option must be an array', $option));
+            throw new InvalidInputException(sprintf('The "--%s" option must be an array', $option));
         }
 
         return $value;
@@ -95,7 +95,7 @@ class Input
         if (null === $value && $requiredNonInteractive && !$this->isInteractive()) {
             throw new NonInteractiveRequiredArgumentException($argument);
         } elseif (null !== $value && !is_numeric($value)) {
-            throw new InvalidArgumentException(sprintf('The "%s" argument must be a numeric value', $argument));
+            throw new InvalidInputException(sprintf('The "%s" argument must be a numeric value', $argument));
         }
 
         return (int) $value;
@@ -115,7 +115,7 @@ class Input
         if (null === $value) {
             return $value;
         } elseif (!is_numeric($value)) {
-            throw new InvalidArgumentException(sprintf('The "--%s" option must be a numeric value', $option));
+            throw new InvalidInputException(sprintf('The "--%s" option must be a numeric value', $option));
         }
 
         return (int) $value;
@@ -139,7 +139,7 @@ class Input
         if (null === $value && $requiredNonInteractive && !$this->isInteractive()) {
             throw new NonInteractiveRequiredArgumentException($argument);
         } elseif (null !== $value && !is_string($value)) {
-            throw new InvalidArgumentException(sprintf('The "%s" argument must be a string value', $argument));
+            throw new InvalidInputException(sprintf('The "%s" argument must be a string value', $argument));
         }
 
         return (string) $value;
@@ -159,7 +159,7 @@ class Input
         if (null === $value && $requiredNonInteractive && !$this->isInteractive()) {
             throw new NonInteractiveRequiredOptionException($option);
         } elseif (null !== $value && !is_string($value)) {
-            throw new InvalidArgumentException(sprintf('The "--%s" option must be a string value', $option));
+            throw new InvalidInputException(sprintf('The "--%s" option must be a string value', $option));
         }
 
         return $value;

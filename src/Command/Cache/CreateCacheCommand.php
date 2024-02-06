@@ -14,13 +14,13 @@ declare(strict_types=1);
 namespace Ymir\Cli\Command\Cache;
 
 use Illuminate\Support\Collection;
-use Symfony\Component\Console\Exception\InvalidArgumentException;
 use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
 use Ymir\Cli\Command\AbstractCommand;
 use Ymir\Cli\Console\Input;
 use Ymir\Cli\Console\Output;
+use Ymir\Cli\Exception\InvalidInputException;
 use Ymir\Cli\ProjectConfiguration\CacheConfigurationChange;
 
 class CreateCacheCommand extends AbstractCommand
@@ -86,7 +86,7 @@ class CreateCacheCommand extends AbstractCommand
         $types = $this->apiClient->getCacheTypes((int) $network['provider']['id']);
 
         if (null !== $type && !$types->has($type)) {
-            throw new InvalidArgumentException(sprintf('The type "%s" isn\'t a valid cache cluster type', $type));
+            throw new InvalidInputException(sprintf('The type "%s" isn\'t a valid cache cluster type', $type));
         } elseif (null === $type) {
             $type = (string) $output->choice('What should the cache cluster type be?', $types);
         }

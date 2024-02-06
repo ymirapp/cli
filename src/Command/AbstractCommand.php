@@ -15,7 +15,6 @@ namespace Ymir\Cli\Command;
 
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Exception\InvalidArgumentException;
 use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Input\InputInterface;
@@ -29,6 +28,7 @@ use Ymir\Cli\Console\Input;
 use Ymir\Cli\Console\InputDefinition;
 use Ymir\Cli\Console\Output;
 use Ymir\Cli\Exception\CommandCancelledException;
+use Ymir\Cli\Exception\InvalidInputException;
 use Ymir\Cli\ProjectConfiguration\ProjectConfiguration;
 use Ymir\Cli\Support\Arr;
 use Ymir\Sdk\Exception\ClientException;
@@ -91,7 +91,7 @@ abstract class AbstractCommand extends Command
         if (is_numeric($providerId) && $providers->contains('id', $providerId)) {
             return (int) $providerId;
         } elseif (is_numeric($providerId) && $providers->contains('id', $providerId)) {
-            throw new InvalidArgumentException('The given "provider" isn\'t available to currently active team');
+            throw new InvalidInputException('The given "provider" isn\'t available to currently active team');
         }
 
         if ($this->projectConfiguration->exists()) {
@@ -202,7 +202,7 @@ abstract class AbstractCommand extends Command
         } elseif (!empty($region) && $regions->keys()->contains(strtolower($region))) {
             return $region;
         } elseif (!empty($region) && !$regions->keys()->contains(strtolower($region))) {
-            throw new InvalidArgumentException('The given "region" isn\'t a valid cloud provider region');
+            throw new InvalidInputException('The given "region" isn\'t a valid cloud provider region');
         }
 
         return $this->projectConfiguration->exists() ? $this->apiClient->getProject($this->projectConfiguration->getProjectId())->get('region') : (string) $output->choice($question, $regions);

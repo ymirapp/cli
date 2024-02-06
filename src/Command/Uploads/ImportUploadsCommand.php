@@ -23,7 +23,6 @@ use League\Flysystem\Local\LocalFilesystemAdapter;
 use League\Flysystem\PhpseclibV3\SftpAdapter;
 use League\Flysystem\PhpseclibV3\SftpConnectionProvider;
 use League\Flysystem\StorageAttributes;
-use Symfony\Component\Console\Exception\InvalidArgumentException;
 use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Console\Input\InputArgument;
@@ -33,6 +32,7 @@ use Ymir\Cli\CliConfiguration;
 use Ymir\Cli\Command\AbstractProjectCommand;
 use Ymir\Cli\Console\Input;
 use Ymir\Cli\Console\Output;
+use Ymir\Cli\Exception\InvalidInputException;
 use Ymir\Cli\FileUploader;
 use Ymir\Cli\ProjectConfiguration\ProjectConfiguration;
 
@@ -96,7 +96,7 @@ class ImportUploadsCommand extends AbstractProjectCommand
         $size = $input->getNumericOption('size');
 
         if ($size < 1) {
-            throw new InvalidArgumentException('Cannot have a "size" smaller than 1');
+            throw new InvalidInputException('Cannot have a "size" smaller than 1');
         }
 
         if (!$input->getBooleanOption('force') && !$output->confirm('Importing files will overwrite any existing file in the environment "uploads" directory. Do you want to proceed?')) {

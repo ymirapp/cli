@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace Ymir\Cli\Command\Database;
 
-use Symfony\Component\Console\Exception\InvalidArgumentException;
 use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Helper\TableSeparator;
 use Symfony\Component\Console\Input\InputArgument;
@@ -21,6 +20,7 @@ use Symfony\Component\Console\Input\InputOption;
 use Ymir\Cli\Console\Input;
 use Ymir\Cli\Console\Output;
 use Ymir\Cli\Exception\CommandCancelledException;
+use Ymir\Cli\Exception\InvalidInputException;
 
 class CreateDatabaseServerCommand extends AbstractDatabaseServerCommand
 {
@@ -133,7 +133,7 @@ class CreateDatabaseServerCommand extends AbstractDatabaseServerCommand
         if ($types->isEmpty()) {
             throw new RuntimeException('The Ymir API failed to return database server types');
         } elseif (null !== $type && !$types->has($type)) {
-            throw new InvalidArgumentException(sprintf('The type "%s" isn\'t a valid database type', $type));
+            throw new InvalidInputException(sprintf('The type "%s" isn\'t a valid database type', $type));
         } elseif (null === $type) {
             $type = (string) $output->choice('What should the database server type be?', $types);
         }

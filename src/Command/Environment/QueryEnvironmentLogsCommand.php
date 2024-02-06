@@ -15,11 +15,11 @@ namespace Ymir\Cli\Command\Environment;
 
 use Carbon\Carbon;
 use Carbon\CarbonInterval;
-use Symfony\Component\Console\Exception\InvalidArgumentException;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
 use Ymir\Cli\Console\Input;
 use Ymir\Cli\Console\Output;
+use Ymir\Cli\Exception\InvalidInputException;
 
 class QueryEnvironmentLogsCommand extends AbstractEnvironmentLogsCommand
 {
@@ -57,9 +57,9 @@ class QueryEnvironmentLogsCommand extends AbstractEnvironmentLogsCommand
         $order = strtolower($input->getStringOption('order'));
 
         if ($lines < 1) {
-            throw new InvalidArgumentException('The number of lines must be at least 1');
+            throw new InvalidInputException('The number of lines must be at least 1');
         } elseif (!in_array($order, ['asc', 'desc'])) {
-            throw new InvalidArgumentException('The order must be either "asc" or "desc"');
+            throw new InvalidInputException('The order must be either "asc" or "desc"');
         }
 
         $logs = $this->apiClient->getEnvironmentLogs($this->projectConfiguration->getProjectId(), $environment, $function, Carbon::now()->sub(CarbonInterval::fromString($input->getStringOption('period')))->getTimestampMs(), 'desc');

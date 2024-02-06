@@ -13,12 +13,12 @@ declare(strict_types=1);
 
 namespace Ymir\Cli\Command\Environment;
 
-use Symfony\Component\Console\Exception\InvalidArgumentException;
 use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Input\InputArgument;
 use Ymir\Cli\Command\AbstractProjectCommand;
 use Ymir\Cli\Console\Input;
 use Ymir\Cli\Console\Output;
+use Ymir\Cli\Exception\InvalidInputException;
 
 class DeleteEnvironmentSecretCommand extends AbstractProjectCommand
 {
@@ -62,7 +62,7 @@ class DeleteEnvironmentSecretCommand extends AbstractProjectCommand
         $secret = is_numeric($secretIdOrName) ? $secrets->firstWhere('id', $secretIdOrName) : $secrets->firstWhere('name', $secretIdOrName);
 
         if (!is_array($secret) || empty($secret['id'])) {
-            throw new InvalidArgumentException(sprintf('Unable to find a secret with "%s" as the ID or name', $secretIdOrName));
+            throw new InvalidInputException(sprintf('Unable to find a secret with "%s" as the ID or name', $secretIdOrName));
         } elseif (!$output->confirm('Are you sure you want to delete this secret?', false)) {
             return;
         }

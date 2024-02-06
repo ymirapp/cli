@@ -14,7 +14,6 @@ declare(strict_types=1);
 namespace Ymir\Cli\Command\Project;
 
 use Illuminate\Support\Collection;
-use Symfony\Component\Console\Exception\InvalidArgumentException;
 use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Input\InputArgument;
 use Ymir\Cli\ApiClient;
@@ -22,6 +21,7 @@ use Ymir\Cli\CliConfiguration;
 use Ymir\Cli\Command\AbstractProjectCommand;
 use Ymir\Cli\Console\Input;
 use Ymir\Cli\Console\Output;
+use Ymir\Cli\Exception\InvalidInputException;
 use Ymir\Cli\ProjectConfiguration\ProjectConfiguration;
 use Ymir\Cli\ProjectConfiguration\WordPressConfigurationChangeInterface;
 use Ymir\Cli\Support\Arr;
@@ -90,7 +90,7 @@ class ConfigureProjectCommand extends AbstractProjectCommand
         $environment = $input->getStringArgument('environment', false);
 
         if (!empty($environment) && !$this->projectConfiguration->hasEnvironment($environment)) {
-            throw new InvalidArgumentException(sprintf('Environment "%s" not found in ymir.yml file', $environment));
+            throw new InvalidInputException(sprintf('Environment "%s" not found in ymir.yml file', $environment));
         }
 
         $output->info('Scanning your project');

@@ -13,11 +13,11 @@ declare(strict_types=1);
 
 namespace Ymir\Cli\Command\Environment;
 
-use Symfony\Component\Console\Exception\InvalidArgumentException;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
 use Ymir\Cli\Console\Input;
 use Ymir\Cli\Console\Output;
+use Ymir\Cli\Exception\InvalidInputException;
 
 class WatchEnvironmentLogsCommand extends AbstractEnvironmentLogsCommand
 {
@@ -53,7 +53,7 @@ class WatchEnvironmentLogsCommand extends AbstractEnvironmentLogsCommand
         $since = (int) round(microtime(true) * 1000);
 
         if ($interval < 20) {
-            throw new InvalidArgumentException('Polling interval must be at least 20 seconds');
+            throw new InvalidInputException('Polling interval must be at least 20 seconds');
         }
 
         while (true) {

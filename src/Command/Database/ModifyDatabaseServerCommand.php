@@ -13,12 +13,12 @@ declare(strict_types=1);
 
 namespace Ymir\Cli\Command\Database;
 
-use Symfony\Component\Console\Exception\InvalidArgumentException;
 use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
 use Ymir\Cli\Console\Input;
 use Ymir\Cli\Console\Output;
+use Ymir\Cli\Exception\InvalidInputException;
 
 class ModifyDatabaseServerCommand extends AbstractDatabaseServerCommand
 {
@@ -74,7 +74,7 @@ class ModifyDatabaseServerCommand extends AbstractDatabaseServerCommand
         $storage = $output->ask(sprintf('What should the new maximum amount of storage (in GB) allocated to the database server be? <fg=default>(Currently: <comment>%sGB</comment>)</>', $storage), (string) $storage);
 
         if (!is_numeric($storage)) {
-            throw new InvalidArgumentException('The maximum allocated storage needs to be a numeric value');
+            throw new InvalidInputException('The maximum allocated storage needs to be a numeric value');
         }
 
         return (int) $storage;
@@ -96,7 +96,7 @@ class ModifyDatabaseServerCommand extends AbstractDatabaseServerCommand
         if (null !== $typeOption && $types->has($typeOption)) {
             return $type;
         } elseif (null !== $typeOption && !$types->has($typeOption)) {
-            throw new InvalidArgumentException(sprintf('The type "%s" isn\'t a valid database type', $typeOption));
+            throw new InvalidInputException(sprintf('The type "%s" isn\'t a valid database type', $typeOption));
         }
 
         $newType = $output->choice(sprintf('What should the database server type be changed to? <fg=default>(Currently: <comment>%s</comment>)</>', $type), $types, $type);

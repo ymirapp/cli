@@ -16,9 +16,9 @@ namespace Ymir\Cli\Command\Environment;
 use Carbon\Carbon;
 use Carbon\Exceptions\InvalidTimeZoneException;
 use Illuminate\Support\Collection;
-use Symfony\Component\Console\Exception\InvalidArgumentException;
 use Ymir\Cli\Command\AbstractProjectCommand;
 use Ymir\Cli\Console\Output;
+use Ymir\Cli\Exception\InvalidInputException;
 
 abstract class AbstractEnvironmentLogsCommand extends AbstractProjectCommand
 {
@@ -34,7 +34,7 @@ abstract class AbstractEnvironmentLogsCommand extends AbstractProjectCommand
                 try {
                     $timestamp->setTimezone($timezone);
                 } catch (InvalidTimeZoneException $exception) {
-                    throw new InvalidArgumentException(sprintf('"%s" is not a valid timezone', $timezone));
+                    throw new InvalidInputException(sprintf('"%s" is not a valid timezone', $timezone));
                 }
             }
 

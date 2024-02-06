@@ -13,13 +13,14 @@ declare(strict_types=1);
 
 namespace Ymir\Cli\Command\Database;
 
-use Symfony\Component\Console\Exception\InvalidArgumentException;
+use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
 use Ymir\Cli\Command\Project\DeployProjectCommand;
 use Ymir\Cli\Command\Project\RedeployProjectCommand;
 use Ymir\Cli\Console\Input;
 use Ymir\Cli\Console\Output;
+use Ymir\Cli\Exception\InvalidInputException;
 
 class RotateDatabaseUserPasswordCommand extends AbstractDatabaseCommand
 {
@@ -52,7 +53,7 @@ class RotateDatabaseUserPasswordCommand extends AbstractDatabaseCommand
         $users = $this->apiClient->getDatabaseUsers($databaseServer['id']);
 
         if ($users->isEmpty()) {
-            throw new InvalidArgumentException('The database server doesn\'t have any managed database users');
+            throw new RuntimeException('The database server doesn\'t have any managed database users');
         } elseif (empty($username)) {
             $username = (string) $output->choice('Which database user would you like to rotate the password of', $users->pluck('username'));
         }
@@ -60,7 +61,7 @@ class RotateDatabaseUserPasswordCommand extends AbstractDatabaseCommand
         $databaseUser = $users->firstWhere('username', $username);
 
         if (empty($databaseUser['id'])) {
-            throw new InvalidArgumentException(sprintf('No database user found with the "%s" username', $username));
+            throw new InvalidInputException(sprintf('No database user found with the "%s" username', $username));
         }
 
         $output->warning(sprintf('All projects that use the "<comment>%s</comment>" database server with the "<comment>%s</comment>" user will be unable to connect to the database server until they\'re redeployed.', $databaseServer['name'], $databaseUser['username']));
