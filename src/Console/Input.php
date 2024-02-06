@@ -15,6 +15,8 @@ namespace Ymir\Cli\Console;
 
 use Symfony\Component\Console\Exception\InvalidArgumentException;
 use Symfony\Component\Console\Input\InputInterface as SymfonyInputInterface;
+use Ymir\Cli\Exception\NonInteractiveRequiredArgumentException;
+use Ymir\Cli\Exception\NonInteractiveRequiredOptionException;
 
 class Input
 {
@@ -49,7 +51,7 @@ class Input
         $value = $this->getArgument($argument);
 
         if (null === $value && $requiredNonInteractive && !$this->isInteractive()) {
-            throw new InvalidArgumentException(sprintf('You must pass a "%s" argument when running in non-interactive mode', $argument));
+            throw new NonInteractiveRequiredArgumentException($argument);
         } elseif (null !== $value && !is_array($value)) {
             throw new InvalidArgumentException(sprintf('The "%s" argument must be an array value', $argument));
         }
@@ -91,7 +93,7 @@ class Input
         $value = $this->getArgument($argument);
 
         if (null === $value && $requiredNonInteractive && !$this->isInteractive()) {
-            throw new InvalidArgumentException(sprintf('You must pass a "%s" argument when running in non-interactive mode', $argument));
+            throw new NonInteractiveRequiredArgumentException($argument);
         } elseif (null !== $value && !is_numeric($value)) {
             throw new InvalidArgumentException(sprintf('The "%s" argument must be a numeric value', $argument));
         }
@@ -135,7 +137,7 @@ class Input
         $value = $this->getArgument($argument);
 
         if (null === $value && $requiredNonInteractive && !$this->isInteractive()) {
-            throw new InvalidArgumentException(sprintf('You must pass a "%s" argument when running in non-interactive mode', $argument));
+            throw new NonInteractiveRequiredArgumentException($argument);
         } elseif (null !== $value && !is_string($value)) {
             throw new InvalidArgumentException(sprintf('The "%s" argument must be a string value', $argument));
         }
@@ -155,7 +157,7 @@ class Input
         }
 
         if (null === $value && $requiredNonInteractive && !$this->isInteractive()) {
-            throw new InvalidArgumentException(sprintf('You must use the "--%s" option when running in non-interactive mode', $option));
+            throw new NonInteractiveRequiredOptionException($option);
         } elseif (null !== $value && !is_string($value)) {
             throw new InvalidArgumentException(sprintf('The "--%s" option must be a string value', $option));
         }
