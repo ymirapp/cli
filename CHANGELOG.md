@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.44.0](https://github.com/ymirapp/cli/compare/v1.43.2...v1.44.0) (2024-02-07)
+
+
+### Features
+
+* add `cache:modify` command ([50dfd44](https://github.com/ymirapp/cli/commit/50dfd4423d884753868ed3a4711778ec1e7b10b9))
+
 ## [1.43.2](https://github.com/ymirapp/cli/compare/v1.43.1...v1.43.2) (2024-01-20)
 
 
