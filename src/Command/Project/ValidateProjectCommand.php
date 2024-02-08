@@ -81,8 +81,26 @@ class ValidateProjectCommand extends AbstractProjectCommand
             $this->dockerfile->validate($environment, Arr::get($configuration, 'architecture', ''));
         });
 
-        $this->apiClient->validateProjectConfiguration($this->projectConfiguration, $environments->keys()->all());
+        $message = 'Project <comment>ymir.yml</comment> file is valid';
+        $response = $this->apiClient->validateProjectConfiguration($this->projectConfiguration, $environments->keys()->all());
+        $valid = $response->every(function (array $environment) {
+            return empty($environment['warnings']);
+        });
 
-        $output->info('Project <comment>ymir.yml</comment> file is valid');
+        if (!$valid) {
+            $message .= ' with the following warnings:';
+        }
+
+        $output->info($message);
+
+        if (!$valid) {
+            $output->table(['Environment', 'Warning'], $response->filter(function (array $environment) {
+                return !empty($environment['warnings']);
+            })->flatMap(function (array $environment, string $name) {
+                return collect($environment['warnings'])->map(function (string $warning) use ($name) {
+                    return [$name, $warning];
+                })->all();
+            })->all());
+        }
     }
 }

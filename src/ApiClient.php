@@ -804,8 +804,8 @@ class ApiClient
     /**
      * Validates the project configuration. Returns nothing if no errors were found.
      */
-    public function validateProjectConfiguration(ProjectConfiguration $projectConfiguration, array $environments = [])
+    public function validateProjectConfiguration(ProjectConfiguration $projectConfiguration, array $environments = []): Collection
     {
-        $this->client->validateProjectConfiguration($projectConfiguration->getProjectId(), $projectConfiguration->toArray(), $environments);
+        return $this->client->validateProjectConfiguration($projectConfiguration->getProjectId(), $projectConfiguration->toArray(), $environments);
     }
 }
