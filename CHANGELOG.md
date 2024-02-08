@@ -1,5 +1,21 @@
 # Changelog
 
+## [1.46.0](https://github.com/ymirapp/cli/compare/v1.45.0...v1.46.0) (2024-02-08)
+
+
+### Features
+
+* add `cache:modify` command ([50dfd44](https://github.com/ymirapp/cli/commit/50dfd4423d884753868ed3a4711778ec1e7b10b9))
+* add `force-assets` option to `project:deploy` command ([ca3d806](https://github.com/ymirapp/cli/commit/ca3d8067531aed033415582e31dda8dc4a96f1a9))
+* bump deployed wp-cli version to 2.10.0 ([064aef8](https://github.com/ymirapp/cli/commit/064aef87e3cc126a1118204bc4efb38614df3227))
+* display warnings when validating project configuration ([d25377d](https://github.com/ymirapp/cli/commit/d25377d86fc302e71410a77691ae85e13a020ee2))
+
+
+### Bug Fixes
+
+* fix infinite loop with `isInteractive` method call ([8b65d02](https://github.com/ymirapp/cli/commit/8b65d0285d1de1d4563742be60616b363e1eeaeb))
+* use `which` instead of `command -v` for windows compatibility ([f01e5a8](https://github.com/ymirapp/cli/commit/f01e5a8ed9de0637490d911536ecefa79f6ccdcf))
+
 ## [1.45.0](https://github.com/ymirapp/cli/compare/v1.44.0...v1.45.0) (2024-02-08)
 
 
