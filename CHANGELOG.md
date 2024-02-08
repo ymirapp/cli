@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.45.0](https://github.com/ymirapp/cli/compare/v1.44.0...v1.45.0) (2024-02-08)
+
+
+### Features
+
+* bump deployed wp-cli version to 2.10.0 ([064aef8](https://github.com/ymirapp/cli/commit/064aef87e3cc126a1118204bc4efb38614df3227))
+* display warnings when validating project configuration ([d25377d](https://github.com/ymirapp/cli/commit/d25377d86fc302e71410a77691ae85e13a020ee2))
+
 ## [1.44.0](https://github.com/ymirapp/cli/compare/v1.43.2...v1.44.0) (2024-02-07)
 
 
