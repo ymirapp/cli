@@ -14,7 +14,7 @@ declare(strict_types=1);
 namespace Ymir\Cli\Tool;
 
 use Symfony\Component\Console\Exception\RuntimeException;
-use Ymir\Cli\Exception\CommandLineToolNotAvailableException;
+use Ymir\Cli\Exception\CommandLineToolNotDetectedException;
 use Ymir\Cli\Process\Process;
 
 class CommandLineTool
@@ -49,7 +49,7 @@ class CommandLineTool
     protected static function getProcess(string $command, ?string $cwd = null, ?float $timeout = 60): Process
     {
         if (!static::isInstalledGlobally()) {
-            throw new CommandLineToolNotAvailableException(static::getName());
+            throw new CommandLineToolNotDetectedException(static::getName());
         }
 
         return Process::fromShellCommandline(sprintf('%s %s', static::getCommand(), $command), $cwd, null, null, $timeout);
@@ -61,7 +61,7 @@ class CommandLineTool
     protected static function runCommand(string $command, ?string $cwd = null): Process
     {
         if (!static::isInstalledGlobally()) {
-            throw new CommandLineToolNotAvailableException(static::getName());
+            throw new CommandLineToolNotDetectedException(static::getName());
         }
 
         return Process::runShellCommandline(sprintf('%s %s', static::getCommand(), $command), $cwd, null);

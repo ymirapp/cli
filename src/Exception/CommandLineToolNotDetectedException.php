@@ -15,13 +15,13 @@ namespace Ymir\Cli\Exception;
 
 use Symfony\Component\Console\Exception\RuntimeException;
 
-class CommandLineToolNotAvailableException extends RuntimeException
+class CommandLineToolNotDetectedException extends RuntimeException
 {
     /**
      * Constructor.
      */
     public function __construct($name)
     {
-        parent::__construct(sprintf('%s isn\'t available', $name));
+        parent::__construct(sprintf('Cannot detect %1$s on this computer. Please ensure %1$s is installed and properly configured.', $name));
     }
 }

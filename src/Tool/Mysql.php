@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace Ymir\Cli\Tool;
 
-use Ymir\Cli\Exception\CommandLineToolNotAvailableException;
+use Ymir\Cli\Exception\CommandLineToolNotDetectedException;
 use Ymir\Cli\Process\Process;
 
 class Mysql
@@ -24,7 +24,7 @@ class Mysql
     public static function export(string $filename, string $host, string $port, string $user, string $password, string $name)
     {
         if (!self::isMySqlDumpInstalledGlobally()) {
-            throw new CommandLineToolNotAvailableException('mysqldump');
+            throw new CommandLineToolNotDetectedException('mysqldump');
         }
 
         self::runCommand(sprintf('mysqldump --quick --single-transaction --skip-add-locks --default-character-set=utf8mb4 --host=%s --port=%s --user=%s --password=%s %s | gzip > %s', $host, $port, $user, $password, $name, $filename));
@@ -36,7 +36,7 @@ class Mysql
     public static function import(string $filename, string $host, string $port, string $user, string $password, string $name, bool $force = false)
     {
         if (!self::isMySqlInstalledGlobally()) {
-            throw new CommandLineToolNotAvailableException('MySQL');
+            throw new CommandLineToolNotDetectedException('MySQL');
         }
 
         self::runCommand(sprintf('%s %s | mysql %s --protocol=TCP --host=%s --port=%s --user=%s --password=%s %s', str_ends_with($filename, '.sql.gz') ? 'gunzip <' : 'cat', $filename, $force ? '--force' : '', $host, $port, $user, $password, $name));
