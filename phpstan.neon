@@ -1,10 +1,11 @@
 parameters:
     level: 5
-    checkGenericClassInNonGenericObjectType: false
-    checkMissingIterableValueType: false
     reportUnmatchedIgnoredErrors: false
     paths:
         - src/
     ignoreErrors:
+        - identifier: missingType.generics
+        - identifier: missingType.iterableValue
+
         - message: '#While loop condition is always true#'
           path: src/Command/Environment/WatchEnvironmentLogsCommand.php
