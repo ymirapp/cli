@@ -15,6 +15,7 @@ namespace Ymir\Cli\Command\Uploads;
 
 use Illuminate\Support\Enumerable;
 use Illuminate\Support\LazyCollection;
+use League\Flysystem\CorruptedPathDetected;
 use League\Flysystem\Filesystem;
 use League\Flysystem\FilesystemAdapter;
 use League\Flysystem\Ftp\FtpAdapter;
@@ -107,9 +108,10 @@ class ImportUploadsCommand extends AbstractProjectCommand
 
         $progressBar = new ProgressBar($output);
         $progressBar->setFormat("Importing file (<comment>%filename%</comment>)\nTotal files imported: <comment>%total%</comment>\n");
+        $progressBar->setMessage('0', 'total');
 
+        $corruptedFilePaths = [];
         $total = 0;
-        $progressBar->setMessage((string) $total, 'total');
 
         if (!$adapter instanceof LocalFilesystemAdapter) {
             $output->infoWithWarning('Scanning remote "uploads" directory', 'takes a few seconds');
@@ -125,21 +127,32 @@ class ImportUploadsCommand extends AbstractProjectCommand
             }
         })->chunk($size)->mapWithKeys(function (Enumerable $chunkedFiles) use ($environment) {
             return $this->getSignedUploadRequest($environment, $chunkedFiles);
-        })->map(function (array $request, string $filePath) use ($filesystem, $progressBar, &$total) {
-            $request['body'] = $filesystem->readStream(mb_convert_encoding($filePath, 'UTF-8'));
+        })->map(function (array $request, string $filePath) use (&$corruptedFilePaths, $filesystem, $progressBar, &$total) {
+            try {
+                $request['body'] = $filesystem->readStream(mb_convert_encoding($filePath, 'UTF-8'));
 
-            ++$total;
+                ++$total;
 
-            $progressBar->setMessage($filePath, 'filename');
-            $progressBar->setMessage((string) $total, 'total');
-            $progressBar->advance();
+                $progressBar->setMessage($filePath, 'filename');
+                $progressBar->setMessage((string) $total, 'total');
+                $progressBar->advance();
 
-            return $request;
-        });
+                return $request;
+            } catch (CorruptedPathDetected $exception) {
+                $corruptedFilePaths[] = $filePath;
+
+                return null;
+            }
+        })->filter();
 
         $this->uploader->batch('PUT', $requests);
 
         $output->info(sprintf('Files imported successfully to the "<comment>%s</comment>" environment "uploads" directory', $environment));
+
+        if (!empty($corruptedFilePaths)) {
+            $output->warning('The following files were not imported because their paths are corrupted:');
+            $output->list($corruptedFilePaths);
+        }
     }
 
     /**
