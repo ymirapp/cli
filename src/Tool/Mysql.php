@@ -33,13 +33,23 @@ class Mysql
     /**
      * Import a MySQL database.
      */
-    public static function import(string $filename, string $host, string $port, string $user, string $password, string $name, bool $force = false)
+    public static function import(string $filename, string $host, string $port, string $user, string $password, string $name, bool $force = false, bool $skipSsl = false)
     {
         if (!self::isMySqlInstalledGlobally()) {
             throw new CommandLineToolNotDetectedException('MySQL');
         }
 
-        self::runCommand(sprintf('%s %s | mysql %s --protocol=TCP --host=%s --port=%s --user=%s --password=%s %s', str_ends_with($filename, '.sql.gz') ? 'gunzip <' : 'cat', $filename, $force ? '--force' : '', $host, $port, $user, $password, $name));
+        $options = [];
+
+        if ($force) {
+            $options[] = '--force';
+        }
+
+        if ($skipSsl) {
+            $options[] = '--skip-ssl';
+        }
+
+        self::runCommand(sprintf('%s %s | mysql %s --protocol=TCP --host=%s --port=%s --user=%s --password=%s %s', str_ends_with($filename, '.sql.gz') ? 'gunzip <' : 'cat', $filename, implode(' ', $options), $host, $port, $user, $password, $name));
     }
 
     /**

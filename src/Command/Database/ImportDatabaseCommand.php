@@ -65,7 +65,8 @@ class ImportDatabaseCommand extends AbstractDatabaseCommand
             ->addOption('server', null, InputOption::VALUE_REQUIRED, 'The ID or name of the database server to import a database to')
             ->addOption('user', null, InputOption::VALUE_REQUIRED, 'The user used to connect to the database server')
             ->addOption('password', null, InputOption::VALUE_REQUIRED, 'The password of the user connecting to the database server')
-            ->addOption('force', 'f', InputOption::VALUE_NONE, 'Force the import even if there are SQL errors');
+            ->addOption('force', 'f', InputOption::VALUE_NONE, 'Force the import even if there are SQL errors')
+            ->addOption('skip-ssl', null, InputOption::VALUE_NONE, 'Disable SSL for the connection to the database server');
     }
 
     /**
@@ -100,7 +101,7 @@ class ImportDatabaseCommand extends AbstractDatabaseCommand
 
         $output->infoWithDelayWarning(sprintf('Importing "<comment>%s</comment>" to the "<comment>%s</comment>" database', $file, $name));
 
-        Mysql::import($file, $host, $port, $user, $password, $name, $input->getBooleanOption('force'));
+        Mysql::import($file, $host, $port, $user, $password, $name, $input->getBooleanOption('force'), $input->getBooleanOption('skip-ssl'));
 
         if ($tunnel instanceof Process) {
             $tunnel->stop();
