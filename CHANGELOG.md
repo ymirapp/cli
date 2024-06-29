@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.46.0](https://github.com/ymirapp/cli/compare/v1.45.0...v1.46.0) (2024-06-28)
+
+
+### Features
+
+* add `--skip-ssl` option for `database:import` command ([07d4c80](https://github.com/ymirapp/cli/commit/07d4c8004357d2fa90c746ee427800a1dfb8b210))
+* let `uploads:import` continue when a file path is corrupted ([d87a703](https://github.com/ymirapp/cli/commit/d87a7038baca94c84b702ba6609867db9603de65))
+
 ## [1.45.0](https://github.com/ymirapp/cli/compare/v1.44.0...v1.45.0) (2024-02-08)
 
 
