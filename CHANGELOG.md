@@ -1,5 +1,23 @@
 # Changelog
 
+## [1.47.0](https://github.com/ymirapp/cli/compare/v1.46.0...v1.47.0) (2024-06-29)
+
+
+### Features
+
+* add `--skip-ssl` option for `database:import` command ([07d4c80](https://github.com/ymirapp/cli/commit/07d4c8004357d2fa90c746ee427800a1dfb8b210))
+* add `cache:modify` command ([50dfd44](https://github.com/ymirapp/cli/commit/50dfd4423d884753868ed3a4711778ec1e7b10b9))
+* add `force-assets` option to `project:deploy` command ([ca3d806](https://github.com/ymirapp/cli/commit/ca3d8067531aed033415582e31dda8dc4a96f1a9))
+* bump deployed wp-cli version to 2.10.0 ([064aef8](https://github.com/ymirapp/cli/commit/064aef87e3cc126a1118204bc4efb38614df3227))
+* display warnings when validating project configuration ([d25377d](https://github.com/ymirapp/cli/commit/d25377d86fc302e71410a77691ae85e13a020ee2))
+* let `uploads:import` continue when a file path is corrupted ([d87a703](https://github.com/ymirapp/cli/commit/d87a7038baca94c84b702ba6609867db9603de65))
+
+
+### Bug Fixes
+
+* fix infinite loop with `isInteractive` method call ([8b65d02](https://github.com/ymirapp/cli/commit/8b65d0285d1de1d4563742be60616b363e1eeaeb))
+* use `which` instead of `command -v` for windows compatibility ([f01e5a8](https://github.com/ymirapp/cli/commit/f01e5a8ed9de0637490d911536ecefa79f6ccdcf))
+
 ## [1.46.0](https://github.com/ymirapp/cli/compare/v1.45.0...v1.46.0) (2024-06-28)
 
 
