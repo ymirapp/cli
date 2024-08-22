@@ -29,6 +29,7 @@ use Ymir\Cli\Console\Output;
 use Ymir\Cli\Process\Process;
 use Ymir\Cli\ProjectConfiguration\ProjectConfiguration;
 use Ymir\Cli\Support\Arr;
+use Ymir\Cli\Tool\Docker;
 use Ymir\Cli\Tool\WpCli;
 
 class InitializeProjectCommand extends AbstractCommand
@@ -143,7 +144,7 @@ class InitializeProjectCommand extends AbstractCommand
                 $this->invoke($output, InstallPluginCommand::NAME);
             }
 
-            if ($output->confirm('Will you deploy this project using a container image?', false)) {
+            if ($output->confirm('Do you want to deploy this project using a container image?', Docker::isInstalledGlobally())) {
                 $this->invoke($output, CreateDockerfileCommand::NAME, ['--configure-project' => null]);
             }
 
