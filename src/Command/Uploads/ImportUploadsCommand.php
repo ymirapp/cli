@@ -166,34 +166,35 @@ class ImportUploadsCommand extends AbstractProjectCommand
             return new LocalFilesystemAdapter($path);
         }
 
-        if (!array_key_exists('pass', $parsedPath)) {
-            $parsedPath['pass'] = null;
-        }
+        $parsedPath['pass'] = $parsedPath['pass'] ?? null;
+        $parsedPath['path'] = $parsedPath['path'] ?? '/';
+        $parsedPath['user'] = $parsedPath['user'] ?? get_current_user();
 
-        if ('ftp' === $parsedPath['scheme']) {
-            return new FtpAdapter(
-                FtpConnectionOptions::fromArray([
-                    'host' => $parsedPath['host'],
-                    'root' => $parsedPath['path'] ?? '/',
-                    'username' => $parsedPath['user'] ?? get_current_user(),
-                    'password' => $parsedPath['pass'],
-                    'port' => $parsedPath['port'] ?? 21,
-                ])
-            );
-        } elseif ('sftp' === $parsedPath['scheme']) {
-            return new SftpAdapter(
-                SftpConnectionProvider::fromArray([
-                    'host' => $parsedPath['host'],
-                    'username' => $parsedPath['user'] ?? get_current_user(),
-                    'password' => $parsedPath['pass'],
-                    'port' => $parsedPath['port'] ?? 22,
-                    'useAgent' => !$parsedPath['pass'],
-                ]),
-                $parsedPath['path'] ?? '/'
-            );
+        switch ($parsedPath['scheme']) {
+            case 'ftp':
+                return new FtpAdapter(
+                    FtpConnectionOptions::fromArray([
+                        'host' => $parsedPath['host'],
+                        'root' => $parsedPath['path'],
+                        'username' => $parsedPath['user'],
+                        'password' => $parsedPath['pass'],
+                        'port' => $parsedPath['port'] ?? 21,
+                    ])
+                );
+            case 'sftp':
+                return new SftpAdapter(
+                    SftpConnectionProvider::fromArray([
+                        'host' => $parsedPath['host'],
+                        'username' => $parsedPath['user'],
+                        'password' => $parsedPath['pass'],
+                        'port' => $parsedPath['port'] ?? 22,
+                        'useAgent' => !$parsedPath['pass'],
+                    ]),
+                    $parsedPath['path']
+                );
+            default:
+                throw new RuntimeException('Unable to create a filesystem adapter');
         }
-
-        throw new RuntimeException('Unable to create a filesystem adapter');
     }
 
     /**
