@@ -176,7 +176,7 @@ class ImportUploadsCommand extends AbstractProjectCommand
                     'host' => $parsedPath['host'],
                     'root' => $parsedPath['path'] ?? '/',
                     'username' => $parsedPath['user'] ?? get_current_user(),
-                    $parsedPath['pass'],
+                    'password' => $parsedPath['pass'],
                     'port' => $parsedPath['port'] ?? 21,
                 ])
             );
