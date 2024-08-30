@@ -53,5 +53,8 @@ abstract class AbstractWordPressConfigurationChange implements WordPressConfigur
     /**
      * Get the options to merge into the project configuration.
      */
-    abstract protected function getOptionsToMerge(): array;
+    protected function getOptionsToMerge(): array
+    {
+        return [];
+    }
 }
