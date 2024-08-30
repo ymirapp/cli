@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.47.0](https://github.com/ymirapp/cli/compare/v1.46.0...v1.47.0) (2024-08-30)
+
+
+### Features
+
+* add support for configuring projects using the cloudflare plugin ([5051c1d](https://github.com/ymirapp/cli/commit/5051c1d7caf3850d2a98c4e6867eab68b5012b05))
+* default image deployment question to `true` if docker is installed ([44cafd2](https://github.com/ymirapp/cli/commit/44cafd201d5d218023f2f9ed8cdcd1bea7ce778a))
+
+
+### Bug Fixes
+
+* wasn't passing the password properly to ftp adapter ([ac315ac](https://github.com/ymirapp/cli/commit/ac315acc2683ecfafdd18929c4c2f5f2cc66d7e6))
+
 ## [1.46.0](https://github.com/ymirapp/cli/compare/v1.45.0...v1.46.0) (2024-06-28)
 
 
