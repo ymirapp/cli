@@ -23,7 +23,7 @@ use Ymir\Cli\Console\Input;
 use Ymir\Cli\Console\Output;
 use Ymir\Cli\Exception\InvalidInputException;
 use Ymir\Cli\ProjectConfiguration\ProjectConfiguration;
-use Ymir\Cli\ProjectConfiguration\WordPressConfigurationChangeInterface;
+use Ymir\Cli\ProjectConfiguration\WordPress\WordPressConfigurationChangeInterface;
 use Ymir\Cli\Support\Arr;
 use Ymir\Cli\Tool\WpCli;
 

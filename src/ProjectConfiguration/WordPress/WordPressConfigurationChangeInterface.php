@@ -11,7 +11,9 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace Ymir\Cli\ProjectConfiguration;
+namespace Ymir\Cli\ProjectConfiguration\WordPress;
+
+use Ymir\Cli\ProjectConfiguration\ConfigurationChangeInterface;
 
 interface WordPressConfigurationChangeInterface extends ConfigurationChangeInterface
 {

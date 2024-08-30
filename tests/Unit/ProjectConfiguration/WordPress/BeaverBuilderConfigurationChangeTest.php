@@ -11,15 +11,15 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace Ymir\Cli\Tests\Unit\ProjectConfiguration;
+namespace Ymir\Cli\Tests\Unit\ProjectConfiguration\WordPress;
 
-use Ymir\Cli\ProjectConfiguration\OxygenConfigurationChange;
+use Ymir\Cli\ProjectConfiguration\WordPress\BeaverBuilderConfigurationChange;
 use Ymir\Cli\Tests\Unit\TestCase;
 
 /**
- * @covers \Ymir\Cli\ProjectConfiguration\OxygenConfigurationChange
+ * @covers \Ymir\Cli\ProjectConfiguration\WordPress\BeaverBuilderConfigurationChange
  */
-class OxygenConfigurationChangeTest extends TestCase
+class BeaverBuilderConfigurationChangeTest extends TestCase
 {
     private $configurationChange;
 
@@ -28,24 +28,30 @@ class OxygenConfigurationChangeTest extends TestCase
      */
     protected function setUp(): void
     {
-        $this->configurationChange = new OxygenConfigurationChange();
+        $this->configurationChange = new BeaverBuilderConfigurationChange();
     }
 
     public function testApplyDoesntDuplicateExistingOptions()
     {
         $this->assertSame([
             'build' => ['include' => [
-                'wp-content/plugins/oxygen',
+                'wp-content/plugins/bb-plugin/fonts',
+                'wp-content/plugins/bb-plugin/img',
+                'wp-content/plugins/bb-plugin/js',
+                'wp-content/plugins/bb-plugin/json',
             ]],
             'cdn' => [
-                'excluded_paths' => ['/foo', '/uploads/oxygen/*'],
+                'excluded_paths' => ['/uploads/bb-plugin/*'],
             ],
         ], $this->configurationChange->apply([
             'build' => ['include' => [
-                'wp-content/plugins/oxygen',
+                'wp-content/plugins/bb-plugin/fonts',
+                'wp-content/plugins/bb-plugin/img',
+                'wp-content/plugins/bb-plugin/js',
+                'wp-content/plugins/bb-plugin/json',
             ]],
             'cdn' => [
-                'excluded_paths' => ['/foo', '/uploads/oxygen/*'],
+                'excluded_paths' => ['/uploads/bb-plugin/*'],
             ],
         ], 'wordpress'));
     }
@@ -54,11 +60,14 @@ class OxygenConfigurationChangeTest extends TestCase
     {
         $this->assertSame([
             'build' => ['include' => [
+                'wp-content/plugins/bb-plugin/fonts',
+                'wp-content/plugins/bb-plugin/img',
+                'wp-content/plugins/bb-plugin/js',
+                'wp-content/plugins/bb-plugin/json',
                 'wp-content/plugins/foo',
-                'wp-content/plugins/oxygen',
             ]],
             'cdn' => [
-                'excluded_paths' => ['/foo', '/uploads/oxygen/*'],
+                'excluded_paths' => ['/foo', '/uploads/bb-plugin/*'],
             ],
         ], $this->configurationChange->apply([
             'build' => ['include' => [
@@ -74,7 +83,7 @@ class OxygenConfigurationChangeTest extends TestCase
     {
         $this->assertSame([
             'cdn' => [
-                'excluded_paths' => ['/uploads/oxygen/*'],
+                'excluded_paths' => ['/uploads/bb-plugin/*'],
             ],
             'deployment' => 'image',
         ], $this->configurationChange->apply(['deployment' => 'image'], 'bedrock'));
@@ -84,10 +93,13 @@ class OxygenConfigurationChangeTest extends TestCase
     {
         $this->assertSame([
             'build' => ['include' => [
-                'web/app/plugins/oxygen',
+                'web/app/plugins/bb-plugin/fonts',
+                'web/app/plugins/bb-plugin/img',
+                'web/app/plugins/bb-plugin/js',
+                'web/app/plugins/bb-plugin/json',
             ]],
             'cdn' => [
-                'excluded_paths' => ['/uploads/oxygen/*'],
+                'excluded_paths' => ['/uploads/bb-plugin/*'],
             ],
         ], $this->configurationChange->apply([], 'bedrock'));
     }
@@ -96,7 +108,7 @@ class OxygenConfigurationChangeTest extends TestCase
     {
         $this->assertSame([
             'cdn' => [
-                'excluded_paths' => ['/uploads/oxygen/*'],
+                'excluded_paths' => ['/uploads/bb-plugin/*'],
             ],
             'deployment' => 'image',
         ], $this->configurationChange->apply(['deployment' => 'image'], 'wordpress'));
@@ -106,16 +118,19 @@ class OxygenConfigurationChangeTest extends TestCase
     {
         $this->assertSame([
             'build' => ['include' => [
-                'wp-content/plugins/oxygen',
+                'wp-content/plugins/bb-plugin/fonts',
+                'wp-content/plugins/bb-plugin/img',
+                'wp-content/plugins/bb-plugin/js',
+                'wp-content/plugins/bb-plugin/json',
             ]],
             'cdn' => [
-                'excluded_paths' => ['/uploads/oxygen/*'],
+                'excluded_paths' => ['/uploads/bb-plugin/*'],
             ],
         ], $this->configurationChange->apply([], 'wordpress'));
     }
 
     public function testGetName()
     {
-        $this->assertSame('oxygen', $this->configurationChange->getName());
+        $this->assertSame('bb-plugin', $this->configurationChange->getName());
     }
 }

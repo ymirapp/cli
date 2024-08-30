@@ -11,13 +11,13 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace Ymir\Cli\Tests\Unit\ProjectConfiguration;
+namespace Ymir\Cli\Tests\Unit\ProjectConfiguration\WordPress;
 
-use Ymir\Cli\ProjectConfiguration\WooCommerceConfigurationChange;
+use Ymir\Cli\ProjectConfiguration\WordPress\WooCommerceConfigurationChange;
 use Ymir\Cli\Tests\Unit\TestCase;
 
 /**
- * @covers \Ymir\Cli\ProjectConfiguration\WooCommerceConfigurationChange
+ * @covers \Ymir\Cli\ProjectConfiguration\WordPress\WooCommerceConfigurationChange
  */
 class WooCommerceConfigurationChangeTest extends TestCase
 {

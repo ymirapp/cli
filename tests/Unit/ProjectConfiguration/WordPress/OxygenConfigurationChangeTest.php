@@ -11,15 +11,15 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace Ymir\Cli\Tests\Unit\ProjectConfiguration;
+namespace Ymir\Cli\Tests\Unit\ProjectConfiguration\WordPress;
 
-use Ymir\Cli\ProjectConfiguration\ElementorConfigurationChange;
+use Ymir\Cli\ProjectConfiguration\WordPress\OxygenConfigurationChange;
 use Ymir\Cli\Tests\Unit\TestCase;
 
 /**
- * @covers \Ymir\Cli\ProjectConfiguration\ElementorConfigurationChange
+ * @covers \Ymir\Cli\ProjectConfiguration\WordPress\OxygenConfigurationChange
  */
-class ElementorConfigurationChangeTest extends TestCase
+class OxygenConfigurationChangeTest extends TestCase
 {
     private $configurationChange;
 
@@ -28,18 +28,24 @@ class ElementorConfigurationChangeTest extends TestCase
      */
     protected function setUp(): void
     {
-        $this->configurationChange = new ElementorConfigurationChange();
+        $this->configurationChange = new OxygenConfigurationChange();
     }
 
     public function testApplyDoesntDuplicateExistingOptions()
     {
         $this->assertSame([
+            'build' => ['include' => [
+                'wp-content/plugins/oxygen',
+            ]],
             'cdn' => [
-                'excluded_paths' => ['/uploads/elementor/*'],
+                'excluded_paths' => ['/foo', '/uploads/oxygen/*'],
             ],
         ], $this->configurationChange->apply([
+            'build' => ['include' => [
+                'wp-content/plugins/oxygen',
+            ]],
             'cdn' => [
-                'excluded_paths' => ['/uploads/elementor/*'],
+                'excluded_paths' => ['/foo', '/uploads/oxygen/*'],
             ],
         ], 'wordpress'));
     }
@@ -47,10 +53,17 @@ class ElementorConfigurationChangeTest extends TestCase
     public function testApplyDoesntEraseExistingOptions()
     {
         $this->assertSame([
+            'build' => ['include' => [
+                'wp-content/plugins/foo',
+                'wp-content/plugins/oxygen',
+            ]],
             'cdn' => [
-                'excluded_paths' => ['/foo', '/uploads/elementor/*'],
+                'excluded_paths' => ['/foo', '/uploads/oxygen/*'],
             ],
         ], $this->configurationChange->apply([
+            'build' => ['include' => [
+                'wp-content/plugins/foo',
+            ]],
             'cdn' => [
                 'excluded_paths' => ['/foo'],
             ],
@@ -61,7 +74,7 @@ class ElementorConfigurationChangeTest extends TestCase
     {
         $this->assertSame([
             'cdn' => [
-                'excluded_paths' => ['/uploads/elementor/*'],
+                'excluded_paths' => ['/uploads/oxygen/*'],
             ],
             'deployment' => 'image',
         ], $this->configurationChange->apply(['deployment' => 'image'], 'bedrock'));
@@ -70,8 +83,11 @@ class ElementorConfigurationChangeTest extends TestCase
     public function testApplyWithBedrockProjectAndNoImageDeployment()
     {
         $this->assertSame([
+            'build' => ['include' => [
+                'web/app/plugins/oxygen',
+            ]],
             'cdn' => [
-                'excluded_paths' => ['/uploads/elementor/*'],
+                'excluded_paths' => ['/uploads/oxygen/*'],
             ],
         ], $this->configurationChange->apply([], 'bedrock'));
     }
@@ -80,7 +96,7 @@ class ElementorConfigurationChangeTest extends TestCase
     {
         $this->assertSame([
             'cdn' => [
-                'excluded_paths' => ['/uploads/elementor/*'],
+                'excluded_paths' => ['/uploads/oxygen/*'],
             ],
             'deployment' => 'image',
         ], $this->configurationChange->apply(['deployment' => 'image'], 'wordpress'));
@@ -89,14 +105,17 @@ class ElementorConfigurationChangeTest extends TestCase
     public function testApplyWithWordPressProjectAndNoImageDeployment()
     {
         $this->assertSame([
+            'build' => ['include' => [
+                'wp-content/plugins/oxygen',
+            ]],
             'cdn' => [
-                'excluded_paths' => ['/uploads/elementor/*'],
+                'excluded_paths' => ['/uploads/oxygen/*'],
             ],
         ], $this->configurationChange->apply([], 'wordpress'));
     }
 
     public function testGetName()
     {
-        $this->assertSame('elementor', $this->configurationChange->getName());
+        $this->assertSame('oxygen', $this->configurationChange->getName());
     }
 }
