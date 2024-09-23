@@ -770,6 +770,14 @@ class ApiClient
     }
 
     /**
+     * Set the Ymir API access token.
+     */
+    public function setAccessToken(string $token)
+    {
+        $this->client->setAccessToken($token);
+    }
+
+    /**
      * Send signal to the Ymir API to start the deployment.
      */
     public function startDeployment(int $deploymentId)

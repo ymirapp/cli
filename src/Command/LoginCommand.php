@@ -60,6 +60,7 @@ class LoginCommand extends AbstractCommand
             $accessToken = $this->apiClient->getAccessToken($email, $password, $output->askHidden('Authentication code'));
         }
 
+        $this->apiClient->setAccessToken($accessToken);
         $this->cliConfiguration->setAccessToken($accessToken);
 
         $team = $this->apiClient->getActiveTeam();
