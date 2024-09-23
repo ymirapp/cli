@@ -83,6 +83,10 @@ class LoginCommandTest extends TestCase
                   ->method('getActiveTeam')
                   ->willReturn(new Collection(['id' => 42]));
 
+        $apiClient->expects($this->once())
+                  ->method('setAccessToken')
+                  ->with($this->identicalTo('access_token'));
+
         $cliConfiguration->expects($this->once())
                          ->method('setAccessToken')
                          ->with($this->identicalTo('access_token'));
@@ -141,6 +145,10 @@ class LoginCommandTest extends TestCase
                   ->method('getActiveTeam')
                   ->willReturn(new Collection(['id' => 42]));
 
+        $apiClient->expects($this->once())
+                  ->method('setAccessToken')
+                  ->with($this->identicalTo('access_token'));
+
         $cliConfiguration->expects($this->once())
                          ->method('setAccessToken')
                          ->with($this->identicalTo('access_token'));
@@ -194,6 +202,10 @@ class LoginCommandTest extends TestCase
         $apiClient->expects($this->once())
                   ->method('getActiveTeam')
                   ->willReturn(new Collection(['id' => 42]));
+
+        $apiClient->expects($this->once())
+                  ->method('setAccessToken')
+                  ->with($this->identicalTo('access_token'));
 
         $cliConfiguration->expects($this->once())
                          ->method('setAccessToken')
