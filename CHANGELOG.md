@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.47.1](https://github.com/ymirapp/cli/compare/v1.47.0...v1.47.1) (2024-09-23)
+
+
+### Bug Fixes
+
+* need to set the access token in the api client once we log in ([36304c4](https://github.com/ymirapp/cli/commit/36304c4d689f7cb47a0991a26dbfd98989db336d))
+
 ## [1.47.0](https://github.com/ymirapp/cli/compare/v1.46.0...v1.47.0) (2024-08-30)
 
 
