@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.48.0](https://github.com/ymirapp/cli/compare/v1.47.1...v1.48.0) (2024-09-28)
+
+
+### Features
+
+* bump deployed wp-cli version to 2.11.0 ([22f02eb](https://github.com/ymirapp/cli/commit/22f02eb79b995db66abee60cd5f7027677797114))
+
 ## [1.47.1](https://github.com/ymirapp/cli/compare/v1.47.0...v1.47.1) (2024-09-23)
 
 
