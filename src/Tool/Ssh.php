@@ -41,7 +41,7 @@ class Ssh extends CommandLineTool
         $filesystem->dumpFile($identityFilePath, $bastionHost['private_key']);
         $filesystem->chmod($identityFilePath, 0600);
 
-        $command = sprintf('ec2-user@%s -i %s -o LogLevel=error -L %s:%s:%s -N', $bastionHost['endpoint'], $identityFilePath, $localPort, $remoteHost, $remotePort);
+        $command = sprintf('ec2-user@%s -i %s -o LogLevel=debug -L %s:%s:%s -N', $bastionHost['endpoint'], $identityFilePath, $localPort, $remoteHost, $remotePort);
 
         $process = self::getProcess($command, $cwd, null);
         $process->start(function ($type, $buffer) use ($localPort) {

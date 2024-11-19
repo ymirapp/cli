@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Ymir\Cli\Command\Database;
 
+use Carbon\Carbon;
 use Symfony\Component\Console\Exception\RuntimeException;
 use Ymir\Cli\Command\AbstractCommand;
 use Ymir\Cli\Command\Network\AddBastionHostCommand;
@@ -92,11 +93,19 @@ abstract class AbstractDatabaseCommand extends AbstractCommand
             throw new RuntimeException(sprintf('The database server network does\'t have a bastion host to connect to. You can add one to the network with the "%s" command.', AddBastionHostCommand::NAME));
         }
 
-        $tunnel = Ssh::tunnelBastionHost($network->get('bastion_host'), 3305, $databaseServer['endpoint'], 3306);
+        $bastionHost = $network->get('bastion_host');
+        $tunnel = Ssh::tunnelBastionHost($bastionHost, 3305, $databaseServer['endpoint'], 3306);
 
-        // Need to wait a bit while SSH connection opens
-        sleep(1);
+        $timeout = Carbon::now()->addSeconds(10);
 
-        return $tunnel;
+        while ($tunnel->isRunning() && Carbon::now()->lessThan($timeout)) {
+            if (str_contains($tunnel->getIncrementalErrorOutput(), sprintf('Authenticated to %s', $bastionHost['endpoint']))) {
+                return $tunnel;
+            }
+
+            usleep(100000);
+        }
+
+        throw new RuntimeException('Attempt to create a SSH tunnel to the bastion host timed out after 10 seconds');
     }
 }
