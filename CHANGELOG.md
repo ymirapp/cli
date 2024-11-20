@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.48.1](https://github.com/ymirapp/cli/compare/v1.48.0...v1.48.1) (2024-11-20)
+
+
+### Bug Fixes
+
+* Use dynamic wait for establishing ssh tunnel to database server ([6159adc](https://github.com/ymirapp/cli/commit/6159adcb7e6486c5f385449f7ea392e9be5500e0))
+
 ## [1.48.0](https://github.com/ymirapp/cli/compare/v1.47.1...v1.48.0) (2024-09-28)
 
 
