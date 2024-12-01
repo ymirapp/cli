@@ -68,7 +68,7 @@ class DatabaseServerTunnelCommand extends AbstractDatabaseServerCommand
             throw new RuntimeException('Cannot use port 3306 as the local port for the SSH tunnel to the database server');
         }
 
-        $output->info(sprintf('Creating SSH tunnel to the "<comment>%s</comment>" database server. You can connect using: <comment>localhost:%s</comment>', $databaseServer['name'], $localPort));
+        $output->info(sprintf('Opening SSH tunnel to the "<comment>%s</comment>" database server. You can connect using: <comment>localhost:%s</comment>', $databaseServer['name'], $localPort));
 
         $tunnel = Ssh::tunnelBastionHost($network->get('bastion_host'), $localPort, $databaseServer['endpoint'], 3306);
 
