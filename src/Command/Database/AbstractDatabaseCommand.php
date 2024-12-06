@@ -85,8 +85,10 @@ abstract class AbstractDatabaseCommand extends AbstractCommand
     /**
      * Start a SSH tunnel to a private database server.
      */
-    protected function startSshTunnel(array $databaseServer): Process
+    protected function startSshTunnel(array $databaseServer, Output $output): Process
     {
+        $output->info(sprintf('Opening SSH tunnel to "<comment>%s</comment>" private database server', $databaseServer['name']));
+
         $network = $this->apiClient->getNetwork(Arr::get($databaseServer, 'network.id'));
 
         if (!is_array($network->get('bastion_host'))) {

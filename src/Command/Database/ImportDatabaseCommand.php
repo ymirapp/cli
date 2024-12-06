@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Ymir\Cli\Command\Database;
 
+use Illuminate\Support\LazyCollection;
 use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
@@ -21,10 +22,11 @@ use Ymir\Cli\ApiClient;
 use Ymir\Cli\CliConfiguration;
 use Ymir\Cli\Console\Input;
 use Ymir\Cli\Console\Output;
+use Ymir\Cli\Database\Connection;
+use Ymir\Cli\Database\PDO;
 use Ymir\Cli\Exception\InvalidInputException;
 use Ymir\Cli\Process\Process;
 use Ymir\Cli\ProjectConfiguration\ProjectConfiguration;
-use Ymir\Cli\Tool\Mysql;
 
 class ImportDatabaseCommand extends AbstractDatabaseCommand
 {
@@ -59,14 +61,12 @@ class ImportDatabaseCommand extends AbstractDatabaseCommand
     {
         $this
             ->setName(self::NAME)
-            ->setDescription('Import a local .sql or .sql.gz file to a database')
-            ->addArgument('file', InputArgument::REQUIRED, 'The path to the local .sql or .sql.gz file')
-            ->addArgument('name', InputArgument::OPTIONAL, 'The name of the database to import')
+            ->setDescription('Import a local SQL backup to a database')
+            ->addArgument('filename', InputArgument::REQUIRED, 'The path to the local .sql or .sql.gz file')
+            ->addArgument('database', InputArgument::OPTIONAL, 'The database name to import into')
             ->addOption('server', null, InputOption::VALUE_REQUIRED, 'The ID or name of the database server to import a database to')
             ->addOption('user', null, InputOption::VALUE_REQUIRED, 'The user used to connect to the database server')
-            ->addOption('password', null, InputOption::VALUE_REQUIRED, 'The password of the user connecting to the database server')
-            ->addOption('force', 'f', InputOption::VALUE_NONE, 'Force the import even if there are SQL errors')
-            ->addOption('skip-ssl', null, InputOption::VALUE_NONE, 'Disable SSL for the connection to the database server');
+            ->addOption('password', null, InputOption::VALUE_REQUIRED, 'The password of the user connecting to the database server');
     }
 
     /**
@@ -74,34 +74,17 @@ class ImportDatabaseCommand extends AbstractDatabaseCommand
      */
     protected function perform(Input $input, Output $output)
     {
-        $file = $input->getStringArgument('file');
-
-        if (!str_ends_with($file, '.sql') && !str_ends_with($file, '.sql.gz')) {
-            throw new InvalidInputException('You may only import .sql or .sql.gz files');
-        } elseif (!$this->filesystem->exists($file)) {
-            throw new InvalidInputException(sprintf('File "%s" doesn\'t exist', $file));
-        }
-
-        $databaseServer = $this->determineDatabaseServer('Which database server would you like to import a database to?', $input, $output);
-        $host = $databaseServer['endpoint'];
-        $name = $this->determineDatabaseName($databaseServer, $input, $output);
-        $port = '3306';
+        $filename = $this->getFilename($input);
+        $connection = $this->getConnection($input, $output);
         $tunnel = null;
 
-        $user = $this->determineUser($input, $output);
-        $password = $this->determinePassword($input, $output, $user);
-
-        if (!$databaseServer['publicly_accessible']) {
-            $output->info(sprintf('Opening SSH tunnel to "<comment>%s</comment>" database server', $databaseServer['name']));
-
-            $tunnel = $this->startSshTunnel($databaseServer);
-            $host = '127.0.0.1';
-            $port = '3305';
+        if ($connection->needsSshTunnel()) {
+            $tunnel = $this->startSshTunnel($connection->getDatabaseServer(), $output);
         }
 
-        $output->infoWithDelayWarning(sprintf('Importing "<comment>%s</comment>" to the "<comment>%s</comment>" database', $file, $name));
+        $output->infoWithDelayWarning(sprintf('Importing "<comment>%s</comment>" to the "<comment>%s</comment>" database', $filename, $connection->getDatabase()));
 
-        Mysql::import($file, $host, $port, $user, $password, $name, $input->getBooleanOption('force'), $input->getBooleanOption('skip-ssl'));
+        $this->importBackup($connection, $filename);
 
         if ($tunnel instanceof Process) {
             $tunnel->stop();
@@ -111,18 +94,98 @@ class ImportDatabaseCommand extends AbstractDatabaseCommand
     }
 
     /**
-     * Determine the name of the database to export.
+     * Get the connection to the database by prompting for any missing information.
      */
-    private function determineDatabaseName(array $databaseServer, Input $input, Output $output): string
+    private function getConnection(Input $input, Output $output): Connection
     {
-        $name = $input->getStringArgument('name');
+        $databaseServer = $this->determineDatabaseServer('Which database server would you like to import a database to?', $input, $output);
+        $database = $input->getStringArgument('database');
 
-        if (!empty($name)) {
-            return $name;
-        } elseif (!$databaseServer['publicly_accessible']) {
-            throw new RuntimeException('You must specify the name of the database to import the SQL file to for a private database server');
+        if (empty($database) && !$databaseServer['publicly_accessible']) {
+            throw new RuntimeException('You must specify the database name to import the SQL backup to for a private database server');
+        } elseif (empty($database)) {
+            $database = $output->choice('Which database would you like to import the SQL backup to?', $this->apiClient->getDatabases($databaseServer['id']));
         }
 
-        return $output->choice('Which database would you like to import the SQL file to?', $this->apiClient->getDatabases($databaseServer['id']));
+        $user = $this->determineUser($input, $output);
+        $password = $this->determinePassword($input, $output, $user);
+
+        return new Connection($database, $databaseServer, $user, $password);
+    }
+
+    /**
+     * Get the filename of the SQL backup to import.
+     */
+    private function getFilename(Input $input): string
+    {
+        $filename = $input->getStringArgument('filename');
+
+        if (!str_ends_with($filename, '.sql') && !str_ends_with($filename, '.sql.gz')) {
+            throw new InvalidInputException('You may only import .sql or .sql.gz files');
+        } elseif (!$this->filesystem->exists($filename)) {
+            throw new InvalidInputException(sprintf('File "%s" doesn\'t exist', $filename));
+        }
+
+        return $filename;
+    }
+
+    /**
+     * Imports the given SQL backup file using the given database connection.
+     */
+    private function importBackup(Connection $connection, string $filename)
+    {
+        try {
+            $isCompressed = str_ends_with($filename, '.gz');
+
+            $fclose = $isCompressed ? 'gzclose' : 'fclose';
+            $feof = $isCompressed ? 'gzeof' : 'feof';
+            $fgets = $isCompressed ? 'gzgets' : 'fgets';
+            $fopen = $isCompressed ? 'gzopen' : 'fopen';
+
+            $file = $fopen($filename, 'r');
+
+            if (!is_resource($file)) {
+                throw new RuntimeException('Failed to open file: '.$filename);
+            }
+
+            $lines = LazyCollection::make(function () use (&$file, $feof, $fgets) {
+                while (!$feof($file)) {
+                    yield $fgets($file);
+                }
+            });
+            $pdo = PDO::fromConnection($connection);
+            $query = '';
+
+            $lines->each(function ($line) use ($pdo, &$query) {
+                $line = trim($line);
+
+                if (str_starts_with($line, '--') || empty($line)) {
+                    return;
+                }
+
+                $query .= $line;
+
+                if (str_ends_with(trim($line), ';')) {
+                    $pdo->exec($query);
+                    $query = '';
+                }
+            });
+        } catch (\Throwable $exception) {
+            if ($exception instanceof RuntimeException) {
+                throw $exception;
+            }
+
+            $message = $exception->getMessage();
+
+            if ($exception instanceof \PDOException) {
+                $message = 'Failed to import database: '.$message;
+            }
+
+            throw new RuntimeException($message);
+        } finally {
+            if (isset($file, $fclose) && is_resource($file)) {
+                $fclose($file);
+            }
+        }
     }
 }
