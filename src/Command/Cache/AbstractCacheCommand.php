@@ -15,8 +15,6 @@ namespace Ymir\Cli\Command\Cache;
 
 use Symfony\Component\Console\Exception\RuntimeException;
 use Ymir\Cli\Command\AbstractCommand;
-use Ymir\Cli\Console\Input;
-use Ymir\Cli\Console\Output;
 use Ymir\Cli\Exception\InvalidInputException;
 
 abstract class AbstractCacheCommand extends AbstractCommand
@@ -24,15 +22,15 @@ abstract class AbstractCacheCommand extends AbstractCommand
     /**
      * Determine the cache that the command is interacting with.
      */
-    protected function determineCache(string $question, Input $input, Output $output): array
+    protected function determineCache(string $question): array
     {
         $caches = $this->apiClient->getCaches($this->cliConfiguration->getActiveTeamId());
-        $cacheIdOrName = $input->getStringArgument('cache');
+        $cacheIdOrName = $this->input->getStringArgument('cache');
 
         if ($caches->isEmpty()) {
             throw new RuntimeException(sprintf('The currently active team has no cache clusters. You can create one with the "%s" command.', CreateCacheCommand::NAME));
         } elseif (empty($cacheIdOrName)) {
-            $cacheIdOrName = $output->choiceWithResourceDetails($question, $caches);
+            $cacheIdOrName = $this->output->choiceWithResourceDetails($question, $caches);
         }
 
         $cache = $caches->firstWhere('id', $cacheIdOrName) ?? $caches->firstWhere('name', $cacheIdOrName);

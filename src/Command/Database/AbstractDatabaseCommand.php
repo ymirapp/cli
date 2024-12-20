@@ -17,8 +17,6 @@ use Carbon\Carbon;
 use Symfony\Component\Console\Exception\RuntimeException;
 use Ymir\Cli\Command\AbstractCommand;
 use Ymir\Cli\Command\Network\AddBastionHostCommand;
-use Ymir\Cli\Console\Input;
-use Ymir\Cli\Console\Output;
 use Ymir\Cli\Exception\InvalidInputException;
 use Ymir\Cli\Process\Process;
 use Ymir\Cli\Support\Arr;
@@ -29,17 +27,17 @@ abstract class AbstractDatabaseCommand extends AbstractCommand
     /**
      * Determine the database server that the command is interacting with.
      */
-    protected function determineDatabaseServer(string $question, Input $input, Output $output): array
+    protected function determineDatabaseServer(string $question): array
     {
         $databases = $this->apiClient->getDatabaseServers($this->cliConfiguration->getActiveTeamId());
-        $databaseIdOrName = $input->getStringOption('server', true);
+        $databaseIdOrName = $this->input->getStringOption('server', true);
 
         if ($databases->isEmpty()) {
             throw new RuntimeException(sprintf('The currently active team has no database servers. You can create one with the "%s" command.', CreateDatabaseServerCommand::NAME));
         } elseif (empty($databaseIdOrName) && 1 === $databases->count()) {
             return $databases->first();
         } elseif (empty($databaseIdOrName)) {
-            $databaseIdOrName = $output->choiceWithResourceDetails($question, $databases);
+            $databaseIdOrName = $this->output->choiceWithResourceDetails($question, $databases);
         }
 
         // Need to improve this since you can have the same name in different regions
@@ -57,12 +55,12 @@ abstract class AbstractDatabaseCommand extends AbstractCommand
     /**
      * Determine the password to use to connect to the database server with the given user.
      */
-    protected function determinePassword(Input $input, Output $output, string $user): string
+    protected function determinePassword(string $user): string
     {
-        $password = $input->getStringOption('password', true);
+        $password = $this->input->getStringOption('password', true);
 
         if (empty($password)) {
-            $password = (string) $output->askHidden(sprintf('What\'s the "<comment>%s</comment>" password?', $user));
+            $password = (string) $this->output->askHidden(sprintf('What\'s the "<comment>%s</comment>" password?', $user));
         }
 
         return $password;
@@ -71,12 +69,12 @@ abstract class AbstractDatabaseCommand extends AbstractCommand
     /**
      * Determine the user to use to connect to the database server.
      */
-    protected function determineUser(Input $input, Output $output): string
+    protected function determineUser(): string
     {
-        $user = $input->getStringOption('user', true);
+        $user = $this->input->getStringOption('user', true);
 
         if (empty($user)) {
-            $user = $output->ask('Which user do you want to use to connect to the database server?', 'ymir');
+            $user = $this->output->ask('Which user do you want to use to connect to the database server?', 'ymir');
         }
 
         return $user;
@@ -85,9 +83,9 @@ abstract class AbstractDatabaseCommand extends AbstractCommand
     /**
      * Start a SSH tunnel to a private database server.
      */
-    protected function startSshTunnel(array $databaseServer, Output $output): Process
+    protected function startSshTunnel(array $databaseServer): Process
     {
-        $output->info(sprintf('Opening SSH tunnel to "<comment>%s</comment>" private database server', $databaseServer['name']));
+        $this->output->info(sprintf('Opening SSH tunnel to "<comment>%s</comment>" private database server', $databaseServer['name']));
 
         $network = $this->apiClient->getNetwork(Arr::get($databaseServer, 'network.id'));
 

@@ -15,8 +15,6 @@ namespace Ymir\Cli\Command\Team;
 
 use Symfony\Component\Console\Input\InputArgument;
 use Ymir\Cli\Command\AbstractCommand;
-use Ymir\Cli\Console\Input;
-use Ymir\Cli\Console\Output;
 
 class CreateTeamCommand extends AbstractCommand
 {
@@ -41,16 +39,16 @@ class CreateTeamCommand extends AbstractCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(Input $input, Output $output)
+    protected function perform()
     {
-        $name = $input->getStringArgument('name');
+        $name = $this->input->getStringArgument('name');
 
         if (empty($name)) {
-            $name = (string) $output->ask('What is the name of the team');
+            $name = (string) $this->output->ask('What is the name of the team');
         }
 
         $this->apiClient->createTeam($name);
 
-        $output->info('Team created');
+        $this->output->info('Team created');
     }
 }

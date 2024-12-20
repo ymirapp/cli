@@ -18,8 +18,6 @@ use Symfony\Component\Filesystem\Filesystem;
 use Ymir\Cli\ApiClient;
 use Ymir\Cli\CliConfiguration;
 use Ymir\Cli\Command\AbstractCommand;
-use Ymir\Cli\Console\Input;
-use Ymir\Cli\Console\Output;
 use Ymir\Cli\ProjectConfiguration\ProjectConfiguration;
 
 class AddBastionHostCommand extends AbstractCommand
@@ -70,40 +68,40 @@ class AddBastionHostCommand extends AbstractCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(Input $input, Output $output)
+    protected function perform()
     {
-        $network = $this->apiClient->getNetwork($this->determineNetwork('Which network would like to add a bastion host to', $input, $output));
+        $network = $this->apiClient->getNetwork($this->determineNetwork('Which network would like to add a bastion host to'));
 
         $bastionHost = $this->apiClient->addBastionHost((int) $network->get('id'));
 
-        $output->infoWithDelayWarning('Bastion host added');
-        $output->newLine();
-        $output->comment('SSH private key:');
-        $output->newLine();
-        $output->writeln($bastionHost['private_key']);
+        $this->output->infoWithDelayWarning('Bastion host added');
+        $this->output->newLine();
+        $this->output->comment('SSH private key:');
+        $this->output->newLine();
+        $this->output->writeln($bastionHost['private_key']);
 
-        if (!is_dir($this->homeDirectory.'/.ssh') || !$output->confirm('Would you like to create the SSH private key in your ~/.ssh directory?')) {
+        if (!is_dir($this->homeDirectory.'/.ssh') || !$this->output->confirm('Would you like to create the SSH private key in your ~/.ssh directory?')) {
             return;
         }
 
         $privateKeyFilename = $this->homeDirectory.'/.ssh/ymir-'.$network->get('name');
 
-        if ($this->filesystem->exists($privateKeyFilename) && !$output->confirm('A SSH key already exists for this network. Do you want to overwrite it?', false)) {
+        if ($this->filesystem->exists($privateKeyFilename) && !$this->output->confirm('A SSH key already exists for this network. Do you want to overwrite it?', false)) {
             return;
         }
 
         $this->filesystem->dumpFile($privateKeyFilename, $bastionHost->get('private_key'));
         $this->filesystem->chmod($privateKeyFilename, 0600);
 
-        $output->infoWithValue('SSH private key created', $privateKeyFilename);
+        $this->output->infoWithValue('SSH private key created', $privateKeyFilename);
 
         $sshConfigFilename = $this->homeDirectory.'/.ssh/config';
 
-        if (!$this->filesystem->exists($sshConfigFilename) || !$output->confirm('Would you like to configure SSH to connect to the bastion host?')) {
+        if (!$this->filesystem->exists($sshConfigFilename) || !$this->output->confirm('Would you like to configure SSH to connect to the bastion host?')) {
             return;
         }
 
-        $output->infoWithWarning('Waiting for bastion host to get assigned a public domain name', 'takes a few minutes');
+        $this->output->infoWithWarning('Waiting for bastion host to get assigned a public domain name', 'takes a few minutes');
 
         $bastionHost = $this->wait(function () use ($bastionHost) {
             $bastionHost = $this->apiClient->getBastionHost((int) $bastionHost->get('id'));
@@ -113,7 +111,7 @@ class AddBastionHostCommand extends AbstractCommand
 
         $this->filesystem->appendToFile($sshConfigFilename, sprintf("\nHost %s\n  User ec2-user\n  IdentitiesOnly yes\n  IdentityFile %s\n", $bastionHost->get('endpoint'), $privateKeyFilename));
 
-        $output->newLine();
-        $output->infoWithValue('SSH configured. Login using', sprintf('ssh %s', $bastionHost->get('endpoint')));
+        $this->output->newLine();
+        $this->output->infoWithValue('SSH configured. Login using', sprintf('ssh %s', $bastionHost->get('endpoint')));
     }
 }

@@ -14,8 +14,6 @@ declare(strict_types=1);
 namespace Ymir\Cli\Command\Database;
 
 use Ymir\Cli\Command\AbstractCommand;
-use Ymir\Cli\Console\Input;
-use Ymir\Cli\Console\Output;
 
 class ListDatabaseServersCommand extends AbstractCommand
 {
@@ -39,20 +37,20 @@ class ListDatabaseServersCommand extends AbstractCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(Input $input, Output $output)
+    protected function perform()
     {
-        $output->table(
+        $this->output->table(
             ['Id', 'Name', 'Provider', 'Network', 'Region', 'Status', 'Locked', 'Public', 'Type', 'Storage'],
-            $this->apiClient->getDatabaseServers($this->cliConfiguration->getActiveTeamId())->map(function (array $database) use ($output) {
+            $this->apiClient->getDatabaseServers($this->cliConfiguration->getActiveTeamId())->map(function (array $database) {
                 return [
                     $database['id'],
                     $database['name'],
                     $database['network']['provider']['name'],
                     $database['network']['name'],
                     $database['region'],
-                    $output->formatStatus($database['status']),
-                    $output->formatBoolean($database['locked']),
-                    $output->formatBoolean($database['publicly_accessible']),
+                    $this->output->formatStatus($database['status']),
+                    $this->output->formatBoolean($database['locked']),
+                    $this->output->formatBoolean($database['publicly_accessible']),
                     $database['type'],
                     $database['storage'] ? $database['storage'].'GB' : 'N/A',
                 ];

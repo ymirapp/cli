@@ -15,8 +15,6 @@ namespace Ymir\Cli\Command\Environment;
 
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
-use Ymir\Cli\Console\Input;
-use Ymir\Cli\Console\Output;
 use Ymir\Cli\Exception\InvalidInputException;
 
 class WatchEnvironmentLogsCommand extends AbstractEnvironmentLogsCommand
@@ -45,11 +43,11 @@ class WatchEnvironmentLogsCommand extends AbstractEnvironmentLogsCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(Input $input, Output $output)
+    protected function perform()
     {
-        $environment = $input->getStringArgument('environment');
-        $function = strtolower($input->getStringArgument('function'));
-        $interval = (int) $input->getNumericOption('interval');
+        $environment = $this->input->getStringArgument('environment');
+        $function = strtolower($this->input->getStringArgument('function'));
+        $interval = (int) $this->input->getNumericOption('interval');
         $since = (int) round(microtime(true) * 1000);
 
         if ($interval < 20) {
@@ -59,7 +57,7 @@ class WatchEnvironmentLogsCommand extends AbstractEnvironmentLogsCommand
         while (true) {
             sleep($interval);
 
-            $this->writeLogs($this->apiClient->getEnvironmentLogs($this->projectConfiguration->getProjectId(), $environment, $function, $since), $output, $input->getStringOption('timezone'));
+            $this->writeLogs($this->apiClient->getEnvironmentLogs($this->projectConfiguration->getProjectId(), $environment, $function, $since), $this->input->getStringOption('timezone'));
 
             $since += $interval * 1000 + 1;
         }

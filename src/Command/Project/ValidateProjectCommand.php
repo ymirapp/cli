@@ -17,8 +17,6 @@ use Symfony\Component\Console\Input\InputArgument;
 use Ymir\Cli\ApiClient;
 use Ymir\Cli\CliConfiguration;
 use Ymir\Cli\Command\AbstractProjectCommand;
-use Ymir\Cli\Console\Input;
-use Ymir\Cli\Console\Output;
 use Ymir\Cli\Dockerfile;
 use Ymir\Cli\ProjectConfiguration\ProjectConfiguration;
 use Ymir\Cli\Support\Arr;
@@ -68,9 +66,9 @@ class ValidateProjectCommand extends AbstractProjectCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(Input $input, Output $output)
+    protected function perform()
     {
-        $environments = (array) $input->getArgument('environments');
+        $environments = (array) $this->input->getArgument('environments');
         $environments = $this->projectConfiguration->getEnvironments()->filter(function (array $configuration, string $environment) use ($environments) {
             return empty($environments) || in_array($environment, $environments);
         });
@@ -91,10 +89,10 @@ class ValidateProjectCommand extends AbstractProjectCommand
             $message .= ' with the following warnings:';
         }
 
-        $output->info($message);
+        $this->output->info($message);
 
         if (!$valid) {
-            $output->table(['Environment', 'Warning'], $response->filter(function (array $environment) {
+            $this->output->table(['Environment', 'Warning'], $response->filter(function (array $environment) {
                 return !empty($environment['warnings']);
             })->flatMap(function (array $environment, string $name) {
                 return collect($environment['warnings'])->map(function (string $warning) use ($name) {

@@ -15,8 +15,6 @@ namespace Ymir\Cli\Command\Email;
 
 use Symfony\Component\Console\Helper\TableSeparator;
 use Symfony\Component\Console\Input\InputArgument;
-use Ymir\Cli\Console\Input;
-use Ymir\Cli\Console\Output;
 
 class GetEmailIdentityInfoCommand extends AbstractEmailIdentityCommand
 {
@@ -41,15 +39,15 @@ class GetEmailIdentityInfoCommand extends AbstractEmailIdentityCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(Input $input, Output $output)
+    protected function perform()
     {
-        $identity = $this->determineEmailIdentity('Which email identity would you like to get information about', $input, $output);
+        $identity = $this->determineEmailIdentity('Which email identity would you like to get information about');
 
-        $output->horizontalTable(
+        $this->output->horizontalTable(
             ['Name', new TableSeparator(), 'Provider', 'Region', new TableSeparator(), 'Type', 'Verified', 'Managed'],
-            [[$identity['name'], new TableSeparator(), $identity['provider']['name'], $identity['region'], new TableSeparator(), $identity['type'], $output->formatBoolean($identity['verified']), $output->formatBoolean($identity['managed'])]]
+            [[$identity['name'], new TableSeparator(), $identity['provider']['name'], $identity['region'], new TableSeparator(), $identity['type'], $this->output->formatBoolean($identity['verified']), $this->output->formatBoolean($identity['managed'])]]
         );
 
-        $this->displayDkimAuthenticationRecords($identity, $output);
+        $this->displayDkimAuthenticationRecords($identity);
     }
 }

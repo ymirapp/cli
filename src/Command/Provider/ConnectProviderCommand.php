@@ -13,9 +13,6 @@ declare(strict_types=1);
 
 namespace Ymir\Cli\Command\Provider;
 
-use Ymir\Cli\Console\Input;
-use Ymir\Cli\Console\Output;
-
 class ConnectProviderCommand extends AbstractProviderCommand
 {
     /**
@@ -38,14 +35,14 @@ class ConnectProviderCommand extends AbstractProviderCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(Input $input, Output $output)
+    protected function perform()
     {
-        $name = $output->ask('Please enter a name for the cloud provider connection', 'AWS');
+        $name = $this->output->ask('Please enter a name for the cloud provider connection', 'AWS');
 
-        $credentials = $this->getAwsCredentials($output);
+        $credentials = $this->getAwsCredentials();
 
         $this->apiClient->createProvider($this->cliConfiguration->getActiveTeamId(), $name, $credentials);
 
-        $output->info('Cloud provider connected');
+        $this->output->info('Cloud provider connected');
     }
 }

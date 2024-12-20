@@ -20,8 +20,6 @@ use Symfony\Component\Console\Input\InputOption;
 use Ymir\Cli\ApiClient;
 use Ymir\Cli\CliConfiguration;
 use Ymir\Cli\Command\Uploads\ImportUploadsCommand;
-use Ymir\Cli\Console\Input;
-use Ymir\Cli\Console\Output;
 use Ymir\Cli\ProjectConfiguration\ProjectConfiguration;
 
 class DeployProjectCommand extends AbstractProjectDeploymentCommand
@@ -83,17 +81,17 @@ class DeployProjectCommand extends AbstractProjectDeploymentCommand
     /**
      * {@inheritdoc}
      */
-    protected function createDeployment(Input $input, Output $output): Collection
+    protected function createDeployment(): Collection
     {
-        $environment = $input->getStringArgument('environment');
+        $environment = $this->input->getStringArgument('environment');
         $projectId = $this->projectConfiguration->getProjectId();
-        $withUploadsOption = $input->getBooleanOption('with-uploads');
+        $withUploadsOption = $this->input->getBooleanOption('with-uploads');
 
-        $this->invoke($output, ValidateProjectCommand::NAME, ['environments' => $environment]);
-        $this->invoke($output, BuildProjectCommand::NAME, array_merge(['environment' => $environment], $input->getBooleanOption('debug-build') ? ['--debug' => null] : [], $withUploadsOption ? ['--with-uploads' => null] : []));
+        $this->invoke(ValidateProjectCommand::NAME, ['environments' => $environment]);
+        $this->invoke(BuildProjectCommand::NAME, array_merge(['environment' => $environment], $this->input->getBooleanOption('debug-build') ? ['--debug' => null] : [], $withUploadsOption ? ['--with-uploads' => null] : []));
 
         if ($withUploadsOption) {
-            $this->invoke($output, ImportUploadsCommand::NAME, ['path' => $this->uploadsDirectory, '--environment' => $environment, '--force' => null]);
+            $this->invoke(ImportUploadsCommand::NAME, ['path' => $this->uploadsDirectory, '--environment' => $environment, '--force' => null]);
         }
 
         $deployment = $this->apiClient->createDeployment($projectId, $environment, $this->projectConfiguration, $this->generateDirectoryHash($this->assetsDirectory));

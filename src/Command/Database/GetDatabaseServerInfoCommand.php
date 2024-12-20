@@ -15,8 +15,6 @@ namespace Ymir\Cli\Command\Database;
 
 use Symfony\Component\Console\Helper\TableSeparator;
 use Symfony\Component\Console\Input\InputArgument;
-use Ymir\Cli\Console\Input;
-use Ymir\Cli\Console\Output;
 
 class GetDatabaseServerInfoCommand extends AbstractDatabaseServerCommand
 {
@@ -41,18 +39,18 @@ class GetDatabaseServerInfoCommand extends AbstractDatabaseServerCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(Input $input, Output $output)
+    protected function perform()
     {
-        $databaseServer = $this->determineDatabaseServer('Which database server would you like to get information about', $input, $output);
+        $databaseServer = $this->determineDatabaseServer('Which database server would you like to get information about');
 
-        $output->horizontalTable(
+        $this->output->horizontalTable(
             ['Id', 'Name', 'Status', 'Locked', 'Public', new TableSeparator(), 'Provider', 'Network', 'Region', 'Type', 'Storage', 'Endpoint'],
             [[
                 $databaseServer['id'],
                 $databaseServer['name'],
-                $output->formatStatus($databaseServer['status']),
-                $output->formatBoolean($databaseServer['locked']),
-                $output->formatBoolean($databaseServer['publicly_accessible']),
+                $this->output->formatStatus($databaseServer['status']),
+                $this->output->formatBoolean($databaseServer['locked']),
+                $this->output->formatBoolean($databaseServer['publicly_accessible']),
                 new TableSeparator(),
                 $databaseServer['network']['provider']['name'],
                 $databaseServer['network']['name'],

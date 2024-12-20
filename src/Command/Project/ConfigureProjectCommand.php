@@ -19,8 +19,6 @@ use Symfony\Component\Console\Input\InputArgument;
 use Ymir\Cli\ApiClient;
 use Ymir\Cli\CliConfiguration;
 use Ymir\Cli\Command\AbstractProjectCommand;
-use Ymir\Cli\Console\Input;
-use Ymir\Cli\Console\Output;
 use Ymir\Cli\Exception\InvalidInputException;
 use Ymir\Cli\ProjectConfiguration\ProjectConfiguration;
 use Ymir\Cli\ProjectConfiguration\WordPress\WordPressConfigurationChangeInterface;
@@ -79,7 +77,7 @@ class ConfigureProjectCommand extends AbstractProjectCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(Input $input, Output $output)
+    protected function perform()
     {
         if (!WpCli::isInstalledGlobally()) {
             throw new RuntimeException('WP-CLI needs to be available globally to scan your project');
@@ -87,23 +85,23 @@ class ConfigureProjectCommand extends AbstractProjectCommand
             throw new RuntimeException('WordPress needs to be installed and connected to a database to scan your project');
         }
 
-        $environment = $input->getStringArgument('environment', false);
+        $environment = $this->input->getStringArgument('environment', false);
 
         if (!empty($environment) && !$this->projectConfiguration->hasEnvironment($environment)) {
             throw new InvalidInputException(sprintf('Environment "%s" not found in ymir.yml file', $environment));
         }
 
-        $output->info('Scanning your project');
+        $this->output->info('Scanning your project');
 
         $plugins = WpCli::listPlugins()->groupBy('status');
 
         $activePlugins = $plugins->only(['active', 'must-use'])->flatten(1);
         $inactivePlugins = $plugins->only(['inactive'])->flatten(1);
 
-        $this->applyConfigurationChanges('The following plugin(s) are <comment>active</comment> and have available configuration changes:', $activePlugins, $output, $environment);
-        $this->applyConfigurationChanges('The following plugin(s) are <comment>inactive</comment> and have available configuration changes:', $inactivePlugins, $output, $environment, false);
+        $this->applyConfigurationChanges('The following plugin(s) are <comment>active</comment> and have available configuration changes:', $activePlugins, $environment);
+        $this->applyConfigurationChanges('The following plugin(s) are <comment>inactive</comment> and have available configuration changes:', $inactivePlugins, $environment, false);
 
-        $output->info('Project configured successfully');
+        $this->output->info('Project configured successfully');
     }
 
     /**
@@ -117,7 +115,7 @@ class ConfigureProjectCommand extends AbstractProjectCommand
     /**
      * Apply the given configuration changes to the given environment.
      */
-    private function applyConfigurationChanges(string $message, Collection $plugins, Output $output, string $environment = '', bool $apply = true)
+    private function applyConfigurationChanges(string $message, Collection $plugins, string $environment = '', bool $apply = true)
     {
         $filteredConfigurationChanges = $this->configurationChanges->filter(function (WordPressConfigurationChangeInterface $configurationChange) use ($plugins) {
             return $plugins->contains('name', $configurationChange->getName());
@@ -127,15 +125,15 @@ class ConfigureProjectCommand extends AbstractProjectCommand
             return;
         }
 
-        $output->info($message);
+        $this->output->info($message);
 
-        $output->list($filteredConfigurationChanges->map(function (WordPressConfigurationChangeInterface $configurationChange) use ($plugins) {
+        $this->output->list($filteredConfigurationChanges->map(function (WordPressConfigurationChangeInterface $configurationChange) use ($plugins) {
             $name = $configurationChange->getName();
 
             return Arr::get($plugins->firstWhere('name', $name), 'title', $name);
         }));
 
-        if (!$output->confirm('Do you want to apply them?', $apply)) {
+        if (!$this->output->confirm('Do you want to apply them?', $apply)) {
             return;
         }
 

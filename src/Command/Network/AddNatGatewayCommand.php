@@ -15,8 +15,6 @@ namespace Ymir\Cli\Command\Network;
 
 use Symfony\Component\Console\Input\InputArgument;
 use Ymir\Cli\Command\AbstractCommand;
-use Ymir\Cli\Console\Input;
-use Ymir\Cli\Console\Output;
 
 class AddNatGatewayCommand extends AbstractCommand
 {
@@ -41,10 +39,10 @@ class AddNatGatewayCommand extends AbstractCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(Input $input, Output $output)
+    protected function perform()
     {
-        $this->apiClient->addNatGateway($this->determineNetwork('Which network would like to add a NAT gateway to', $input, $output));
+        $this->apiClient->addNatGateway($this->determineNetwork('Which network would like to add a NAT gateway to'));
 
-        $output->infoWithDelayWarning('NAT gateway added');
+        $this->output->infoWithDelayWarning('NAT gateway added');
     }
 }

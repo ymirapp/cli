@@ -24,8 +24,6 @@ use Ymir\Cli\Command\Database\CreateDatabaseServerCommand;
 use Ymir\Cli\Command\Docker\CreateDockerfileCommand;
 use Ymir\Cli\Command\InstallPluginCommand;
 use Ymir\Cli\Command\Provider\ConnectProviderCommand;
-use Ymir\Cli\Console\Input;
-use Ymir\Cli\Console\Output;
 use Ymir\Cli\Process\Process;
 use Ymir\Cli\ProjectConfiguration\ProjectConfiguration;
 use Ymir\Cli\Support\Arr;
@@ -87,19 +85,19 @@ class InitializeProjectCommand extends AbstractCommand
     /**
      * {@inheritdoc}
      */
-    protected function determineCloudProvider(string $question, Input $input, Output $output): int
+    protected function determineCloudProvider(string $question): int
     {
         $providers = $this->apiClient->getProviders($this->cliConfiguration->getActiveTeamId());
 
         if ($providers->isEmpty()) {
-            $output->info('Connecting to a cloud provider');
+            $this->output->info('Connecting to a cloud provider');
 
-            $this->retryApi(function () use ($output) {
-                $this->invoke($output, ConnectProviderCommand::NAME);
-            }, 'Do you want to try to connect to a cloud provider again?', $output);
+            $this->retryApi(function () {
+                $this->invoke(ConnectProviderCommand::NAME);
+            }, 'Do you want to try to connect to a cloud provider again?');
         }
 
-        return parent::determineCloudProvider($question, $input, $output);
+        return parent::determineCloudProvider($question);
     }
 
     /**
@@ -113,59 +111,59 @@ class InitializeProjectCommand extends AbstractCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(Input $input, Output $output)
+    protected function perform()
     {
         if ($this->projectConfiguration->exists()
-            && !$output->confirm('A project already exists in this directory. Do you want to overwrite it?', false)
+            && !$this->output->confirm('A project already exists in this directory. Do you want to overwrite it?', false)
         ) {
             return;
         } elseif ($this->projectConfiguration->exists()) {
             $this->projectConfiguration->delete();
         }
 
-        $this->retryApi(function () use ($input, $output) {
-            $projectName = $output->askSlug('What is the name of the project', basename(getcwd() ?: '') ?: null);
-            $projectType = $this->determineProjectType($output);
-            $providerId = $this->determineCloudProvider('Enter the ID of the cloud provider that the project will use', $input, $output);
-            $region = $this->determineRegion('Enter the name of the region that the project will be in', $providerId, $input, $output);
+        $this->retryApi(function () {
+            $projectName = $this->output->askSlug('What is the name of the project', basename(getcwd() ?: '') ?: null);
+            $projectType = $this->determineProjectType();
+            $providerId = $this->determineCloudProvider('Enter the ID of the cloud provider that the project will use');
+            $region = $this->determineRegion('Enter the name of the region that the project will be in', $providerId);
 
             // Define the environments now so we check for the database server before checking for WordPress
-            $environments = $this->addEnvironmentDatabaseNodes($this->getBaseEnvironmentsConfiguration($projectType), $output, $projectName, $region);
+            $environments = $this->addEnvironmentDatabaseNodes($this->getBaseEnvironmentsConfiguration($projectType), $projectName, $region);
 
             // This needs to happen before we create the configuration file because "composer create-project"
             // needs an empty directory.
-            $this->checkForWordPress($output, $projectType);
+            $this->checkForWordPress($projectType);
 
             $this->projectConfiguration->createNew($this->apiClient->createProject($providerId, $projectName, $region, $environments->keys()->all()), $environments->all(), $projectType);
 
-            $output->infoWithDelayWarning('Project initialized');
+            $this->output->infoWithDelayWarning('Project initialized');
 
-            if (!$this->isPluginInstalled($projectType) && $output->confirm('Would you like to install the Ymir WordPress plugin?')) {
-                $this->invoke($output, InstallPluginCommand::NAME);
+            if (!$this->isPluginInstalled($projectType) && $this->output->confirm('Would you like to install the Ymir WordPress plugin?')) {
+                $this->invoke(InstallPluginCommand::NAME);
             }
 
-            if ($output->confirm('Do you want to deploy this project using a container image?', Docker::isInstalledGlobally())) {
-                $this->invoke($output, CreateDockerfileCommand::NAME, ['--configure-project' => null]);
+            if ($this->output->confirm('Do you want to deploy this project using a container image?', Docker::isInstalledGlobally())) {
+                $this->invoke(CreateDockerfileCommand::NAME, ['--configure-project' => null]);
             }
 
-            if (WpCli::isInstalledGlobally() && WpCli::isWordPressInstalled() && $output->confirm('Do you want to have Ymir scan your plugins and themes and configure your project?')) {
-                $this->invoke($output, ConfigureProjectCommand::NAME);
+            if (WpCli::isInstalledGlobally() && WpCli::isWordPressInstalled() && $this->output->confirm('Do you want to have Ymir scan your plugins and themes and configure your project?')) {
+                $this->invoke(ConfigureProjectCommand::NAME);
             }
-        }, 'Do you want to try creating a project again?', $output);
+        }, 'Do you want to try creating a project again?');
     }
 
     /**
      * Add the "database" nodes to all the environments.
      */
-    private function addEnvironmentDatabaseNodes(Collection $environments, Output $output, string $projectName, string $region): Collection
+    private function addEnvironmentDatabaseNodes(Collection $environments, string $projectName, string $region): Collection
     {
-        $databaseServer = $this->determineDatabaseServer($output, $region);
+        $databaseServer = $this->determineDatabaseServer($region);
 
         if (empty($databaseServer['name'])) {
             return $environments;
         }
 
-        $databasePrefix = trim($output->askSlug('What database prefix would you like to use for this project?', $projectName));
+        $databasePrefix = trim($this->output->askSlug('What database prefix would you like to use for this project?', $projectName));
         $environments = $environments->map(function (array $options, string $environment) use ($databasePrefix, $databaseServer) {
             Arr::set($options, 'database.server', $databaseServer['name']);
             Arr::set($options, 'database.name', $databasePrefix ? sprintf('%s_%s', rtrim($databasePrefix, '_'), $environment) : $environment);
@@ -173,9 +171,9 @@ class InitializeProjectCommand extends AbstractCommand
             return $options;
         });
 
-        if (!empty($databaseServer['publicly_accessible']) && $output->confirm(sprintf('Would you like to create the staging and production databases for your project on the "<comment>%s</comment>" database server?', $databaseServer['name']))) {
+        if (!empty($databaseServer['publicly_accessible']) && $this->output->confirm(sprintf('Would you like to create the staging and production databases for your project on the "<comment>%s</comment>" database server?', $databaseServer['name']))) {
             $environments->each(function (array $options) {
-                $this->invoke(new NullOutput(), CreateDatabaseCommand::NAME, ['name' => Arr::get($options, 'database.name'), '--server' => Arr::get($options, 'database.server')]);
+                $this->invoke(CreateDatabaseCommand::NAME, ['name' => Arr::get($options, 'database.name'), '--server' => Arr::get($options, 'database.server')], new NullOutput());
             });
         }
 
@@ -185,40 +183,40 @@ class InitializeProjectCommand extends AbstractCommand
     /**
      * Check for WordPress and offer to install it if it's not detected.
      */
-    private function checkForWordPress(Output $output, string $projectType)
+    private function checkForWordPress(string $projectType)
     {
-        if (!$this->isWordPressDownloadable($projectType) || !$output->confirm('WordPress wasn\'t detected in the project directory. Would you like to download it?')) {
+        if (!$this->isWordPressDownloadable($projectType) || !$this->output->confirm('WordPress wasn\'t detected in the project directory. Would you like to download it?')) {
             return;
         }
 
         if ('bedrock' === $projectType) {
-            $output->info('Creating new Bedrock project');
+            $this->output->info('Creating new Bedrock project');
             Process::runShellCommandline('composer create-project roots/bedrock .');
         } elseif ('wordpress' === $projectType) {
-            $output->info('Downloading WordPress using WP-CLI');
+            $this->output->info('Downloading WordPress using WP-CLI');
             WpCli::downloadWordPress();
         }
 
-        $output->info('WordPress downloaded successfully');
+        $this->output->info('WordPress downloaded successfully');
     }
 
     /**
      * Determine the database server to use for this project.
      */
-    private function determineDatabaseServer(Output $output, string $region): ?array
+    private function determineDatabaseServer(string $region): ?array
     {
         $database = null;
         $databases = $this->apiClient->getDatabaseServers($this->cliConfiguration->getActiveTeamId())->where('region', $region)->whereNotIn('status', ['deleting', 'failed'])->values();
 
-        if (!$databases->isEmpty() && $output->confirm('Would you like to use an existing database server for this project?')) {
-            $database = $output->choiceWithResourceDetails('Which database server would you like to use?', $databases);
+        if (!$databases->isEmpty() && $this->output->confirm('Would you like to use an existing database server for this project?')) {
+            $database = $this->output->choiceWithResourceDetails('Which database server would you like to use?', $databases);
         } elseif (
-            (!$databases->isEmpty() && $output->confirm('Would you like to create a new one for this project instead?'))
-            || ($databases->isEmpty() && $output->confirm(sprintf('Your team doesn\'t have any configured database servers in the "<comment>%s</comment>" region. Would you like to create one for this team first?', $region)))
+            (!$databases->isEmpty() && $this->output->confirm('Would you like to create a new one for this project instead?'))
+            || ($databases->isEmpty() && $this->output->confirm(sprintf('Your team doesn\'t have any configured database servers in the "<comment>%s</comment>" region. Would you like to create one for this team first?', $region)))
         ) {
-            $this->retryApi(function () use ($output) {
-                $this->invoke($output, CreateDatabaseServerCommand::NAME);
-            }, 'Do you want to try creating a database server again?', $output);
+            $this->retryApi(function () {
+                $this->invoke(CreateDatabaseServerCommand::NAME);
+            }, 'Do you want to try creating a database server again?');
 
             return $this->apiClient->getDatabaseServers($this->cliConfiguration->getActiveTeamId())->last();
         }
@@ -229,7 +227,7 @@ class InitializeProjectCommand extends AbstractCommand
     /**
      * Determine the type of project being initialized.
      */
-    private function determineProjectType(Output $output): string
+    private function determineProjectType(): string
     {
         $type = '';
 
@@ -242,7 +240,7 @@ class InitializeProjectCommand extends AbstractCommand
         }
 
         if (empty($type)) {
-            $type = $output->choice('Please select the type of project to initialize', ['Bedrock', 'WordPress'], 'WordPress');
+            $type = $this->output->choice('Please select the type of project to initialize', ['Bedrock', 'WordPress'], 'WordPress');
         }
 
         return strtolower($type);

@@ -16,8 +16,6 @@ namespace Ymir\Cli\Command\Environment;
 use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Input\InputArgument;
 use Ymir\Cli\Command\AbstractProjectCommand;
-use Ymir\Cli\Console\Input;
-use Ymir\Cli\Console\Output;
 use Ymir\Cli\Exception\InvalidInputException;
 
 class DeleteEnvironmentSecretCommand extends AbstractProjectCommand
@@ -44,31 +42,31 @@ class DeleteEnvironmentSecretCommand extends AbstractProjectCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(Input $input, Output $output)
+    protected function perform()
     {
-        $environment = $input->getStringArgument('environment');
+        $environment = $this->input->getStringArgument('environment');
         $secrets = $this->apiClient->getSecrets($this->projectConfiguration->getProjectId(), $environment);
 
         if ($secrets->isEmpty()) {
             throw new RuntimeException(sprintf('The "%s" environment has no secrets', $environment));
         }
 
-        $secretIdOrName = $input->getStringArgument('secret');
+        $secretIdOrName = $this->input->getStringArgument('secret');
 
         if (empty($secretIdOrName)) {
-            $secretIdOrName = (string) $output->choice('Which secret would you like to delete', $secrets->pluck('name'));
+            $secretIdOrName = (string) $this->output->choice('Which secret would you like to delete', $secrets->pluck('name'));
         }
 
         $secret = is_numeric($secretIdOrName) ? $secrets->firstWhere('id', $secretIdOrName) : $secrets->firstWhere('name', $secretIdOrName);
 
         if (!is_array($secret) || empty($secret['id'])) {
             throw new InvalidInputException(sprintf('Unable to find a secret with "%s" as the ID or name', $secretIdOrName));
-        } elseif (!$output->confirm('Are you sure you want to delete this secret?', false)) {
+        } elseif (!$this->output->confirm('Are you sure you want to delete this secret?', false)) {
             return;
         }
 
         $this->apiClient->deleteSecret($secret['id']);
 
-        $output->info('Secret deleted');
+        $this->output->info('Secret deleted');
     }
 }

@@ -15,8 +15,6 @@ namespace Ymir\Cli\Command\Team;
 
 use Symfony\Component\Console\Exception\RuntimeException;
 use Ymir\Cli\Command\AbstractCommand;
-use Ymir\Cli\Console\Input;
-use Ymir\Cli\Console\Output;
 
 class CurrentTeamCommand extends AbstractCommand
 {
@@ -40,7 +38,7 @@ class CurrentTeamCommand extends AbstractCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(Input $input, Output $output)
+    protected function perform()
     {
         $team = $this->apiClient->getTeam($this->cliConfiguration->getActiveTeamId());
 
@@ -50,8 +48,8 @@ class CurrentTeamCommand extends AbstractCommand
 
         $user = $this->apiClient->getAuthenticatedUser();
 
-        $output->info('Your currently active team is:');
-        $output->horizontalTable(
+        $this->output->info('Your currently active team is:');
+        $this->output->horizontalTable(
             ['Id', 'Name', 'Owner'],
             [$team->only(['id', 'name', 'owner'])->mapWithKeys(function ($value, $key) use ($user) {
                 if ('owner' == $key && $value['id'] === $user['id']) {

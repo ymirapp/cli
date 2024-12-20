@@ -15,8 +15,6 @@ namespace Ymir\Cli\Command\Php;
 
 use Symfony\Component\Console\Input\InputArgument;
 use Ymir\Cli\Command\AbstractInvocationCommand;
-use Ymir\Cli\Console\Input;
-use Ymir\Cli\Console\Output;
 
 class PhpVersionCommand extends AbstractInvocationCommand
 {
@@ -41,16 +39,16 @@ class PhpVersionCommand extends AbstractInvocationCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(Input $input, Output $output)
+    protected function perform()
     {
-        $environment = $input->getStringArgument('environment');
+        $environment = $this->input->getStringArgument('environment');
 
-        $output->info(sprintf('Getting PHP version information from the "<comment>%s</comment>" environment', $environment));
+        $this->output->info(sprintf('Getting PHP version information from the "<comment>%s</comment>" environment', $environment));
 
         $result = $this->invokePhpCommand('--version', $environment);
 
-        $output->newLine();
-        $output->write("{$result['output']}");
+        $this->output->newLine();
+        $this->output->write("{$result['output']}");
 
         return $result['exitCode'];
     }

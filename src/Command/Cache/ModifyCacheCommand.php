@@ -15,8 +15,6 @@ namespace Ymir\Cli\Command\Cache;
 
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
-use Ymir\Cli\Console\Input;
-use Ymir\Cli\Console\Output;
 use Ymir\Cli\Exception\InvalidInputException;
 
 class ModifyCacheCommand extends AbstractCacheCommand
@@ -43,24 +41,24 @@ class ModifyCacheCommand extends AbstractCacheCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(Input $input, Output $output)
+    protected function perform()
     {
-        $cache = $this->determineCache('Which cache cluster would you like to modify', $input, $output);
-        $type = $input->getStringOption('type', true);
+        $cache = $this->determineCache('Which cache cluster would you like to modify');
+        $type = $this->input->getStringOption('type', true);
         $types = $this->apiClient->getCacheTypes($cache['provider']['id']);
 
         if (null === $type) {
-            $type = $output->choice(sprintf('What should the cache cluster type be changed to? <fg=default>(Currently: <comment>%s</comment>)</>', $cache['type']), $types);
+            $type = $this->output->choice(sprintf('What should the cache cluster type be changed to? <fg=default>(Currently: <comment>%s</comment>)</>', $cache['type']), $types);
         } elseif (!$types->has($type)) {
             throw new InvalidInputException(sprintf('The type "%s" isn\'t a valid cache cluster type', $type));
         }
 
-        if (!$output->confirm('Modifying the cache cluster will cause your cache cluster to become unavailable for a few minutes. Do you want to proceed?', false)) {
+        if (!$this->output->confirm('Modifying the cache cluster will cause your cache cluster to become unavailable for a few minutes. Do you want to proceed?', false)) {
             exit;
         }
 
         $this->apiClient->updateCache((int) $cache['id'], $type);
 
-        $output->infoWithDelayWarning('Cache cluster modified');
+        $this->output->infoWithDelayWarning('Cache cluster modified');
     }
 }

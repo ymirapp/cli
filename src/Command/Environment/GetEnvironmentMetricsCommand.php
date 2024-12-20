@@ -17,8 +17,6 @@ use Symfony\Component\Console\Helper\TableSeparator;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
 use Ymir\Cli\Command\AbstractProjectCommand;
-use Ymir\Cli\Console\Input;
-use Ymir\Cli\Console\Output;
 use Ymir\Cli\Exception\InvalidInputException;
 
 class GetEnvironmentMetricsCommand extends AbstractProjectCommand
@@ -45,19 +43,19 @@ class GetEnvironmentMetricsCommand extends AbstractProjectCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(Input $input, Output $output)
+    protected function perform()
     {
-        $period = strtolower((string) $input->getStringOption('period'));
+        $period = strtolower((string) $this->input->getStringOption('period'));
 
         if (!in_array($period, ['1m', '5m', '30m', '1h', '8h', '1d', '3d', '7d', '1mo'])) {
             throw new InvalidInputException('The given "period" is invalid. You may use: 1m, 5m, 30m, 1h, 8h, 1d, 3d, 7d, 1mo');
         }
 
-        $environment = $input->getStringArgument('environment');
+        $environment = $this->input->getStringArgument('environment');
         $metrics = $this->apiClient->getEnvironmentMetrics($this->projectConfiguration->getProjectId(), $environment, $period);
 
-        $output->newLine();
-        $output->writeln(sprintf('  <info>Environment:</info> <comment>%s</comment>', $environment));
+        $this->output->newLine();
+        $this->output->writeln(sprintf('  <info>Environment:</info> <comment>%s</comment>', $environment));
 
         $headers = [''];
         $row1 = [''];
@@ -99,8 +97,8 @@ class GetEnvironmentMetricsCommand extends AbstractProjectCommand
         $row2 = array_merge($row2, [new TableSeparator(), '']);
         $row3 = array_merge($row3, [new TableSeparator(), '$'.number_format($total, 2)]);
 
-        $output->horizontalTable($headers, [$row1, $row2, $row3]);
+        $this->output->horizontalTable($headers, [$row1, $row2, $row3]);
 
-        $output->note('This is a partial cost estimate.');
+        $this->output->note('This is a partial cost estimate.');
     }
 }

@@ -50,6 +50,20 @@ abstract class AbstractCommand extends Command
     protected $cliConfiguration;
 
     /**
+     * The console input.
+     *
+     * @var Input
+     */
+    protected $input;
+
+    /**
+     * The console output.
+     *
+     * @var Output
+     */
+    protected $output;
+
+    /**
      * The Ymir project configuration.
      *
      * @var ProjectConfiguration
@@ -81,11 +95,22 @@ abstract class AbstractCommand extends Command
     }
 
     /**
+     * {@inheritdoc}
+     */
+    public function run(InputInterface $input, OutputInterface $output): int
+    {
+        $this->input = new Input($input);
+        $this->output = new Output($input, $output);
+
+        return parent::run($input, $output);
+    }
+
+    /**
      * Determine the cloud provider to use.
      */
-    protected function determineCloudProvider(string $question, Input $input, Output $output): int
+    protected function determineCloudProvider(string $question): int
     {
-        $providerId = $input->getStringOption('provider', true);
+        $providerId = $this->input->getStringOption('provider', true);
         $providers = $this->apiClient->getProviders($this->cliConfiguration->getActiveTeamId());
 
         if (is_numeric($providerId) && $providers->contains('id', $providerId)) {
@@ -102,26 +127,26 @@ abstract class AbstractCommand extends Command
             throw new RuntimeException(sprintf('There are no cloud providers connected to currently active team. You can connect to one using the "%s" command.', ConnectProviderCommand::NAME));
         }
 
-        return 1 === count($providers) ? $providers[0]['id'] : $output->choiceWithId($question, $providers);
+        return 1 === count($providers) ? $providers[0]['id'] : $this->output->choiceWithId($question, $providers);
     }
 
     /**
      * Determine the network to use.
      */
-    protected function determineNetwork(string $question, Input $input, Output $output): int
+    protected function determineNetwork(string $question): int
     {
         $networkIdOrName = null;
 
-        if ($input->hasArgument('network')) {
-            $networkIdOrName = $input->getStringArgument('network');
-        } elseif ($input->hasOption('network')) {
-            $networkIdOrName = $input->getStringOption('network', true);
+        if ($this->input->hasArgument('network')) {
+            $networkIdOrName = $this->input->getStringArgument('network');
+        } elseif ($this->input->hasOption('network')) {
+            $networkIdOrName = $this->input->getStringOption('network', true);
         }
 
         $networks = $this->apiClient->getNetworks($this->cliConfiguration->getActiveTeamId());
 
         if (empty($networkIdOrName)) {
-            $networkIdOrName = $output->choiceWithResourceDetails($question, $networks);
+            $networkIdOrName = $this->output->choiceWithResourceDetails($question, $networks);
         } elseif (1 < $networks->where('name', $networkIdOrName)->count()) {
             throw new RuntimeException(sprintf('Unable to select a network because more than one network has the name "%s"', $networkIdOrName));
         }
@@ -138,29 +163,29 @@ abstract class AbstractCommand extends Command
     /**
      * Determine the network to use or create one otherwise.
      */
-    protected function determineOrCreateNetwork(string $question, Input $input, Output $output): int
+    protected function determineOrCreateNetwork(string $question): int
     {
         $networks = $this->apiClient->getNetworks($this->cliConfiguration->getActiveTeamId())->whereNotIn('status', ['deleting', 'failed']);
 
-        if ($networks->isEmpty() && !$output->confirm('Your team doesn\'t have any provisioned networks. Would you like to create one first? <fg=default>(Answering "<comment>no</comment>" will cancel the command.)</>')) {
+        if ($networks->isEmpty() && !$this->output->confirm('Your team doesn\'t have any provisioned networks. Would you like to create one first? <fg=default>(Answering "<comment>no</comment>" will cancel the command.)</>')) {
             throw new CommandCancelledException();
         }
 
         if ($networks->isEmpty()) {
-            $this->retryApi(function () use ($output) {
-                $this->invoke($output, CreateNetworkCommand::NAME);
-            }, 'Do you want to try creating a network again?', $output);
+            $this->retryApi(function () {
+                $this->invoke(CreateNetworkCommand::NAME);
+            }, 'Do you want to try creating a network again?');
 
             return (int) Arr::get($this->apiClient->getNetworks($this->cliConfiguration->getActiveTeamId())->last(), 'id');
         }
 
-        return $this->determineNetwork($question, $input, $output);
+        return $this->determineNetwork($question);
     }
 
     /**
      * Determine the project to use.
      */
-    protected function determineProject(string $question, Input $input, Output $output): int
+    protected function determineProject(string $question): int
     {
         $projects = $this->apiClient->getProjects($this->cliConfiguration->getActiveTeamId());
 
@@ -168,12 +193,12 @@ abstract class AbstractCommand extends Command
             throw new RuntimeException('There are no projects on the currently active team.');
         }
 
-        $projectIdOrName = $input->getStringArgument('project');
+        $projectIdOrName = $this->input->getStringArgument('project');
 
         if (empty($projectIdOrName) && $this->projectConfiguration->exists()) {
             $projectIdOrName = $this->projectConfiguration->getProjectId();
         } elseif (empty($projectIdOrName)) {
-            $projectIdOrName = $output->choiceWithId($question, $projects);
+            $projectIdOrName = $this->output->choiceWithId($question, $projects);
         }
 
         if (1 < $projects->where('name', $projectIdOrName)->count()) {
@@ -192,9 +217,9 @@ abstract class AbstractCommand extends Command
     /**
      * Determine the cloud provider region to use.
      */
-    protected function determineRegion(string $question, int $providerId, Input $input, Output $output): string
+    protected function determineRegion(string $question, int $providerId): string
     {
-        $region = $input->getStringOption('region', true);
+        $region = $this->input->getStringOption('region', true);
         $regions = $this->apiClient->getRegions($providerId);
 
         if ($regions->isEmpty()) {
@@ -205,7 +230,7 @@ abstract class AbstractCommand extends Command
             throw new InvalidInputException('The given "region" isn\'t a valid cloud provider region');
         }
 
-        return $this->projectConfiguration->exists() ? $this->apiClient->getProject($this->projectConfiguration->getProjectId())->get('region') : (string) $output->choice($question, $regions);
+        return $this->projectConfiguration->exists() ? $this->apiClient->getProject($this->projectConfiguration->getProjectId())->get('region') : (string) $this->output->choice($question, $regions);
     }
 
     /**
@@ -219,13 +244,13 @@ abstract class AbstractCommand extends Command
             throw new RuntimeException(sprintf('Please authenticate using the "%s" command before using this command', LoginCommand::NAME));
         }
 
-        return $this->perform(new Input($input), new Output($input, $output)) ?? Command::SUCCESS;
+        return $this->perform() ?? Command::SUCCESS;
     }
 
     /**
      * Invoke another console command.
      */
-    protected function invoke(OutputInterface $output, string $command, array $arguments = []): int
+    protected function invoke(string $command, array $arguments = [], ?OutputInterface $output = null): int
     {
         $application = $this->getApplication();
 
@@ -233,7 +258,7 @@ abstract class AbstractCommand extends Command
             throw new RuntimeException('No Application instance found');
         }
 
-        return $application->find($command)->run(new ArrayInput($arguments), $output);
+        return $application->find($command)->run(new ArrayInput($arguments), $output ?? $this->output);
     }
 
     /**
@@ -247,16 +272,16 @@ abstract class AbstractCommand extends Command
     /**
      * Retry an API operation.
      */
-    protected function retryApi(callable $callable, string $message, Output $output)
+    protected function retryApi(callable $callable, string $message)
     {
         while (true) {
             try {
                 return $callable();
             } catch (ClientException $exception) {
-                $output->newLine();
-                $output->exception($exception);
+                $this->output->newLine();
+                $this->output->exception($exception);
 
-                if (!$output->confirm($message)) {
+                if (!$this->output->confirm($message)) {
                     throw new CommandCancelledException();
                 }
             }
@@ -283,5 +308,5 @@ abstract class AbstractCommand extends Command
     /**
      * Perform the command.
      */
-    abstract protected function perform(Input $input, Output $output);
+    abstract protected function perform();
 }

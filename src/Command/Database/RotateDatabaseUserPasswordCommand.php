@@ -18,8 +18,6 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
 use Ymir\Cli\Command\Project\DeployProjectCommand;
 use Ymir\Cli\Command\Project\RedeployProjectCommand;
-use Ymir\Cli\Console\Input;
-use Ymir\Cli\Console\Output;
 use Ymir\Cli\Exception\InvalidInputException;
 
 class RotateDatabaseUserPasswordCommand extends AbstractDatabaseCommand
@@ -46,16 +44,16 @@ class RotateDatabaseUserPasswordCommand extends AbstractDatabaseCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(Input $input, Output $output)
+    protected function perform()
     {
-        $databaseServer = $this->determineDatabaseServer('On which database server would you like to rotate the password of a database user?', $input, $output);
-        $username = $input->getStringArgument('username');
+        $databaseServer = $this->determineDatabaseServer('On which database server would you like to rotate the password of a database user?');
+        $username = $this->input->getStringArgument('username');
         $users = $this->apiClient->getDatabaseUsers($databaseServer['id']);
 
         if ($users->isEmpty()) {
             throw new RuntimeException('The database server doesn\'t have any managed database users');
         } elseif (empty($username)) {
-            $username = (string) $output->choice('Which database user would you like to rotate the password of', $users->pluck('username'));
+            $username = (string) $this->output->choice('Which database user would you like to rotate the password of', $users->pluck('username'));
         }
 
         $databaseUser = $users->firstWhere('username', $username);
@@ -64,28 +62,28 @@ class RotateDatabaseUserPasswordCommand extends AbstractDatabaseCommand
             throw new InvalidInputException(sprintf('No database user found with the "%s" username', $username));
         }
 
-        $output->warning(sprintf('All projects that use the "<comment>%s</comment>" database server with the "<comment>%s</comment>" user will be unable to connect to the database server until they\'re redeployed.', $databaseServer['name'], $databaseUser['username']));
+        $this->output->warning(sprintf('All projects that use the "<comment>%s</comment>" database server with the "<comment>%s</comment>" user will be unable to connect to the database server until they\'re redeployed.', $databaseServer['name'], $databaseUser['username']));
 
-        if (!$output->confirm('Do you want to proceed?', false)) {
+        if (!$this->output->confirm('Do you want to proceed?', false)) {
             return;
         }
 
         $newCredentials = $this->apiClient->rotateDatabaseUserPassword($databaseServer['id'], $databaseUser['id']);
 
-        $output->horizontalTable(
+        $this->output->horizontalTable(
             ['Username', 'Password'],
             [[$newCredentials['username'], $newCredentials['password']]]
         );
 
-        $output->info('Database user password rotated successfully');
+        $this->output->info('Database user password rotated successfully');
 
         if (!$databaseServer['publicly_accessible']) {
-            $output->newLine();
-            $output->important(sprintf('The password of the "<comment>%s</comment>" database user needs to be manually changed on the "<comment>%s</comment>" database server because it isn\'t publicly accessible. You can use the following query to change it:', $newCredentials['username'], $databaseServer['name']));
-            $output->writeln(sprintf('ALTER USER %s@\'%%\' IDENTIFIED BY %s', $newCredentials['username'], $newCredentials['password']));
+            $this->output->newLine();
+            $this->output->important(sprintf('The password of the "<comment>%s</comment>" database user needs to be manually changed on the "<comment>%s</comment>" database server because it isn\'t publicly accessible. You can use the following query to change it:', $newCredentials['username'], $databaseServer['name']));
+            $this->output->writeln(sprintf('ALTER USER %s@\'%%\' IDENTIFIED BY %s', $newCredentials['username'], $newCredentials['password']));
         }
 
-        $output->newLine();
-        $output->important(sprintf('You need to redeploy all projects using this database user using either the "<comment>%s</comment>" or "<comment>%s</comment>" commands for the change to take effect.', DeployProjectCommand::ALIAS, RedeployProjectCommand::ALIAS));
+        $this->output->newLine();
+        $this->output->important(sprintf('You need to redeploy all projects using this database user using either the "<comment>%s</comment>" or "<comment>%s</comment>" commands for the change to take effect.', DeployProjectCommand::ALIAS, RedeployProjectCommand::ALIAS));
     }
 }

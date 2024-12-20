@@ -15,8 +15,6 @@ namespace Ymir\Cli\Command\Environment;
 
 use Symfony\Component\Console\Input\InputArgument;
 use Ymir\Cli\Command\AbstractProjectCommand;
-use Ymir\Cli\Console\Input;
-use Ymir\Cli\Console\Output;
 use Ymir\Cli\Exception\InvalidInputException;
 
 class GetEnvironmentInfoCommand extends AbstractProjectCommand
@@ -42,28 +40,28 @@ class GetEnvironmentInfoCommand extends AbstractProjectCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(Input $input, Output $output)
+    protected function perform()
     {
-        $environments = $input->getArgument('environment');
+        $environments = $this->input->getArgument('environment');
 
         if (!is_array($environments)) {
             $environments = (array) $environments;
         }
 
         if (empty($environments)) {
-            $output->info('Listing information on all environments found in <comment>ymir.yml</comment> file');
+            $this->output->info('Listing information on all environments found in <comment>ymir.yml</comment> file');
             $environments = $this->projectConfiguration->getEnvironments()->keys()->all();
         }
 
         foreach ($environments as $environment) {
-            $this->displayEnvironmentTable($output, $environment);
+            $this->displayEnvironmentTable($environment);
         }
     }
 
     /**
      * Display the table with the environment information.
      */
-    private function displayEnvironmentTable(Output $output, string $environment)
+    private function displayEnvironmentTable(string $environment)
     {
         $database = $this->getEnvironmentDatabase($environment);
         $environment = $this->apiClient->getEnvironment($this->projectConfiguration->getProjectId(), $environment);
@@ -96,7 +94,7 @@ class GetEnvironmentInfoCommand extends AbstractProjectCommand
             $row[] = $database;
         }
 
-        $output->horizontalTable($headers, [$row]);
+        $this->output->horizontalTable($headers, [$row]);
     }
 
     /**

@@ -18,8 +18,6 @@ use Symfony\Component\Console\Input\InputOption;
 use Ymir\Cli\ApiClient;
 use Ymir\Cli\CliConfiguration;
 use Ymir\Cli\Command\AbstractProjectCommand;
-use Ymir\Cli\Console\Input;
-use Ymir\Cli\Console\Output;
 use Ymir\Cli\Dockerfile;
 use Ymir\Cli\ProjectConfiguration\ImageDeploymentConfigurationChange;
 use Ymir\Cli\ProjectConfiguration\ProjectConfiguration;
@@ -65,22 +63,22 @@ class CreateDockerfileCommand extends AbstractProjectCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(Input $input, Output $output)
+    protected function perform()
     {
-        $environment = $input->getStringArgument('environment', false);
+        $environment = $this->input->getStringArgument('environment', false);
         $message = 'Dockerfile created';
 
         if (!empty($environment)) {
             $message .= sprintf(' for "<comment>%s</comment>" environment', $environment);
         }
 
-        if (!$this->dockerfile->exists($environment) || $output->confirm('Dockerfile already exists. Do you want to overwrite it?', false)) {
+        if (!$this->dockerfile->exists($environment) || $this->output->confirm('Dockerfile already exists. Do you want to overwrite it?', false)) {
             $this->dockerfile->create($environment);
 
-            $output->info($message);
+            $this->output->info($message);
         }
 
-        if (!$input->getBooleanOption('configure-project') && !$output->confirm('Would you also like to configure your project for container image deployment?')) {
+        if (!$this->input->getBooleanOption('configure-project') && !$this->output->confirm('Would you also like to configure your project for container image deployment?')) {
             return;
         }
 

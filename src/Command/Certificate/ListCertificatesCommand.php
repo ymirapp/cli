@@ -13,9 +13,6 @@ declare(strict_types=1);
 
 namespace Ymir\Cli\Command\Certificate;
 
-use Ymir\Cli\Console\Input;
-use Ymir\Cli\Console\Output;
-
 class ListCertificatesCommand extends AbstractCertificateCommand
 {
     /**
@@ -38,14 +35,14 @@ class ListCertificatesCommand extends AbstractCertificateCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(Input $input, Output $output)
+    protected function perform()
     {
         $certificates = $this->apiClient->getCertificates($this->cliConfiguration->getActiveTeamId());
 
-        $output->table(
+        $this->output->table(
             ['Id', 'Provider', 'Region', 'Domains', 'Status', 'In Use'],
-            $certificates->map(function (array $certificate) use ($output) {
-                return [$certificate['id'], $certificate['provider']['name'], $certificate['region'], $this->getDomainsList($certificate), $certificate['status'], $output->formatBoolean($certificate['in_use'])];
+            $certificates->map(function (array $certificate) {
+                return [$certificate['id'], $certificate['provider']['name'], $certificate['region'], $this->getDomainsList($certificate), $certificate['status'], $this->output->formatBoolean($certificate['in_use'])];
             })->all()
         );
     }

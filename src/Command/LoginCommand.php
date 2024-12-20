@@ -13,8 +13,6 @@ declare(strict_types=1);
 
 namespace Ymir\Cli\Command;
 
-use Ymir\Cli\Console\Input;
-use Ymir\Cli\Console\Output;
 use Ymir\Sdk\Exception\ClientException;
 
 class LoginCommand extends AbstractCommand
@@ -39,16 +37,16 @@ class LoginCommand extends AbstractCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(Input $input, Output $output)
+    protected function perform()
     {
         if ($this->apiClient->isAuthenticated()
-            && !$output->confirm('You are already logged in. Do you want to log in again?', false)
+            && !$this->output->confirm('You are already logged in. Do you want to log in again?', false)
         ) {
             return;
         }
 
-        $email = $output->ask('Email');
-        $password = $output->askHidden('Password');
+        $email = $this->output->ask('Email');
+        $password = $this->output->askHidden('Password');
 
         try {
             $accessToken = $this->apiClient->getAccessToken($email, $password);
@@ -57,7 +55,7 @@ class LoginCommand extends AbstractCommand
                 throw $exception;
             }
 
-            $accessToken = $this->apiClient->getAccessToken($email, $password, $output->askHidden('Authentication code'));
+            $accessToken = $this->apiClient->getAccessToken($email, $password, $this->output->askHidden('Authentication code'));
         }
 
         $this->apiClient->setAccessToken($accessToken);
@@ -69,6 +67,6 @@ class LoginCommand extends AbstractCommand
             $this->cliConfiguration->setActiveTeamId($team['id']);
         }
 
-        $output->info('Logged in successfully');
+        $this->output->info('Logged in successfully');
     }
 }

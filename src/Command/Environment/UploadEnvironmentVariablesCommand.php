@@ -19,8 +19,6 @@ use Symfony\Component\Filesystem\Filesystem;
 use Ymir\Cli\ApiClient;
 use Ymir\Cli\CliConfiguration;
 use Ymir\Cli\Command\AbstractProjectCommand;
-use Ymir\Cli\Console\Input;
-use Ymir\Cli\Console\Output;
 use Ymir\Cli\ProjectConfiguration\ProjectConfiguration;
 
 class UploadEnvironmentVariablesCommand extends AbstractProjectCommand
@@ -71,15 +69,15 @@ class UploadEnvironmentVariablesCommand extends AbstractProjectCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(Input $input, Output $output)
+    protected function perform()
     {
-        $environment = $input->getStringArgument('environment');
+        $environment = $this->input->getStringArgument('environment');
         $fileName = sprintf('.env.%s', $environment);
         $filePath = $this->projectDirectory.'/'.$fileName;
 
         if (!$this->filesystem->exists($filePath)) {
             throw new RuntimeException(sprintf('No environment file found for the "%s" environment. Please download it using the "%s" command.', $environment, DownloadEnvironmentVariablesCommand::NAME));
-        } elseif (!$output->confirm('Uploading the environment file will overwrite all environment variables. Are you sure you want to proceed?', false)) {
+        } elseif (!$this->output->confirm('Uploading the environment file will overwrite all environment variables. Are you sure you want to proceed?', false)) {
             return;
         }
 
@@ -90,9 +88,9 @@ class UploadEnvironmentVariablesCommand extends AbstractProjectCommand
             return isset($matches[1], $matches[2]) ? [$matches[1] => $matches[2]] : [];
         })->all(), true);
 
-        $output->infoWithRedeployWarning('Environment variables uploaded', $environment);
+        $this->output->infoWithRedeployWarning('Environment variables uploaded', $environment);
 
-        if ($output->confirm(sprintf('Do you want to delete the "<comment>%s</comment>" environment file?', $fileName))) {
+        if ($this->output->confirm(sprintf('Do you want to delete the "<comment>%s</comment>" environment file?', $fileName))) {
             $this->filesystem->remove($filePath);
         }
     }

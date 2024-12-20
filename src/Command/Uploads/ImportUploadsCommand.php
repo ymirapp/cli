@@ -31,8 +31,6 @@ use Symfony\Component\Console\Input\InputOption;
 use Ymir\Cli\ApiClient;
 use Ymir\Cli\CliConfiguration;
 use Ymir\Cli\Command\AbstractProjectCommand;
-use Ymir\Cli\Console\Input;
-use Ymir\Cli\Console\Output;
 use Ymir\Cli\Exception\InvalidInputException;
 use Ymir\Cli\FileUploader;
 use Ymir\Cli\ProjectConfiguration\ProjectConfiguration;
@@ -80,9 +78,9 @@ class ImportUploadsCommand extends AbstractProjectCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(Input $input, Output $output)
+    protected function perform()
     {
-        $path = $input->getStringArgument('path');
+        $path = $this->input->getStringArgument('path');
         $projectType = $this->projectConfiguration->getProjectType();
 
         if (empty($path) && 'bedrock' === $projectType) {
@@ -92,21 +90,21 @@ class ImportUploadsCommand extends AbstractProjectCommand
         }
 
         $adapter = $this->getAdapter($path);
-        $environment = (string) $input->getStringOption('environment');
+        $environment = (string) $this->input->getStringOption('environment');
         $filesystem = new Filesystem($adapter);
-        $size = $input->getNumericOption('size');
+        $size = $this->input->getNumericOption('size');
 
         if ($size < 1) {
             throw new InvalidInputException('Cannot have a "size" smaller than 1');
         }
 
-        if (!$input->getBooleanOption('force') && !$output->confirm('Importing files will overwrite any existing file in the environment "uploads" directory. Do you want to proceed?')) {
+        if (!$this->input->getBooleanOption('force') && !$this->output->confirm('Importing files will overwrite any existing file in the environment "uploads" directory. Do you want to proceed?')) {
             return;
         }
 
-        $output->info(sprintf('Starting file import to the "<comment>%s</comment>" environment "uploads" directory', $environment));
+        $this->output->info(sprintf('Starting file import to the "<comment>%s</comment>" environment "uploads" directory', $environment));
 
-        $progressBar = new ProgressBar($output);
+        $progressBar = new ProgressBar($this->output);
         $progressBar->setFormat("Importing file (<comment>%filename%</comment>)\nTotal files imported: <comment>%total%</comment>\n");
         $progressBar->setMessage('0', 'total');
 
@@ -114,7 +112,7 @@ class ImportUploadsCommand extends AbstractProjectCommand
         $total = 0;
 
         if (!$adapter instanceof LocalFilesystemAdapter) {
-            $output->infoWithWarning('Scanning remote "uploads" directory', 'takes a few seconds');
+            $this->output->infoWithWarning('Scanning remote "uploads" directory', 'takes a few seconds');
         }
 
         $requests = LazyCollection::make(function () use ($filesystem) {
@@ -147,11 +145,11 @@ class ImportUploadsCommand extends AbstractProjectCommand
 
         $this->uploader->batch('PUT', $requests);
 
-        $output->info(sprintf('Files imported successfully to the "<comment>%s</comment>" environment "uploads" directory', $environment));
+        $this->output->info(sprintf('Files imported successfully to the "<comment>%s</comment>" environment "uploads" directory', $environment));
 
         if (!empty($corruptedFilePaths)) {
-            $output->warning('The following files were not imported because their paths are corrupted:');
-            $output->list($corruptedFilePaths);
+            $this->output->warning('The following files were not imported because their paths are corrupted:');
+            $this->output->list($corruptedFilePaths);
         }
     }
 

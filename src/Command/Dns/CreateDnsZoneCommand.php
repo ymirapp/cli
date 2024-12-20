@@ -16,8 +16,6 @@ namespace Ymir\Cli\Command\Dns;
 use Symfony\Component\Console\Helper\TableSeparator;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
-use Ymir\Cli\Console\Input;
-use Ymir\Cli\Console\Output;
 
 class CreateDnsZoneCommand extends AbstractDnsCommand
 {
@@ -43,17 +41,17 @@ class CreateDnsZoneCommand extends AbstractDnsCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(Input $input, Output $output)
+    protected function perform()
     {
-        $name = $input->getStringArgument('name');
+        $name = $this->input->getStringArgument('name');
 
         if (empty($name)) {
-            $name = $output->ask('What is the name of the domain that the DNS zone will manage');
+            $name = $this->output->ask('What is the name of the domain that the DNS zone will manage');
         }
 
-        $providerId = $this->determineCloudProvider('Enter the ID of the cloud provider where the DNS zone will be created', $input, $output);
+        $providerId = $this->determineCloudProvider('Enter the ID of the cloud provider where the DNS zone will be created');
 
-        if (!$output->confirm('A DNS zone will cost $0.50/month if it isn\'t deleted in the next 12 hours. Would you like to proceed?', true)) {
+        if (!$this->output->confirm('A DNS zone will cost $0.50/month if it isn\'t deleted in the next 12 hours. Would you like to proceed?', true)) {
             return;
         }
 
@@ -64,20 +62,20 @@ class CreateDnsZoneCommand extends AbstractDnsCommand
         });
 
         if (!empty($nameServers)) {
-            $output->horizontalTable(
+            $this->output->horizontalTable(
                 ['Domain Name', new TableSeparator(), 'Name Servers'],
                 [[$zone['domain_name'], new TableSeparator(), implode(PHP_EOL, $nameServers)]]
             );
         }
 
-        $output->info('DNS zone created');
+        $this->output->info('DNS zone created');
 
-        if ($output->confirm('Do you want to import the root DNS records for this domain', false)) {
+        if ($this->output->confirm('Do you want to import the root DNS records for this domain', false)) {
             $this->apiClient->importDnsRecords($zone['id']);
         }
 
-        if ($output->confirm('Do you want to import DNS records for subdomains of this domain', false)) {
-            $this->invoke($output, ImportDnsRecordsCommand::NAME, [
+        if ($this->output->confirm('Do you want to import DNS records for subdomains of this domain', false)) {
+            $this->invoke(ImportDnsRecordsCommand::NAME, [
                 'zone' => $zone['domain_name'],
             ]);
         }

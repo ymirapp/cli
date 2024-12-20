@@ -15,8 +15,6 @@ namespace Ymir\Cli\Command\Network;
 
 use Symfony\Component\Console\Input\InputArgument;
 use Ymir\Cli\Command\AbstractCommand;
-use Ymir\Cli\Console\Input;
-use Ymir\Cli\Console\Output;
 
 class RemoveBastionHostCommand extends AbstractCommand
 {
@@ -41,10 +39,10 @@ class RemoveBastionHostCommand extends AbstractCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(Input $input, Output $output)
+    protected function perform()
     {
-        $this->apiClient->removeBastionHost($this->determineNetwork('Which network would like to remove the bastion host from', $input, $output));
+        $this->apiClient->removeBastionHost($this->determineNetwork('Which network would like to remove the bastion host from'));
 
-        $output->infoWithDelayWarning('Bastion host removed');
+        $this->output->infoWithDelayWarning('Bastion host removed');
     }
 }

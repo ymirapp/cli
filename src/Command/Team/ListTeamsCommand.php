@@ -14,8 +14,6 @@ declare(strict_types=1);
 namespace Ymir\Cli\Command\Team;
 
 use Ymir\Cli\Command\AbstractCommand;
-use Ymir\Cli\Console\Input;
-use Ymir\Cli\Console\Output;
 
 class ListTeamsCommand extends AbstractCommand
 {
@@ -39,13 +37,13 @@ class ListTeamsCommand extends AbstractCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(Input $input, Output $output)
+    protected function perform()
     {
-        $output->info('You are on the following teams:');
+        $this->output->info('You are on the following teams:');
 
         $user = $this->apiClient->getAuthenticatedUser();
 
-        $output->table(
+        $this->output->table(
             ['Id', 'Name', 'Owner'],
             $this->apiClient->getTeams()->map(function (array $team) use ($user) {
                 return [

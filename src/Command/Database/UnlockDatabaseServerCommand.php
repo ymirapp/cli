@@ -14,8 +14,6 @@ declare(strict_types=1);
 namespace Ymir\Cli\Command\Database;
 
 use Symfony\Component\Console\Input\InputArgument;
-use Ymir\Cli\Console\Input;
-use Ymir\Cli\Console\Output;
 
 class UnlockDatabaseServerCommand extends AbstractDatabaseServerCommand
 {
@@ -40,12 +38,12 @@ class UnlockDatabaseServerCommand extends AbstractDatabaseServerCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(Input $input, Output $output)
+    protected function perform()
     {
-        $databaseServer = $this->determineDatabaseServer('Which database server would you like to unlock?', $input, $output);
+        $databaseServer = $this->determineDatabaseServer('Which database server would you like to unlock?');
 
         $this->apiClient->changeDatabaseServerLock($databaseServer['id'], false);
 
-        $output->info('Database server unlocked');
+        $this->output->info('Database server unlocked');
     }
 }

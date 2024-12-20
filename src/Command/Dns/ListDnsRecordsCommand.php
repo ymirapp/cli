@@ -14,8 +14,6 @@ declare(strict_types=1);
 namespace Ymir\Cli\Command\Dns;
 
 use Symfony\Component\Console\Input\InputArgument;
-use Ymir\Cli\Console\Input;
-use Ymir\Cli\Console\Output;
 
 class ListDnsRecordsCommand extends AbstractDnsCommand
 {
@@ -40,14 +38,14 @@ class ListDnsRecordsCommand extends AbstractDnsCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(Input $input, Output $output)
+    protected function perform()
     {
-        $zone = $this->determineDnsZone('Which DNS zone would you like to list DNS records from', $input, $output);
+        $zone = $this->determineDnsZone('Which DNS zone would you like to list DNS records from');
 
-        $output->table(
+        $this->output->table(
             ['Id', 'Domain Name', 'Type', 'Value', 'Internal'],
-            $this->apiClient->getDnsRecords($zone['id'])->map(function (array $record) use ($output) {
-                return [$record['id'], $record['name'], $record['type'], str_replace(',', "\n", $record['value']), $output->formatBoolean($record['internal'])];
+            $this->apiClient->getDnsRecords($zone['id'])->map(function (array $record) {
+                return [$record['id'], $record['name'], $record['type'], str_replace(',', "\n", $record['value']), $this->output->formatBoolean($record['internal'])];
             })->all()
         );
     }

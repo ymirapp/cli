@@ -16,8 +16,6 @@ namespace Ymir\Cli\Command\Database;
 use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
-use Ymir\Cli\Console\Input;
-use Ymir\Cli\Console\Output;
 use Ymir\Cli\Exception\InvalidInputException;
 
 class ModifyDatabaseServerCommand extends AbstractDatabaseServerCommand
@@ -45,33 +43,33 @@ class ModifyDatabaseServerCommand extends AbstractDatabaseServerCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(Input $input, Output $output)
+    protected function perform()
     {
-        $databaseServer = $this->determineDatabaseServer('Which database server would you like to modify?', $input, $output);
+        $databaseServer = $this->determineDatabaseServer('Which database server would you like to modify?');
 
         if (self::AURORA_DATABASE_TYPE === $databaseServer['type']) {
             throw new RuntimeException('You cannot modify an Aurora database server');
         }
 
-        $this->apiClient->updateDatabaseServer((int) $databaseServer['id'], $this->determineStorage($input, $output, (int) $databaseServer['storage']), $this->determineType($input, $output, $databaseServer['network']['provider']['id'], $databaseServer['type']));
+        $this->apiClient->updateDatabaseServer((int) $databaseServer['id'], $this->determineStorage((int) $databaseServer['storage']), $this->determineType($databaseServer['network']['provider']['id'], $databaseServer['type']));
 
-        $output->infoWithDelayWarning('Database server modified');
+        $this->output->infoWithDelayWarning('Database server modified');
     }
 
     /**
      * Determine the new maximum amount of storage allocated to the database.
      */
-    private function determineStorage(Input $input, Output $output, int $storage): int
+    private function determineStorage(int $storage): int
     {
-        $storageOption = $input->getNumericOption('storage');
+        $storageOption = $this->input->getNumericOption('storage');
 
         if (null !== $storageOption) {
             return $storageOption;
-        } elseif (!$input->isInteractive()) {
+        } elseif (!$this->input->isInteractive()) {
             return $storage;
         }
 
-        $storage = $output->ask(sprintf('What should the new maximum amount of storage (in GB) allocated to the database server be? <fg=default>(Currently: <comment>%sGB</comment>)</>', $storage), (string) $storage);
+        $storage = $this->output->ask(sprintf('What should the new maximum amount of storage (in GB) allocated to the database server be? <fg=default>(Currently: <comment>%sGB</comment>)</>', $storage), (string) $storage);
 
         if (!is_numeric($storage)) {
             throw new InvalidInputException('The maximum allocated storage needs to be a numeric value');
@@ -83,11 +81,11 @@ class ModifyDatabaseServerCommand extends AbstractDatabaseServerCommand
     /**
      * Determine the new database server type.
      */
-    private function determineType(Input $input, Output $output, int $providerId, string $type): string
+    private function determineType(int $providerId, string $type): string
     {
-        $typeOption = $input->getStringOption('type');
+        $typeOption = $this->input->getStringOption('type');
 
-        if (null === $typeOption && !$input->isInteractive()) {
+        if (null === $typeOption && !$this->input->isInteractive()) {
             return $type;
         }
 
@@ -99,9 +97,9 @@ class ModifyDatabaseServerCommand extends AbstractDatabaseServerCommand
             throw new InvalidInputException(sprintf('The type "%s" isn\'t a valid database type', $typeOption));
         }
 
-        $newType = $output->choice(sprintf('What should the database server type be changed to? <fg=default>(Currently: <comment>%s</comment>)</>', $type), $types, $type);
+        $newType = $this->output->choice(sprintf('What should the database server type be changed to? <fg=default>(Currently: <comment>%s</comment>)</>', $type), $types, $type);
 
-        if ($newType !== $type && !$output->confirm('Modifying the database server type will cause your database to become unavailable for a few minutes. Do you want to proceed?', false)) {
+        if ($newType !== $type && !$this->output->confirm('Modifying the database server type will cause your database to become unavailable for a few minutes. Do you want to proceed?', false)) {
             exit;
         }
 

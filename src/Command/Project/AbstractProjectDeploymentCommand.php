@@ -19,8 +19,6 @@ use Ymir\Cli\CliConfiguration;
 use Ymir\Cli\Command\AbstractProjectCommand;
 use Ymir\Cli\Command\Email\CreateEmailIdentityCommand;
 use Ymir\Cli\Command\Environment\GetEnvironmentUrlCommand;
-use Ymir\Cli\Console\Input;
-use Ymir\Cli\Console\Output;
 use Ymir\Cli\Deployment\DeploymentStepInterface;
 use Ymir\Cli\ProjectConfiguration\ProjectConfiguration;
 
@@ -50,22 +48,22 @@ abstract class AbstractProjectDeploymentCommand extends AbstractProjectCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(Input $input, Output $output)
+    protected function perform()
     {
-        $deployment = $this->createDeployment($input, $output);
-        $environment = $input->getStringArgument('environment');
+        $deployment = $this->createDeployment();
+        $environment = $this->input->getStringArgument('environment');
 
         foreach ($this->deploymentSteps as $deploymentStep) {
-            $deploymentStep->perform($deployment, $environment, $input, $output);
+            $deploymentStep->perform($deployment, $environment, $this->input, $this->output);
         }
 
-        $output->info($this->getSuccessMessage($environment));
+        $this->output->info($this->getSuccessMessage($environment));
 
-        $this->invoke($output, GetEnvironmentUrlCommand::NAME, ['environment' => $environment]);
+        $this->invoke(GetEnvironmentUrlCommand::NAME, ['environment' => $environment]);
 
         if (!array_key_exists('domain', $this->projectConfiguration->getEnvironment($environment))) {
-            $output->newLine();
-            $output->note(sprintf('You cannot send emails using the "<comment>ymirsites.com</comment>" domain. Please use the "<comment>%s</comment>" command to add an email address or domain for sending emails.', CreateEmailIdentityCommand::NAME));
+            $this->output->newLine();
+            $this->output->note(sprintf('You cannot send emails using the "<comment>ymirsites.com</comment>" domain. Please use the "<comment>%s</comment>" command to add an email address or domain for sending emails.', CreateEmailIdentityCommand::NAME));
 
             return;
         }
@@ -90,10 +88,10 @@ abstract class AbstractProjectDeploymentCommand extends AbstractProjectCommand
             return;
         }
 
-        $output->newLine();
-        $output->warning('Not all domains in this project are managed by Ymir. The following DNS record(s) need to be manually added to your DNS server for these domains to work:');
-        $output->newLine();
-        $output->table(
+        $this->output->newLine();
+        $this->output->warning('Not all domains in this project are managed by Ymir. The following DNS record(s) need to be manually added to your DNS server for these domains to work:');
+        $this->output->newLine();
+        $this->output->table(
             ['Type', 'Name', 'Value'],
             $unmanagedDomains->map(function (string $unmanagedDomain) use ($vanityDomainName) {
                 return ['CNAME', $unmanagedDomain, $vanityDomainName];
@@ -104,7 +102,7 @@ abstract class AbstractProjectDeploymentCommand extends AbstractProjectCommand
     /**
      * Create the deployment and return its ID.
      */
-    abstract protected function createDeployment(Input $input, Output $output): Collection;
+    abstract protected function createDeployment(): Collection;
 
     /**
      * Get the message to display when a deployment was successful.

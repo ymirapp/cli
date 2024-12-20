@@ -19,8 +19,6 @@ use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
 use Ymir\Cli\ApiClient;
 use Ymir\Cli\CliConfiguration;
-use Ymir\Cli\Console\Input;
-use Ymir\Cli\Console\Output;
 use Ymir\Cli\GitHubClient;
 use Ymir\Cli\Process\Process;
 use Ymir\Cli\ProjectConfiguration\ProjectConfiguration;
@@ -81,7 +79,7 @@ class InstallPluginCommand extends AbstractProjectCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(Input $input, Output $output)
+    protected function perform()
     {
         $message = 'Installing Ymir plugin';
         $projectType = strtolower($this->projectConfiguration->getProjectType());
@@ -91,14 +89,14 @@ class InstallPluginCommand extends AbstractProjectCommand
         }
 
         if ('bedrock' === $projectType) {
-            $output->info($message.' using Composer');
+            $this->output->info($message.' using Composer');
             Process::runShellCommandline('composer require ymirapp/wordpress-plugin');
         } elseif ('wordpress' === $projectType) {
-            $output->info($message.' from GitHub');
+            $this->output->info($message.' from GitHub');
             $this->installFromGitHub();
         }
 
-        $output->info('Ymir plugin installed');
+        $this->output->info('Ymir plugin installed');
     }
 
     /**

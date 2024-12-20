@@ -20,8 +20,6 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Filesystem\Filesystem;
 use Ymir\Cli\ApiClient;
 use Ymir\Cli\CliConfiguration;
-use Ymir\Cli\Console\Input;
-use Ymir\Cli\Console\Output;
 use Ymir\Cli\Database\Connection;
 use Ymir\Cli\Database\PDO;
 use Ymir\Cli\Exception\InvalidInputException;
@@ -72,17 +70,17 @@ class ImportDatabaseCommand extends AbstractDatabaseCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(Input $input, Output $output)
+    protected function perform()
     {
-        $filename = $this->getFilename($input);
-        $connection = $this->getConnection($input, $output);
+        $filename = $this->getFilename();
+        $connection = $this->getConnection();
         $tunnel = null;
 
         if ($connection->needsSshTunnel()) {
-            $tunnel = $this->startSshTunnel($connection->getDatabaseServer(), $output);
+            $tunnel = $this->startSshTunnel($connection->getDatabaseServer());
         }
 
-        $output->infoWithDelayWarning(sprintf('Importing "<comment>%s</comment>" to the "<comment>%s</comment>" database', $filename, $connection->getDatabase()));
+        $this->output->infoWithDelayWarning(sprintf('Importing "<comment>%s</comment>" to the "<comment>%s</comment>" database', $filename, $connection->getDatabase()));
 
         $this->importBackup($connection, $filename);
 
@@ -90,25 +88,25 @@ class ImportDatabaseCommand extends AbstractDatabaseCommand
             $tunnel->stop();
         }
 
-        $output->info('Database imported successfully');
+        $this->output->info('Database imported successfully');
     }
 
     /**
      * Get the connection to the database by prompting for any missing information.
      */
-    private function getConnection(Input $input, Output $output): Connection
+    private function getConnection(): Connection
     {
-        $databaseServer = $this->determineDatabaseServer('Which database server would you like to import a database to?', $input, $output);
-        $database = $input->getStringArgument('database');
+        $databaseServer = $this->determineDatabaseServer('Which database server would you like to import a database to?');
+        $database = $this->input->getStringArgument('database');
 
         if (empty($database) && !$databaseServer['publicly_accessible']) {
             throw new RuntimeException('You must specify the database name to import the SQL backup to for a private database server');
         } elseif (empty($database)) {
-            $database = $output->choice('Which database would you like to import the SQL backup to?', $this->apiClient->getDatabases($databaseServer['id']));
+            $database = $this->output->choice('Which database would you like to import the SQL backup to?', $this->apiClient->getDatabases($databaseServer['id']));
         }
 
-        $user = $this->determineUser($input, $output);
-        $password = $this->determinePassword($input, $output, $user);
+        $user = $this->determineUser();
+        $password = $this->determinePassword($user);
 
         return new Connection($database, $databaseServer, $user, $password);
     }
@@ -116,9 +114,9 @@ class ImportDatabaseCommand extends AbstractDatabaseCommand
     /**
      * Get the filename of the SQL backup to import.
      */
-    private function getFilename(Input $input): string
+    private function getFilename(): string
     {
-        $filename = $input->getStringArgument('filename');
+        $filename = $this->input->getStringArgument('filename');
 
         if (!str_ends_with($filename, '.sql') && !str_ends_with($filename, '.sql.gz')) {
             throw new InvalidInputException('You may only import .sql or .sql.gz files');

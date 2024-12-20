@@ -14,8 +14,6 @@ declare(strict_types=1);
 namespace Ymir\Cli\Command\Cache;
 
 use Ymir\Cli\Command\AbstractCommand;
-use Ymir\Cli\Console\Input;
-use Ymir\Cli\Console\Output;
 
 class ListCachesCommand extends AbstractCommand
 {
@@ -39,18 +37,18 @@ class ListCachesCommand extends AbstractCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(Input $input, Output $output)
+    protected function perform()
     {
-        $output->table(
+        $this->output->table(
             ['Id', 'Name', 'Provider', 'Network', 'Region', 'Status', 'Type'],
-            $this->apiClient->getCaches($this->cliConfiguration->getActiveTeamId())->map(function (array $cache) use ($output) {
+            $this->apiClient->getCaches($this->cliConfiguration->getActiveTeamId())->map(function (array $cache) {
                 return [
                     $cache['id'],
                     $cache['name'],
                     $cache['network']['provider']['name'],
                     $cache['network']['name'],
                     $cache['region'],
-                    $output->formatStatus($cache['status']),
+                    $this->output->formatStatus($cache['status']),
                     $cache['type'],
                 ];
             })->all()

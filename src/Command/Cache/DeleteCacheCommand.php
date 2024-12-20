@@ -15,8 +15,6 @@ namespace Ymir\Cli\Command\Cache;
 
 use Symfony\Component\Console\Input\InputArgument;
 use Ymir\Cli\Command\Network\RemoveNatGatewayCommand;
-use Ymir\Cli\Console\Input;
-use Ymir\Cli\Console\Output;
 
 class DeleteCacheCommand extends AbstractCacheCommand
 {
@@ -41,18 +39,18 @@ class DeleteCacheCommand extends AbstractCacheCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(Input $input, Output $output)
+    protected function perform()
     {
-        $cache = $this->determineCache('Which cache cluster would you like to delete', $input, $output);
+        $cache = $this->determineCache('Which cache cluster would you like to delete');
 
-        if (!$output->confirm('Are you sure you want to delete this cache cluster?', false)) {
+        if (!$this->output->confirm('Are you sure you want to delete this cache cluster?', false)) {
             return;
         }
 
         $this->apiClient->deleteCache($cache['id']);
 
-        $output->infoWithDelayWarning('Cache cluster deleted');
-        $output->newLine();
-        $output->note(sprintf('If you have no other resources using the private subnet, you should remove the network\'s NAT gateway using the "<comment>%s</comment>" command', RemoveNatGatewayCommand::NAME));
+        $this->output->infoWithDelayWarning('Cache cluster deleted');
+        $this->output->newLine();
+        $this->output->note(sprintf('If you have no other resources using the private subnet, you should remove the network\'s NAT gateway using the "<comment>%s</comment>" command', RemoveNatGatewayCommand::NAME));
     }
 }

@@ -15,8 +15,6 @@ namespace Ymir\Cli\Command\Environment;
 
 use Symfony\Component\Console\Input\InputArgument;
 use Ymir\Cli\Command\AbstractProjectCommand;
-use Ymir\Cli\Console\Input;
-use Ymir\Cli\Console\Output;
 
 class ChangeEnvironmentSecretCommand extends AbstractProjectCommand
 {
@@ -43,22 +41,22 @@ class ChangeEnvironmentSecretCommand extends AbstractProjectCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(Input $input, Output $output)
+    protected function perform()
     {
-        $environment = $input->getStringArgument('environment');
-        $name = $input->getStringArgument('name');
-        $value = $input->getStringArgument('value');
+        $environment = $this->input->getStringArgument('environment');
+        $name = $this->input->getStringArgument('name');
+        $value = $this->input->getStringArgument('value');
 
         if (empty($name)) {
-            $name = $output->ask('What is the name of the secret');
+            $name = $this->output->ask('What is the name of the secret');
         }
 
         if (empty($value)) {
-            $value = $output->ask('What is the secret value');
+            $value = $this->output->ask('What is the secret value');
         }
 
         $this->apiClient->changeSecret($this->projectConfiguration->getProjectId(), $environment, $name, $value);
 
-        $output->infoWithRedeployWarning('Secret changed', $environment);
+        $this->output->infoWithRedeployWarning('Secret changed', $environment);
     }
 }

@@ -17,8 +17,6 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
-use Ymir\Cli\Console\Input;
-use Ymir\Cli\Console\Output;
 
 class WpCliCommand extends AbstractInvocationCommand
 {
@@ -46,15 +44,15 @@ class WpCliCommand extends AbstractInvocationCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(Input $input, Output $output)
+    protected function perform()
     {
-        $async = $input->getBooleanOption('async') || $input->getBooleanOption('yolo');
-        $command = implode(' ', $input->getArrayArgument('wp-command'));
-        $environment = (string) $input->getStringOption('environment');
+        $async = $this->input->getBooleanOption('async') || $this->input->getBooleanOption('yolo');
+        $command = implode(' ', $this->input->getArrayArgument('wp-command'));
+        $environment = (string) $this->input->getStringOption('environment');
         $exitCode = Command::SUCCESS;
 
         if (empty($command)) {
-            $command = $output->ask('Please enter the WP-CLI command to run');
+            $command = $this->output->ask('Please enter the WP-CLI command to run');
         }
 
         if (str_starts_with($command, 'wp ')) {
@@ -67,13 +65,13 @@ class WpCliCommand extends AbstractInvocationCommand
             throw new RuntimeException(sprintf('Please use the "ymir database:%s" command instead of the "wp %s" command', substr($command, 3), $command));
         }
 
-        $output->info(sprintf('Running "<comment>wp %s</comment>" %s "<comment>%s</comment>" environment', $command, $async ? 'asynchronously on' : 'on', $environment));
+        $this->output->info(sprintf('Running "<comment>wp %s</comment>" %s "<comment>%s</comment>" environment', $command, $async ? 'asynchronously on' : 'on', $environment));
 
         $result = $this->invokeWpCliCommand($command, $environment, $async ? 0 : null);
 
         if (!$async) {
-            $output->newLine();
-            $output->write("{$result['output']}");
+            $this->output->newLine();
+            $this->output->write("{$result['output']}");
 
             $exitCode = $result['exitCode'];
         }

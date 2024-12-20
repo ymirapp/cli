@@ -18,8 +18,6 @@ use Illuminate\Support\Collection;
 use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
-use Ymir\Cli\Console\Input;
-use Ymir\Cli\Console\Output;
 use Ymir\Cli\Support\Arr;
 
 class RollbackProjectCommand extends AbstractProjectDeploymentCommand
@@ -54,9 +52,9 @@ class RollbackProjectCommand extends AbstractProjectDeploymentCommand
     /**
      * {@inheritdoc}
      */
-    protected function createDeployment(Input $input, Output $output): Collection
+    protected function createDeployment(): Collection
     {
-        $environment = $input->getStringArgument('environment');
+        $environment = $this->input->getStringArgument('environment');
         $projectId = $this->projectConfiguration->getProjectId();
 
         $deployments = $this->apiClient->getDeployments($projectId, $environment);
@@ -71,7 +69,7 @@ class RollbackProjectCommand extends AbstractProjectDeploymentCommand
             throw new RuntimeException(sprintf('The "%s" environment has no successful deployments to rollback to', $environment));
         }
 
-        $deploymentId = !$input->getBooleanOption('select') ? $deployments[0]['id'] : $output->choice('Please select a deployment to rollback to', $deployments->mapWithKeys(function (array $deployment) {
+        $deploymentId = !$this->input->getBooleanOption('select') ? $deployments[0]['id'] : $this->output->choice('Please select a deployment to rollback to', $deployments->mapWithKeys(function (array $deployment) {
             return [$deployment['id'] => $this->getDeploymentChoiceDisplayName($deployment)];
         }));
 

@@ -15,8 +15,6 @@ namespace Ymir\Cli\Command\Php;
 
 use Symfony\Component\Console\Input\InputArgument;
 use Ymir\Cli\Command\AbstractInvocationCommand;
-use Ymir\Cli\Console\Input;
-use Ymir\Cli\Console\Output;
 
 class PhpInfoCommand extends AbstractInvocationCommand
 {
@@ -41,16 +39,16 @@ class PhpInfoCommand extends AbstractInvocationCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(Input $input, Output $output)
+    protected function perform()
     {
-        $environment = $input->getStringArgument('environment');
+        $environment = $this->input->getStringArgument('environment');
 
-        $output->info(sprintf('Getting information about PHP from the "<comment>%s</comment>" environment', $environment));
+        $this->output->info(sprintf('Getting information about PHP from the "<comment>%s</comment>" environment', $environment));
 
         $result = $this->invokePhpCommand('--info', $environment);
 
-        $output->newLine();
-        $output->write("{$result['output']}");
+        $this->output->newLine();
+        $this->output->write("{$result['output']}");
 
         return $result['exitCode'];
     }

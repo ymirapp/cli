@@ -15,8 +15,6 @@ namespace Ymir\Cli\Command\Environment;
 
 use Symfony\Component\Console\Input\InputArgument;
 use Ymir\Cli\Command\AbstractProjectCommand;
-use Ymir\Cli\Console\Input;
-use Ymir\Cli\Console\Output;
 
 class ChangeEnvironmentVariableCommand extends AbstractProjectCommand
 {
@@ -43,24 +41,24 @@ class ChangeEnvironmentVariableCommand extends AbstractProjectCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(Input $input, Output $output)
+    protected function perform()
     {
-        $environment = $input->getStringArgument('environment');
-        $name = $input->getStringArgument('name');
-        $value = $input->getStringArgument('value');
+        $environment = $this->input->getStringArgument('environment');
+        $name = $this->input->getStringArgument('name');
+        $value = $this->input->getStringArgument('value');
 
         if (empty($name)) {
-            $name = $output->ask('What is the name of the environment variable');
+            $name = $this->output->ask('What is the name of the environment variable');
         }
 
         if (empty($value)) {
-            $value = $output->ask('What is the value of the environment variable');
+            $value = $this->output->ask('What is the value of the environment variable');
         }
 
         $this->apiClient->changeEnvironmentVariables($this->projectConfiguration->getProjectId(), $environment, [
             $name => $value,
         ]);
 
-        $output->infoWithRedeployWarning('Environment variable changed', $environment);
+        $this->output->infoWithRedeployWarning('Environment variable changed', $environment);
     }
 }

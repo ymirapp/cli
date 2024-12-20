@@ -19,8 +19,6 @@ use Ymir\Cli\ApiClient;
 use Ymir\Cli\Build\BuildStepInterface;
 use Ymir\Cli\CliConfiguration;
 use Ymir\Cli\Command\AbstractProjectCommand;
-use Ymir\Cli\Console\Input;
-use Ymir\Cli\Console\Output;
 use Ymir\Cli\ProjectConfiguration\ProjectConfiguration;
 
 class BuildProjectCommand extends AbstractProjectCommand
@@ -75,24 +73,24 @@ class BuildProjectCommand extends AbstractProjectCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(Input $input, Output $output)
+    protected function perform()
     {
         $buildOptions = [
-            'debug' => $input->getBooleanOption('debug'),
-            'environment' => $input->getStringArgument('environment'),
-            'uploads' => $input->getBooleanOption('with-uploads'),
+            'debug' => $this->input->getBooleanOption('debug'),
+            'environment' => $this->input->getStringArgument('environment'),
+            'uploads' => $this->input->getBooleanOption('with-uploads'),
         ];
 
-        $output->info('Building project');
+        $this->output->info('Building project');
 
         collect($this->buildSteps)->filter(function (BuildStepInterface $buildStep) use ($buildOptions) {
             return $buildStep->isNeeded($buildOptions, $this->projectConfiguration);
-        })->each(function (BuildStepInterface $buildStep) use ($buildOptions, $output) {
-            $output->writeStep($buildStep->getDescription());
+        })->each(function (BuildStepInterface $buildStep) use ($buildOptions) {
+            $this->output->writeStep($buildStep->getDescription());
             $buildStep->perform($buildOptions['environment'], $this->projectConfiguration);
         });
 
-        $output->info('Project built successfully');
+        $this->output->info('Project built successfully');
     }
 
     /**

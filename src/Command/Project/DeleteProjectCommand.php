@@ -15,8 +15,6 @@ namespace Ymir\Cli\Command\Project;
 
 use Symfony\Component\Console\Input\InputArgument;
 use Ymir\Cli\Command\AbstractCommand;
-use Ymir\Cli\Console\Input;
-use Ymir\Cli\Console\Output;
 
 class DeleteProjectCommand extends AbstractCommand
 {
@@ -49,16 +47,16 @@ class DeleteProjectCommand extends AbstractCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(Input $input, Output $output)
+    protected function perform()
     {
-        $projectId = $this->determineProject('Which project would you like to delete', $input, $output);
+        $projectId = $this->determineProject('Which project would you like to delete');
         $project = $this->apiClient->getProject($projectId);
 
-        if (!$output->confirm(sprintf('Are you sure you want to delete the <comment>%s</comment> project?', $project['name']), false)) {
+        if (!$this->output->confirm(sprintf('Are you sure you want to delete the <comment>%s</comment> project?', $project['name']), false)) {
             return;
         }
 
-        $deleteResources = $output->confirm('Do you want to delete all the project resources on the cloud provider?', false);
+        $deleteResources = $this->output->confirm('Do you want to delete all the project resources on the cloud provider?', false);
 
         $this->apiClient->deleteProject($projectId, $deleteResources);
 
@@ -67,6 +65,6 @@ class DeleteProjectCommand extends AbstractCommand
         }
 
         $message = 'Project deleted';
-        $deleteResources ? $output->infoWithDelayWarning($message) : $output->info($message);
+        $deleteResources ? $this->output->infoWithDelayWarning($message) : $this->output->info($message);
     }
 }

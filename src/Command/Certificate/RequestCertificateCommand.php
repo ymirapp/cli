@@ -15,8 +15,6 @@ namespace Ymir\Cli\Command\Certificate;
 
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
-use Ymir\Cli\Console\Input;
-use Ymir\Cli\Console\Output;
 
 class RequestCertificateCommand extends AbstractCertificateCommand
 {
@@ -43,23 +41,23 @@ class RequestCertificateCommand extends AbstractCertificateCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(Input $input, Output $output)
+    protected function perform()
     {
-        $domains = $input->getArrayArgument('domains');
+        $domains = $this->input->getArrayArgument('domains');
 
         if (empty($domains)) {
-            $domains = array_map('trim', explode(',', (string) $output->ask('Please enter a comma-separated list of domains for the certificate')));
+            $domains = array_map('trim', explode(',', (string) $this->output->ask('Please enter a comma-separated list of domains for the certificate')));
         }
 
-        if (1 === count($domains) && false === stripos($domains[0], '*.') && $output->confirm(sprintf('Do you want your certificate to also cover "<comment>*.%s</comment>" subdomains?', $domains[0]))) {
+        if (1 === count($domains) && false === stripos($domains[0], '*.') && $this->output->confirm(sprintf('Do you want your certificate to also cover "<comment>*.%s</comment>" subdomains?', $domains[0]))) {
             $domains[] = '*.'.$domains[0];
         } elseif (1 === count($domains) && 0 === stripos($domains[0], '*.')) {
             $domains[] = substr($domains[0], 2);
         }
 
-        $providerId = $this->determineCloudProvider('Enter the ID of the cloud provider where the SSL certificate will be created', $input, $output);
+        $providerId = $this->determineCloudProvider('Enter the ID of the cloud provider where the SSL certificate will be created');
 
-        $certificate = $this->apiClient->createCertificate($providerId, $domains, $this->determineRegion('Enter the name of the region where the SSL certificate will be created', $providerId, $input, $output));
+        $certificate = $this->apiClient->createCertificate($providerId, $domains, $this->determineRegion('Enter the name of the region where the SSL certificate will be created', $providerId));
 
         $isManaged = collect($certificate['domains'])->contains('managed', true);
         $validationRecords = [];
@@ -70,20 +68,20 @@ class RequestCertificateCommand extends AbstractCertificateCommand
             });
         }
 
-        $output->info('SSL certificate requested');
+        $this->output->info('SSL certificate requested');
 
         if (!$isManaged && !empty($validationRecords)) {
-            $output->newLine();
-            $output->important('The following DNS record(s) need to be manually added to your DNS server to validate the SSL certificate:');
-            $output->newLine();
-            $output->table(
+            $this->output->newLine();
+            $this->output->important('The following DNS record(s) need to be manually added to your DNS server to validate the SSL certificate:');
+            $this->output->newLine();
+            $this->output->table(
                 ['Type', 'Name', 'Value'],
                 $validationRecords
             );
-            $output->warning('The SSL certificate won\'t be issued until these DNS record(s) are added');
+            $this->output->warning('The SSL certificate won\'t be issued until these DNS record(s) are added');
         } elseif (!$isManaged && empty($validationRecords)) {
-            $output->newLine();
-            $output->warning(sprintf('Unable to fetch the DNS record(s) to your DNS server to validate the SSL certificate. You can run the "<comment>%s</comment>" command to get them.', GetCertificateInfoCommand::NAME));
+            $this->output->newLine();
+            $this->output->warning(sprintf('Unable to fetch the DNS record(s) to your DNS server to validate the SSL certificate. You can run the "<comment>%s</comment>" command to get them.', GetCertificateInfoCommand::NAME));
         }
     }
 }

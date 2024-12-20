@@ -14,8 +14,6 @@ declare(strict_types=1);
 namespace Ymir\Cli\Command\Certificate;
 
 use Symfony\Component\Console\Input\InputArgument;
-use Ymir\Cli\Console\Input;
-use Ymir\Cli\Console\Output;
 
 class DeleteCertificateCommand extends AbstractCertificateCommand
 {
@@ -40,16 +38,16 @@ class DeleteCertificateCommand extends AbstractCertificateCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(Input $input, Output $output)
+    protected function perform()
     {
-        $certificateId = $this->getCertificateArgument($input);
+        $certificateId = $this->getCertificateArgument();
 
-        if (!$output->confirm('Are you sure you want to delete this SSL certificate?', false)) {
+        if (!$this->output->confirm('Are you sure you want to delete this SSL certificate?', false)) {
             return;
         }
 
         $this->apiClient->deleteCertificate($certificateId);
 
-        $output->info('SSL certificate deleted');
+        $this->output->info('SSL certificate deleted');
     }
 }

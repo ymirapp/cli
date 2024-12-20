@@ -15,8 +15,6 @@ namespace Ymir\Cli\Command\Network;
 
 use Symfony\Component\Console\Input\InputArgument;
 use Ymir\Cli\Command\AbstractCommand;
-use Ymir\Cli\Console\Input;
-use Ymir\Cli\Console\Output;
 
 class RemoveNatGatewayCommand extends AbstractCommand
 {
@@ -41,10 +39,10 @@ class RemoveNatGatewayCommand extends AbstractCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(Input $input, Output $output)
+    protected function perform()
     {
-        $this->apiClient->removeNatGateway($this->determineNetwork('Which network would like to remove the NAT gateway from', $input, $output));
+        $this->apiClient->removeNatGateway($this->determineNetwork('Which network would like to remove the NAT gateway from'));
 
-        $output->infoWithDelayWarning('NAT gateway removed');
+        $this->output->infoWithDelayWarning('NAT gateway removed');
     }
 }

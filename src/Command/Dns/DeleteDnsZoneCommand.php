@@ -14,8 +14,6 @@ declare(strict_types=1);
 namespace Ymir\Cli\Command\Dns;
 
 use Symfony\Component\Console\Input\InputArgument;
-use Ymir\Cli\Console\Input;
-use Ymir\Cli\Console\Output;
 
 class DeleteDnsZoneCommand extends AbstractDnsCommand
 {
@@ -40,16 +38,16 @@ class DeleteDnsZoneCommand extends AbstractDnsCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(Input $input, Output $output)
+    protected function perform()
     {
-        $zone = $this->determineDnsZone('Which DNS zone would you like to delete', $input, $output);
+        $zone = $this->determineDnsZone('Which DNS zone would you like to delete');
 
-        if (!$output->confirm('Are you sure you want to delete this DNS zone?', false)) {
+        if (!$this->output->confirm('Are you sure you want to delete this DNS zone?', false)) {
             return;
         }
 
         $this->apiClient->deleteDnsZone((int) $zone['id']);
 
-        $output->info('DNS zone deleted');
+        $this->output->info('DNS zone deleted');
     }
 }

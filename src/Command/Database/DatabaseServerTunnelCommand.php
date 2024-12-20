@@ -17,8 +17,6 @@ use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
 use Ymir\Cli\Command\Network\AddBastionHostCommand;
-use Ymir\Cli\Console\Input;
-use Ymir\Cli\Console\Output;
 use Ymir\Cli\Support\Arr;
 use Ymir\Cli\Tool\Ssh;
 
@@ -46,9 +44,9 @@ class DatabaseServerTunnelCommand extends AbstractDatabaseServerCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(Input $input, Output $output)
+    protected function perform()
     {
-        $databaseServer = $this->determineDatabaseServer('Which database server would you like to connect to', $input, $output);
+        $databaseServer = $this->determineDatabaseServer('Which database server would you like to connect to');
 
         if ('available' !== $databaseServer['status']) {
             throw new RuntimeException(sprintf('The "%s" database server isn\'t available', $databaseServer['name']));
@@ -62,17 +60,17 @@ class DatabaseServerTunnelCommand extends AbstractDatabaseServerCommand
             throw new RuntimeException(sprintf('The database server network does\'t have a bastion host to connect to. You can add one to the network with the "%s" command.', AddBastionHostCommand::NAME));
         }
 
-        $localPort = (int) $input->getNumericOption('port');
+        $localPort = (int) $this->input->getNumericOption('port');
 
         if (3306 === $localPort) {
             throw new RuntimeException('Cannot use port 3306 as the local port for the SSH tunnel to the database server');
         }
 
-        $output->info(sprintf('Opening SSH tunnel to the "<comment>%s</comment>" database server. You can connect using: <comment>localhost:%s</comment>', $databaseServer['name'], $localPort));
+        $this->output->info(sprintf('Opening SSH tunnel to the "<comment>%s</comment>" database server. You can connect using: <comment>localhost:%s</comment>', $databaseServer['name'], $localPort));
 
         $tunnel = Ssh::tunnelBastionHost($network->get('bastion_host'), $localPort, $databaseServer['endpoint'], 3306);
 
-        $output->info('Once finished, press "<comment>Ctrl+C</comment>" to close the tunnel');
+        $this->output->info('Once finished, press "<comment>Ctrl+C</comment>" to close the tunnel');
 
         $tunnel->wait();
     }

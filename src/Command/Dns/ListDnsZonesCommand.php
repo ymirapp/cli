@@ -14,8 +14,6 @@ declare(strict_types=1);
 namespace Ymir\Cli\Command\Dns;
 
 use Ymir\Cli\Command\AbstractCommand;
-use Ymir\Cli\Console\Input;
-use Ymir\Cli\Console\Output;
 
 class ListDnsZonesCommand extends AbstractCommand
 {
@@ -39,9 +37,9 @@ class ListDnsZonesCommand extends AbstractCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(Input $input, Output $output)
+    protected function perform()
     {
-        $output->table(
+        $this->output->table(
             ['Id', 'Provider', 'Domain Name', 'Name Servers'],
             $this->apiClient->getDnsZones($this->cliConfiguration->getActiveTeamId())->map(function (array $zone) {
                 return [$zone['id'], $zone['provider']['name'], $zone['domain_name'], implode(PHP_EOL, $zone['name_servers'])];

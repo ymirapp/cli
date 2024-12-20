@@ -15,8 +15,6 @@ namespace Ymir\Cli\Command\Email;
 
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
-use Ymir\Cli\Console\Input;
-use Ymir\Cli\Console\Output;
 
 class CreateEmailIdentityCommand extends AbstractEmailIdentityCommand
 {
@@ -43,25 +41,25 @@ class CreateEmailIdentityCommand extends AbstractEmailIdentityCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(Input $input, Output $output)
+    protected function perform()
     {
-        $name = $input->getStringArgument('name');
+        $name = $this->input->getStringArgument('name');
 
         if (empty($name)) {
-            $name = $output->ask('What is the name of the email identity');
+            $name = $this->output->ask('What is the name of the email identity');
         }
 
-        $providerId = $this->determineCloudProvider('Enter the ID of the cloud provider where the email identity will be created', $input, $output);
+        $providerId = $this->determineCloudProvider('Enter the ID of the cloud provider where the email identity will be created');
 
-        $identity = $this->apiClient->createEmailIdentity($providerId, $name, $this->determineRegion('Enter the name of the region where the email identity will be created', $providerId, $input, $output));
+        $identity = $this->apiClient->createEmailIdentity($providerId, $name, $this->determineRegion('Enter the name of the region where the email identity will be created', $providerId));
 
-        $output->info('Email identity created');
+        $this->output->info('Email identity created');
 
         if ('domain' === $identity['type']) {
-            $this->displayDkimAuthenticationRecords($identity->toArray(), $output);
+            $this->displayDkimAuthenticationRecords($identity->toArray());
         } elseif ('email' === $identity['type']) {
-            $output->newLine();
-            $output->important(sprintf('A verification email was sent to %s to validate the email identity', $identity['name']));
+            $this->output->newLine();
+            $this->output->important(sprintf('A verification email was sent to %s to validate the email identity', $identity['name']));
         }
     }
 }

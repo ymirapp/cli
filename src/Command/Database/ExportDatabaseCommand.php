@@ -20,8 +20,6 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Filesystem\Filesystem;
 use Ymir\Cli\ApiClient;
 use Ymir\Cli\CliConfiguration;
-use Ymir\Cli\Console\Input;
-use Ymir\Cli\Console\Output;
 use Ymir\Cli\Database\Connection;
 use Ymir\Cli\Database\Mysqldump;
 use Ymir\Cli\Exception\InvalidInputException;
@@ -72,28 +70,28 @@ class ExportDatabaseCommand extends AbstractDatabaseCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(Input $input, Output $output)
+    protected function perform()
     {
-        $compression = $input->getStringOption('compression');
+        $compression = $this->input->getStringOption('compression');
 
         if (!in_array($compression, ['gzip', 'none'])) {
             throw new InvalidInputException('The compression method must be either "gzip" or "none"');
         }
 
-        $connection = $this->getConnection($input, $output);
+        $connection = $this->getConnection();
         $filename = sprintf('%s_%s.%s', $connection->getDatabase(), Carbon::now()->toDateString(), 'gzip' === $compression ? 'sql.gz' : 'sql');
 
-        if ($this->filesystem->exists($filename) && !$output->confirm(sprintf('The "<comment>%s</comment>" backup file already exists. Do you want to overwrite it?', $filename), false)) {
+        if ($this->filesystem->exists($filename) && !$this->output->confirm(sprintf('The "<comment>%s</comment>" backup file already exists. Do you want to overwrite it?', $filename), false)) {
             return;
         }
 
         $tunnel = null;
 
         if (!$connection->needsSshTunnel()) {
-            $tunnel = $this->startSshTunnel($connection->getDatabaseServer(), $output);
+            $tunnel = $this->startSshTunnel($connection->getDatabaseServer());
         }
 
-        $output->infoWithDelayWarning(sprintf('Exporting "<comment>%s</comment>" database', $connection->getDatabase()));
+        $this->output->infoWithDelayWarning(sprintf('Exporting "<comment>%s</comment>" database', $connection->getDatabase()));
 
         try {
             Mysqldump::fromConnection($connection, ['compress' => $compression])->start($filename);
@@ -105,25 +103,25 @@ class ExportDatabaseCommand extends AbstractDatabaseCommand
             }
         }
 
-        $output->infoWithValue('Database exported successfully to', $filename);
+        $this->output->infoWithValue('Database exported successfully to', $filename);
     }
 
     /**
      * Get the connection to the database by prompting for any missing information.
      */
-    private function getConnection(Input $input, Output $output): Connection
+    private function getConnection(): Connection
     {
-        $databaseServer = $this->determineDatabaseServer('Which database server would you like to export a database from?', $input, $output);
-        $database = $input->getStringArgument('database');
+        $databaseServer = $this->determineDatabaseServer('Which database server would you like to export a database from?');
+        $database = $this->input->getStringArgument('database');
 
         if (empty($database) && !$databaseServer['publicly_accessible']) {
             throw new RuntimeException('You must specify the database name to export for a private database server');
         } elseif (empty($database)) {
-            $database = $output->choice('Which database would you like to export?', $this->apiClient->getDatabases($databaseServer['id']));
+            $database = $this->output->choice('Which database would you like to export?', $this->apiClient->getDatabases($databaseServer['id']));
         }
 
-        $user = $this->determineUser($input, $output);
-        $password = $this->determinePassword($input, $output, $user);
+        $user = $this->determineUser();
+        $password = $this->determinePassword($user);
 
         return new Connection($database, $databaseServer, $user, $password);
     }

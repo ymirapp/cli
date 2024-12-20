@@ -14,8 +14,6 @@ declare(strict_types=1);
 namespace Ymir\Cli\Command\Environment;
 
 use Ymir\Cli\Command\AbstractProjectCommand;
-use Ymir\Cli\Console\Input;
-use Ymir\Cli\Console\Output;
 
 class ListEnvironmentsCommand extends AbstractProjectCommand
 {
@@ -39,9 +37,9 @@ class ListEnvironmentsCommand extends AbstractProjectCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(Input $input, Output $output)
+    protected function perform()
     {
-        $output->table(
+        $this->output->table(
             ['Id', 'Name', 'URL'],
             $this->apiClient->getEnvironments($this->projectConfiguration->getProjectId())->map(function (array $environment) {
                 return [$environment['id'], $environment['name'], 'https://'.$environment['vanity_domain_name']];

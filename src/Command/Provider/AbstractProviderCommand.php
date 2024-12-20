@@ -16,7 +16,6 @@ namespace Ymir\Cli\Command\Provider;
 use Ymir\Cli\ApiClient;
 use Ymir\Cli\CliConfiguration;
 use Ymir\Cli\Command\AbstractCommand;
-use Ymir\Cli\Console\Output;
 use Ymir\Cli\ProjectConfiguration\ProjectConfiguration;
 
 abstract class AbstractProviderCommand extends AbstractCommand
@@ -41,25 +40,25 @@ abstract class AbstractProviderCommand extends AbstractCommand
     /**
      * Get the AWS credentials.
      */
-    protected function getAwsCredentials(Output $output): array
+    protected function getAwsCredentials(): array
     {
-        $credentials = $this->getAwsCredentialsFromFile($output);
+        $credentials = $this->getAwsCredentialsFromFile();
 
         return !empty($credentials) ? $credentials : [
-            'key' => $output->ask('Please enter your AWS user key'),
-            'secret' => $output->askHidden('Please enter your AWS user secret'),
+            'key' => $this->output->ask('Please enter your AWS user key'),
+            'secret' => $this->output->askHidden('Please enter your AWS user secret'),
         ];
     }
 
     /**
      * Get the AWS credentials from the credentials file.
      */
-    private function getAwsCredentialsFromFile(Output $output): array
+    private function getAwsCredentialsFromFile(): array
     {
         $credentialsFilePath = $this->homeDirectory.'/.aws/credentials';
 
         if (!is_file($credentialsFilePath)
-            || !$output->confirm('Would you like to import credentials from your AWS credentials file?')
+            || !$this->output->confirm('Would you like to import credentials from your AWS credentials file?')
         ) {
             return [];
         }
@@ -70,7 +69,7 @@ abstract class AbstractProviderCommand extends AbstractCommand
             return [];
         }
 
-        $credentials = $output->choice(
+        $credentials = $this->output->choice(
             'Enter the name of the credentials to import from your AWS credentials file',
             $parsedCredentials->mapWithKeys(function ($credentials, $key) {
                 return [$key => $key];

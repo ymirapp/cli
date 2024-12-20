@@ -16,8 +16,6 @@ namespace Ymir\Cli\Command\Database;
 use Symfony\Component\Console\Input\InputArgument;
 use Ymir\Cli\Command\Project\DeployProjectCommand;
 use Ymir\Cli\Command\Project\RedeployProjectCommand;
-use Ymir\Cli\Console\Input;
-use Ymir\Cli\Console\Output;
 
 class RotateDatabaseServerPasswordCommand extends AbstractDatabaseServerCommand
 {
@@ -42,25 +40,25 @@ class RotateDatabaseServerPasswordCommand extends AbstractDatabaseServerCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(Input $input, Output $output)
+    protected function perform()
     {
-        $databaseServer = $this->determineDatabaseServer('Which database server would you like to rotate the password of?', $input, $output);
+        $databaseServer = $this->determineDatabaseServer('Which database server would you like to rotate the password of?');
 
-        $output->warning(sprintf('All projects that use the "<comment>%s</comment>" database server with the default user will be unable to connect to the database server until they\'re redeployed.', $databaseServer['name']));
+        $this->output->warning(sprintf('All projects that use the "<comment>%s</comment>" database server with the default user will be unable to connect to the database server until they\'re redeployed.', $databaseServer['name']));
 
-        if (!$output->confirm('Do you want to proceed?', false)) {
+        if (!$this->output->confirm('Do you want to proceed?', false)) {
             return;
         }
 
         $newCredentials = $this->apiClient->rotateDatabaseServerPassword($databaseServer['id']);
 
-        $output->horizontalTable(
+        $this->output->horizontalTable(
             ['Username', 'Password'],
             [[$newCredentials['username'], $newCredentials['password']]]
         );
 
-        $output->infoWithDelayWarning('Database server password rotated successfully');
-        $output->newLine();
-        $output->important(sprintf('You need to redeploy all projects using this database server with the default user using either the "<comment>%s</comment>" or "<comment>%s</comment>" commands for the change to take effect.', DeployProjectCommand::ALIAS, RedeployProjectCommand::ALIAS));
+        $this->output->infoWithDelayWarning('Database server password rotated successfully');
+        $this->output->newLine();
+        $this->output->important(sprintf('You need to redeploy all projects using this database server with the default user using either the "<comment>%s</comment>" or "<comment>%s</comment>" commands for the change to take effect.', DeployProjectCommand::ALIAS, RedeployProjectCommand::ALIAS));
     }
 }

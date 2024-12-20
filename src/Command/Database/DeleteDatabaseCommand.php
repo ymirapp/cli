@@ -16,8 +16,6 @@ namespace Ymir\Cli\Command\Database;
 use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
-use Ymir\Cli\Console\Input;
-use Ymir\Cli\Console\Output;
 
 class DeleteDatabaseCommand extends AbstractDatabaseCommand
 {
@@ -43,28 +41,28 @@ class DeleteDatabaseCommand extends AbstractDatabaseCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(Input $input, Output $output)
+    protected function perform()
     {
-        $databaseServer = $this->determineDatabaseServer('On which database server would you like to delete a database?', $input, $output);
+        $databaseServer = $this->determineDatabaseServer('On which database server would you like to delete a database?');
 
         if (!$databaseServer['publicly_accessible']) {
             throw new RuntimeException('Database on private database servers need to be manually deleted.');
         }
 
-        $name = $input->getStringArgument('name');
+        $name = $this->input->getStringArgument('name');
 
         if (empty($name)) {
-            $name = (string) $output->choice('Which database would you like to delete', $this->apiClient->getDatabases($databaseServer['id'])->filter(function (string $name) {
+            $name = (string) $this->output->choice('Which database would you like to delete', $this->apiClient->getDatabases($databaseServer['id'])->filter(function (string $name) {
                 return !in_array($name, ['information_schema', 'innodb', 'mysql', 'performance_schema', 'sys']);
             })->values());
         }
 
-        if (!$output->confirm(sprintf('Are you sure you want to delete the "<comment>%s</comment>" database?', $name), false)) {
+        if (!$this->output->confirm(sprintf('Are you sure you want to delete the "<comment>%s</comment>" database?', $name), false)) {
             return;
         }
 
         $this->apiClient->deleteDatabase($databaseServer['id'], $name);
 
-        $output->info('Database deleted');
+        $this->output->info('Database deleted');
     }
 }

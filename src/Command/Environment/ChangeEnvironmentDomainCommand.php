@@ -16,8 +16,6 @@ namespace Ymir\Cli\Command\Environment;
 use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Input\InputArgument;
 use Ymir\Cli\Command\AbstractInvocationCommand;
-use Ymir\Cli\Console\Input;
-use Ymir\Cli\Console\Output;
 use Ymir\Cli\ProjectConfiguration\DomainConfigurationChange;
 use Ymir\Cli\Support\Arr;
 
@@ -45,16 +43,16 @@ class ChangeEnvironmentDomainCommand extends AbstractInvocationCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(Input $input, Output $output)
+    protected function perform()
     {
-        $currentDomain = $input->getStringArgument('domain');
-        $environment = $input->getStringArgument('environment');
+        $currentDomain = $this->input->getStringArgument('domain');
+        $environment = $this->input->getStringArgument('environment');
         $vanityDomain = $this->apiClient->getEnvironmentVanityDomainName($this->projectConfiguration->getProjectId(), $environment);
 
-        if (empty($currentDomain) && $output->confirm(sprintf('Do you want to use the "<comment>%s</comment>" vanity domain as the current environment domain to replace?', $vanityDomain))) {
+        if (empty($currentDomain) && $this->output->confirm(sprintf('Do you want to use the "<comment>%s</comment>" vanity domain as the current environment domain to replace?', $vanityDomain))) {
             $currentDomain = $vanityDomain;
         } elseif (empty($currentDomain)) {
-            $currentDomain = strtolower((string) $output->ask('What is the current environment domain that you want to replace?'));
+            $currentDomain = strtolower((string) $this->output->ask('What is the current environment domain that you want to replace?'));
         }
 
         $domainOption = Arr::get($this->projectConfiguration->getEnvironment($environment), 'domain');
@@ -63,11 +61,11 @@ class ChangeEnvironmentDomainCommand extends AbstractInvocationCommand
         if (is_string($domainOption)) {
             $newDomain = $domainOption;
         } elseif (is_array($domainOption)) {
-            $newDomain = strtolower((string) $output->choice(sprintf('Which mapped domain do you want to use as the new "<comment>%s</comment>" environment domain?', $environment), $domainOption));
-        } elseif (empty($domainOption) && $currentDomain !== $vanityDomain && $output->confirm(sprintf('Do you want to use the "<comment>%s</comment>" vanity domain as the new "<comment>%s</comment>" environment domain?', $vanityDomain, $environment))) {
+            $newDomain = strtolower((string) $this->output->choice(sprintf('Which mapped domain do you want to use as the new "<comment>%s</comment>" environment domain?', $environment), $domainOption));
+        } elseif (empty($domainOption) && $currentDomain !== $vanityDomain && $this->output->confirm(sprintf('Do you want to use the "<comment>%s</comment>" vanity domain as the new "<comment>%s</comment>" environment domain?', $vanityDomain, $environment))) {
             $newDomain = $vanityDomain;
         } elseif (empty($domainOption)) {
-            $newDomain = strtolower((string) $output->ask(sprintf('What is the new domain that you want to use as the new "<comment>%s</comment>" environment domain?', $environment)));
+            $newDomain = strtolower((string) $this->output->ask(sprintf('What is the new domain that you want to use as the new "<comment>%s</comment>" environment domain?', $environment)));
         }
 
         $currentDomain = parse_url($currentDomain, PHP_URL_HOST) ?? $currentDomain;
@@ -81,15 +79,15 @@ class ChangeEnvironmentDomainCommand extends AbstractInvocationCommand
             throw new RuntimeException('Both current and new environment domain are identical');
         }
 
-        if (!$output->confirm(sprintf('Are you sure you want to change the "<comment>%s</comment>" environment domain from "<comment>%s</comment>" to "<comment>%s</comment>"?', $environment, $currentDomain, $newDomain), false)) {
+        if (!$this->output->confirm(sprintf('Are you sure you want to change the "<comment>%s</comment>" environment domain from "<comment>%s</comment>" to "<comment>%s</comment>"?', $environment, $currentDomain, $newDomain), false)) {
             return;
         }
 
-        if ($newDomain !== $vanityDomain && !Arr::has((array) $domainOption, $newDomain) && $output->confirm(sprintf('Do you want to add the "<comment>%s</comment>" domain to your "<comment>%s</comment>" environment configuration?', $newDomain, $environment))) {
+        if ($newDomain !== $vanityDomain && !Arr::has((array) $domainOption, $newDomain) && $this->output->confirm(sprintf('Do you want to add the "<comment>%s</comment>" domain to your "<comment>%s</comment>" environment configuration?', $newDomain, $environment))) {
             $this->projectConfiguration->applyChangesToEnvironment($environment, new DomainConfigurationChange($newDomain));
         }
 
-        $output->info(sprintf('Changing "<comment>%s</comment>" environment domain from "<comment>%s</comment>" to "<comment>%s</comment>"', $environment, $currentDomain, $newDomain));
+        $this->output->info(sprintf('Changing "<comment>%s</comment>" environment domain from "<comment>%s</comment>" to "<comment>%s</comment>"', $environment, $currentDomain, $newDomain));
 
         $result = $this->invokeWpCliCommand(sprintf('wp search-replace %s %s --all-tables', $currentDomain, $newDomain), $environment);
 
@@ -97,10 +95,10 @@ class ChangeEnvironmentDomainCommand extends AbstractInvocationCommand
             throw new RuntimeException('WP-CLI search-replace command failed');
         }
 
-        $output->info('Flushing object cache');
+        $this->output->info('Flushing object cache');
 
         $this->invokeWpCliCommand('wp cache flush', $environment, 0);
 
-        $output->info('Environment domain changed');
+        $this->output->info('Environment domain changed');
     }
 }

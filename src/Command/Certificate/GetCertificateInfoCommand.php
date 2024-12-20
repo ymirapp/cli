@@ -15,8 +15,6 @@ namespace Ymir\Cli\Command\Certificate;
 
 use Symfony\Component\Console\Helper\TableSeparator;
 use Symfony\Component\Console\Input\InputArgument;
-use Ymir\Cli\Console\Input;
-use Ymir\Cli\Console\Output;
 
 class GetCertificateInfoCommand extends AbstractCertificateCommand
 {
@@ -41,26 +39,26 @@ class GetCertificateInfoCommand extends AbstractCertificateCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(Input $input, Output $output)
+    protected function perform()
     {
-        $certificate = $this->apiClient->getCertificate($this->getCertificateArgument($input));
+        $certificate = $this->apiClient->getCertificate($this->getCertificateArgument());
 
-        $output->horizontalTable(
+        $this->output->horizontalTable(
             ['Domains', new TableSeparator(), 'Provider', 'Region', new TableSeparator(), 'Status', 'In Use'],
-            [[implode(PHP_EOL, $this->getDomainNames($certificate['domains'])), new TableSeparator(), $certificate['provider']['name'], $certificate['region'], new TableSeparator(), $certificate['status'], $output->formatBoolean($certificate['in_use'])]]
+            [[implode(PHP_EOL, $this->getDomainNames($certificate['domains'])), new TableSeparator(), $certificate['provider']['name'], $certificate['region'], new TableSeparator(), $certificate['status'], $this->output->formatBoolean($certificate['in_use'])]]
         );
 
         $validationRecords = $this->parseCertificateValidationRecords($certificate);
 
         if (!empty($validationRecords)) {
-            $output->newLine();
-            $output->important('The following DNS record(s) need to exist on your DNS server at all times:');
-            $output->newLine();
-            $output->table(
+            $this->output->newLine();
+            $this->output->important('The following DNS record(s) need to exist on your DNS server at all times:');
+            $this->output->newLine();
+            $this->output->table(
                 ['Type', 'Name', 'Value'],
                 $validationRecords
             );
-            $output->warning('The SSL certificate won\'t be issued or renewed if these DNS record(s) don\'t exist.');
+            $this->output->warning('The SSL certificate won\'t be issued or renewed if these DNS record(s) don\'t exist.');
         }
     }
 

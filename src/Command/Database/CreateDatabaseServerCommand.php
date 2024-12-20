@@ -17,8 +17,6 @@ use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Helper\TableSeparator;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
-use Ymir\Cli\Console\Input;
-use Ymir\Cli\Console\Output;
 use Ymir\Cli\Exception\CommandCancelledException;
 use Ymir\Cli\Exception\InvalidInputException;
 
@@ -51,66 +49,66 @@ class CreateDatabaseServerCommand extends AbstractDatabaseServerCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform(Input $input, Output $output)
+    protected function perform()
     {
-        $name = $input->getStringArgument('name');
+        $name = $this->input->getStringArgument('name');
 
         if (empty($name)) {
-            $name = $output->askSlug('What is the name of the database server');
+            $name = $this->output->askSlug('What is the name of the database server');
         }
 
-        $network = $this->apiClient->getNetwork($this->determineOrCreateNetwork('On what network should the database server be created?', $input, $output));
+        $network = $this->apiClient->getNetwork($this->determineOrCreateNetwork('On what network should the database server be created?'));
 
         if (!isset($network['provider']['id'])) {
             throw new RuntimeException('The Ymir API failed to return information on the cloud provider');
         }
 
-        $type = $this->determineType($input, $output, (int) $network['provider']['id']);
-        $storage = self::AURORA_DATABASE_TYPE !== $type ? $this->determineStorage($input, $output) : null;
-        $public = self::AURORA_DATABASE_TYPE !== $type && $this->determinePublic($input, $output);
+        $type = $this->determineType((int) $network['provider']['id']);
+        $storage = self::AURORA_DATABASE_TYPE !== $type ? $this->determineStorage() : null;
+        $public = self::AURORA_DATABASE_TYPE !== $type && $this->determinePublic();
 
-        if (self::AURORA_DATABASE_TYPE !== $type && !$public && !$network->get('has_nat_gateway') && !$output->confirm('A private database server requires that Ymir add a NAT gateway (~$32/month) to your network. Would you like to proceed? <fg=default>(Answering "<comment>no</comment>" will make the database server publicly accessible.)</>')) {
+        if (self::AURORA_DATABASE_TYPE !== $type && !$public && !$network->get('has_nat_gateway') && !$this->output->confirm('A private database server requires that Ymir add a NAT gateway (~$32/month) to your network. Would you like to proceed? <fg=default>(Answering "<comment>no</comment>" will make the database server publicly accessible.)</>')) {
             $public = true;
-        } elseif (self::AURORA_DATABASE_TYPE === $type && !$network->get('has_nat_gateway') && !$output->confirm('An Aurora serverless database cluster requires that Ymir add a NAT gateway (~$32/month) to your network. Would you like to proceed? <fg=default>(Answering "<comment>no</comment>" will cancel the command.)</>')) {
+        } elseif (self::AURORA_DATABASE_TYPE === $type && !$network->get('has_nat_gateway') && !$this->output->confirm('An Aurora serverless database cluster requires that Ymir add a NAT gateway (~$32/month) to your network. Would you like to proceed? <fg=default>(Answering "<comment>no</comment>" will cancel the command.)</>')) {
             throw new CommandCancelledException();
         }
 
         $database = $this->apiClient->createDatabaseServer((int) $network['id'], $name, $type, $storage, $public);
 
-        $output->important(sprintf('Please write down the password shown below as it won\'t be displayed again. Ymir will inject it automatically whenever you assign this database server to a project. If you lose the password, use the "<comment>%s</comment>" command to generate a new one.', RotateDatabaseServerPasswordCommand::NAME));
-        $output->newLine();
+        $this->output->important(sprintf('Please write down the password shown below as it won\'t be displayed again. Ymir will inject it automatically whenever you assign this database server to a project. If you lose the password, use the "<comment>%s</comment>" command to generate a new one.', RotateDatabaseServerPasswordCommand::NAME));
+        $this->output->newLine();
 
-        $output->horizontalTable(
+        $this->output->horizontalTable(
             ['Database Sever', new TableSeparator(), 'Username', 'Password', new TableSeparator(), 'Type', 'Public', 'Storage (in GB)'],
-            [[$database['name'], new TableSeparator(), $database['username'], $database['password'], new TableSeparator(), $database['type'], $output->formatBoolean($database['publicly_accessible']), $database['storage'] ?? 'N/A']]
+            [[$database['name'], new TableSeparator(), $database['username'], $database['password'], new TableSeparator(), $database['type'], $this->output->formatBoolean($database['publicly_accessible']), $database['storage'] ?? 'N/A']]
         );
 
-        $output->infoWithDelayWarning('Database server created');
+        $this->output->infoWithDelayWarning('Database server created');
     }
 
     /**
      * Determine whether the database should be publicly accessible or not.
      */
-    private function determinePublic(Input $input, Output $output): bool
+    private function determinePublic(): bool
     {
-        if ($input->getBooleanOption('public')) {
+        if ($this->input->getBooleanOption('public')) {
             return true;
-        } elseif ($input->getBooleanOption('private')) {
+        } elseif ($this->input->getBooleanOption('private')) {
             return false;
         }
 
-        return $output->confirm('Should the database server be publicly accessible?');
+        return $this->output->confirm('Should the database server be publicly accessible?');
     }
 
     /**
      * Determine the maximum amount of storage allocated to the database.
      */
-    private function determineStorage(Input $input, Output $output): int
+    private function determineStorage(): int
     {
-        $storage = $input->getNumericOption('storage');
+        $storage = $this->input->getNumericOption('storage');
 
         while (!is_numeric($storage)) {
-            $storage = $output->ask('What should the maximum amount of storage (in GB) allocated to the database server be?', '50', function ($storage) {
+            $storage = $this->output->ask('What should the maximum amount of storage (in GB) allocated to the database server be?', '50', function ($storage) {
                 if (!is_numeric($storage)) {
                     throw new \Exception('The maximum allocated storage needs to be a numeric value');
                 }
@@ -125,9 +123,9 @@ class CreateDatabaseServerCommand extends AbstractDatabaseServerCommand
     /**
      * Determine the database server type to create.
      */
-    private function determineType(Input $input, Output $output, int $providerId): string
+    private function determineType(int $providerId): string
     {
-        $type = !$input->getBooleanOption('serverless') ? $input->getStringOption('type') : self::AURORA_DATABASE_TYPE;
+        $type = !$this->input->getBooleanOption('serverless') ? $this->input->getStringOption('type') : self::AURORA_DATABASE_TYPE;
         $types = $this->apiClient->getDatabaseServerTypes($providerId);
 
         if ($types->isEmpty()) {
@@ -135,7 +133,7 @@ class CreateDatabaseServerCommand extends AbstractDatabaseServerCommand
         } elseif (null !== $type && !$types->has($type)) {
             throw new InvalidInputException(sprintf('The type "%s" isn\'t a valid database type', $type));
         } elseif (null === $type) {
-            $type = (string) $output->choice('What should the database server type be?', $types);
+            $type = (string) $this->output->choice('What should the database server type be?', $types);
         }
 
         return $type;
