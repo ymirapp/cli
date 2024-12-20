@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.49.0](https://github.com/ymirapp/cli/compare/v1.48.1...v1.49.0) (2024-12-20)
+
+
+### Features
+
+* Switch to using php for database import/export ([dd6bb08](https://github.com/ymirapp/cli/commit/dd6bb089287d8b36f90ea936976719f1118dd779))
+
 ## [1.48.1](https://github.com/ymirapp/cli/compare/v1.48.0...v1.48.1) (2024-11-20)
 
 
