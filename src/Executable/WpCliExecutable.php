@@ -11,30 +11,46 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace Ymir\Cli\Tool;
+namespace Ymir\Cli\Executable;
 
 use Illuminate\Support\Collection;
 use Symfony\Component\Console\Exception\RuntimeException;
-use Ymir\Cli\Exception\WpCliException;
+use Ymir\Cli\Exception\Executable\WpCliException;
 use Ymir\Cli\Process\Process;
 
-class WpCli extends CommandLineTool
+class WpCliExecutable extends AbstractExecutable
 {
     /**
      * Download WordPress.
      */
-    public static function downloadWordPress(?string $cwd = null)
+    public function downloadWordPress(?string $cwd = null)
     {
-        self::runCommand('core download', $cwd);
+        $this->run('core download', $cwd);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getDisplayName(): string
+    {
+        return 'WP-CLI';
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getExecutable(): string
+    {
+        return 'wp';
     }
 
     /**
      * Checks if WordPress is installed.
      */
-    public static function isWordPressInstalled(?string $cwd = null): bool
+    public function isWordPressInstalled(?string $cwd = null): bool
     {
         try {
-            self::runCommand('core is-installed', $cwd);
+            $this->run('core is-installed', $cwd);
 
             return true;
         } catch (WpCliException $exception) {
@@ -45,10 +61,10 @@ class WpCli extends CommandLineTool
     /**
      * Checks if the Ymir plugin is installed.
      */
-    public static function isYmirPluginInstalled(?string $cwd = null): bool
+    public function isYmirPluginInstalled(?string $cwd = null): bool
     {
         try {
-            return self::listPlugins($cwd)->contains(function (array $plugin) {
+            return $this->listPlugins($cwd)->contains(function (array $plugin) {
                 return !empty($plugin['file']) && 1 === preg_match('/\/ymir\.php$/', $plugin['file']);
             });
         } catch (\Throwable $exception) {
@@ -59,46 +75,30 @@ class WpCli extends CommandLineTool
     /**
      * List all the installed plugins.
      */
-    public static function listPlugins(?string $cwd = null): Collection
+    public function listPlugins(?string $cwd = null): Collection
     {
-        $process = self::runCommand('plugin list --fields=file,name,status,title,version --format=json', $cwd);
+        $process = $this->run('plugin list --fields=file,name,status,title,version --format=json', $cwd);
 
-        $plugins = collect(json_decode($process->getOutput(), true));
+        $plugins = json_decode($process->getOutput(), true);
 
-        if ($plugins->isEmpty()) {
+        if (JSON_ERROR_NONE !== json_last_error()) {
             throw new RuntimeException('Unable to get the list of installed plugins');
         }
 
-        return $plugins;
+        return collect($plugins);
     }
 
     /**
      * {@inheritdoc}
      */
-    protected static function getCommand(): string
-    {
-        return 'wp';
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected static function getName(): string
-    {
-        return 'WP-CLI';
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected static function runCommand(string $command, ?string $cwd = null): Process
+    protected function run(string $command, ?string $cwd = null, ?float $timeout = 60): Process
     {
         if (function_exists('posix_geteuid') && 0 === posix_geteuid()) {
-            throw new RuntimeException('WP-CLI commands can only be run as a non-root user');
+            throw new WpCliException('WP-CLI commands can only be run as a non-root user');
         }
 
         try {
-            return parent::runCommand($command, $cwd);
+            return parent::run($command, $cwd, $timeout);
         } catch (RuntimeException $exception) {
             throw new WpCliException($exception->getMessage(), $exception->getCode(), $exception);
         }

@@ -15,15 +15,35 @@ namespace Ymir\Cli\Command\Database;
 
 use Carbon\Carbon;
 use Symfony\Component\Console\Exception\RuntimeException;
+use Ymir\Cli\ApiClient;
+use Ymir\Cli\CliConfiguration;
 use Ymir\Cli\Command\AbstractCommand;
 use Ymir\Cli\Command\Network\AddBastionHostCommand;
 use Ymir\Cli\Exception\InvalidInputException;
+use Ymir\Cli\Executable\SshExecutable;
 use Ymir\Cli\Process\Process;
+use Ymir\Cli\ProjectConfiguration\ProjectConfiguration;
 use Ymir\Cli\Support\Arr;
-use Ymir\Cli\Tool\Ssh;
 
 abstract class AbstractDatabaseCommand extends AbstractCommand
 {
+    /**
+     * The SSH executable.
+     *
+     * @var SshExecutable
+     */
+    protected $sshExecutable;
+
+    /**
+     * Constructor.
+     */
+    public function __construct(ApiClient $apiClient, CliConfiguration $cliConfiguration, ProjectConfiguration $projectConfiguration, SshExecutable $sshExecutable)
+    {
+        parent::__construct($apiClient, $cliConfiguration, $projectConfiguration);
+
+        $this->sshExecutable = $sshExecutable;
+    }
+
     /**
      * Determine the database server that the command is interacting with.
      */
@@ -81,9 +101,9 @@ abstract class AbstractDatabaseCommand extends AbstractCommand
     }
 
     /**
-     * Start a SSH tunnel to a private database server.
+     * Open a SSH tunnel to a private database server.
      */
-    protected function startSshTunnel(array $databaseServer): Process
+    protected function openSshTunnel(array $databaseServer): Process
     {
         $this->output->info(sprintf('Opening SSH tunnel to "<comment>%s</comment>" private database server', $databaseServer['name']));
 
@@ -94,7 +114,7 @@ abstract class AbstractDatabaseCommand extends AbstractCommand
         }
 
         $bastionHost = $network->get('bastion_host');
-        $tunnel = Ssh::tunnelBastionHost($bastionHost, 3305, $databaseServer['endpoint'], 3306);
+        $tunnel = $this->sshExecutable->openTunnelToBastionHost($bastionHost, 3305, $databaseServer['endpoint'], 3306);
 
         $timeout = Carbon::now()->addSeconds(10);
 

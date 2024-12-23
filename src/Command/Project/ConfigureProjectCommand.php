@@ -20,10 +20,10 @@ use Ymir\Cli\ApiClient;
 use Ymir\Cli\CliConfiguration;
 use Ymir\Cli\Command\AbstractProjectCommand;
 use Ymir\Cli\Exception\InvalidInputException;
+use Ymir\Cli\Executable\WpCliExecutable;
 use Ymir\Cli\ProjectConfiguration\ProjectConfiguration;
 use Ymir\Cli\ProjectConfiguration\WordPress\WordPressConfigurationChangeInterface;
 use Ymir\Cli\Support\Arr;
-use Ymir\Cli\Tool\WpCli;
 
 class ConfigureProjectCommand extends AbstractProjectCommand
 {
@@ -49,13 +49,21 @@ class ConfigureProjectCommand extends AbstractProjectCommand
     private $configurationChanges;
 
     /**
+     * The WP-CLI executable.
+     *
+     * @var WpCliExecutable
+     */
+    private $wpCliExecutable;
+
+    /**
      * Constructor.
      */
-    public function __construct(ApiClient $apiClient, CliConfiguration $cliConfiguration, ProjectConfiguration $projectConfiguration, iterable $configurationChanges = [])
+    public function __construct(ApiClient $apiClient, CliConfiguration $cliConfiguration, ProjectConfiguration $projectConfiguration, WpCliExecutable $wpCliExecutable, iterable $configurationChanges = [])
     {
         parent::__construct($apiClient, $cliConfiguration, $projectConfiguration);
 
         $this->configurationChanges = new Collection();
+        $this->wpCliExecutable = $wpCliExecutable;
 
         foreach ($configurationChanges as $configurationChange) {
             $this->addConfigurationChange($configurationChange);
@@ -79,9 +87,9 @@ class ConfigureProjectCommand extends AbstractProjectCommand
      */
     protected function perform()
     {
-        if (!WpCli::isInstalledGlobally()) {
+        if ($this->wpCliExecutable->isInstalled()) {
             throw new RuntimeException('WP-CLI needs to be available globally to scan your project');
-        } elseif (!WpCli::isWordPressInstalled()) {
+        } elseif (!$this->wpCliExecutable->isWordPressInstalled()) {
             throw new RuntimeException('WordPress needs to be installed and connected to a database to scan your project');
         }
 
@@ -93,7 +101,7 @@ class ConfigureProjectCommand extends AbstractProjectCommand
 
         $this->output->info('Scanning your project');
 
-        $plugins = WpCli::listPlugins()->groupBy('status');
+        $plugins = $this->wpCliExecutable->listPlugins()->groupBy('status');
 
         $activePlugins = $plugins->only(['active', 'must-use'])->flatten(1);
         $inactivePlugins = $plugins->only(['inactive'])->flatten(1);

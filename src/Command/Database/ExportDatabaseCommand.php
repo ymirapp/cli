@@ -23,6 +23,7 @@ use Ymir\Cli\CliConfiguration;
 use Ymir\Cli\Database\Connection;
 use Ymir\Cli\Database\Mysqldump;
 use Ymir\Cli\Exception\InvalidInputException;
+use Ymir\Cli\Executable\SshExecutable;
 use Ymir\Cli\Process\Process;
 use Ymir\Cli\ProjectConfiguration\ProjectConfiguration;
 
@@ -45,9 +46,9 @@ class ExportDatabaseCommand extends AbstractDatabaseCommand
     /**
      * Constructor.
      */
-    public function __construct(ApiClient $apiClient, CliConfiguration $cliConfiguration, Filesystem $filesystem, ProjectConfiguration $projectConfiguration)
+    public function __construct(ApiClient $apiClient, CliConfiguration $cliConfiguration, Filesystem $filesystem, ProjectConfiguration $projectConfiguration, SshExecutable $sshExecutable)
     {
-        parent::__construct($apiClient, $cliConfiguration, $projectConfiguration);
+        parent::__construct($apiClient, $cliConfiguration, $projectConfiguration, $sshExecutable);
 
         $this->filesystem = $filesystem;
     }
@@ -88,7 +89,7 @@ class ExportDatabaseCommand extends AbstractDatabaseCommand
         $tunnel = null;
 
         if (!$connection->needsSshTunnel()) {
-            $tunnel = $this->startSshTunnel($connection->getDatabaseServer());
+            $tunnel = $this->openSshTunnel($connection->getDatabaseServer());
         }
 
         $this->output->infoWithDelayWarning(sprintf('Exporting "<comment>%s</comment>" database', $connection->getDatabase()));

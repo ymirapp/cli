@@ -18,10 +18,10 @@ use Symfony\Component\Console\Helper\ProgressBar;
 use Ymir\Cli\ApiClient;
 use Ymir\Cli\Console\Input;
 use Ymir\Cli\Console\Output;
+use Ymir\Cli\Executable\DockerExecutable;
 use Ymir\Cli\FileUploader;
 use Ymir\Cli\ProjectConfiguration\ProjectConfiguration;
 use Ymir\Cli\Support\Arr;
-use Ymir\Cli\Tool\Docker;
 
 class UploadFunctionCodeStep implements DeploymentStepInterface
 {
@@ -47,6 +47,13 @@ class UploadFunctionCodeStep implements DeploymentStepInterface
     private $buildDirectory;
 
     /**
+     * The Docker executable.
+     *
+     * @var DockerExecutable
+     */
+    private $dockerExecutable;
+
+    /**
      * The Ymir project configuration.
      *
      * @var ProjectConfiguration
@@ -63,11 +70,12 @@ class UploadFunctionCodeStep implements DeploymentStepInterface
     /**
      * Constructor.
      */
-    public function __construct(ApiClient $apiClient, string $buildArtifactPath, string $buildDirectory, ProjectConfiguration $projectConfiguration, FileUploader $uploader)
+    public function __construct(ApiClient $apiClient, string $buildArtifactPath, string $buildDirectory, DockerExecutable $dockerExecutable, ProjectConfiguration $projectConfiguration, FileUploader $uploader)
     {
         $this->apiClient = $apiClient;
         $this->buildArtifactPath = $buildArtifactPath;
         $this->buildDirectory = rtrim($buildDirectory, '/');
+        $this->dockerExecutable = $dockerExecutable;
         $this->projectConfiguration = $projectConfiguration;
         $this->uploader = $uploader;
     }
@@ -99,9 +107,9 @@ class UploadFunctionCodeStep implements DeploymentStepInterface
 
         $output->infoWithDelayWarning('Pushing container image');
 
-        Docker::login($user, $password, Arr::get((array) explode('/', $imageUri), 0), $this->buildDirectory);
-        Docker::tag(sprintf('%s:%s', $this->projectConfiguration->getProjectName(), $environment), $imageUri, $this->buildDirectory);
-        Docker::push($imageUri, $this->buildDirectory);
+        $this->dockerExecutable->login($user, $password, Arr::get((array) explode('/', $imageUri), 0), $this->buildDirectory);
+        $this->dockerExecutable->tag(sprintf('%s:%s', $this->projectConfiguration->getProjectName(), $environment), $imageUri, $this->buildDirectory);
+        $this->dockerExecutable->push($imageUri, $this->buildDirectory);
     }
 
     /**

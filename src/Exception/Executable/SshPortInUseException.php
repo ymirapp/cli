@@ -11,10 +11,17 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace Ymir\Cli\Exception;
+namespace Ymir\Cli\Exception\Executable;
 
 use Symfony\Component\Console\Exception\RuntimeException;
 
-class WpCliException extends RuntimeException
+class SshPortInUseException extends RuntimeException
 {
+    /**
+     * Constructor.
+     */
+    public function __construct(int $port)
+    {
+        parent::__construct(sprintf('Unable to open SSH tunnel. Local port "%s" is already in use.', $port));
+    }
 }

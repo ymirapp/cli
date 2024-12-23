@@ -16,9 +16,12 @@ namespace Ymir\Cli\Command\Database;
 use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
+use Ymir\Cli\ApiClient;
+use Ymir\Cli\CliConfiguration;
 use Ymir\Cli\Command\Network\AddBastionHostCommand;
+use Ymir\Cli\Executable\SshExecutable;
+use Ymir\Cli\ProjectConfiguration\ProjectConfiguration;
 use Ymir\Cli\Support\Arr;
-use Ymir\Cli\Tool\Ssh;
 
 class DatabaseServerTunnelCommand extends AbstractDatabaseServerCommand
 {
@@ -28,6 +31,23 @@ class DatabaseServerTunnelCommand extends AbstractDatabaseServerCommand
      * @var string
      */
     public const NAME = 'database:server:tunnel';
+
+    /**
+     * The SSH executable.
+     *
+     * @var SshExecutable
+     */
+    protected $sshExecutable;
+
+    /**
+     * Constructor.
+     */
+    public function __construct(ApiClient $apiClient, CliConfiguration $cliConfiguration, ProjectConfiguration $projectConfiguration, SshExecutable $sshExecutable)
+    {
+        parent::__construct($apiClient, $cliConfiguration, $projectConfiguration);
+
+        $this->sshExecutable = $sshExecutable;
+    }
 
     /**
      * {@inheritdoc}
@@ -68,7 +88,7 @@ class DatabaseServerTunnelCommand extends AbstractDatabaseServerCommand
 
         $this->output->info(sprintf('Opening SSH tunnel to the "<comment>%s</comment>" database server. You can connect using: <comment>localhost:%s</comment>', $databaseServer['name'], $localPort));
 
-        $tunnel = Ssh::tunnelBastionHost($network->get('bastion_host'), $localPort, $databaseServer['endpoint'], 3306);
+        $tunnel = $this->sshExecutable->openTunnelToBastionHost($network->get('bastion_host'), $localPort, $databaseServer['endpoint'], 3306);
 
         $this->output->info('Once finished, press "<comment>Ctrl+C</comment>" to close the tunnel');
 

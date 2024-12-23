@@ -11,17 +11,10 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace Ymir\Cli\Exception;
+namespace Ymir\Cli\Exception\Executable;
 
 use Symfony\Component\Console\Exception\RuntimeException;
 
-class CommandLineToolNotDetectedException extends RuntimeException
+class WpCliException extends RuntimeException
 {
-    /**
-     * Constructor.
-     */
-    public function __construct($name)
-    {
-        parent::__construct(sprintf('Cannot detect %1$s on this computer. Please ensure %1$s is installed and properly configured.', $name));
-    }
 }

@@ -15,8 +15,11 @@ namespace Ymir\Cli\Command\Docker;
 
 use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Input\InputOption;
+use Ymir\Cli\ApiClient;
+use Ymir\Cli\CliConfiguration;
 use Ymir\Cli\Command\AbstractCommand;
-use Ymir\Cli\Tool\Docker;
+use Ymir\Cli\Executable\DockerExecutable;
+use Ymir\Cli\ProjectConfiguration\ProjectConfiguration;
 
 class DeleteDockerImagesCommand extends AbstractCommand
 {
@@ -33,6 +36,23 @@ class DeleteDockerImagesCommand extends AbstractCommand
      * @var string
      */
     private const ALL_PATTERN = 'dkr.ecr';
+
+    /**
+     * The Docker executable.
+     *
+     * @var DockerExecutable
+     */
+    private $dockerExecutable;
+
+    /**
+     * Constructor.
+     */
+    public function __construct(ApiClient $apiClient, DockerExecutable $dockerExecutable, CliConfiguration $cliConfiguration, ProjectConfiguration $projectConfiguration)
+    {
+        parent::__construct($apiClient, $cliConfiguration, $projectConfiguration);
+
+        $this->dockerExecutable = $dockerExecutable;
+    }
 
     /**
      * {@inheritdoc}
@@ -60,7 +80,7 @@ class DeleteDockerImagesCommand extends AbstractCommand
             return;
         }
 
-        Docker::rmigrep($pattern);
+        $this->dockerExecutable->removeImagesMatchingPattern($pattern);
 
         $this->output->info('Deployment docker images deleted successfully');
     }

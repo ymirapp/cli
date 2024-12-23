@@ -24,11 +24,11 @@ use Ymir\Cli\Command\Database\CreateDatabaseServerCommand;
 use Ymir\Cli\Command\Docker\CreateDockerfileCommand;
 use Ymir\Cli\Command\InstallPluginCommand;
 use Ymir\Cli\Command\Provider\ConnectProviderCommand;
+use Ymir\Cli\Executable\DockerExecutable;
+use Ymir\Cli\Executable\WpCliExecutable;
 use Ymir\Cli\Process\Process;
 use Ymir\Cli\ProjectConfiguration\ProjectConfiguration;
 use Ymir\Cli\Support\Arr;
-use Ymir\Cli\Tool\Docker;
-use Ymir\Cli\Tool\WpCli;
 
 class InitializeProjectCommand extends AbstractCommand
 {
@@ -47,6 +47,13 @@ class InitializeProjectCommand extends AbstractCommand
     public const NAME = 'project:init';
 
     /**
+     * Docker executable.
+     *
+     * @var DockerExecutable
+     */
+    private $dockerExecutable;
+
+    /**
      * The file system.
      *
      * @var Filesystem
@@ -61,14 +68,23 @@ class InitializeProjectCommand extends AbstractCommand
     private $projectDirectory;
 
     /**
+     * The WP-CLI executable.
+     *
+     * @var WpCliExecutable
+     */
+    private $wpCliExecutable;
+
+    /**
      * Constructor.
      */
-    public function __construct(ApiClient $apiClient, CliConfiguration $cliConfiguration, Filesystem $filesystem, ProjectConfiguration $projectConfiguration, string $projectDirectory)
+    public function __construct(ApiClient $apiClient, CliConfiguration $cliConfiguration, DockerExecutable $dockerExecutable, Filesystem $filesystem, ProjectConfiguration $projectConfiguration, string $projectDirectory, WpCliExecutable $wpCliExecutable)
     {
         parent::__construct($apiClient, $cliConfiguration, $projectConfiguration);
 
+        $this->dockerExecutable = $dockerExecutable;
         $this->filesystem = $filesystem;
         $this->projectDirectory = rtrim($projectDirectory, '/');
+        $this->wpCliExecutable = $wpCliExecutable;
     }
 
     /**
@@ -142,11 +158,11 @@ class InitializeProjectCommand extends AbstractCommand
                 $this->invoke(InstallPluginCommand::NAME);
             }
 
-            if ($this->output->confirm('Do you want to deploy this project using a container image?', Docker::isInstalledGlobally())) {
+            if ($this->output->confirm('Do you want to deploy this project using a container image?', $this->dockerExecutable->isInstalled())) {
                 $this->invoke(CreateDockerfileCommand::NAME, ['--configure-project' => null]);
             }
 
-            if (WpCli::isInstalledGlobally() && WpCli::isWordPressInstalled() && $this->output->confirm('Do you want to have Ymir scan your plugins and themes and configure your project?')) {
+            if ($this->wpCliExecutable->isInstalled() && $this->wpCliExecutable->isWordPressInstalled() && $this->output->confirm('Do you want to have Ymir scan your plugins and themes and configure your project?')) {
                 $this->invoke(ConfigureProjectCommand::NAME);
             }
         }, 'Do you want to try creating a project again?');
@@ -194,7 +210,7 @@ class InitializeProjectCommand extends AbstractCommand
             Process::runShellCommandline('composer create-project roots/bedrock .');
         } elseif ('wordpress' === $projectType) {
             $this->output->info('Downloading WordPress using WP-CLI');
-            WpCli::downloadWordPress();
+            $this->wpCliExecutable->downloadWordPress();
         }
 
         $this->output->info('WordPress downloaded successfully');
@@ -276,7 +292,7 @@ class InitializeProjectCommand extends AbstractCommand
      */
     private function isPluginInstalled(string $projectType): bool
     {
-        return ('wordpress' === $projectType && WpCli::isYmirPluginInstalled())
+        return ('wordpress' === $projectType && $this->wpCliExecutable->isYmirPluginInstalled())
             || ('bedrock' === $projectType && str_contains((string) file_get_contents('./composer.json'), 'ymirapp/wordpress-plugin'));
     }
 
@@ -287,7 +303,7 @@ class InitializeProjectCommand extends AbstractCommand
     {
         try {
             return in_array($projectType, ['bedrock', 'wordpress'])
-                && !WpCli::isWordPressInstalled()
+                && !$this->wpCliExecutable->isWordPressInstalled()
                 && ('bedrock' !== $projectType || !(new \FilesystemIterator($this->projectDirectory))->valid());
         } catch (\Throwable $exception) {
             return false;

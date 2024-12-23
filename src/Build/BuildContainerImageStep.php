@@ -15,9 +15,9 @@ namespace Ymir\Cli\Build;
 
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Process\Exception\RuntimeException;
+use Ymir\Cli\Executable\DockerExecutable;
 use Ymir\Cli\ProjectConfiguration\ProjectConfiguration;
 use Ymir\Cli\Support\Arr;
-use Ymir\Cli\Tool\Docker;
 
 class BuildContainerImageStep implements BuildStepInterface
 {
@@ -29,6 +29,13 @@ class BuildContainerImageStep implements BuildStepInterface
     private $buildDirectory;
 
     /**
+     * The Docker executable.
+     *
+     * @var DockerExecutable
+     */
+    private $dockerExecutable;
+
+    /**
      * The file system.
      *
      * @var Filesystem
@@ -38,9 +45,10 @@ class BuildContainerImageStep implements BuildStepInterface
     /**
      * Constructor.
      */
-    public function __construct(string $buildDirectory, Filesystem $filesystem)
+    public function __construct(string $buildDirectory, DockerExecutable $dockerExecutable, Filesystem $filesystem)
     {
         $this->buildDirectory = rtrim($buildDirectory, '/');
+        $this->dockerExecutable = $dockerExecutable;
         $this->filesystem = $filesystem;
     }
 
@@ -75,6 +83,6 @@ class BuildContainerImageStep implements BuildStepInterface
             throw new RuntimeException('Unable to find a "Dockerfile" to build the container image');
         }
 
-        Docker::build($dockerfileName, sprintf('%s:%s', $projectConfiguration->getProjectName(), $environment), $this->buildDirectory);
+        $this->dockerExecutable->build($dockerfileName, sprintf('%s:%s', $projectConfiguration->getProjectName(), $environment), $this->buildDirectory);
     }
 }

@@ -16,9 +16,12 @@ namespace Ymir\Cli\Command\Cache;
 use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
+use Ymir\Cli\ApiClient;
+use Ymir\Cli\CliConfiguration;
 use Ymir\Cli\Command\Network\AddBastionHostCommand;
+use Ymir\Cli\Executable\SshExecutable;
+use Ymir\Cli\ProjectConfiguration\ProjectConfiguration;
 use Ymir\Cli\Support\Arr;
-use Ymir\Cli\Tool\Ssh;
 
 class CacheTunnelCommand extends AbstractCacheCommand
 {
@@ -28,6 +31,23 @@ class CacheTunnelCommand extends AbstractCacheCommand
      * @var string
      */
     public const NAME = 'cache:tunnel';
+
+    /**
+     * The SSH executable.
+     *
+     * @var SshExecutable
+     */
+    protected $sshExecutable;
+
+    /**
+     * Constructor.
+     */
+    public function __construct(ApiClient $apiClient, CliConfiguration $cliConfiguration, ProjectConfiguration $projectConfiguration, SshExecutable $sshExecutable)
+    {
+        parent::__construct($apiClient, $cliConfiguration, $projectConfiguration);
+
+        $this->sshExecutable = $sshExecutable;
+    }
 
     /**
      * {@inheritdoc}
@@ -66,7 +86,7 @@ class CacheTunnelCommand extends AbstractCacheCommand
 
         $this->output->info(sprintf('Creating SSH tunnel to the "<comment>%s</comment>" cache cluster. You can connect using: <comment>localhost:%s</comment>', $cache['name'], $localPort));
 
-        $tunnel = Ssh::tunnelBastionHost($network->get('bastion_host'), $localPort, $cache['endpoint'], 6379);
+        $tunnel = $this->sshExecutable->openTunnelToBastionHost($network->get('bastion_host'), $localPort, $cache['endpoint'], 6379);
 
         $this->output->info('Once finished, press "<comment>Ctrl+C</comment>" to close the tunnel');
 
