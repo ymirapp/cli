@@ -62,7 +62,7 @@ class ExecuteBuildCommandsStep extends AbstractBuildStep
         }
 
         foreach ($commands as $command) {
-            Process::runShellCommandline($command, $this->buildDirectory, null);
+            Process::runShellCommandline($command, $this->buildDirectory, null, null, null);
         }
     }
 }

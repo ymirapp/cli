@@ -64,6 +64,6 @@ class CommandLineTool
             throw new CommandLineToolNotDetectedException(static::getName());
         }
 
-        return Process::runShellCommandline(sprintf('%s %s', static::getCommand(), $command), $cwd, null);
+        return Process::runShellCommandline(sprintf('%s %s', static::getCommand(), $command), $cwd, null, null, null);
     }
 }
