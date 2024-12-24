@@ -19,8 +19,8 @@ use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
 use Ymir\Cli\ApiClient;
 use Ymir\Cli\CliConfiguration;
+use Ymir\Cli\Executable\ComposerExecutable;
 use Ymir\Cli\GitHubClient;
-use Ymir\Cli\Process\Process;
 use Ymir\Cli\ProjectConfiguration\ProjectConfiguration;
 use Ymir\Cli\Support\Arr;
 
@@ -32,6 +32,13 @@ class InstallPluginCommand extends AbstractProjectCommand
      * @var string
      */
     public const NAME = 'install-plugin';
+
+    /**
+     * The Composer executable.
+     *
+     * @var ComposerExecutable
+     */
+    private $composerExecutable;
 
     /**
      * The file system.
@@ -57,10 +64,11 @@ class InstallPluginCommand extends AbstractProjectCommand
     /**
      * Constructor.
      */
-    public function __construct(ApiClient $apiClient, CliConfiguration $cliConfiguration, Filesystem $filesystem, GitHubClient $gitHubClient, ProjectConfiguration $projectConfiguration, string $projectDirectory)
+    public function __construct(ApiClient $apiClient, CliConfiguration $cliConfiguration, ComposerExecutable $composerExecutable, Filesystem $filesystem, GitHubClient $gitHubClient, ProjectConfiguration $projectConfiguration, string $projectDirectory)
     {
         parent::__construct($apiClient, $cliConfiguration, $projectConfiguration);
 
+        $this->composerExecutable = $composerExecutable;
         $this->filesystem = $filesystem;
         $this->gitHubClient = $gitHubClient;
         $this->projectDirectory = rtrim($projectDirectory, '/');
@@ -90,7 +98,7 @@ class InstallPluginCommand extends AbstractProjectCommand
 
         if ('bedrock' === $projectType) {
             $this->output->info($message.' using Composer');
-            Process::runShellCommandline('composer require ymirapp/wordpress-plugin');
+            $this->composerExecutable->require('ymirapp/wordpress-plugin');
         } elseif ('wordpress' === $projectType) {
             $this->output->info($message.' from GitHub');
             $this->installFromGitHub();

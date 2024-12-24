@@ -24,9 +24,9 @@ use Ymir\Cli\Command\Database\CreateDatabaseServerCommand;
 use Ymir\Cli\Command\Docker\CreateDockerfileCommand;
 use Ymir\Cli\Command\InstallPluginCommand;
 use Ymir\Cli\Command\Provider\ConnectProviderCommand;
+use Ymir\Cli\Executable\ComposerExecutable;
 use Ymir\Cli\Executable\DockerExecutable;
 use Ymir\Cli\Executable\WpCliExecutable;
-use Ymir\Cli\Process\Process;
 use Ymir\Cli\ProjectConfiguration\ProjectConfiguration;
 use Ymir\Cli\Support\Arr;
 
@@ -45,6 +45,13 @@ class InitializeProjectCommand extends AbstractCommand
      * @var string
      */
     public const NAME = 'project:init';
+
+    /**
+     * The Composer executable.
+     *
+     * @var ComposerExecutable
+     */
+    private $composerExecutable;
 
     /**
      * Docker executable.
@@ -77,10 +84,11 @@ class InitializeProjectCommand extends AbstractCommand
     /**
      * Constructor.
      */
-    public function __construct(ApiClient $apiClient, CliConfiguration $cliConfiguration, DockerExecutable $dockerExecutable, Filesystem $filesystem, ProjectConfiguration $projectConfiguration, string $projectDirectory, WpCliExecutable $wpCliExecutable)
+    public function __construct(ApiClient $apiClient, CliConfiguration $cliConfiguration, ComposerExecutable $composerExecutable, DockerExecutable $dockerExecutable, Filesystem $filesystem, ProjectConfiguration $projectConfiguration, string $projectDirectory, WpCliExecutable $wpCliExecutable)
     {
         parent::__construct($apiClient, $cliConfiguration, $projectConfiguration);
 
+        $this->composerExecutable = $composerExecutable;
         $this->dockerExecutable = $dockerExecutable;
         $this->filesystem = $filesystem;
         $this->projectDirectory = rtrim($projectDirectory, '/');
@@ -213,7 +221,7 @@ class InitializeProjectCommand extends AbstractCommand
 
         if ('bedrock' === $projectType) {
             $this->output->info('Creating new Bedrock project');
-            Process::runShellCommandline('composer create-project roots/bedrock .');
+            $this->composerExecutable->createProject('roots/bedrock');
         } elseif ('wordpress' === $projectType) {
             $this->output->info('Downloading WordPress using WP-CLI');
             $this->wpCliExecutable->downloadWordPress();
