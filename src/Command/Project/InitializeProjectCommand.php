@@ -158,8 +158,14 @@ class InitializeProjectCommand extends AbstractCommand
                 $this->invoke(InstallPluginCommand::NAME);
             }
 
-            if ($this->output->confirm('Do you want to deploy this project using a container image?', $this->dockerExecutable->isInstalled())) {
+            $useContainerImage = $this->output->confirm('Do you want to deploy this project using a container image?');
+
+            if ($useContainerImage) {
                 $this->invoke(CreateDockerfileCommand::NAME, ['--configure-project' => null]);
+            }
+
+            if ($useContainerImage && $this->dockerExecutable->isInstalled()) {
+                $this->output->warning('Docker wasn\'t detected on this computer. You won\'t be able to deploy this project locally.');
             }
 
             if ($this->wpCliExecutable->isInstalled() && $this->wpCliExecutable->isWordPressInstalled() && $this->output->confirm('Do you want to have Ymir scan your plugins and themes and configure your project?')) {
