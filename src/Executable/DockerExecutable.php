@@ -38,7 +38,13 @@ class DockerExecutable extends AbstractExecutable
      */
     public function getExecutable(): string
     {
-        return 'docker';
+        static $executable;
+
+        if (!is_string($executable)) {
+            $executable = $this->isExecutableInstalled('podman') ? 'podman' : 'docker';
+        }
+
+        return $executable;
     }
 
     /**
