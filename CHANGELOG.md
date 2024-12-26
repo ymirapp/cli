@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.50.0](https://github.com/ymirapp/cli/compare/v1.49.0...v1.50.0) (2024-12-26)
+
+
+### Features
+
+* Add support for podman to build container images ([afee2ed](https://github.com/ymirapp/cli/commit/afee2ed7c99687da916dedd307467febf8c2694c)), closes [#53](https://github.com/ymirapp/cli/issues/53)
+* Make container image deployment the default ([77b2ec3](https://github.com/ymirapp/cli/commit/77b2ec3f8a8f3c3aa4653038d7f1a7e01b0641a1))
+
 ## [1.49.0](https://github.com/ymirapp/cli/compare/v1.48.1...v1.49.0) (2024-12-20)
 
 
