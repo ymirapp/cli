@@ -22,7 +22,7 @@ class DockerExecutable extends AbstractExecutable
      */
     public function build(string $file, string $tag, ?string $cwd = null)
     {
-        $this->run(sprintf('build --pull --file=%s --tag=%s .', $file, $tag), $cwd);
+        $this->run(sprintf('build --pull --file=%s --tag=%s .', $file, $tag), $cwd, null);
     }
 
     /**
