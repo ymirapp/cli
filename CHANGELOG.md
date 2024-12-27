@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.50.1](https://github.com/ymirapp/cli/compare/v1.50.0...v1.50.1) (2024-12-27)
+
+
+### Bug Fixes
+
+* Don't put a timeout when running `docker build` command ([b5d4f4d](https://github.com/ymirapp/cli/commit/b5d4f4d2d4c1cecbe386866b244183a737f6fddb))
+
 ## [1.50.0](https://github.com/ymirapp/cli/compare/v1.49.0...v1.50.0) (2024-12-26)
 
 
