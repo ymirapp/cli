@@ -156,6 +156,10 @@ class ImportDatabaseCommand extends AbstractDatabaseCommand
             $query = '';
 
             $lines->each(function ($line) use ($pdo, &$query) {
+                if (!is_string($line)) {
+                    return;
+                }
+
                 $line = trim($line);
 
                 if (str_starts_with($line, '--') || empty($line)) {
