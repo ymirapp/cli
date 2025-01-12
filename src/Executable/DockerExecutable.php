@@ -60,7 +60,7 @@ class DockerExecutable extends AbstractExecutable
      */
     public function push(string $image, ?string $cwd = null)
     {
-        $this->run(sprintf('push %s', $image), $cwd);
+        $this->run(sprintf('push %s', $image), $cwd, null);
     }
 
     /**
