@@ -172,7 +172,7 @@ class InitializeProjectCommand extends AbstractCommand
                 $this->invoke(CreateDockerfileCommand::NAME, ['--configure-project' => null]);
             }
 
-            if ($useContainerImage && $this->dockerExecutable->isInstalled()) {
+            if ($useContainerImage && !$this->dockerExecutable->isInstalled()) {
                 $this->output->warning('Docker wasn\'t detected on this computer. You won\'t be able to deploy this project locally.');
             }
 
