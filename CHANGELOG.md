@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.50.2](https://github.com/ymirapp/cli/compare/v1.50.1...v1.50.2) (2025-01-12)
+
+
+### Bug Fixes
+
+* Check if we have a string before passing it to `trim` ([601ee0e](https://github.com/ymirapp/cli/commit/601ee0eca90745cb7da7378b85196ad7bd4f610c))
+* Display docker warning if it's not installed ([331b288](https://github.com/ymirapp/cli/commit/331b28801d11ada5a2e7cc696e1aaddd5a6e3438))
+* Don't put a timeout when running `docker push` command ([95f4213](https://github.com/ymirapp/cli/commit/95f4213b785e4999722889b8f215342ef4115b4a))
+
 ## [1.50.1](https://github.com/ymirapp/cli/compare/v1.50.0...v1.50.1) (2024-12-27)
 
 
