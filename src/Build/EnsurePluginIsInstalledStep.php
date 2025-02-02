@@ -47,7 +47,22 @@ class EnsurePluginIsInstalledStep extends AbstractBuildStep
      */
     public function perform(string $environment, ProjectConfiguration $projectConfiguration)
     {
-        $pluginsPaths = collect('bedrock' !== $projectConfiguration->getProjectType() ? ['/wp-content/mu-plugins', '/wp-content/plugins'] : ['/web/app/plugins', '/web/app/mu-plugins'])
+        switch ($projectConfiguration->getProjectType()) {
+            case 'bedrock':
+                $pluginsRelativePaths = ['/web/app/plugins', '/web/app/mu-plugins'];
+
+                break;
+            case 'radicle':
+                $pluginsRelativePaths = ['/public/content/plugins', '/public/content/mu-plugins'];
+
+                break;
+            default:
+                $pluginsRelativePaths = ['/wp-content/mu-plugins', '/wp-content/plugins'];
+
+                break;
+        }
+
+        $pluginsPaths = collect($pluginsRelativePaths)
             ->map(function (string $relativePath) {
                 return $this->buildDirectory.$relativePath;
             })->filter(function (string $path) {

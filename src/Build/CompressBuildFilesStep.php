@@ -78,6 +78,8 @@ class CompressBuildFilesStep implements BuildStepInterface
 
         if ('bedrock' === $projectConfiguration->getProjectType()) {
             $files->exclude(['web/wp/wp-content']);
+        } elseif ('radicle' === $projectConfiguration->getProjectType()) {
+            $files->exclude(['public/wp/wp-content']);
         }
 
         if (Arr::has($environment, 'build.include')) {
@@ -185,6 +187,8 @@ class CompressBuildFilesStep implements BuildStepInterface
             ->path(collect(['wp-includes\/', 'wp-admin\/'])->map(function (string $path) use ($projectType) {
                 if ('bedrock' === $projectType) {
                     $path = 'web\/wp\/'.$path;
+                } elseif ('radicle' === $projectType) {
+                    $path = 'public\/wp\/'.$path;
                 }
 
                 return sprintf('/^%s/', $path);

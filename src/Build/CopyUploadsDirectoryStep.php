@@ -72,7 +72,20 @@ class CopyUploadsDirectoryStep implements BuildStepInterface
      */
     public function perform(string $environment, ProjectConfiguration $projectConfiguration)
     {
-        $projectUploadsDirectory = $this->projectDirectory.('bedrock' === $projectConfiguration->getProjectType() ? '/web/app/uploads' : '/wp-content/uploads');
+        switch ($projectConfiguration->getProjectType()) {
+            case 'bedrock':
+                $projectUploadsDirectory = $this->projectDirectory.'/web/app/uploads';
+
+                break;
+            case 'radicle':
+                $projectUploadsDirectory = $this->projectDirectory.'/public/content/uploads';
+
+                break;
+            default:
+                $projectUploadsDirectory = $this->projectDirectory.'/wp-content/uploads';
+
+                break;
+        }
 
         $files = Finder::create()->files()->in($projectUploadsDirectory);
 

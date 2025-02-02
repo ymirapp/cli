@@ -70,7 +70,20 @@ class CopyMustUsePluginStep extends AbstractBuildStep
             throw new RuntimeException(sprintf('Cannot find "%s" stub file', $mupluginStub));
         }
 
-        $mupluginsDirectory = 'bedrock' === $projectConfiguration->getProjectType() ? $this->buildDirectory.'/web/app/mu-plugins' : $this->buildDirectory.'/wp-content/mu-plugins';
+        switch ($projectConfiguration->getProjectType()) {
+            case 'bedrock':
+                $mupluginsDirectory = $this->buildDirectory.'/web/app/mu-plugins';
+
+                break;
+            case 'radicle':
+                $mupluginsDirectory = $this->buildDirectory.'/public/content/mu-plugins';
+
+                break;
+            default:
+                $mupluginsDirectory = $this->buildDirectory.'/wp-content/mu-plugins';
+
+                break;
+        }
 
         if (!$this->filesystem->exists($mupluginsDirectory)) {
             $this->filesystem->mkdir($mupluginsDirectory);

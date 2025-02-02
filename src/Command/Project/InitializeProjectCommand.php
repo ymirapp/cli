@@ -261,16 +261,16 @@ class InitializeProjectCommand extends AbstractCommand
     {
         $type = '';
 
-        if ($this->filesystem->exists($this->projectDirectory.'/wp-config.php')) {
+        if ($this->projectPathsExist(['/wp-config.php'])) {
             $type = 'wordpress';
-        } elseif ($this->filesystem->exists(array_map(function (string $path) {
-            return $this->projectDirectory.$path;
-        }, ['/web/app/', '/web/wp-config.php', '/config/application.php']))) {
+        } elseif ($this->projectPathsExist(['/web/app/', '/web/wp-config.php', '/config/application.php'])) {
             $type = 'bedrock';
+        } elseif ($this->projectPathsExist(['/public/content/', '/public/wp-config.php', '/bedrock/application.php'])) {
+            $type = 'radicle';
         }
 
         if (empty($type)) {
-            $type = $this->output->choice('Please select the type of project to initialize', ['Bedrock', 'WordPress'], 'WordPress');
+            $type = $this->output->choice('Please select the type of project to initialize', ['Bedrock', 'Radicle', 'WordPress'], 'WordPress');
         }
 
         return strtolower($type);
@@ -296,6 +296,15 @@ class InitializeProjectCommand extends AbstractCommand
         if ('bedrock' === $projectType) {
             Arr::set($environments, 'production.build', ['COMPOSER_MIRROR_PATH_REPOS=1 composer install --no-dev']);
             Arr::set($environments, 'staging.build', ['COMPOSER_MIRROR_PATH_REPOS=1 composer install']);
+        } elseif ('radicle' === $projectType) {
+            Arr::set($environments, 'production.build', [
+                'composer install --no-dev',
+                'yarn install && yarn build && rm -rf node_modules',
+            ]);
+            Arr::set($environments, 'staging.build', [
+                'composer install',
+                'yarn install && yarn build && rm -rf node_modules',
+            ]);
         }
 
         return collect($environments);
@@ -322,5 +331,15 @@ class InitializeProjectCommand extends AbstractCommand
         } catch (\Throwable $exception) {
             return false;
         }
+    }
+
+    /**
+     * Check if the project paths exist.
+     */
+    private function projectPathsExist(array $paths): bool
+    {
+        return $this->filesystem->exists(array_map(function (string $path) {
+            return $this->projectDirectory.$path;
+        }, $paths));
     }
 }

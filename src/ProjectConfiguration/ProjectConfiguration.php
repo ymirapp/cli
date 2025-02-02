@@ -73,6 +73,11 @@ class ProjectConfiguration implements Arrayable
     {
         if (isset($this->configuration['type']) && 'bedrock' === $this->configuration['type']) {
             $options = array_merge(['build' => ['COMPOSER_MIRROR_PATH_REPOS=1 composer install']], (array) $options);
+        } elseif (isset($this->configuration['type']) && 'radicle' === $this->configuration['type']) {
+            $options = array_merge(['build' => [
+                'composer install',
+                'yarn install && yarn build && rm -rf node_modules',
+            ]], (array) $options);
         }
 
         $this->configuration['environments'][$environment] = $options;
@@ -245,7 +250,7 @@ class ProjectConfiguration implements Arrayable
             throw new RuntimeException('The Ymir project configuration file must have at least one environment');
         } elseif (empty($this->configuration['type'])) {
             throw new RuntimeException('The Ymir project configuration file must have a "type"');
-        } elseif (!in_array($this->configuration['type'], ['bedrock', 'wordpress'])) {
+        } elseif (!in_array($this->configuration['type'], ['bedrock', 'radicle', 'wordpress'])) {
             throw new RuntimeException('The allowed project "type" are "bedrock" or "wordpress"');
         }
     }

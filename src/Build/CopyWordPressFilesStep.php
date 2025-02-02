@@ -156,6 +156,8 @@ class CopyWordPressFilesStep extends AbstractBuildStep
             $finder->append([$this->getSplFileInfo('/wp-config.php')]);
         } elseif ('bedrock' === $projectType) {
             $finder->exclude('web/app/uploads');
+        } elseif ('radicle' === $projectType) {
+            $finder->exclude('public/content/uploads');
         }
 
         return $finder;

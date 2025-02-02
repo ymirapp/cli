@@ -37,7 +37,20 @@ abstract class AbstractWordPressConfigurationChange implements WordPressConfigur
      */
     protected function getBaseIncludePath(string $projectType): string
     {
-        $basePath = 'bedrock' === $projectType ? 'web/app' : 'wp-content';
+        switch ($projectType) {
+            case 'bedrock':
+                $basePath = 'web/app';
+
+                break;
+            case 'radicle':
+                $basePath = 'public/content';
+
+                break;
+            default:
+                $basePath = 'wp-content';
+
+                break;
+        }
 
         return $basePath.'/plugins/'.$this->getName();
     }

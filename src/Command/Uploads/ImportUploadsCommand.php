@@ -87,6 +87,8 @@ class ImportUploadsCommand extends AbstractProjectCommand
             $path = 'web/app/uploads';
         } elseif (empty($path) && 'wordpress' === $projectType) {
             $path = 'wp-content/uploads';
+        } elseif (empty($path) && 'radicle' === $projectType) {
+            $path = 'public/content/uploads';
         }
 
         $adapter = $this->getAdapter($path);

@@ -92,11 +92,11 @@ class InstallPluginCommand extends AbstractProjectCommand
         $message = 'Installing Ymir plugin';
         $projectType = strtolower($this->projectConfiguration->getProjectType());
 
-        if (!in_array($projectType, ['bedrock', 'wordpress'])) {
-            throw new RuntimeException('Can only install plugin for "bedrock" and "wordpress" projects');
+        if (!in_array($projectType, ['bedrock', 'radicle', 'wordpress'])) {
+            throw new RuntimeException('Can only install plugin for "bedrock", "radicle" and "wordpress" projects');
         }
 
-        if ('bedrock' === $projectType) {
+        if (in_array($projectType, ['bedrock', 'radicle'])) {
             $this->output->info($message.' using Composer');
             $this->composerExecutable->require('ymirapp/wordpress-plugin');
         } elseif ('wordpress' === $projectType) {
@@ -105,6 +105,12 @@ class InstallPluginCommand extends AbstractProjectCommand
         }
 
         $this->output->info('Ymir plugin installed');
+
+        if ('radicle' === $projectType) {
+            $this->output->info('Installing Ymir Laravel bridge');
+            $this->composerExecutable->require('ymirapp/laravel-bridge');
+            $this->output->info('Ymir Laravel bridge installed');
+        }
     }
 
     /**

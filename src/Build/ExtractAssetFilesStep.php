@@ -71,9 +71,12 @@ class ExtractAssetFilesStep extends AbstractBuildStep
         $this->filesystem->mkdir($this->toDirectory, 0755);
 
         $fromDirectory = $this->fromDirectory;
+        $projectType = $projectConfiguration->getProjectType();
 
-        if ('bedrock' === $projectConfiguration->getProjectType()) {
+        if ('bedrock' === $projectType) {
             $fromDirectory .= '/web';
+        } elseif ('radicle' === $projectType) {
+            $fromDirectory .= '/public';
         }
 
         $files = Finder::create()
@@ -83,7 +86,7 @@ class ExtractAssetFilesStep extends AbstractBuildStep
             ->followLinks()
             ->ignoreDotFiles(true);
 
-        if ('bedrock' === $projectConfiguration->getProjectType()) {
+        if (in_array($projectType, ['bedrock', 'radicle'])) {
             $files->exclude(['wp/wp-content']);
         }
 
