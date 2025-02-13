@@ -317,7 +317,7 @@ class InitializeProjectCommand extends AbstractCommand
     {
         try {
             return in_array($projectType, ['bedrock', 'wordpress'])
-                && !$this->wpCliExecutable->isWordPressInstalled()
+                && null === $this->wpCliExecutable->getVersion()
                 && ('bedrock' !== $projectType || !(new \FilesystemIterator($this->projectDirectory))->valid());
         } catch (\Throwable $exception) {
             return false;

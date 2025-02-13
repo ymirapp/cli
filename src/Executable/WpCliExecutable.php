@@ -45,6 +45,18 @@ class WpCliExecutable extends AbstractExecutable
     }
 
     /**
+     * Get the WordPress version.
+     */
+    public function getVersion(): ?string
+    {
+        try {
+            return trim($this->run('core version')->getOutput());
+        } catch (WpCliException $exception) {
+            return null;
+        }
+    }
+
+    /**
      * Checks if WordPress is installed.
      */
     public function isWordPressInstalled(?string $cwd = null): bool
