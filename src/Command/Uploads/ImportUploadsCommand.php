@@ -33,7 +33,7 @@ use Ymir\Cli\CliConfiguration;
 use Ymir\Cli\Command\AbstractProjectCommand;
 use Ymir\Cli\Exception\InvalidInputException;
 use Ymir\Cli\FileUploader;
-use Ymir\Cli\ProjectConfiguration\ProjectConfiguration;
+use Ymir\Cli\Project\Configuration\ProjectConfiguration;
 
 class ImportUploadsCommand extends AbstractProjectCommand
 {

@@ -11,16 +11,26 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace Ymir\Cli\ProjectConfiguration\WordPress;
+namespace Ymir\Cli\Project\Configuration\WordPress;
 
-class ElementorConfigurationChange extends AbstractWordPressConfigurationChange
+class OxygenConfigurationChange extends AbstractWordPressConfigurationChange
 {
     /**
      * {@inheritdoc}
      */
     public function getName(): string
     {
-        return 'elementor';
+        return 'oxygen';
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function getBuildIncludePaths(string $projectType): array
+    {
+        return [
+            $this->getBaseIncludePath($projectType),
+        ];
     }
 
     /**
@@ -30,7 +40,7 @@ class ElementorConfigurationChange extends AbstractWordPressConfigurationChange
     {
         return [
             'cdn' => [
-                'excluded_paths' => ['/uploads/elementor/*'],
+                'excluded_paths' => ['/uploads/oxygen/*'],
             ],
         ];
     }

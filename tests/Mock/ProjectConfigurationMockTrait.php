@@ -14,7 +14,7 @@ declare(strict_types=1);
 namespace Ymir\Cli\Tests\Mock;
 
 use PHPUnit\Framework\MockObject\MockObject;
-use Ymir\Cli\ProjectConfiguration\ProjectConfiguration;
+use Ymir\Cli\Project\Configuration\ProjectConfiguration;
 
 trait ProjectConfigurationMockTrait
 {

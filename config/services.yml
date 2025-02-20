@@ -29,7 +29,7 @@ services:
       tags: ['command']
     Symfony\Component\EventDispatcher\EventSubscriberInterface:
       tags: ['subscriber']
-    Ymir\Cli\ProjectConfiguration\WordPress\WordPressConfigurationChangeInterface:
+    Ymir\Cli\Project\Configuration\WordPress\WordPressConfigurationChangeInterface:
       tags: ['wordpress_configuration_changes']
 
   GuzzleHttp\:

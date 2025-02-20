@@ -20,7 +20,7 @@ use Ymir\Cli\Command\AbstractProjectCommand;
 use Ymir\Cli\Command\Email\CreateEmailIdentityCommand;
 use Ymir\Cli\Command\Environment\GetEnvironmentUrlCommand;
 use Ymir\Cli\Deployment\DeploymentStepInterface;
-use Ymir\Cli\ProjectConfiguration\ProjectConfiguration;
+use Ymir\Cli\Project\Configuration\ProjectConfiguration;
 
 abstract class AbstractProjectDeploymentCommand extends AbstractProjectCommand
 {

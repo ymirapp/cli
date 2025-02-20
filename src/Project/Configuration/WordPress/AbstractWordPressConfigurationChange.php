@@ -11,7 +11,7 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace Ymir\Cli\ProjectConfiguration\WordPress;
+namespace Ymir\Cli\Project\Configuration\WordPress;
 
 use Ymir\Cli\Support\Arr;
 

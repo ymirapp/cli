@@ -21,7 +21,7 @@ use Ymir\Cli\ApiClient;
 use Ymir\Cli\Console\Input;
 use Ymir\Cli\Console\Output;
 use Ymir\Cli\FileUploader;
-use Ymir\Cli\ProjectConfiguration\ProjectConfiguration;
+use Ymir\Cli\Project\Configuration\ProjectConfiguration;
 
 class ProcessAssetsStep implements DeploymentStepInterface
 {

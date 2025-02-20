@@ -18,7 +18,7 @@ use Symfony\Component\Filesystem\Filesystem;
 use Ymir\Cli\ApiClient;
 use Ymir\Cli\CliConfiguration;
 use Ymir\Cli\Command\AbstractProjectCommand;
-use Ymir\Cli\ProjectConfiguration\ProjectConfiguration;
+use Ymir\Cli\Project\Configuration\ProjectConfiguration;
 
 class DownloadEnvironmentVariablesCommand extends AbstractProjectCommand
 {

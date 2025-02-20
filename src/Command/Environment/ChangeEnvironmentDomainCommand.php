@@ -16,7 +16,7 @@ namespace Ymir\Cli\Command\Environment;
 use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Input\InputArgument;
 use Ymir\Cli\Command\AbstractInvocationCommand;
-use Ymir\Cli\ProjectConfiguration\DomainConfigurationChange;
+use Ymir\Cli\Project\Configuration\DomainConfigurationChange;
 use Ymir\Cli\Support\Arr;
 
 class ChangeEnvironmentDomainCommand extends AbstractInvocationCommand

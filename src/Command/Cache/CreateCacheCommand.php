@@ -19,7 +19,7 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
 use Ymir\Cli\Command\AbstractCommand;
 use Ymir\Cli\Exception\InvalidInputException;
-use Ymir\Cli\ProjectConfiguration\CacheConfigurationChange;
+use Ymir\Cli\Project\Configuration\CacheConfigurationChange;
 
 class CreateCacheCommand extends AbstractCommand
 {

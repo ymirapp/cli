@@ -16,7 +16,7 @@ namespace Ymir\Cli\Command\Provider;
 use Ymir\Cli\ApiClient;
 use Ymir\Cli\CliConfiguration;
 use Ymir\Cli\Command\AbstractCommand;
-use Ymir\Cli\ProjectConfiguration\ProjectConfiguration;
+use Ymir\Cli\Project\Configuration\ProjectConfiguration;
 
 abstract class AbstractProviderCommand extends AbstractCommand
 {

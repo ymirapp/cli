@@ -22,7 +22,7 @@ use Ymir\Cli\Command\Network\AddBastionHostCommand;
 use Ymir\Cli\Exception\InvalidInputException;
 use Ymir\Cli\Executable\SshExecutable;
 use Ymir\Cli\Process\Process;
-use Ymir\Cli\ProjectConfiguration\ProjectConfiguration;
+use Ymir\Cli\Project\Configuration\ProjectConfiguration;
 use Ymir\Cli\Support\Arr;
 
 abstract class AbstractDatabaseCommand extends AbstractCommand

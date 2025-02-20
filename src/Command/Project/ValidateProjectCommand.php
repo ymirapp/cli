@@ -18,7 +18,7 @@ use Ymir\Cli\ApiClient;
 use Ymir\Cli\CliConfiguration;
 use Ymir\Cli\Command\AbstractProjectCommand;
 use Ymir\Cli\Dockerfile;
-use Ymir\Cli\ProjectConfiguration\ProjectConfiguration;
+use Ymir\Cli\Project\Configuration\ProjectConfiguration;
 use Ymir\Cli\Support\Arr;
 
 class ValidateProjectCommand extends AbstractProjectCommand

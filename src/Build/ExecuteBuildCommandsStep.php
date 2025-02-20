@@ -14,7 +14,7 @@ declare(strict_types=1);
 namespace Ymir\Cli\Build;
 
 use Ymir\Cli\Process\Process;
-use Ymir\Cli\ProjectConfiguration\ProjectConfiguration;
+use Ymir\Cli\Project\Configuration\ProjectConfiguration;
 use Ymir\Cli\Support\Arr;
 
 class ExecuteBuildCommandsStep extends AbstractBuildStep

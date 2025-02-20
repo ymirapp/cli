@@ -16,7 +16,7 @@ namespace Ymir\Cli\Build;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Process\Exception\RuntimeException;
 use Ymir\Cli\Executable\DockerExecutable;
-use Ymir\Cli\ProjectConfiguration\ProjectConfiguration;
+use Ymir\Cli\Project\Configuration\ProjectConfiguration;
 use Ymir\Cli\Support\Arr;
 
 class BuildContainerImageStep implements BuildStepInterface

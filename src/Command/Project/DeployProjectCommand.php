@@ -20,7 +20,7 @@ use Symfony\Component\Console\Input\InputOption;
 use Ymir\Cli\ApiClient;
 use Ymir\Cli\CliConfiguration;
 use Ymir\Cli\Command\Uploads\ImportUploadsCommand;
-use Ymir\Cli\ProjectConfiguration\ProjectConfiguration;
+use Ymir\Cli\Project\Configuration\ProjectConfiguration;
 
 class DeployProjectCommand extends AbstractProjectDeploymentCommand
 {

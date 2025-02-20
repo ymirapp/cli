@@ -17,7 +17,7 @@ use Symfony\Component\Console\ConsoleEvents;
 use Symfony\Component\Console\Event\ConsoleCommandEvent;
 use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
-use Ymir\Cli\ProjectConfiguration\ProjectConfiguration;
+use Ymir\Cli\Project\Configuration\ProjectConfiguration;
 
 class LoadProjectConfigurationSubscriber implements EventSubscriberInterface
 {

@@ -16,7 +16,7 @@ namespace Ymir\Cli\Build;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Finder\SplFileInfo;
-use Ymir\Cli\ProjectConfiguration\ProjectConfiguration;
+use Ymir\Cli\Project\Configuration\ProjectConfiguration;
 use Ymir\Cli\Support\Arr;
 
 class CopyWordPressFilesStep extends AbstractBuildStep

@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace Ymir\Cli\Build;
 
-use Ymir\Cli\ProjectConfiguration\ProjectConfiguration;
+use Ymir\Cli\Project\Configuration\ProjectConfiguration;
 
 class DebugBuildStep implements BuildStepInterface
 {

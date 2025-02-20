@@ -11,15 +11,15 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace Ymir\Cli\Tests\Unit\ProjectConfiguration\WordPress;
+namespace Ymir\Cli\Tests\Unit\Project\Configuration\WordPress;
 
-use Ymir\Cli\ProjectConfiguration\WordPress\OxygenConfigurationChange;
+use Ymir\Cli\Project\Configuration\WordPress\CloudflareConfigurationChange;
 use Ymir\Cli\Tests\Unit\TestCase;
 
 /**
- * @covers \Ymir\Cli\ProjectConfiguration\WordPress\OxygenConfigurationChange
+ * @covers \Ymir\Cli\Project\Configuration\WordPress\CloudflareConfigurationChange
  */
-class OxygenConfigurationChangeTest extends TestCase
+class CloudflareConfigurationChangeTest extends TestCase
 {
     private $configurationChange;
 
@@ -28,25 +28,19 @@ class OxygenConfigurationChangeTest extends TestCase
      */
     protected function setUp(): void
     {
-        $this->configurationChange = new OxygenConfigurationChange();
+        $this->configurationChange = new CloudflareConfigurationChange();
     }
 
     public function testApplyDoesntDuplicateExistingOptions()
     {
         $this->assertSame([
             'build' => ['include' => [
-                'wp-content/plugins/oxygen',
+                'wp-content/plugins/cloudflare/config.json',
             ]],
-            'cdn' => [
-                'excluded_paths' => ['/foo', '/uploads/oxygen/*'],
-            ],
         ], $this->configurationChange->apply([
             'build' => ['include' => [
-                'wp-content/plugins/oxygen',
+                'wp-content/plugins/cloudflare/config.json',
             ]],
-            'cdn' => [
-                'excluded_paths' => ['/foo', '/uploads/oxygen/*'],
-            ],
         ], 'wordpress'));
     }
 
@@ -54,28 +48,20 @@ class OxygenConfigurationChangeTest extends TestCase
     {
         $this->assertSame([
             'build' => ['include' => [
+                'wp-content/plugins/cloudflare/config.json',
                 'wp-content/plugins/foo',
-                'wp-content/plugins/oxygen',
             ]],
-            'cdn' => [
-                'excluded_paths' => ['/foo', '/uploads/oxygen/*'],
-            ],
         ], $this->configurationChange->apply([
             'build' => ['include' => [
                 'wp-content/plugins/foo',
+                'wp-content/plugins/cloudflare/config.json',
             ]],
-            'cdn' => [
-                'excluded_paths' => ['/foo'],
-            ],
         ], 'wordpress'));
     }
 
     public function testApplyWithBedrockProjectAndImageDeployment()
     {
         $this->assertSame([
-            'cdn' => [
-                'excluded_paths' => ['/uploads/oxygen/*'],
-            ],
             'deployment' => 'image',
         ], $this->configurationChange->apply(['deployment' => 'image'], 'bedrock'));
     }
@@ -84,20 +70,14 @@ class OxygenConfigurationChangeTest extends TestCase
     {
         $this->assertSame([
             'build' => ['include' => [
-                'web/app/plugins/oxygen',
+                'web/app/plugins/cloudflare/config.json',
             ]],
-            'cdn' => [
-                'excluded_paths' => ['/uploads/oxygen/*'],
-            ],
         ], $this->configurationChange->apply([], 'bedrock'));
     }
 
     public function testApplyWithWordPressProjectAndImageDeployment()
     {
         $this->assertSame([
-            'cdn' => [
-                'excluded_paths' => ['/uploads/oxygen/*'],
-            ],
             'deployment' => 'image',
         ], $this->configurationChange->apply(['deployment' => 'image'], 'wordpress'));
     }
@@ -106,16 +86,13 @@ class OxygenConfigurationChangeTest extends TestCase
     {
         $this->assertSame([
             'build' => ['include' => [
-                'wp-content/plugins/oxygen',
+                'wp-content/plugins/cloudflare/config.json',
             ]],
-            'cdn' => [
-                'excluded_paths' => ['/uploads/oxygen/*'],
-            ],
         ], $this->configurationChange->apply([], 'wordpress'));
     }
 
     public function testGetName()
     {
-        $this->assertSame('oxygen', $this->configurationChange->getName());
+        $this->assertSame('cloudflare', $this->configurationChange->getName());
     }
 }

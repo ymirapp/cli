@@ -11,15 +11,15 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace Ymir\Cli\Tests\Unit\ProjectConfiguration\WordPress;
+namespace Ymir\Cli\Tests\Unit\Project\Configuration\WordPress;
 
-use Ymir\Cli\ProjectConfiguration\WordPress\CloudflareConfigurationChange;
+use Ymir\Cli\Project\Configuration\WordPress\ElementorConfigurationChange;
 use Ymir\Cli\Tests\Unit\TestCase;
 
 /**
- * @covers \Ymir\Cli\ProjectConfiguration\WordPress\CloudflareConfigurationChange
+ * @covers \Ymir\Cli\Project\Configuration\WordPress\ElementorConfigurationChange
  */
-class CloudflareConfigurationChangeTest extends TestCase
+class ElementorConfigurationChangeTest extends TestCase
 {
     private $configurationChange;
 
@@ -28,40 +28,41 @@ class CloudflareConfigurationChangeTest extends TestCase
      */
     protected function setUp(): void
     {
-        $this->configurationChange = new CloudflareConfigurationChange();
+        $this->configurationChange = new ElementorConfigurationChange();
     }
 
     public function testApplyDoesntDuplicateExistingOptions()
     {
         $this->assertSame([
-            'build' => ['include' => [
-                'wp-content/plugins/cloudflare/config.json',
-            ]],
+            'cdn' => [
+                'excluded_paths' => ['/uploads/elementor/*'],
+            ],
         ], $this->configurationChange->apply([
-            'build' => ['include' => [
-                'wp-content/plugins/cloudflare/config.json',
-            ]],
+            'cdn' => [
+                'excluded_paths' => ['/uploads/elementor/*'],
+            ],
         ], 'wordpress'));
     }
 
     public function testApplyDoesntEraseExistingOptions()
     {
         $this->assertSame([
-            'build' => ['include' => [
-                'wp-content/plugins/cloudflare/config.json',
-                'wp-content/plugins/foo',
-            ]],
+            'cdn' => [
+                'excluded_paths' => ['/foo', '/uploads/elementor/*'],
+            ],
         ], $this->configurationChange->apply([
-            'build' => ['include' => [
-                'wp-content/plugins/foo',
-                'wp-content/plugins/cloudflare/config.json',
-            ]],
+            'cdn' => [
+                'excluded_paths' => ['/foo'],
+            ],
         ], 'wordpress'));
     }
 
     public function testApplyWithBedrockProjectAndImageDeployment()
     {
         $this->assertSame([
+            'cdn' => [
+                'excluded_paths' => ['/uploads/elementor/*'],
+            ],
             'deployment' => 'image',
         ], $this->configurationChange->apply(['deployment' => 'image'], 'bedrock'));
     }
@@ -69,15 +70,18 @@ class CloudflareConfigurationChangeTest extends TestCase
     public function testApplyWithBedrockProjectAndNoImageDeployment()
     {
         $this->assertSame([
-            'build' => ['include' => [
-                'web/app/plugins/cloudflare/config.json',
-            ]],
+            'cdn' => [
+                'excluded_paths' => ['/uploads/elementor/*'],
+            ],
         ], $this->configurationChange->apply([], 'bedrock'));
     }
 
     public function testApplyWithWordPressProjectAndImageDeployment()
     {
         $this->assertSame([
+            'cdn' => [
+                'excluded_paths' => ['/uploads/elementor/*'],
+            ],
             'deployment' => 'image',
         ], $this->configurationChange->apply(['deployment' => 'image'], 'wordpress'));
     }
@@ -85,14 +89,14 @@ class CloudflareConfigurationChangeTest extends TestCase
     public function testApplyWithWordPressProjectAndNoImageDeployment()
     {
         $this->assertSame([
-            'build' => ['include' => [
-                'wp-content/plugins/cloudflare/config.json',
-            ]],
+            'cdn' => [
+                'excluded_paths' => ['/uploads/elementor/*'],
+            ],
         ], $this->configurationChange->apply([], 'wordpress'));
     }
 
     public function testGetName()
     {
-        $this->assertSame('cloudflare', $this->configurationChange->getName());
+        $this->assertSame('elementor', $this->configurationChange->getName());
     }
 }

@@ -19,8 +19,8 @@ use Ymir\Cli\ApiClient;
 use Ymir\Cli\CliConfiguration;
 use Ymir\Cli\Command\AbstractProjectCommand;
 use Ymir\Cli\Dockerfile;
-use Ymir\Cli\ProjectConfiguration\ImageDeploymentConfigurationChange;
-use Ymir\Cli\ProjectConfiguration\ProjectConfiguration;
+use Ymir\Cli\Project\Configuration\ImageDeploymentConfigurationChange;
+use Ymir\Cli\Project\Configuration\ProjectConfiguration;
 
 class CreateDockerfileCommand extends AbstractProjectCommand
 {

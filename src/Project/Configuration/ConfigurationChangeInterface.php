@@ -11,7 +11,7 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace Ymir\Cli\ProjectConfiguration;
+namespace Ymir\Cli\Project\Configuration;
 
 interface ConfigurationChangeInterface
 {

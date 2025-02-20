@@ -15,7 +15,7 @@ namespace Ymir\Cli;
 
 use Illuminate\Support\Collection;
 use Symfony\Component\Console\Exception\RuntimeException;
-use Ymir\Cli\ProjectConfiguration\ProjectConfiguration;
+use Ymir\Cli\Project\Configuration\ProjectConfiguration;
 use Ymir\Sdk\Client;
 use Ymir\Sdk\Exception\ClientException;
 use Ymir\Sdk\Exception\UnexpectedApiResponseException;

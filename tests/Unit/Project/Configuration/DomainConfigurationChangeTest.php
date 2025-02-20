@@ -11,13 +11,13 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace Ymir\Cli\Tests\Unit\ProjectConfiguration;
+namespace Ymir\Cli\Tests\Unit\Project\Configuration;
 
-use Ymir\Cli\ProjectConfiguration\DomainConfigurationChange;
+use Ymir\Cli\Project\Configuration\DomainConfigurationChange;
 use Ymir\Cli\Tests\Unit\TestCase;
 
 /**
- * @covers \Ymir\Cli\ProjectConfiguration\DomainConfigurationChange
+ * @covers \Ymir\Cli\Project\Configuration\DomainConfigurationChange
  */
 class DomainConfigurationChangeTest extends TestCase
 {

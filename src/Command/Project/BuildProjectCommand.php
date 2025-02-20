@@ -19,7 +19,7 @@ use Ymir\Cli\ApiClient;
 use Ymir\Cli\Build\BuildStepInterface;
 use Ymir\Cli\CliConfiguration;
 use Ymir\Cli\Command\AbstractProjectCommand;
-use Ymir\Cli\ProjectConfiguration\ProjectConfiguration;
+use Ymir\Cli\Project\Configuration\ProjectConfiguration;
 
 class BuildProjectCommand extends AbstractProjectCommand
 {

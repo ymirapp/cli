@@ -19,7 +19,7 @@ use Ymir\Cli\ApiClient;
 use Ymir\Cli\CliConfiguration;
 use Ymir\Cli\Command\AbstractCommand;
 use Ymir\Cli\Executable\DockerExecutable;
-use Ymir\Cli\ProjectConfiguration\ProjectConfiguration;
+use Ymir\Cli\Project\Configuration\ProjectConfiguration;
 
 class DeleteDockerImagesCommand extends AbstractCommand
 {

@@ -15,7 +15,7 @@ namespace Ymir\Cli\Build;
 
 use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Finder\Finder;
-use Ymir\Cli\ProjectConfiguration\ProjectConfiguration;
+use Ymir\Cli\Project\Configuration\ProjectConfiguration;
 
 class EnsurePluginIsInstalledStep extends AbstractBuildStep
 {

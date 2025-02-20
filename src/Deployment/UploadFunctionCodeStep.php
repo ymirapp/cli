@@ -20,7 +20,7 @@ use Ymir\Cli\Console\Input;
 use Ymir\Cli\Console\Output;
 use Ymir\Cli\Executable\DockerExecutable;
 use Ymir\Cli\FileUploader;
-use Ymir\Cli\ProjectConfiguration\ProjectConfiguration;
+use Ymir\Cli\Project\Configuration\ProjectConfiguration;
 use Ymir\Cli\Support\Arr;
 
 class UploadFunctionCodeStep implements DeploymentStepInterface

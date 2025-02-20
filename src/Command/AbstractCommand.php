@@ -29,7 +29,7 @@ use Ymir\Cli\Console\InputDefinition;
 use Ymir\Cli\Console\Output;
 use Ymir\Cli\Exception\CommandCancelledException;
 use Ymir\Cli\Exception\InvalidInputException;
-use Ymir\Cli\ProjectConfiguration\ProjectConfiguration;
+use Ymir\Cli\Project\Configuration\ProjectConfiguration;
 use Ymir\Cli\Support\Arr;
 use Ymir\Sdk\Exception\ClientException;
 

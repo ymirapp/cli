@@ -27,7 +27,7 @@ use Ymir\Cli\Command\Provider\ConnectProviderCommand;
 use Ymir\Cli\Executable\ComposerExecutable;
 use Ymir\Cli\Executable\DockerExecutable;
 use Ymir\Cli\Executable\WpCliExecutable;
-use Ymir\Cli\ProjectConfiguration\ProjectConfiguration;
+use Ymir\Cli\Project\Configuration\ProjectConfiguration;
 use Ymir\Cli\Support\Arr;
 
 class InitializeProjectCommand extends AbstractCommand
