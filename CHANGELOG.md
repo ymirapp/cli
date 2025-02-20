@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.51.0](https://github.com/ymirapp/cli/compare/v1.50.2...v1.51.0) (2025-02-20)
+
+
+### Features
+
+* Add support for radicle ([608eb70](https://github.com/ymirapp/cli/commit/608eb7036da8ea9f212b53414336bd48c41bc2be))
+
+
+### Bug Fixes
+
+* Fix false negative when detecting wordpress installation ([9786217](https://github.com/ymirapp/cli/commit/978621748f31adb234b16a35ceebd51dd6cf7735))
+
 ## [1.50.2](https://github.com/ymirapp/cli/compare/v1.50.1...v1.50.2) (2025-01-12)
 
 
