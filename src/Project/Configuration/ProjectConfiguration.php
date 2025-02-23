@@ -20,6 +20,8 @@ use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Yaml\Yaml;
 use Ymir\Cli\Command\Project\InitializeProjectCommand;
+use Ymir\Cli\Project\Type\ProjectTypeInterface;
+use Ymir\Cli\Support\Arr;
 
 class ProjectConfiguration implements Arrayable
 {
@@ -45,13 +47,24 @@ class ProjectConfiguration implements Arrayable
     private $filesystem;
 
     /**
+     * All supported project types.
+     *
+     * @var ProjectTypeInterface[]
+     */
+    private $projectTypes;
+
+    /**
      * Constructor.
      */
-    public function __construct(Filesystem $filesystem, string $configurationFilePath = '')
+    public function __construct(Filesystem $filesystem, iterable $projectTypes, string $configurationFilePath = '')
     {
         $this->filesystem = $filesystem;
 
         $this->loadConfiguration($configurationFilePath);
+
+        foreach ($projectTypes as $projectType) {
+            $this->addProjectType($projectType);
+        }
     }
 
     /**
@@ -69,18 +82,9 @@ class ProjectConfiguration implements Arrayable
     /**
      * Add a new environment node to the project configuration.
      */
-    public function addEnvironment(string $environment, ?array $options = null)
+    public function addEnvironment(string $environment, array $configuration)
     {
-        if (isset($this->configuration['type']) && 'bedrock' === $this->configuration['type']) {
-            $options = array_merge(['build' => ['COMPOSER_MIRROR_PATH_REPOS=1 composer install']], (array) $options);
-        } elseif (isset($this->configuration['type']) && 'radicle' === $this->configuration['type']) {
-            $options = array_merge(['build' => [
-                'composer install',
-                'yarn install && yarn build && rm -rf node_modules',
-            ]], (array) $options);
-        }
-
-        $this->configuration['environments'][$environment] = $options;
+        $this->configuration['environments'][$environment] = $configuration;
     }
 
     /**
@@ -106,10 +110,10 @@ class ProjectConfiguration implements Arrayable
      *
      * Overwrites the existing project configuration.
      */
-    public function createNew(Collection $project, array $environments, string $type = '')
+    public function createNew(Collection $project, array $environments, ProjectTypeInterface $type)
     {
         $this->configuration = $project->only(['id', 'name'])->all();
-        $this->configuration['type'] = $type ?: 'wordpress';
+        $this->configuration['type'] = $type->getSlug();
         $this->configuration['environments'] = $environments;
 
         $this->save();
@@ -193,13 +197,19 @@ class ProjectConfiguration implements Arrayable
     /**
      * Get the project type.
      */
-    public function getProjectType(): string
+    public function getProjectType(): ProjectTypeInterface
     {
         if (empty($this->configuration['type'])) {
             throw new RuntimeException('No "type" found in Ymir project configuration file');
         }
 
-        return (string) $this->configuration['type'];
+        $projectType = $this->findProjectType($this->configuration['type']);
+
+        if (!$projectType instanceof ProjectTypeInterface) {
+            throw new RuntimeException(sprintf('Project type "%s" is not supported', $this->configuration['type']));
+        }
+
+        return $projectType;
     }
 
     /**
@@ -250,9 +260,27 @@ class ProjectConfiguration implements Arrayable
             throw new RuntimeException('The Ymir project configuration file must have at least one environment');
         } elseif (empty($this->configuration['type'])) {
             throw new RuntimeException('The Ymir project configuration file must have a "type"');
-        } elseif (!in_array($this->configuration['type'], ['bedrock', 'radicle', 'wordpress'])) {
-            throw new RuntimeException('The allowed project "type" are "bedrock" or "wordpress"');
+        } elseif (!$this->findProjectType($this->configuration['type'])) {
+            throw new RuntimeException(sprintf('The "%s" project type is not supported', $this->configuration['type']));
         }
+    }
+
+    /**
+     * Add a project type to the command.
+     */
+    private function addProjectType(ProjectTypeInterface $projectType)
+    {
+        $this->projectTypes[] = $projectType;
+    }
+
+    /**
+     * Find the project type that matches the given slug.
+     */
+    private function findProjectType(string $slug): ?ProjectTypeInterface
+    {
+        return Arr::first($this->projectTypes, function (ProjectTypeInterface $projectType) use ($slug) {
+            return $slug === $projectType->getSlug();
+        });
     }
 
     /**

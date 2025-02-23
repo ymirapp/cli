@@ -13,6 +13,7 @@ services:
     autowire: true
     public: false
     bind:
+      iterable $projectTypes: !tagged project_types
       string $assetsDirectory: '%assets_directory%'
       string $baseUrl: '%ymir_api_url%'
       string $buildDirectory: '%build_directory%'
@@ -23,14 +24,19 @@ services:
       string $stubDirectory: '%stub_directory%'
       string $uploadsDirectory: '%uploads_directory%'
       string $version: '%version%'
+      Symfony\Component\DependencyInjection\ServiceLocator $buildStepLocator: !tagged_locator build_steps
 
   _instanceof:
     Symfony\Component\Console\Command\Command:
       tags: ['command']
     Symfony\Component\EventDispatcher\EventSubscriberInterface:
       tags: ['subscriber']
+    Ymir\Cli\Build\BuildStepInterface:
+      tags: ['build_steps']
     Ymir\Cli\Project\Configuration\WordPress\WordPressConfigurationChangeInterface:
       tags: ['wordpress_configuration_changes']
+    Ymir\Cli\Project\Type\ProjectTypeInterface:
+      tags: ['project_types']
 
   GuzzleHttp\:
     resource: '%vendor_directory%/guzzlehttp/guzzle/src'
@@ -58,21 +64,6 @@ services:
   Ymir\Cli\CliConfiguration:
     arguments:
       $configurationFilePath: '%cli_configuration_filepath%'
-
-  Ymir\Cli\Command\Project\BuildProjectCommand:
-    arguments:
-      $buildSteps:
-        - '@Ymir\Cli\Build\CopyWordPressFilesStep'
-        - '@Ymir\Cli\Build\CopyUploadsDirectoryStep'
-        - '@Ymir\Cli\Build\DownloadWpCliStep'
-        - '@Ymir\Cli\Build\ExecuteBuildCommandsStep'
-        - '@Ymir\Cli\Build\EnsurePluginIsInstalledStep'
-        - '@Ymir\Cli\Build\CopyMustUsePluginStep'
-        - '@Ymir\Cli\Build\ModifyWordPressConfigurationStep'
-        - '@Ymir\Cli\Build\DebugBuildStep'
-        - '@Ymir\Cli\Build\ExtractAssetFilesStep'
-        - '@Ymir\Cli\Build\CompressBuildFilesStep'
-        - '@Ymir\Cli\Build\BuildContainerImageStep'
 
   Ymir\Cli\Command\Project\ConfigureProjectCommand:
     arguments:

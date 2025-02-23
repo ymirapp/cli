@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Ymir\Cli\Tests\Unit\Project\Configuration\WordPress;
 
 use Ymir\Cli\Project\Configuration\WordPress\BeaverBuilderConfigurationChange;
+use Ymir\Cli\Tests\Mock\AbstractWordPressProjectMockTrait;
 use Ymir\Cli\Tests\Unit\TestCase;
 
 /**
@@ -21,6 +22,8 @@ use Ymir\Cli\Tests\Unit\TestCase;
  */
 class BeaverBuilderConfigurationChangeTest extends TestCase
 {
+    use AbstractWordPressProjectMockTrait;
+
     private $configurationChange;
 
     /**
@@ -33,6 +36,12 @@ class BeaverBuilderConfigurationChangeTest extends TestCase
 
     public function testApplyDoesntDuplicateExistingOptions()
     {
+        $projectType = $this->getAbstractWordPressProjectTypeMock();
+
+        $projectType->expects($this->once())
+                    ->method('getPluginsDirectoryPath')
+                    ->willReturn('wp-content/plugins');
+
         $this->assertSame([
             'build' => ['include' => [
                 'wp-content/plugins/bb-plugin/fonts',
@@ -53,11 +62,17 @@ class BeaverBuilderConfigurationChangeTest extends TestCase
             'cdn' => [
                 'excluded_paths' => ['/uploads/bb-plugin/*'],
             ],
-        ], 'wordpress'));
+        ], $projectType));
     }
 
     public function testApplyDoesntEraseExistingOptions()
     {
+        $projectType = $this->getAbstractWordPressProjectTypeMock();
+
+        $projectType->expects($this->once())
+                    ->method('getPluginsDirectoryPath')
+                    ->willReturn('wp-content/plugins');
+
         $this->assertSame([
             'build' => ['include' => [
                 'wp-content/plugins/bb-plugin/fonts',
@@ -76,46 +91,33 @@ class BeaverBuilderConfigurationChangeTest extends TestCase
             'cdn' => [
                 'excluded_paths' => ['/foo'],
             ],
-        ], 'wordpress'));
+        ], $projectType));
     }
 
-    public function testApplyWithBedrockProjectAndImageDeployment()
+    public function testApplyWithImageDeployment()
     {
+        $projectType = $this->getAbstractWordPressProjectTypeMock();
+
+        $projectType->expects($this->once())
+                    ->method('getPluginsDirectoryPath')
+                    ->willReturn('wp-content/plugins');
+
         $this->assertSame([
             'cdn' => [
                 'excluded_paths' => ['/uploads/bb-plugin/*'],
             ],
             'deployment' => 'image',
-        ], $this->configurationChange->apply(['deployment' => 'image'], 'bedrock'));
+        ], $this->configurationChange->apply(['deployment' => 'image'], $projectType));
     }
 
-    public function testApplyWithBedrockProjectAndNoImageDeployment()
+    public function testApplyWithNoImageDeployment()
     {
-        $this->assertSame([
-            'build' => ['include' => [
-                'web/app/plugins/bb-plugin/fonts',
-                'web/app/plugins/bb-plugin/img',
-                'web/app/plugins/bb-plugin/js',
-                'web/app/plugins/bb-plugin/json',
-            ]],
-            'cdn' => [
-                'excluded_paths' => ['/uploads/bb-plugin/*'],
-            ],
-        ], $this->configurationChange->apply([], 'bedrock'));
-    }
+        $projectType = $this->getAbstractWordPressProjectTypeMock();
 
-    public function testApplyWithWordPressProjectAndImageDeployment()
-    {
-        $this->assertSame([
-            'cdn' => [
-                'excluded_paths' => ['/uploads/bb-plugin/*'],
-            ],
-            'deployment' => 'image',
-        ], $this->configurationChange->apply(['deployment' => 'image'], 'wordpress'));
-    }
+        $projectType->expects($this->once())
+                    ->method('getPluginsDirectoryPath')
+                    ->willReturn('wp-content/plugins');
 
-    public function testApplyWithWordPressProjectAndNoImageDeployment()
-    {
         $this->assertSame([
             'build' => ['include' => [
                 'wp-content/plugins/bb-plugin/fonts',
@@ -126,7 +128,7 @@ class BeaverBuilderConfigurationChangeTest extends TestCase
             'cdn' => [
                 'excluded_paths' => ['/uploads/bb-plugin/*'],
             ],
-        ], $this->configurationChange->apply([], 'wordpress'));
+        ], $this->configurationChange->apply([], $projectType));
     }
 
     public function testGetName()

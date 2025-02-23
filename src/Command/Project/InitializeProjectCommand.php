@@ -14,20 +14,21 @@ declare(strict_types=1);
 namespace Ymir\Cli\Command\Project;
 
 use Illuminate\Support\Collection;
+use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Output\NullOutput;
-use Symfony\Component\Filesystem\Filesystem;
 use Ymir\Cli\ApiClient;
 use Ymir\Cli\CliConfiguration;
 use Ymir\Cli\Command\AbstractCommand;
 use Ymir\Cli\Command\Database\CreateDatabaseCommand;
 use Ymir\Cli\Command\Database\CreateDatabaseServerCommand;
 use Ymir\Cli\Command\Docker\CreateDockerfileCommand;
-use Ymir\Cli\Command\InstallPluginCommand;
+use Ymir\Cli\Command\InstallIntegrationCommand;
 use Ymir\Cli\Command\Provider\ConnectProviderCommand;
-use Ymir\Cli\Executable\ComposerExecutable;
 use Ymir\Cli\Executable\DockerExecutable;
 use Ymir\Cli\Executable\WpCliExecutable;
 use Ymir\Cli\Project\Configuration\ProjectConfiguration;
+use Ymir\Cli\Project\Type\InstallableProjectTypeInterface;
+use Ymir\Cli\Project\Type\ProjectTypeInterface;
 use Ymir\Cli\Support\Arr;
 
 class InitializeProjectCommand extends AbstractCommand
@@ -47,13 +48,6 @@ class InitializeProjectCommand extends AbstractCommand
     public const NAME = 'project:init';
 
     /**
-     * The Composer executable.
-     *
-     * @var ComposerExecutable
-     */
-    private $composerExecutable;
-
-    /**
      * Docker executable.
      *
      * @var DockerExecutable
@@ -61,18 +55,18 @@ class InitializeProjectCommand extends AbstractCommand
     private $dockerExecutable;
 
     /**
-     * The file system.
-     *
-     * @var Filesystem
-     */
-    private $filesystem;
-
-    /**
      * The project directory where the project files are copied from.
      *
      * @var string
      */
     private $projectDirectory;
+
+    /**
+     * The project types.
+     *
+     * @var ProjectTypeInterface[]
+     */
+    private $projectTypes;
 
     /**
      * The WP-CLI executable.
@@ -84,15 +78,17 @@ class InitializeProjectCommand extends AbstractCommand
     /**
      * Constructor.
      */
-    public function __construct(ApiClient $apiClient, CliConfiguration $cliConfiguration, ComposerExecutable $composerExecutable, DockerExecutable $dockerExecutable, Filesystem $filesystem, ProjectConfiguration $projectConfiguration, string $projectDirectory, WpCliExecutable $wpCliExecutable)
+    public function __construct(ApiClient $apiClient, CliConfiguration $cliConfiguration, DockerExecutable $dockerExecutable, ProjectConfiguration $projectConfiguration, string $projectDirectory, iterable $projectTypes, WpCliExecutable $wpCliExecutable)
     {
         parent::__construct($apiClient, $cliConfiguration, $projectConfiguration);
 
-        $this->composerExecutable = $composerExecutable;
         $this->dockerExecutable = $dockerExecutable;
-        $this->filesystem = $filesystem;
         $this->projectDirectory = rtrim($projectDirectory, '/');
         $this->wpCliExecutable = $wpCliExecutable;
+
+        foreach ($projectTypes as $projectType) {
+            $this->addProjectType($projectType);
+        }
     }
 
     /**
@@ -151,19 +147,27 @@ class InitializeProjectCommand extends AbstractCommand
             $providerId = $this->determineCloudProvider('Enter the ID of the cloud provider that the project will use');
             $region = $this->determineRegion('Enter the name of the region that the project will be in', $providerId);
 
-            // Define the environments now so we check for the database server before checking for WordPress
+            // Define the environments now so we check for the database server before checking if the project type
+            // is eligible for installation.
             $environments = $this->addEnvironmentDatabaseNodes($this->getBaseEnvironmentsConfiguration($projectType), $projectName, $region);
 
             // This needs to happen before we create the configuration file because "composer create-project"
             // needs an empty directory.
-            $this->checkForWordPress($projectType);
+            if (
+                $projectType instanceof InstallableProjectTypeInterface
+                && $projectType->isEligibleForInstallation($this->projectDirectory)
+                && $this->output->confirm(sprintf('%s wasn\'t detected in the project directory. Would you like to install it?', $projectType->getName()))
+            ) {
+                $this->output->info($projectType->getInstallationMessage());
+                $projectType->installProject($this->projectDirectory);
+            }
 
             $this->projectConfiguration->createNew($this->apiClient->createProject($providerId, $projectName, $region, $environments->keys()->all()), $environments->all(), $projectType);
 
             $this->output->infoWithDelayWarning('Project initialized');
 
-            if (!$this->isPluginInstalled($projectType) && $this->output->confirm('Would you like to install the Ymir WordPress plugin?')) {
-                $this->invoke(InstallPluginCommand::NAME);
+            if (!$projectType->isIntegrationInstalled($this->projectDirectory) && $this->output->confirm(sprintf('Would you like to install the Ymir integration for %s?', $projectType->getName()))) {
+                $this->invoke(InstallIntegrationCommand::NAME);
             }
 
             $useContainerImage = $this->output->confirm('Do you want to deploy this project using a container image?');
@@ -211,23 +215,11 @@ class InitializeProjectCommand extends AbstractCommand
     }
 
     /**
-     * Check for WordPress and offer to install it if it's not detected.
+     * Add a project type to the command.
      */
-    private function checkForWordPress(string $projectType)
+    private function addProjectType(ProjectTypeInterface $projectType)
     {
-        if (!$this->isWordPressDownloadable($projectType) || !$this->output->confirm('WordPress wasn\'t detected in the project directory. Would you like to download it?')) {
-            return;
-        }
-
-        if ('bedrock' === $projectType) {
-            $this->output->info('Creating new Bedrock project');
-            $this->composerExecutable->createProject('roots/bedrock');
-        } elseif ('wordpress' === $projectType) {
-            $this->output->info('Downloading WordPress using WP-CLI');
-            $this->wpCliExecutable->downloadWordPress();
-        }
-
-        $this->output->info('WordPress downloaded successfully');
+        $this->projectTypes[] = $projectType;
     }
 
     /**
@@ -257,89 +249,36 @@ class InitializeProjectCommand extends AbstractCommand
     /**
      * Determine the type of project being initialized.
      */
-    private function determineProjectType(): string
+    private function determineProjectType(): ProjectTypeInterface
     {
-        $type = '';
+        $projectType = Arr::first($this->projectTypes, function (ProjectTypeInterface $projectType) {
+            return $projectType->matchesProject($this->projectDirectory);
+        });
 
-        if ($this->projectPathsExist(['/wp-config.php'])) {
-            $type = 'wordpress';
-        } elseif ($this->projectPathsExist(['/web/app/', '/web/wp-config.php', '/config/application.php'])) {
-            $type = 'bedrock';
-        } elseif ($this->projectPathsExist(['/public/content/', '/public/wp-config.php', '/bedrock/application.php'])) {
-            $type = 'radicle';
+        if (!$projectType instanceof ProjectTypeInterface) {
+            $selectedProjectType = $this->output->choice('Please select the type of project to initialize', array_map(function (ProjectTypeInterface $projectType) {
+                return $projectType->getName();
+            }, $this->projectTypes));
+            $projectType = Arr::first($this->projectTypes, function (ProjectTypeInterface $projectType) use ($selectedProjectType) {
+                return $selectedProjectType === $projectType->getName();
+            });
         }
 
-        if (empty($type)) {
-            $type = $this->output->choice('Please select the type of project to initialize', ['Bedrock', 'Radicle', 'WordPress'], 'WordPress');
+        if (!$projectType instanceof ProjectTypeInterface) {
+            throw new RuntimeException('Unable to determine the type of project being initialized');
         }
 
-        return strtolower($type);
+        return $projectType;
     }
 
     /**
      * Get the base environments configuration for the project.
      */
-    private function getBaseEnvironmentsConfiguration(string $projectType): Collection
+    private function getBaseEnvironmentsConfiguration(ProjectTypeInterface $projectType): Collection
     {
-        $environments = [
-            'production' => [
-                'architecture' => 'arm64',
-            ],
-            'staging' => [
-                'architecture' => 'arm64',
-                'cdn' => ['caching' => 'assets'],
-                'cron' => false,
-                'warmup' => false,
-            ],
-        ];
-
-        if ('bedrock' === $projectType) {
-            Arr::set($environments, 'production.build', ['COMPOSER_MIRROR_PATH_REPOS=1 composer install --no-dev']);
-            Arr::set($environments, 'staging.build', ['COMPOSER_MIRROR_PATH_REPOS=1 composer install']);
-        } elseif ('radicle' === $projectType) {
-            Arr::set($environments, 'production.build', [
-                'composer install --no-dev',
-                'yarn install && yarn build && rm -rf node_modules',
-            ]);
-            Arr::set($environments, 'staging.build', [
-                'composer install',
-                'yarn install && yarn build && rm -rf node_modules',
-            ]);
-        }
-
-        return collect($environments);
-    }
-
-    /**
-     * Checks if the plugin is already installed.
-     */
-    private function isPluginInstalled(string $projectType): bool
-    {
-        return ('wordpress' === $projectType && $this->wpCliExecutable->isYmirPluginInstalled())
-            || ('bedrock' === $projectType && str_contains((string) file_get_contents('./composer.json'), 'ymirapp/wordpress-plugin'));
-    }
-
-    /**
-     * Checks if we're able to download WordPress.
-     */
-    private function isWordPressDownloadable(string $projectType): bool
-    {
-        try {
-            return in_array($projectType, ['bedrock', 'wordpress'])
-                && null === $this->wpCliExecutable->getVersion()
-                && ('bedrock' !== $projectType || !(new \FilesystemIterator($this->projectDirectory))->valid());
-        } catch (\Throwable $exception) {
-            return false;
-        }
-    }
-
-    /**
-     * Check if the project paths exist.
-     */
-    private function projectPathsExist(array $paths): bool
-    {
-        return $this->filesystem->exists(array_map(function (string $path) {
-            return $this->projectDirectory.$path;
-        }, $paths));
+        return collect([
+            'production' => $projectType->getEnvironmentConfiguration('production'),
+            'staging' => $projectType->getEnvironmentConfiguration('staging'),
+        ]);
     }
 }

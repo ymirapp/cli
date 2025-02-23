@@ -13,6 +13,8 @@ declare(strict_types=1);
 
 namespace Ymir\Cli\Project\Configuration;
 
+use Ymir\Cli\Project\Type\ProjectTypeInterface;
+
 class DomainConfigurationChange implements ConfigurationChangeInterface
 {
     /**
@@ -33,7 +35,7 @@ class DomainConfigurationChange implements ConfigurationChangeInterface
     /**
      * {@inheritdoc}
      */
-    public function apply(array $options, string $projectType): array
+    public function apply(array $options, ProjectTypeInterface $projectType): array
     {
         if (empty($options['domain'])) {
             $options['domain'] = $this->domain;

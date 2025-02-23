@@ -13,6 +13,8 @@ declare(strict_types=1);
 
 namespace Ymir\Cli\Project\Configuration\WordPress;
 
+use Ymir\Cli\Project\Type\AbstractWordPressProjectType;
+
 class CloudflareConfigurationChange extends AbstractWordPressConfigurationChange
 {
     /**
@@ -26,7 +28,7 @@ class CloudflareConfigurationChange extends AbstractWordPressConfigurationChange
     /**
      * {@inheritdoc}
      */
-    protected function getBuildIncludePaths(string $projectType): array
+    protected function getBuildIncludePaths(AbstractWordPressProjectType $projectType): array
     {
         return [
             $this->getBaseIncludePath($projectType).'/config.json',

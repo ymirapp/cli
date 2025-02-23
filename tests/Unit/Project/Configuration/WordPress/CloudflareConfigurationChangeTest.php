@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Ymir\Cli\Tests\Unit\Project\Configuration\WordPress;
 
 use Ymir\Cli\Project\Configuration\WordPress\CloudflareConfigurationChange;
+use Ymir\Cli\Tests\Mock\AbstractWordPressProjectMockTrait;
 use Ymir\Cli\Tests\Unit\TestCase;
 
 /**
@@ -21,6 +22,8 @@ use Ymir\Cli\Tests\Unit\TestCase;
  */
 class CloudflareConfigurationChangeTest extends TestCase
 {
+    use AbstractWordPressProjectMockTrait;
+
     private $configurationChange;
 
     /**
@@ -33,6 +36,12 @@ class CloudflareConfigurationChangeTest extends TestCase
 
     public function testApplyDoesntDuplicateExistingOptions()
     {
+        $projectType = $this->getAbstractWordPressProjectTypeMock();
+
+        $projectType->expects($this->once())
+                    ->method('getPluginsDirectoryPath')
+                    ->willReturn('wp-content/plugins');
+
         $this->assertSame([
             'build' => ['include' => [
                 'wp-content/plugins/cloudflare/config.json',
@@ -41,11 +50,17 @@ class CloudflareConfigurationChangeTest extends TestCase
             'build' => ['include' => [
                 'wp-content/plugins/cloudflare/config.json',
             ]],
-        ], 'wordpress'));
+        ], $projectType));
     }
 
     public function testApplyDoesntEraseExistingOptions()
     {
+        $projectType = $this->getAbstractWordPressProjectTypeMock();
+
+        $projectType->expects($this->once())
+                    ->method('getPluginsDirectoryPath')
+                    ->willReturn('wp-content/plugins');
+
         $this->assertSame([
             'build' => ['include' => [
                 'wp-content/plugins/cloudflare/config.json',
@@ -56,39 +71,35 @@ class CloudflareConfigurationChangeTest extends TestCase
                 'wp-content/plugins/foo',
                 'wp-content/plugins/cloudflare/config.json',
             ]],
-        ], 'wordpress'));
+        ], $projectType));
     }
 
-    public function testApplyWithBedrockProjectAndImageDeployment()
+    public function testApplyWithImageDeployment()
     {
+        $projectType = $this->getAbstractWordPressProjectTypeMock();
+
+        $projectType->expects($this->once())
+                    ->method('getPluginsDirectoryPath')
+                    ->willReturn('wp-content/plugins');
+
         $this->assertSame([
             'deployment' => 'image',
-        ], $this->configurationChange->apply(['deployment' => 'image'], 'bedrock'));
+        ], $this->configurationChange->apply(['deployment' => 'image'], $projectType));
     }
 
-    public function testApplyWithBedrockProjectAndNoImageDeployment()
+    public function testApplyWithNoImageDeployment()
     {
-        $this->assertSame([
-            'build' => ['include' => [
-                'web/app/plugins/cloudflare/config.json',
-            ]],
-        ], $this->configurationChange->apply([], 'bedrock'));
-    }
+        $projectType = $this->getAbstractWordPressProjectTypeMock();
 
-    public function testApplyWithWordPressProjectAndImageDeployment()
-    {
-        $this->assertSame([
-            'deployment' => 'image',
-        ], $this->configurationChange->apply(['deployment' => 'image'], 'wordpress'));
-    }
+        $projectType->expects($this->once())
+                    ->method('getPluginsDirectoryPath')
+                    ->willReturn('wp-content/plugins');
 
-    public function testApplyWithWordPressProjectAndNoImageDeployment()
-    {
         $this->assertSame([
             'build' => ['include' => [
                 'wp-content/plugins/cloudflare/config.json',
             ]],
-        ], $this->configurationChange->apply([], 'wordpress'));
+        ], $this->configurationChange->apply([], $projectType));
     }
 
     public function testGetName()

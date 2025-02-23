@@ -13,10 +13,12 @@ declare(strict_types=1);
 
 namespace Ymir\Cli\Build;
 
+use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Finder\SplFileInfo;
 use Ymir\Cli\Project\Configuration\ProjectConfiguration;
+use Ymir\Cli\Project\Type\AbstractWordPressProjectType;
 
 class CopyUploadsDirectoryStep implements BuildStepInterface
 {
@@ -62,32 +64,15 @@ class CopyUploadsDirectoryStep implements BuildStepInterface
     /**
      * {@inheritdoc}
      */
-    public function isNeeded(array $buildOptions, ProjectConfiguration $projectConfiguration): bool
-    {
-        return !empty($buildOptions['uploads']);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
     public function perform(string $environment, ProjectConfiguration $projectConfiguration)
     {
-        switch ($projectConfiguration->getProjectType()) {
-            case 'bedrock':
-                $projectUploadsDirectory = $this->projectDirectory.'/web/app/uploads';
+        $projectType = $projectConfiguration->getProjectType();
 
-                break;
-            case 'radicle':
-                $projectUploadsDirectory = $this->projectDirectory.'/public/content/uploads';
-
-                break;
-            default:
-                $projectUploadsDirectory = $this->projectDirectory.'/wp-content/uploads';
-
-                break;
+        if (!$projectType instanceof AbstractWordPressProjectType) {
+            throw new RuntimeException('You can only use this build step with WordPress projects');
         }
 
-        $files = Finder::create()->files()->in($projectUploadsDirectory);
+        $files = Finder::create()->files()->in($projectType->getUploadsDirectoryPath($this->projectDirectory));
 
         foreach ($files as $file) {
             $this->copyFile($file);

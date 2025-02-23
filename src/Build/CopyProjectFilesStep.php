@@ -19,7 +19,7 @@ use Symfony\Component\Finder\SplFileInfo;
 use Ymir\Cli\Project\Configuration\ProjectConfiguration;
 use Ymir\Cli\Support\Arr;
 
-class CopyWordPressFilesStep extends AbstractBuildStep
+class CopyProjectFilesStep implements BuildStepInterface
 {
     /**
      * The build directory where the project files are copied to.
@@ -57,7 +57,7 @@ class CopyWordPressFilesStep extends AbstractBuildStep
      */
     public function getDescription(): string
     {
-        return 'Copying WordPress files';
+        return 'Copying Project files';
     }
 
     /**
@@ -72,7 +72,7 @@ class CopyWordPressFilesStep extends AbstractBuildStep
         $this->filesystem->mkdir($this->buildDirectory, 0755);
 
         $environment = $projectConfiguration->getEnvironment($environment);
-        $files = $this->getProjectFiles($projectConfiguration->getProjectType());
+        $files = $projectConfiguration->getProjectType()->getProjectFiles($this->projectDirectory);
 
         if ('image' === Arr::get($environment, 'deployment')) {
             $files->append([$this->getSplFileInfo('/.dockerignore')]);
@@ -134,33 +134,6 @@ class CopyWordPressFilesStep extends AbstractBuildStep
             ->path($paths->all())
             ->append($files->all())
             ->followLinks();
-    }
-
-    /**
-     * Get the Finder object for finding all the project files.
-     */
-    private function getProjectFiles(string $projectType): Finder
-    {
-        $finder = $this->getBaseFinder()
-            ->notName(['ymir.yml'])
-            ->followLinks();
-
-        if (is_readable($this->projectDirectory.'/.gitignore')) {
-            $finder->ignoreVCSIgnored(true);
-        }
-
-        if ('wordpress' === $projectType) {
-            $finder->exclude('wp-content/uploads');
-
-            // wp-config.php is often in .gitignore, so we need to add it back
-            $finder->append([$this->getSplFileInfo('/wp-config.php')]);
-        } elseif ('bedrock' === $projectType) {
-            $finder->exclude('web/app/uploads');
-        } elseif ('radicle' === $projectType) {
-            $finder->exclude('public/content/uploads');
-        }
-
-        return $finder;
     }
 
     /**

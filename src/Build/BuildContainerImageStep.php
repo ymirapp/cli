@@ -17,7 +17,6 @@ use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Process\Exception\RuntimeException;
 use Ymir\Cli\Executable\DockerExecutable;
 use Ymir\Cli\Project\Configuration\ProjectConfiguration;
-use Ymir\Cli\Support\Arr;
 
 class BuildContainerImageStep implements BuildStepInterface
 {
@@ -58,14 +57,6 @@ class BuildContainerImageStep implements BuildStepInterface
     public function getDescription(): string
     {
         return 'Building container image';
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function isNeeded(array $buildOptions, ProjectConfiguration $projectConfiguration): bool
-    {
-        return 'image' === Arr::get($projectConfiguration->getEnvironment($buildOptions['environment']), 'deployment');
     }
 
     /**

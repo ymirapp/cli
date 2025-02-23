@@ -17,7 +17,7 @@ use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Filesystem\Filesystem;
 use Ymir\Cli\Project\Configuration\ProjectConfiguration;
 
-class ModifyWordPressConfigurationStep extends AbstractBuildStep
+class ModifyWordPressConfigurationStep implements BuildStepInterface
 {
     /**
      * The build directory where the project files are copied to.
@@ -56,14 +56,6 @@ class ModifyWordPressConfigurationStep extends AbstractBuildStep
     public function getDescription(): string
     {
         return 'Modifying WordPress configuration';
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function isNeeded(array $buildOptions, ProjectConfiguration $projectConfiguration): bool
-    {
-        return 'wordpress' === $projectConfiguration->getProjectType();
     }
 
     /**

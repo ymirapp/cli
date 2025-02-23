@@ -13,6 +13,8 @@ declare(strict_types=1);
 
 namespace Ymir\Cli\Project\Configuration\WordPress;
 
+use Ymir\Cli\Project\Type\AbstractWordPressProjectType;
+
 class BeaverBuilderConfigurationChange extends AbstractWordPressConfigurationChange
 {
     /**
@@ -26,7 +28,7 @@ class BeaverBuilderConfigurationChange extends AbstractWordPressConfigurationCha
     /**
      * {@inheritdoc}
      */
-    protected function getBuildIncludePaths(string $projectType): array
+    protected function getBuildIncludePaths(AbstractWordPressProjectType $projectType): array
     {
         $basePath = $this->getBaseIncludePath($projectType);
 

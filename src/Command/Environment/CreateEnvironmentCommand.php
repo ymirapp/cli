@@ -44,10 +44,12 @@ class CreateEnvironmentCommand extends AbstractProjectCommand
     protected function perform()
     {
         $name = $this->input->getStringArgument('name') ?: $this->output->ask('What is the name of the environment');
+        $projectId = $this->projectConfiguration->getProjectId();
+        $projectType = $this->projectConfiguration->getProjectType();
 
-        $this->apiClient->createEnvironment($this->projectConfiguration->getProjectId(), $name);
+        $this->apiClient->createEnvironment($projectId, $name);
 
-        $this->projectConfiguration->addEnvironment($name, $this->input->getBooleanOption('use-image') ? ['deployment' => 'image'] : null);
+        $this->projectConfiguration->addEnvironment($name, $projectType->getEnvironmentConfiguration($name, $this->input->getBooleanOption('use-image') ? ['deployment' => 'image'] : []));
 
         $this->output->info('Environment created');
     }

@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Ymir\Cli\Tests\Unit\Project\Configuration\WordPress;
 
 use Ymir\Cli\Project\Configuration\WordPress\WooCommerceConfigurationChange;
+use Ymir\Cli\Tests\Mock\AbstractWordPressProjectMockTrait;
 use Ymir\Cli\Tests\Unit\TestCase;
 
 /**
@@ -21,6 +22,8 @@ use Ymir\Cli\Tests\Unit\TestCase;
  */
 class WooCommerceConfigurationChangeTest extends TestCase
 {
+    use AbstractWordPressProjectMockTrait;
+
     private $configurationChange;
 
     /**
@@ -33,6 +36,12 @@ class WooCommerceConfigurationChangeTest extends TestCase
 
     public function testApplyDoesntDuplicateExistingOptions()
     {
+        $projectType = $this->getAbstractWordPressProjectTypeMock();
+
+        $projectType->expects($this->once())
+                    ->method('getPluginsDirectoryPath')
+                    ->willReturn('wp-content/plugins');
+
         $this->assertSame([
             'build' => ['include' => [
                 'wp-content/plugins/woocommerce',
@@ -50,11 +59,17 @@ class WooCommerceConfigurationChangeTest extends TestCase
                 'cookies_whitelist' => ['foo_cookie', 'woocommerce_cart_hash', 'woocommerce_items_in_cart', 'woocommerce_recently_viewed', 'wp_woocommerce_session_*'],
                 'excluded_paths' => ['/addons', '/cart', '/checkout', '/foo', '/my-account'],
             ],
-        ], 'wordpress'));
+        ], $projectType));
     }
 
     public function testApplyDoesntEraseExistingOptions()
     {
+        $projectType = $this->getAbstractWordPressProjectTypeMock();
+
+        $projectType->expects($this->once())
+                    ->method('getPluginsDirectoryPath')
+                    ->willReturn('wp-content/plugins');
+
         $this->assertSame([
             'build' => ['include' => [
                 'wp-content/plugins/foo',
@@ -71,11 +86,17 @@ class WooCommerceConfigurationChangeTest extends TestCase
                 'cookies_whitelist' => ['foo_cookie'],
                 'excluded_paths' => ['/foo'],
             ],
-        ], 'wordpress'));
+        ], $projectType));
     }
 
-    public function testApplyWithBedrockProjectAndImageDeployment()
+    public function testApplyWithImageDeployment()
     {
+        $projectType = $this->getAbstractWordPressProjectTypeMock();
+
+        $projectType->expects($this->once())
+                    ->method('getPluginsDirectoryPath')
+                    ->willReturn('wp-content/plugins');
+
         $this->assertSame([
             'cdn' => [
                 'cookies_whitelist' => ['woocommerce_cart_hash', 'woocommerce_items_in_cart', 'woocommerce_recently_viewed', 'wp_woocommerce_session_*'],
@@ -83,35 +104,17 @@ class WooCommerceConfigurationChangeTest extends TestCase
                 'forwarded_headers' => ['authorization', 'origin', 'x-http-method-override', 'x-wp-nonce'],
             ],
             'deployment' => 'image',
-        ], $this->configurationChange->apply(['deployment' => 'image'], 'bedrock'));
+        ], $this->configurationChange->apply(['deployment' => 'image'], $projectType));
     }
 
-    public function testApplyWithBedrockProjectAndNoImageDeployment()
+    public function testApplyWithNoImageDeployment()
     {
-        $this->assertSame([
-            'build' => ['include' => ['web/app/plugins/woocommerce']],
-            'cdn' => [
-                'cookies_whitelist' => ['woocommerce_cart_hash', 'woocommerce_items_in_cart', 'woocommerce_recently_viewed', 'wp_woocommerce_session_*'],
-                'excluded_paths' => ['/addons', '/cart', '/checkout', '/my-account'],
-                'forwarded_headers' => ['authorization', 'origin', 'x-http-method-override', 'x-wp-nonce'],
-            ],
-        ], $this->configurationChange->apply([], 'bedrock'));
-    }
+        $projectType = $this->getAbstractWordPressProjectTypeMock();
 
-    public function testApplyWithWordPressProjectAndImageDeployment()
-    {
-        $this->assertSame([
-            'cdn' => [
-                'cookies_whitelist' => ['woocommerce_cart_hash', 'woocommerce_items_in_cart', 'woocommerce_recently_viewed', 'wp_woocommerce_session_*'],
-                'excluded_paths' => ['/addons', '/cart', '/checkout', '/my-account'],
-                'forwarded_headers' => ['authorization', 'origin', 'x-http-method-override', 'x-wp-nonce'],
-            ],
-            'deployment' => 'image',
-        ], $this->configurationChange->apply(['deployment' => 'image'], 'wordpress'));
-    }
+        $projectType->expects($this->once())
+                    ->method('getPluginsDirectoryPath')
+                    ->willReturn('wp-content/plugins');
 
-    public function testApplyWithWordPressProjectAndNoImageDeployment()
-    {
         $this->assertSame([
             'build' => ['include' => ['wp-content/plugins/woocommerce']],
             'cdn' => [
@@ -119,7 +122,7 @@ class WooCommerceConfigurationChangeTest extends TestCase
                 'excluded_paths' => ['/addons', '/cart', '/checkout', '/my-account'],
                 'forwarded_headers' => ['authorization', 'origin', 'x-http-method-override', 'x-wp-nonce'],
             ],
-        ], $this->configurationChange->apply([], 'wordpress'));
+        ], $this->configurationChange->apply([], $projectType));
     }
 
     public function testGetName()

@@ -13,11 +13,10 @@ declare(strict_types=1);
 
 namespace Ymir\Cli\Build;
 
-use Ymir\Cli\Process\Process;
+use Symfony\Component\Console\Exception\RuntimeException;
 use Ymir\Cli\Project\Configuration\ProjectConfiguration;
-use Ymir\Cli\Support\Arr;
 
-class ExecuteBuildCommandsStep implements BuildStepInterface
+class EnsureIntegrationIsInstalledStep implements BuildStepInterface
 {
     /**
      * The build directory where the project files are copied to.
@@ -39,7 +38,7 @@ class ExecuteBuildCommandsStep implements BuildStepInterface
      */
     public function getDescription(): string
     {
-        return 'Executing build commands';
+        return 'Ensuring Ymir integration is installed';
     }
 
     /**
@@ -47,22 +46,8 @@ class ExecuteBuildCommandsStep implements BuildStepInterface
      */
     public function perform(string $environment, ProjectConfiguration $projectConfiguration)
     {
-        $environment = $projectConfiguration->getEnvironment($environment);
-
-        if (empty($environment['build'])) {
-            return;
-        }
-
-        $commands = [];
-
-        if (Arr::has($environment, 'build.commands')) {
-            $commands = (array) Arr::get($environment, 'build.commands');
-        } elseif (!Arr::has($environment, 'build.include')) {
-            $commands = (array) $environment['build'];
-        }
-
-        foreach ($commands as $command) {
-            Process::runShellCommandline($command, $this->buildDirectory, null, null, null);
+        if (!$projectConfiguration->getProjectType()->isIntegrationInstalled($this->buildDirectory)) {
+            throw new RuntimeException('Ymir integration is not installed in the build directory');
         }
     }
 }
