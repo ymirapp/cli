@@ -13,6 +13,9 @@ declare(strict_types=1);
 
 namespace Ymir\Cli\Project\Configuration\WordPress;
 
+use Symfony\Component\Console\Exception\InvalidArgumentException;
+use Ymir\Cli\Project\Type\AbstractWordPressProjectType;
+use Ymir\Cli\Project\Type\ProjectTypeInterface;
 use Ymir\Cli\Support\Arr;
 
 abstract class AbstractWordPressConfigurationChange implements WordPressConfigurationChangeInterface
@@ -20,8 +23,12 @@ abstract class AbstractWordPressConfigurationChange implements WordPressConfigur
     /**
      * {@inheritdoc}
      */
-    public function apply(array $options, string $projectType): array
+    public function apply(array $options, ProjectTypeInterface $projectType): array
     {
+        if (!$projectType instanceof AbstractWordPressProjectType) {
+            throw new InvalidArgumentException('Can only apply these configuration changes to WordPress projects');
+        }
+
         $buildIncludePaths = $this->getBuildIncludePaths($projectType);
         $optionsToMerge = $this->getOptionsToMerge();
 
@@ -35,30 +42,15 @@ abstract class AbstractWordPressConfigurationChange implements WordPressConfigur
     /**
      * Get the base path to use with build include option based on the project type.
      */
-    protected function getBaseIncludePath(string $projectType): string
+    protected function getBaseIncludePath(AbstractWordPressProjectType $projectType): string
     {
-        switch ($projectType) {
-            case 'bedrock':
-                $basePath = 'web/app';
-
-                break;
-            case 'radicle':
-                $basePath = 'public/content';
-
-                break;
-            default:
-                $basePath = 'wp-content';
-
-                break;
-        }
-
-        return $basePath.'/plugins/'.$this->getName();
+        return $projectType->getPluginsDirectoryPath().'/'.$this->getName();
     }
 
     /**
      * Get the build include paths to merge into the options when using zip archive deployment.
      */
-    protected function getBuildIncludePaths(string $projectType): array
+    protected function getBuildIncludePaths(AbstractWordPressProjectType $projectType): array
     {
         return [];
     }

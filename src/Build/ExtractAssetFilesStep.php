@@ -14,11 +14,10 @@ declare(strict_types=1);
 namespace Ymir\Cli\Build;
 
 use Symfony\Component\Filesystem\Filesystem;
-use Symfony\Component\Finder\Finder;
 use Symfony\Component\Finder\SplFileInfo;
 use Ymir\Cli\Project\Configuration\ProjectConfiguration;
 
-class ExtractAssetFilesStep extends AbstractBuildStep
+class ExtractAssetFilesStep implements BuildStepInterface
 {
     /**
      * The file system.
@@ -70,27 +69,7 @@ class ExtractAssetFilesStep extends AbstractBuildStep
 
         $this->filesystem->mkdir($this->toDirectory, 0755);
 
-        $fromDirectory = $this->fromDirectory;
-        $projectType = $projectConfiguration->getProjectType();
-
-        if ('bedrock' === $projectType) {
-            $fromDirectory .= '/web';
-        } elseif ('radicle' === $projectType) {
-            $fromDirectory .= '/public';
-        }
-
-        $files = Finder::create()
-            ->in($fromDirectory)
-            ->files()
-            ->notName(['*.php', '*.mo', '*.po'])
-            ->followLinks()
-            ->ignoreDotFiles(true);
-
-        if (in_array($projectType, ['bedrock', 'radicle'])) {
-            $files->exclude(['wp/wp-content']);
-        }
-
-        foreach ($files as $file) {
+        foreach ($projectConfiguration->getProjectType()->getAssetFiles($this->fromDirectory) as $file) {
             $this->moveAssetFile($file);
         }
     }

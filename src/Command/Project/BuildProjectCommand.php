@@ -15,11 +15,17 @@ namespace Ymir\Cli\Command\Project;
 
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
+use Symfony\Component\DependencyInjection\ServiceLocator;
 use Ymir\Cli\ApiClient;
+use Ymir\Cli\Build\BuildContainerImageStep;
 use Ymir\Cli\Build\BuildStepInterface;
+use Ymir\Cli\Build\CompressBuildFilesStep;
+use Ymir\Cli\Build\CopyUploadsDirectoryStep;
+use Ymir\Cli\Build\DebugBuildStep;
 use Ymir\Cli\CliConfiguration;
 use Ymir\Cli\Command\AbstractProjectCommand;
 use Ymir\Cli\Project\Configuration\ProjectConfiguration;
+use Ymir\Cli\Support\Arr;
 
 class BuildProjectCommand extends AbstractProjectCommand
 {
@@ -38,22 +44,20 @@ class BuildProjectCommand extends AbstractProjectCommand
     public const NAME = 'project:build';
 
     /**
-     * The build steps to perform.
+     * Service locator with all the build steps.
      *
-     * @var BuildStepInterface[]
+     * @var ServiceLocator
      */
-    private $buildSteps;
+    private $buildStepLocator;
 
     /**
-     * Constructor.
+     * {@inheritdoc}
      */
-    public function __construct(ApiClient $apiClient, CliConfiguration $cliConfiguration, ProjectConfiguration $projectConfiguration, iterable $buildSteps = [])
+    public function __construct(ApiClient $apiClient, ServiceLocator $buildStepLocator, CliConfiguration $cliConfiguration, ProjectConfiguration $projectConfiguration)
     {
         parent::__construct($apiClient, $cliConfiguration, $projectConfiguration);
 
-        foreach ($buildSteps as $buildStep) {
-            $this->addBuildStep($buildStep);
-        }
+        $this->buildStepLocator = $buildStepLocator;
     }
 
     /**
@@ -75,29 +79,42 @@ class BuildProjectCommand extends AbstractProjectCommand
      */
     protected function perform()
     {
-        $buildOptions = [
-            'debug' => $this->input->getBooleanOption('debug'),
-            'environment' => $this->input->getStringArgument('environment'),
-            'uploads' => $this->input->getBooleanOption('with-uploads'),
-        ];
-
         $this->output->info('Building project');
 
-        collect($this->buildSteps)->filter(function (BuildStepInterface $buildStep) use ($buildOptions) {
-            return $buildStep->isNeeded($buildOptions, $this->projectConfiguration);
-        })->each(function (BuildStepInterface $buildStep) use ($buildOptions) {
-            $this->output->writeStep($buildStep->getDescription());
-            $buildStep->perform($buildOptions['environment'], $this->projectConfiguration);
+        if ($this->input->getBooleanOption('with-uploads')) {
+            $this->performBuildStep($this->buildStepLocator->get(CopyUploadsDirectoryStep::class));
+        }
+
+        collect($this->projectConfiguration->getProjectType()->getBuildSteps())->map(function (string $buildStep) {
+            return $this->buildStepLocator->get($buildStep);
+        })->each(function (BuildStepInterface $buildStep) {
+            $this->performBuildStep($buildStep);
         });
+
+        if ($this->input->getBooleanOption('debug')) {
+            $this->performBuildStep($this->buildStepLocator->get(DebugBuildStep::class));
+        }
+
+        switch (Arr::get($this->projectConfiguration->getEnvironment($this->input->getStringArgument('environment')), 'deployment')) {
+            case 'image':
+                $this->performBuildStep($this->buildStepLocator->get(BuildContainerImageStep::class));
+
+                break;
+            default:
+                $this->performBuildStep($this->buildStepLocator->get(CompressBuildFilesStep::class));
+
+                break;
+        }
 
         $this->output->info('Project built successfully');
     }
 
     /**
-     * Add a build step to the command.
+     * Perform a build step.
      */
-    private function addBuildStep(BuildStepInterface $buildStep)
+    private function performBuildStep(BuildStepInterface $buildStep)
     {
-        $this->buildSteps[] = $buildStep;
+        $this->output->writeStep($buildStep->getDescription());
+        $buildStep->perform($this->input->getStringArgument('environment'), $this->projectConfiguration);
     }
 }

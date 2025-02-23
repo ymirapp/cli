@@ -55,32 +55,13 @@ class CompressBuildFilesStep implements BuildStepInterface
     /**
      * {@inheritdoc}
      */
-    public function isNeeded(array $buildOptions, ProjectConfiguration $projectConfiguration): bool
-    {
-        return 'image' !== Arr::get($projectConfiguration->getEnvironment($buildOptions['environment']), 'deployment');
-    }
-
-    /**
-     * {@inheritdoc}
-     */
     public function perform(string $environment, ProjectConfiguration $projectConfiguration)
     {
         $archive = new \ZipArchive();
         $archive->open($this->buildArtifactPath, \ZipArchive::CREATE | \ZipArchive::OVERWRITE);
         $environment = $projectConfiguration->getEnvironment($environment);
-        $files = Finder::create()
-                       ->append($this->getRequiredFiles())
-                       ->append($this->getRequiredPluginFiles())
-                       ->append($this->getRequiredThemeFiles())
-                       ->append($this->getRequiredFileTypes())
-                       ->append($this->getWordPressCoreFiles($projectConfiguration->getProjectType()));
+        $files = $projectConfiguration->getProjectType()->getBuildFiles($this->buildDirectory);
         $totalSize = 0;
-
-        if ('bedrock' === $projectConfiguration->getProjectType()) {
-            $files->exclude(['web/wp/wp-content']);
-        } elseif ('radicle' === $projectConfiguration->getProjectType()) {
-            $files->exclude(['public/wp/wp-content']);
-        }
 
         if (Arr::has($environment, 'build.include')) {
             $files->append($this->getIncludedFiles(Arr::get($environment, 'build.include')));
@@ -113,85 +94,13 @@ class CompressBuildFilesStep implements BuildStepInterface
     }
 
     /**
-     * Get base Finder object.
-     */
-    private function getBaseFinder(): Finder
-    {
-        return Finder::create()
-            ->in($this->buildDirectory)
-            ->files();
-    }
-
-    /**
      * Get files from "include" node.
      */
     private function getIncludedFiles(array $paths): Finder
     {
-        return $this->getBaseFinder()
+        return Finder::create()
+            ->in($this->buildDirectory)
+            ->files()
             ->path($paths);
-    }
-
-    /**
-     * Get the Finder object for finding all the required files.
-     */
-    private function getRequiredFiles(): Finder
-    {
-        return $this->getBaseFinder()
-            ->path([
-                '/^wp-cli\.yml/',
-            ]);
-    }
-
-    /**
-     * Get the Finder object for finding all the required file types.
-     */
-    private function getRequiredFileTypes(): Finder
-    {
-        return $this->getBaseFinder()
-            ->name(['*.mo', '*.php']);
-    }
-
-    /**
-     * Get the Finder object for finding all the required plugin files.
-     */
-    private function getRequiredPluginFiles(): Finder
-    {
-        return $this->getBaseFinder()
-            ->path([
-                '/plugins\/[^\/]*\/block\.json$/',
-            ]);
-    }
-
-    /**
-     * Get the Finder object for finding all the required theme files.
-     */
-    private function getRequiredThemeFiles(): Finder
-    {
-        return $this->getBaseFinder()
-            ->path([
-                '/themes\/[^\/]*\/screenshot\.(gif|jpe?g|png)$/',
-                '/themes\/[^\/]*\/style\.css$/',
-                '/themes\/[^\/]*\/block\.json$/',
-                '/themes\/[^\/]*\/theme\.json$/',
-                '/themes\/[^\/]*\/[^\/]*\/.*\.html/',
-                '/themes\/[^\/]*\/[^\/]*\/.*\.json$/',
-            ]);
-    }
-
-    /**
-     * Get the Finder object for finding all the WordPress core files.
-     */
-    private function getWordPressCoreFiles(string $projectType): Finder
-    {
-        return $this->getBaseFinder()
-            ->path(collect(['wp-includes\/', 'wp-admin\/'])->map(function (string $path) use ($projectType) {
-                if ('bedrock' === $projectType) {
-                    $path = 'web\/wp\/'.$path;
-                } elseif ('radicle' === $projectType) {
-                    $path = 'public\/wp\/'.$path;
-                }
-
-                return sprintf('/^%s/', $path);
-            })->add('/^bin\//')->all());
     }
 }

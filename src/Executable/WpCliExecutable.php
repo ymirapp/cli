@@ -47,10 +47,10 @@ class WpCliExecutable extends AbstractExecutable
     /**
      * Get the WordPress version.
      */
-    public function getVersion(): ?string
+    public function getVersion(?string $cwd = null): ?string
     {
         try {
-            return trim($this->run('core version')->getOutput());
+            return trim($this->run('core version', $cwd)->getOutput());
         } catch (WpCliException $exception) {
             return null;
         }
@@ -66,20 +66,6 @@ class WpCliExecutable extends AbstractExecutable
 
             return true;
         } catch (WpCliException $exception) {
-            return false;
-        }
-    }
-
-    /**
-     * Checks if the Ymir plugin is installed.
-     */
-    public function isYmirPluginInstalled(?string $cwd = null): bool
-    {
-        try {
-            return $this->listPlugins($cwd)->contains(function (array $plugin) {
-                return !empty($plugin['file']) && 1 === preg_match('/\/ymir\.php$/', $plugin['file']);
-            });
-        } catch (\Throwable $exception) {
             return false;
         }
     }

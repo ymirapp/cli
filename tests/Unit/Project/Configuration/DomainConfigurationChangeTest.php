@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Ymir\Cli\Tests\Unit\Project\Configuration;
 
 use Ymir\Cli\Project\Configuration\DomainConfigurationChange;
+use Ymir\Cli\Tests\Mock\ProjectTypeInterfaceMockTrait;
 use Ymir\Cli\Tests\Unit\TestCase;
 
 /**
@@ -21,6 +22,8 @@ use Ymir\Cli\Tests\Unit\TestCase;
  */
 class DomainConfigurationChangeTest extends TestCase
 {
+    use ProjectTypeInterfaceMockTrait;
+
     public function testApplyDoesNothingIfNewDomainIsAlreadyOnTopInDomainOption()
     {
         $existingDomain = $this->faker->domainName;
@@ -28,7 +31,7 @@ class DomainConfigurationChangeTest extends TestCase
 
         $this->assertSame([
             'domain' => [$newDomain, $existingDomain],
-        ], (new DomainConfigurationChange($newDomain))->apply(['domain' => [$newDomain, $existingDomain]], 'wordpress'));
+        ], (new DomainConfigurationChange($newDomain))->apply(['domain' => [$newDomain, $existingDomain]], $this->getProjectTypeInterfaceMock()));
     }
 
     public function testApplyDoesNothingIfNewDomainSameAsExistingStringDomainOption()
@@ -37,7 +40,7 @@ class DomainConfigurationChangeTest extends TestCase
 
         $this->assertSame([
             'domain' => $domain,
-        ], (new DomainConfigurationChange($domain))->apply(['domain' => $domain], 'wordpress'));
+        ], (new DomainConfigurationChange($domain))->apply(['domain' => $domain], $this->getProjectTypeInterfaceMock()));
     }
 
     public function testApplyWithMovesNewDomainToTopIfExistsInDomainOption()
@@ -47,7 +50,7 @@ class DomainConfigurationChangeTest extends TestCase
 
         $this->assertSame([
             'domain' => [$newDomain, $existingDomain],
-        ], (new DomainConfigurationChange($newDomain))->apply(['domain' => [$existingDomain, $newDomain]], 'wordpress'));
+        ], (new DomainConfigurationChange($newDomain))->apply(['domain' => [$existingDomain, $newDomain]], $this->getProjectTypeInterfaceMock()));
     }
 
     public function testApplyWithNoDomainOption()
@@ -56,7 +59,7 @@ class DomainConfigurationChangeTest extends TestCase
 
         $this->assertSame([
             'domain' => $domain,
-        ], (new DomainConfigurationChange($domain))->apply([], 'wordpress'));
+        ], (new DomainConfigurationChange($domain))->apply([], $this->getProjectTypeInterfaceMock()));
     }
 
     public function testApplyWithPrependsNewDomainToExistingDomainOption()
@@ -66,6 +69,6 @@ class DomainConfigurationChangeTest extends TestCase
 
         $this->assertSame([
             'domain' => [$newDomain, $existingDomain],
-        ], (new DomainConfigurationChange($newDomain))->apply(['domain' => $existingDomain], 'wordpress'));
+        ], (new DomainConfigurationChange($newDomain))->apply(['domain' => $existingDomain], $this->getProjectTypeInterfaceMock()));
     }
 }

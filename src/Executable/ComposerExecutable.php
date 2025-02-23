@@ -40,10 +40,24 @@ class ComposerExecutable extends AbstractExecutable
     }
 
     /**
+     * Check if the given package is installed.
+     */
+    public function isPackageInstalled(string $package, ?string $cwd = null): bool
+    {
+        try {
+            $this->run(sprintf('show %s', $package), $cwd);
+
+            return true;
+        } catch (\Throwable $exception) {
+            return false;
+        }
+    }
+
+    /**
      * Add the given package to the project's "composer.json" file and install it.
      */
-    public function require(string $package)
+    public function require(string $package, ?string $cwd = null)
     {
-        $this->run(sprintf('require %s', $package));
+        $this->run(sprintf('require %s', $package), $cwd);
     }
 }

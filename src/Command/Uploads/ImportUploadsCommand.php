@@ -34,6 +34,7 @@ use Ymir\Cli\Command\AbstractProjectCommand;
 use Ymir\Cli\Exception\InvalidInputException;
 use Ymir\Cli\FileUploader;
 use Ymir\Cli\Project\Configuration\ProjectConfiguration;
+use Ymir\Cli\Project\Type\AbstractWordPressProjectType;
 
 class ImportUploadsCommand extends AbstractProjectCommand
 {
@@ -83,15 +84,11 @@ class ImportUploadsCommand extends AbstractProjectCommand
         $path = $this->input->getStringArgument('path');
         $projectType = $this->projectConfiguration->getProjectType();
 
-        if (empty($path) && 'bedrock' === $projectType) {
-            $path = 'web/app/uploads';
-        } elseif (empty($path) && 'wordpress' === $projectType) {
-            $path = 'wp-content/uploads';
-        } elseif (empty($path) && 'radicle' === $projectType) {
-            $path = 'public/content/uploads';
+        if (!$projectType instanceof AbstractWordPressProjectType) {
+            throw new RuntimeException('You can only use this command with WordPress projects');
         }
 
-        $adapter = $this->getAdapter($path);
+        $adapter = $this->getAdapter($projectType->getUploadsDirectoryPath($path));
         $environment = (string) $this->input->getStringOption('environment');
         $filesystem = new Filesystem($adapter);
         $size = $this->input->getNumericOption('size');

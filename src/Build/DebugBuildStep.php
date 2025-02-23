@@ -28,14 +28,6 @@ class DebugBuildStep implements BuildStepInterface
     /**
      * {@inheritdoc}
      */
-    public function isNeeded(array $buildOptions, ProjectConfiguration $projectConfiguration): bool
-    {
-        return !empty($buildOptions['debug']);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
     public function perform(string $environment, ProjectConfiguration $projectConfiguration)
     {
         fgets(STDIN);

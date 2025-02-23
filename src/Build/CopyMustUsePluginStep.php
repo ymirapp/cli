@@ -16,8 +16,9 @@ namespace Ymir\Cli\Build;
 use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Filesystem\Filesystem;
 use Ymir\Cli\Project\Configuration\ProjectConfiguration;
+use Ymir\Cli\Project\Type\AbstractWordPressProjectType;
 
-class CopyMustUsePluginStep extends AbstractBuildStep
+class CopyMustUsePluginStep implements BuildStepInterface
 {
     /**
      * The build directory where the project files are copied to.
@@ -70,20 +71,13 @@ class CopyMustUsePluginStep extends AbstractBuildStep
             throw new RuntimeException(sprintf('Cannot find "%s" stub file', $mupluginStub));
         }
 
-        switch ($projectConfiguration->getProjectType()) {
-            case 'bedrock':
-                $mupluginsDirectory = $this->buildDirectory.'/web/app/mu-plugins';
+        $projectType = $projectConfiguration->getProjectType();
 
-                break;
-            case 'radicle':
-                $mupluginsDirectory = $this->buildDirectory.'/public/content/mu-plugins';
-
-                break;
-            default:
-                $mupluginsDirectory = $this->buildDirectory.'/wp-content/mu-plugins';
-
-                break;
+        if (!$projectType instanceof AbstractWordPressProjectType) {
+            throw new RuntimeException('You can only use this build step with WordPress projects');
         }
+
+        $mupluginsDirectory = $projectType->getMustUsePluginsDirectoryPath($this->buildDirectory);
 
         if (!$this->filesystem->exists($mupluginsDirectory)) {
             $this->filesystem->mkdir($mupluginsDirectory);
