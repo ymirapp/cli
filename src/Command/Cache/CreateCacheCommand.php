@@ -18,6 +18,7 @@ use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
 use Ymir\Cli\Command\AbstractCommand;
+use Ymir\Cli\Exception\CommandCancelledException;
 use Ymir\Cli\Exception\InvalidInputException;
 use Ymir\Cli\Project\Configuration\CacheConfigurationChange;
 
@@ -57,7 +58,7 @@ class CreateCacheCommand extends AbstractCommand
         $network = $this->apiClient->getNetwork($this->determineOrCreateNetwork('On what network should the cache cluster be created?'));
 
         if (!$network->get('has_nat_gateway') && !$this->output->confirm('A cache cluster will require Ymir to add a NAT gateway to your network (~$32/month). Would you like to proceed?')) {
-            return;
+            throw new CommandCancelledException();
         }
 
         $type = $this->determineType($network);
