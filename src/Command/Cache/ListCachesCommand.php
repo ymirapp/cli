@@ -40,7 +40,7 @@ class ListCachesCommand extends AbstractCommand
     protected function perform()
     {
         $this->output->table(
-            ['Id', 'Name', 'Provider', 'Network', 'Region', 'Status', 'Type'],
+            ['Id', 'Name', 'Provider', 'Network', 'Region', 'Status', 'Engine', 'Type'],
             $this->apiClient->getCaches($this->cliConfiguration->getActiveTeamId())->map(function (array $cache) {
                 return [
                     $cache['id'],
@@ -49,6 +49,7 @@ class ListCachesCommand extends AbstractCommand
                     $cache['network']['name'],
                     $cache['region'],
                     $this->output->formatStatus($cache['status']),
+                    $cache['engine'],
                     $cache['type'],
                 ];
             })->all()
