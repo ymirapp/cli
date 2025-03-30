@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.51.0](https://github.com/ymirapp/cli/compare/v1.50.2...v1.51.0) (2025-03-30)
+
+
+### Features
+
+* Add cache engine to `cache:list` command ([af4e42f](https://github.com/ymirapp/cli/commit/af4e42fbfa469f924a7305cb1a39c1ad2b488ee8))
+* Add support for creating valkey cache clusters ([f630414](https://github.com/ymirapp/cli/commit/f63041467b870a4af1a290bbd2ddbd33991f0f5f))
+* Add support for radicle ([608eb70](https://github.com/ymirapp/cli/commit/608eb7036da8ea9f212b53414336bd48c41bc2be))
+
+
+### Bug Fixes
+
+* Fix false negative when detecting wordpress installation ([9786217](https://github.com/ymirapp/cli/commit/978621748f31adb234b16a35ceebd51dd6cf7735))
+
 ## [1.50.2](https://github.com/ymirapp/cli/compare/v1.50.1...v1.50.2) (2025-01-12)
 
 
