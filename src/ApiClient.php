@@ -110,9 +110,9 @@ class ApiClient
     /**
      * Create a new cache on the given network.
      */
-    public function createCache(int $networkId, string $name, string $type): Collection
+    public function createCache(int $networkId, string $name, string $engine, string $type): Collection
     {
-        return $this->client->createCache($networkId, $name, $type);
+        return $this->client->createCache($networkId, $name, $engine, $type);
     }
 
     /**

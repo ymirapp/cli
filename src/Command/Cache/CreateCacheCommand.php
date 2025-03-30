@@ -40,6 +40,7 @@ class CreateCacheCommand extends AbstractCommand
             ->setName(self::NAME)
             ->setDescription('Create a new cache cluster')
             ->addArgument('name', InputArgument::OPTIONAL, 'The name of the cache cluster')
+            ->addOption('engine', null, InputOption::VALUE_REQUIRED, 'The cache cluster engine to create on the cloud provider', 'valkey')
             ->addOption('network', null, InputOption::VALUE_REQUIRED, 'The ID or name of the network on which the cache cluster will be created')
             ->addOption('type', null, InputOption::VALUE_REQUIRED, 'The cache cluster type to create on the cloud provider');
     }
@@ -49,7 +50,12 @@ class CreateCacheCommand extends AbstractCommand
      */
     protected function perform()
     {
+        $engine = strtolower($this->input->getStringOption('engine'));
         $name = $this->input->getStringArgument('name');
+
+        if (!in_array($engine, ['redis', 'valkey'])) {
+            throw new InvalidInputException('The engine must be either "redis" or "valkey"');
+        }
 
         if (empty($name)) {
             $name = $this->output->askSlug('What is the name of the cache cluster');
@@ -61,9 +67,9 @@ class CreateCacheCommand extends AbstractCommand
             throw new CommandCancelledException();
         }
 
-        $type = $this->determineType($network);
+        $type = $this->determineType($network, $engine);
 
-        $this->apiClient->createCache((int) $network->get('id'), $name, $type);
+        $this->apiClient->createCache((int) $network->get('id'), $name, $engine, $type);
 
         $this->output->infoWithDelayWarning('Cache cluster created');
 
@@ -75,14 +81,16 @@ class CreateCacheCommand extends AbstractCommand
     /**
      * Determine the cache cluster type to create.
      */
-    private function determineType(Collection $network): string
+    private function determineType(Collection $network, string $engine): string
     {
         if (!isset($network['provider']['id'])) {
             throw new RuntimeException('The Ymir API failed to return information on the cloud provider');
         }
 
         $type = $this->input->getStringOption('type');
-        $types = $this->apiClient->getCacheTypes((int) $network['provider']['id']);
+        $types = $this->apiClient->getCacheTypes((int) $network['provider']['id'])->map(function (array $details) use ($engine) {
+            return sprintf('%s vCPU, %sGiB RAM (~$%s/month)', $details['cpu'], $details['ram'], $details['price'][$engine]);
+        });
 
         if (null !== $type && !$types->has($type)) {
             throw new InvalidInputException(sprintf('The type "%s" isn\'t a valid cache cluster type', $type));
