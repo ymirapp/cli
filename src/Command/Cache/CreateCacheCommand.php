@@ -40,7 +40,7 @@ class CreateCacheCommand extends AbstractCommand
             ->setName(self::NAME)
             ->setDescription('Create a new cache cluster')
             ->addArgument('name', InputArgument::OPTIONAL, 'The name of the cache cluster')
-            ->addOption('engine', null, InputOption::VALUE_REQUIRED, 'The cache cluster engine to create on the cloud provider', 'valkey')
+            ->addOption('engine', null, InputOption::VALUE_REQUIRED, 'The engine used by the cache cluster', 'valkey')
             ->addOption('network', null, InputOption::VALUE_REQUIRED, 'The ID or name of the network on which the cache cluster will be created')
             ->addOption('type', null, InputOption::VALUE_REQUIRED, 'The cache cluster type to create on the cloud provider');
     }
