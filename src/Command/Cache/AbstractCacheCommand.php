@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Ymir\Cli\Command\Cache;
 
+use Illuminate\Support\Collection;
 use Symfony\Component\Console\Exception\RuntimeException;
 use Ymir\Cli\Command\AbstractCommand;
 use Ymir\Cli\Exception\InvalidInputException;
@@ -42,5 +43,15 @@ abstract class AbstractCacheCommand extends AbstractCommand
         }
 
         return $cache;
+    }
+
+    /**
+     * Get the descriptions of the cache types for a given provider and engine.
+     */
+    protected function getCacheTypeDescriptions(int $providerId, string $engine): Collection
+    {
+        return $this->apiClient->getCacheTypes($providerId)->map(function (array $details) use ($engine) {
+            return sprintf('%s vCPU, %sGiB RAM (~$%s/month)', $details['cpu'], $details['ram'], $details['price'][$engine]);
+        });
     }
 }

@@ -17,12 +17,11 @@ use Illuminate\Support\Collection;
 use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
-use Ymir\Cli\Command\AbstractCommand;
 use Ymir\Cli\Exception\CommandCancelledException;
 use Ymir\Cli\Exception\InvalidInputException;
 use Ymir\Cli\Project\Configuration\CacheConfigurationChange;
 
-class CreateCacheCommand extends AbstractCommand
+class CreateCacheCommand extends AbstractCacheCommand
 {
     /**
      * The name of the command.
@@ -88,9 +87,7 @@ class CreateCacheCommand extends AbstractCommand
         }
 
         $type = $this->input->getStringOption('type');
-        $types = $this->apiClient->getCacheTypes((int) $network['provider']['id'])->map(function (array $details) use ($engine) {
-            return sprintf('%s vCPU, %sGiB RAM (~$%s/month)', $details['cpu'], $details['ram'], $details['price'][$engine]);
-        });
+        $types = $this->getCacheTypeDescriptions((int) $network['provider']['id'], $engine);
 
         if (null !== $type && !$types->has($type)) {
             throw new InvalidInputException(sprintf('The type "%s" isn\'t a valid cache cluster type', $type));

@@ -45,7 +45,7 @@ class ModifyCacheCommand extends AbstractCacheCommand
     {
         $cache = $this->determineCache('Which cache cluster would you like to modify');
         $type = $this->input->getStringOption('type', true);
-        $types = $this->apiClient->getCacheTypes($cache['provider']['id']);
+        $types = $this->getCacheTypeDescriptions($cache['provider']['id'], $cache['engine']);
 
         if (null === $type) {
             $type = $this->output->choice(sprintf('What should the cache cluster type be changed to? <fg=default>(Currently: <comment>%s</comment>)</>', $cache['type']), $types);
