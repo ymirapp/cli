@@ -106,7 +106,9 @@ class Output implements OutputInterface
      */
     public function askSlug(string $question, ?string $default = null): string
     {
-        return (string) preg_replace('/[^a-z0-9-_]+/i', '-', strtolower(trim($this->ask($question, $default))));
+        $answer = $this->ask($question, $default);
+
+        return is_string($answer) ? (string) preg_replace('/[^a-z0-9-_]+/i', '-', strtolower(trim($answer))) : '';
     }
 
     /**

@@ -24,6 +24,7 @@ use Ymir\Cli\Command\Database\CreateDatabaseServerCommand;
 use Ymir\Cli\Command\Docker\CreateDockerfileCommand;
 use Ymir\Cli\Command\InstallIntegrationCommand;
 use Ymir\Cli\Command\Provider\ConnectProviderCommand;
+use Ymir\Cli\Exception\InvalidInputException;
 use Ymir\Cli\Executable\DockerExecutable;
 use Ymir\Cli\Executable\WpCliExecutable;
 use Ymir\Cli\Project\Configuration\ProjectConfiguration;
@@ -143,6 +144,11 @@ class InitializeProjectCommand extends AbstractCommand
 
         $this->retryApi(function () {
             $projectName = $this->output->askSlug('What is the name of the project', basename(getcwd() ?: '') ?: null);
+
+            if (empty($projectName)) {
+                throw new InvalidInputException('Project name is required');
+            }
+
             $projectType = $this->determineProjectType();
             $providerId = $this->determineCloudProvider('Enter the ID of the cloud provider that the project will use');
             $region = $this->determineRegion('Enter the name of the region that the project will be in', $providerId);

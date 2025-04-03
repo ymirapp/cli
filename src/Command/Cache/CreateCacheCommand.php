@@ -60,6 +60,10 @@ class CreateCacheCommand extends AbstractCacheCommand
             $name = $this->output->askSlug('What is the name of the cache cluster');
         }
 
+        if (empty($name)) {
+            throw new InvalidInputException('Cache cluster name is required');
+        }
+
         $network = $this->apiClient->getNetwork($this->determineOrCreateNetwork('On what network should the cache cluster be created?'));
 
         if (!$network->get('has_nat_gateway') && !$this->output->confirm('A cache cluster will require Ymir to add a NAT gateway to your network (~$32/month). Would you like to proceed?')) {

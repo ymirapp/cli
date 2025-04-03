@@ -57,6 +57,10 @@ class CreateDatabaseServerCommand extends AbstractDatabaseServerCommand
             $name = $this->output->askSlug('What is the name of the database server');
         }
 
+        if (empty($name)) {
+            throw new InvalidInputException('Database server name is required');
+        }
+
         $network = $this->apiClient->getNetwork($this->determineOrCreateNetwork('On what network should the database server be created?'));
 
         if (!isset($network['provider']['id'])) {
