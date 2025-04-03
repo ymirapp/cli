@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.51.1](https://github.com/ymirapp/cli/compare/v1.51.0...v1.51.1) (2025-04-03)
+
+
+### Bug Fixes
+
+* `askSlug` method should return an empty string if the user answers nothing ([04fae1e](https://github.com/ymirapp/cli/commit/04fae1e713473be772d080b316ee6bd365ffb656))
+* `cache:modify` command also needs new formatted cache type descriptions ([2506976](https://github.com/ymirapp/cli/commit/2506976a578628682a56ce77044bb44dd4ceaee0))
+
 ## [1.51.0](https://github.com/ymirapp/cli/compare/v1.50.2...v1.51.0) (2025-03-30)
 
 
