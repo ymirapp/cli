@@ -19,6 +19,11 @@ use Ymir\Cli\Project\Configuration\ProjectConfiguration;
 class DownloadWpCliStep implements BuildStepInterface
 {
     /**
+     * The WP-CLI version to download.
+     */
+    private const VERSION = '2.12.0';
+
+    /**
      * The path to the WP-CLI bin directory.
      *
      * @var string
@@ -60,7 +65,7 @@ class DownloadWpCliStep implements BuildStepInterface
             $this->filesystem->mkdir($this->binDirectory, 0755);
         }
 
-        $this->filesystem->copy('https://github.com/wp-cli/wp-cli/releases/download/v2.12.0/wp-cli-2.12.0.phar', $wpCliPath, true);
+        $this->filesystem->copy(sprintf('https://github.com/wp-cli/wp-cli/releases/download/v%1$s/wp-cli-%1$s.phar', self::VERSION), $wpCliPath, true);
         $this->filesystem->chmod($wpCliPath, 0755);
     }
 }
