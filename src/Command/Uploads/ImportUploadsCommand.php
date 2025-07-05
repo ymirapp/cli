@@ -88,7 +88,11 @@ class ImportUploadsCommand extends AbstractProjectCommand
             throw new RuntimeException('You can only use this command with WordPress projects');
         }
 
-        $adapter = $this->getAdapter($projectType->getUploadsDirectoryPath($path));
+        if (empty($path)) {
+            $path = $projectType->getUploadsDirectoryPath($path);
+        }
+
+        $adapter = $this->getAdapter($path);
         $environment = (string) $this->input->getStringOption('environment');
         $filesystem = new Filesystem($adapter);
         $size = $this->input->getNumericOption('size');
