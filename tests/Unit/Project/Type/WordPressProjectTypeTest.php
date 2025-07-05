@@ -211,11 +211,11 @@ class WordPressProjectTypeTest extends TestCase
         $this->assertSame($buildDir.'/wp-content/mu-plugins', $projectType->getMustUsePluginsDirectoryPath($buildDir));
     }
 
-    public function testGetMustUsePluginsDirectoryPathWithoutBaseDirectory(): void
+    public function testGetMustUsePluginsDirectoryPathWithoutBasePathReturnsRelativePath(): void
     {
         $projectType = new WordPressProjectType($this->getFilesystemMock(), $this->getGitHubClientMock(), $this->getWpCliExecutableMock());
 
-        $this->assertSame('/wp-content/mu-plugins', $projectType->getMustUsePluginsDirectoryPath());
+        $this->assertSame('wp-content/mu-plugins', $projectType->getMustUsePluginsDirectoryPath());
     }
 
     public function testGetName()
@@ -239,11 +239,11 @@ class WordPressProjectTypeTest extends TestCase
         $this->assertSame($buildDir.'/wp-content/plugins', $projectType->getPluginsDirectoryPath($buildDir));
     }
 
-    public function testGetPluginsDirectoryPathWithoutBaseDirectory(): void
+    public function testGetPluginsDirectoryPathWithoutBasePathReturnsRelativePath(): void
     {
         $projectType = new WordPressProjectType($this->getFilesystemMock(), $this->getGitHubClientMock(), $this->getWpCliExecutableMock());
 
-        $this->assertSame('/wp-content/plugins', $projectType->getPluginsDirectoryPath());
+        $this->assertSame('wp-content/plugins', $projectType->getPluginsDirectoryPath());
     }
 
     public function testGetProjectFilesExcludesUploadsDirectory()
@@ -301,11 +301,11 @@ class WordPressProjectTypeTest extends TestCase
         $this->assertSame($buildDir.'/wp-content/uploads', $projectType->getUploadsDirectoryPath($buildDir));
     }
 
-    public function testGetUploadsDirectoryPathWithoutBaseDirectory(): void
+    public function testGetUploadsDirectoryPathWithoutBasePathReturnsRelativePath(): void
     {
         $projectType = new WordPressProjectType($this->getFilesystemMock(), $this->getGitHubClientMock(), $this->getWpCliExecutableMock());
 
-        $this->assertSame('/wp-content/uploads', $projectType->getUploadsDirectoryPath());
+        $this->assertSame('wp-content/uploads', $projectType->getUploadsDirectoryPath());
     }
 
     public function testInstallProject()

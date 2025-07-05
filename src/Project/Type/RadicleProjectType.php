@@ -85,33 +85,9 @@ class RadicleProjectType extends AbstractWordPressProjectType
     /**
      * {@inheritdoc}
      */
-    public function getMustUsePluginsDirectoryPath(string $baseDirectory = ''): string
-    {
-        return rtrim($baseDirectory, '/').'/public/content/mu-plugins';
-    }
-
-    /**
-     * {@inheritdoc}
-     */
     public function getName(): string
     {
         return 'Radicle';
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getPluginsDirectoryPath(string $baseDirectory = ''): string
-    {
-        return rtrim($baseDirectory, '/').'/public/content/plugins';
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getUploadsDirectoryPath(string $baseDirectory = ''): string
-    {
-        return rtrim($baseDirectory, '/').'/public/content/uploads';
     }
 
     /**
@@ -146,5 +122,29 @@ class RadicleProjectType extends AbstractWordPressProjectType
     protected function buildWordPressCorePathPattern(string $path): string
     {
         return sprintf('/^public\/wp\/%s/', $path);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function getMustUsePluginsDirectory(): string
+    {
+        return 'public/content/mu-plugins';
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function getPluginsDirectory(): string
+    {
+        return 'public/content/plugins';
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function getUploadsDirectory(): string
+    {
+        return 'public/content/uploads';
     }
 }

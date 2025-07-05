@@ -87,6 +87,17 @@ abstract class AbstractProjectType implements ProjectTypeInterface
     }
 
     /**
+     * Get the absolute or relative path to a given path.
+     *
+     * If the project directory is given, it will return the absolute path to the given path. Otherwise, it will
+     * return the relative path.
+     */
+    protected function getPath(string $path, string $projectDirectory = ''): string
+    {
+        return !empty($projectDirectory) ? rtrim($projectDirectory, '/').'/'.$path : $path;
+    }
+
+    /**
      * Get a SplFileInfo object for a project file.
      */
     protected function getSplFileInfo(string $directory, string $path): SplFileInfo
@@ -95,12 +106,12 @@ abstract class AbstractProjectType implements ProjectTypeInterface
     }
 
     /**
-     * Check if the given paths exist in the given directory.
+     * Check if the given paths exist relative to the given project directory.
      */
-    protected function pathsExist(string $directory, array $paths): bool
+    protected function pathsExist(string $projectDirectory, array $paths): bool
     {
-        return $this->filesystem->exists(array_map(function (string $path) use ($directory) {
-            return $directory.$path;
+        return $this->filesystem->exists(array_map(function (string $path) use ($projectDirectory) {
+            return $this->getPath($path, $projectDirectory);
         }, $paths));
     }
 }

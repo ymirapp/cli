@@ -74,25 +74,9 @@ class WordPressProjectType extends AbstractWordPressProjectType implements Insta
     /**
      * {@inheritdoc}
      */
-    public function getMustUsePluginsDirectoryPath(string $baseDirectory = ''): string
-    {
-        return rtrim($baseDirectory, '/').'/wp-content/mu-plugins';
-    }
-
-    /**
-     * {@inheritdoc}
-     */
     public function getName(): string
     {
         return 'WordPress';
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getPluginsDirectoryPath(string $baseDirectory = ''): string
-    {
-        return rtrim($baseDirectory, '/').'/wp-content/plugins';
     }
 
     /**
@@ -108,14 +92,6 @@ class WordPressProjectType extends AbstractWordPressProjectType implements Insta
         }
 
         return $projectFiles;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getUploadsDirectoryPath(string $baseDirectory = ''): string
-    {
-        return rtrim($baseDirectory, '/').'/wp-content/uploads';
     }
 
     /**
@@ -200,5 +176,29 @@ class WordPressProjectType extends AbstractWordPressProjectType implements Insta
     protected function buildWordPressCorePathPattern(string $path): string
     {
         return sprintf('/^%s/', $path);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function getMustUsePluginsDirectory(): string
+    {
+        return 'wp-content/mu-plugins';
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function getPluginsDirectory(): string
+    {
+        return 'wp-content/plugins';
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function getUploadsDirectory(): string
+    {
+        return 'wp-content/uploads';
     }
 }

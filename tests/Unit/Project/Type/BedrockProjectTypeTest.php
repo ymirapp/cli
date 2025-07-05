@@ -290,11 +290,11 @@ class BedrockProjectTypeTest extends TestCase
         $this->assertSame($buildDir.'/web/app/mu-plugins', $projectType->getMustUsePluginsDirectoryPath($buildDir));
     }
 
-    public function testGetMustUsePluginsDirectoryPathWithoutBaseDirectory(): void
+    public function testGetMustUsePluginsDirectoryPathWithoutBasePathReturnsRelativePath(): void
     {
         $projectType = new BedrockProjectType($this->getComposerExecutableMock(), $this->getFilesystemMock());
 
-        $this->assertSame('/web/app/mu-plugins', $projectType->getMustUsePluginsDirectoryPath());
+        $this->assertSame('web/app/mu-plugins', $projectType->getMustUsePluginsDirectoryPath());
     }
 
     public function testGetName()
@@ -318,11 +318,11 @@ class BedrockProjectTypeTest extends TestCase
         $this->assertSame($buildDir.'/web/app/plugins', $projectType->getPluginsDirectoryPath($buildDir));
     }
 
-    public function testGetPluginsDirectoryPathWithoutBaseDirectory(): void
+    public function testGetPluginsDirectoryPathWithoutBasePathReturnsRelativePath(): void
     {
         $projectType = new BedrockProjectType($this->getComposerExecutableMock(), $this->getFilesystemMock());
 
-        $this->assertSame('/web/app/plugins', $projectType->getPluginsDirectoryPath());
+        $this->assertSame('web/app/plugins', $projectType->getPluginsDirectoryPath());
     }
 
     public function testGetProjectFilesExcludesUploadsDirectory()
@@ -364,11 +364,11 @@ class BedrockProjectTypeTest extends TestCase
         $this->assertSame($buildDir.'/web/app/uploads', $projectType->getUploadsDirectoryPath($buildDir));
     }
 
-    public function testGetUploadsDirectoryPathWithoutBaseDirectory(): void
+    public function testGetUploadsDirectoryPathWithoutBasePathReturnsRelativePath(): void
     {
         $projectType = new BedrockProjectType($this->getComposerExecutableMock(), $this->getFilesystemMock());
 
-        $this->assertSame('/web/app/uploads', $projectType->getUploadsDirectoryPath());
+        $this->assertSame('web/app/uploads', $projectType->getUploadsDirectoryPath());
     }
 
     public function testInstallIntegration()

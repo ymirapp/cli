@@ -57,6 +57,28 @@ abstract class AbstractWordPressProjectType extends AbstractProjectType
     }
 
     /**
+     * Get the path to the "mu-plugins" directory.
+     *
+     * If the project directory is given, it will return the absolute path to the "mu-plugins" directory. Otherwise, it
+     * will return the relative path.
+     */
+    public function getMustUsePluginsDirectoryPath(string $projectDirectory = ''): string
+    {
+        return $this->getPath($this->getMustUsePluginsDirectory(), $projectDirectory);
+    }
+
+    /**
+     * Get the path to the "plugins" directory.
+     *
+     * If the project directory is given, it will return the absolute path to the "plugins" directory. Otherwise, it
+     * will return the relative path.
+     */
+    public function getPluginsDirectoryPath(string $projectDirectory = ''): string
+    {
+        return $this->getPath($this->getPluginsDirectory(), $projectDirectory);
+    }
+
+    /**
      * {@inheritdoc}
      */
     public function getProjectFiles(string $projectDirectory): Finder
@@ -66,28 +88,15 @@ abstract class AbstractWordPressProjectType extends AbstractProjectType
     }
 
     /**
-     * Get the path to the "mu-plugins" directory.
-     *
-     * If the directory is given, it will return the path to the "mu-plugins" directory in that directory. Otherwise, it
-     * will return the relative path to the "mu-plugins" directory in the project.
-     */
-    abstract public function getMustUsePluginsDirectoryPath(string $baseDirectory = ''): string;
-
-    /**
-     * Get the path to the "plugins" directory.
-     *
-     * If the directory is given, it will return the path to the "plugins" directory in that directory. Otherwise, it
-     * will return the relative path to the "plugins" directory in the project.
-     */
-    abstract public function getPluginsDirectoryPath(string $baseDirectory = ''): string;
-
-    /**
      * Get the path to the "uploads" directory.
      *
-     * If the directory is given, it will return the path to the "uploads" directory in that directory. Otherwise, it
-     * will return the relative path to the "uploads" directory in the project.
+     * If the project directory is given, it will return the absolute path to the "uploads" directory. Otherwise, it
+     * will return the relative path.
      */
-    abstract public function getUploadsDirectoryPath(string $baseDirectory = ''): string;
+    public function getUploadsDirectoryPath(string $projectDirectory = ''): string
+    {
+        return $this->getPath($this->getUploadsDirectory(), $projectDirectory);
+    }
 
     /**
      * Get the Finder object for finding all the required files in the given project directory.
@@ -151,4 +160,19 @@ abstract class AbstractWordPressProjectType extends AbstractProjectType
      * Builds a regex pattern for a WordPress core path.
      */
     abstract protected function buildWordPressCorePathPattern(string $path): string;
+
+    /**
+     * Get the "mu-plugins" directory used by the project type.
+     */
+    abstract protected function getMustUsePluginsDirectory(): string;
+
+    /**
+     * Get the "plugins" directory used by the project type.
+     */
+    abstract protected function getPluginsDirectory(): string;
+
+    /**
+     * Get the "uploads" directory used by the project type.
+     */
+    abstract protected function getUploadsDirectory(): string;
 }

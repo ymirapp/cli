@@ -287,11 +287,11 @@ class RadicleProjectTypeTest extends TestCase
         $this->assertSame($buildDir.'/public/content/mu-plugins', $projectType->getMustUsePluginsDirectoryPath($buildDir));
     }
 
-    public function testGetMustUsePluginsDirectoryPathWithoutBaseDirectory(): void
+    public function testGetMustUsePluginsDirectoryPathWithoutBasePathReturnsRelativePath(): void
     {
         $projectType = new RadicleProjectType($this->getComposerExecutableMock(), $this->getFilesystemMock());
 
-        $this->assertSame('/public/content/mu-plugins', $projectType->getMustUsePluginsDirectoryPath());
+        $this->assertSame('public/content/mu-plugins', $projectType->getMustUsePluginsDirectoryPath());
     }
 
     public function testGetName()
@@ -315,11 +315,11 @@ class RadicleProjectTypeTest extends TestCase
         $this->assertSame($buildDir.'/public/content/plugins', $projectType->getPluginsDirectoryPath($buildDir));
     }
 
-    public function testGetPluginsDirectoryPathWithoutBaseDirectory(): void
+    public function testGetPluginsDirectoryPathWithoutBasePathReturnsRelativePath(): void
     {
         $projectType = new RadicleProjectType($this->getComposerExecutableMock(), $this->getFilesystemMock());
 
-        $this->assertSame('/public/content/plugins', $projectType->getPluginsDirectoryPath());
+        $this->assertSame('public/content/plugins', $projectType->getPluginsDirectoryPath());
     }
 
     public function testGetProjectFilesExcludesUploadsDirectory()
@@ -361,11 +361,11 @@ class RadicleProjectTypeTest extends TestCase
         $this->assertSame($buildDir.'/public/content/uploads', $projectType->getUploadsDirectoryPath($buildDir));
     }
 
-    public function testGetUploadsDirectoryPathWithoutBaseDirectory(): void
+    public function testGetUploadsDirectoryPathWithoutBasePathReturnsRelativePath(): void
     {
         $projectType = new RadicleProjectType($this->getComposerExecutableMock(), $this->getFilesystemMock());
 
-        $this->assertSame('/public/content/uploads', $projectType->getUploadsDirectoryPath());
+        $this->assertSame('public/content/uploads', $projectType->getUploadsDirectoryPath());
     }
 
     public function testInstallIntegration()

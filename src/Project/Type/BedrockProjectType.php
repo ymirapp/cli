@@ -92,33 +92,9 @@ class BedrockProjectType extends AbstractWordPressProjectType implements Install
     /**
      * {@inheritdoc}
      */
-    public function getMustUsePluginsDirectoryPath(string $baseDirectory = ''): string
-    {
-        return rtrim($baseDirectory, '/').'/web/app/mu-plugins';
-    }
-
-    /**
-     * {@inheritdoc}
-     */
     public function getName(): string
     {
         return 'Bedrock';
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getPluginsDirectoryPath(string $baseDirectory = ''): string
-    {
-        return rtrim($baseDirectory, '/').'/web/app/plugins';
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getUploadsDirectoryPath(string $baseDirectory = ''): string
-    {
-        return rtrim($baseDirectory, '/').'/web/app/uploads';
     }
 
     /**
@@ -167,5 +143,29 @@ class BedrockProjectType extends AbstractWordPressProjectType implements Install
     protected function buildWordPressCorePathPattern(string $path): string
     {
         return sprintf('/^web\/wp\/%s/', $path);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function getMustUsePluginsDirectory(): string
+    {
+        return 'web/app/mu-plugins';
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function getPluginsDirectory(): string
+    {
+        return 'web/app/plugins';
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function getUploadsDirectory(): string
+    {
+        return 'web/app/uploads';
     }
 }
