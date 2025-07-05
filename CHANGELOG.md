@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.52.0](https://github.com/ymirapp/cli/compare/v1.51.1...v1.52.0) (2025-07-05)
+
+
+### Features
+
+* Bump deployed wp-cli version to 2.12.0 ([5cf989a](https://github.com/ymirapp/cli/commit/5cf989aa73f0821dc259b4e4844f95acc51336c5))
+
+
+### Bug Fixes
+
+* All directory path methods should return a relative path if there's no base path ([f4e28d8](https://github.com/ymirapp/cli/commit/f4e28d88adeee6384a684c607fc3e60756ab7cf6))
+* Only use relative path to uploads directory when no `path` is given ([25ca259](https://github.com/ymirapp/cli/commit/25ca2599e3bcc041c7d97a8e5e6ab1b45246cd22))
+
 ## [1.51.1](https://github.com/ymirapp/cli/compare/v1.51.0...v1.51.1) (2025-04-03)
 
 
