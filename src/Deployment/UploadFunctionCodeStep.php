@@ -101,9 +101,19 @@ class UploadFunctionCodeStep implements DeploymentStepInterface
     private function pushImage(Collection $deployment, string $environment, Output $output)
     {
         $image = $this->apiClient->getDeploymentImage((int) $deployment->get('id'));
+
+        if (!$image->has(['authorization_token', 'image_uri'])) {
+            throw new \RuntimeException('Deployment image data is incomplete. Missing required Docker registry credentials from API response.');
+        }
+
+        $decodedToken = base64_decode((string) $image->get('authorization_token'));
         $imageUri = (string) $image->get('image_uri');
 
-        list($user, $password) = explode(':', base64_decode((string) $image->get('authorization_token')));
+        if (1 !== substr_count($decodedToken, ':')) {
+            throw new \RuntimeException('Invalid authorization token format. Expected "user:password" format for Docker registry authentication.');
+        }
+
+        list($user, $password) = explode(':', $decodedToken);
 
         $output->infoWithDelayWarning('Pushing container image');
 
