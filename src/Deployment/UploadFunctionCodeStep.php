@@ -86,7 +86,11 @@ class UploadFunctionCodeStep implements DeploymentStepInterface
     public function perform(Collection $deployment, string $environment, Input $input, Output $output)
     {
         $configuration = $deployment->get('configuration');
-        $deploymentType = Arr::get($configuration, sprintf('environments.%s.deployment', $environment), 'zip');
+        $deploymentType = Arr::get($configuration, sprintf('environments.%s.deployment.type', $environment));
+
+        if (!in_array($deploymentType, ['image', 'zip'])) {
+            throw new \InvalidArgumentException(sprintf('Unsupported deployment type "%s" for environment "%s". Valid deployment types are: "image", "zip".', $deploymentType ?? 'null', $environment));
+        }
 
         if ('image' === $deploymentType) {
             $this->pushImage($deployment, $environment, $output);
