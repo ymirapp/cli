@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.53.0](https://github.com/ymirapp/cli/compare/v1.52.0...v1.53.0) (2025-08-30)
+
+
+### Features
+
+* Update location of deployment type in project configuration ([76c35cf](https://github.com/ymirapp/cli/commit/76c35cf54544b77be0694641b3f9937c1fc65f06))
+
 ## [1.52.0](https://github.com/ymirapp/cli/compare/v1.51.1...v1.52.0) (2025-07-05)
 
 

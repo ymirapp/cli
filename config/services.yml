@@ -6,7 +6,7 @@ parameters:
   hidden_directory: '%working_directory%/.ymir'
   stub_directory: '%application_directory%/stubs'
   uploads_directory: '%hidden_directory%/uploads'
-  version: '1.52.0'
+  version: '1.53.0'
 
 services:
   _defaults:
@@ -26,6 +26,7 @@ services:
       string $version: '%version%'
       Symfony\Component\DependencyInjection\ServiceLocator $buildStepLocator: !tagged_locator build_steps
 
+# TODO: Decide if we want to make tags plural or singular
   _instanceof:
     Symfony\Component\Console\Command\Command:
       tags: ['command']
