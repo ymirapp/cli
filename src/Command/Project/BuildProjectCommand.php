@@ -25,7 +25,6 @@ use Ymir\Cli\Build\DebugBuildStep;
 use Ymir\Cli\CliConfiguration;
 use Ymir\Cli\Command\AbstractProjectCommand;
 use Ymir\Cli\Project\Configuration\ProjectConfiguration;
-use Ymir\Cli\Support\Arr;
 
 class BuildProjectCommand extends AbstractProjectCommand
 {
@@ -95,7 +94,7 @@ class BuildProjectCommand extends AbstractProjectCommand
             $this->performBuildStep($this->buildStepLocator->get(DebugBuildStep::class));
         }
 
-        switch (Arr::get($this->projectConfiguration->getEnvironment($this->input->getStringArgument('environment')), 'deployment')) {
+        switch ($this->projectConfiguration->getEnvironmentDeploymentType($this->input->getStringArgument('environment'))) {
             case 'image':
                 $this->performBuildStep($this->buildStepLocator->get(BuildContainerImageStep::class));
 

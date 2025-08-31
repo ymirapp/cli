@@ -17,7 +17,6 @@ use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Finder\SplFileInfo;
 use Ymir\Cli\Project\Configuration\ProjectConfiguration;
-use Ymir\Cli\Support\Arr;
 
 class CopyProjectFilesStep implements BuildStepInterface
 {
@@ -70,16 +69,15 @@ class CopyProjectFilesStep implements BuildStepInterface
         }
 
         $this->filesystem->mkdir($this->buildDirectory, 0755);
-
-        $environment = $projectConfiguration->getEnvironment($environment);
         $files = $projectConfiguration->getProjectType()->getProjectFiles($this->projectDirectory);
+        $includePaths = $projectConfiguration->getEnvironmentBuildIncludePaths($environment);
 
-        if ('image' === Arr::get($environment, 'deployment')) {
+        if ('image' === $projectConfiguration->getEnvironmentDeploymentType($environment)) {
             $files->append([$this->getSplFileInfo('/.dockerignore')]);
         }
 
-        if (Arr::has($environment, 'build.include')) {
-            $files->append($this->getIncludedFiles(Arr::get($environment, 'build.include')));
+        if (!empty($includePaths)) {
+            $files->append($this->getIncludedFiles($includePaths));
         }
 
         foreach ($files as $file) {

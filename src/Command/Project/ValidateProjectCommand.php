@@ -19,7 +19,6 @@ use Ymir\Cli\CliConfiguration;
 use Ymir\Cli\Command\AbstractProjectCommand;
 use Ymir\Cli\Dockerfile;
 use Ymir\Cli\Project\Configuration\ProjectConfiguration;
-use Ymir\Cli\Support\Arr;
 
 class ValidateProjectCommand extends AbstractProjectCommand
 {
@@ -73,10 +72,10 @@ class ValidateProjectCommand extends AbstractProjectCommand
             return empty($environments) || in_array($environment, $environments);
         });
 
-        $environments->filter(function (array $configuration) {
-            return 'image' === Arr::get($configuration, 'deployment');
+        $environments->filter(function (array $configuration, string $environment) {
+            return 'image' === $this->projectConfiguration->getEnvironmentDeploymentType($environment);
         })->each(function (array $configuration, string $environment) {
-            $this->dockerfile->validate($environment, Arr::get($configuration, 'architecture', ''));
+            $this->dockerfile->validate($environment, $this->projectConfiguration->getEnvironmentArchitecture($environment));
         });
 
         $message = 'Project <comment>ymir.yml</comment> file is valid';

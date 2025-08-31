@@ -157,6 +157,39 @@ class ProjectConfiguration implements Arrayable
     }
 
     /**
+     * Get the architecture for the given environment.
+     */
+    public function getEnvironmentArchitecture(string $environment): string
+    {
+        return Arr::get($this->getEnvironment($environment), 'architecture', '');
+    }
+
+    /**
+     * Get the build include paths for the given environment.
+     */
+    public function getEnvironmentBuildIncludePaths(string $environment): array
+    {
+        return Arr::get($this->getEnvironment($environment), 'build.include', []);
+    }
+
+    /**
+     * Get the deployment type for the given environment.
+     */
+    public function getEnvironmentDeploymentType(string $environment): string
+    {
+        $configuration = $this->getEnvironment($environment);
+        $deployment = $configuration['deployment'] ?? null;
+
+        if (is_string($deployment)) {
+            return $deployment;
+        } elseif (!is_array($deployment) || empty($deployment['type']) || !is_string($deployment['type'])) {
+            throw new RuntimeException(sprintf('Unable to determine deployment type for environment "%s"', $environment));
+        }
+
+        return $deployment['type'];
+    }
+
+    /**
      * Get the environments in the project configuration.
      */
     public function getEnvironments(): Collection
