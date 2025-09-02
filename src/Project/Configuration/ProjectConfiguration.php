@@ -68,23 +68,13 @@ class ProjectConfiguration implements Arrayable
     }
 
     /**
-     * Save the options back to the configuration file when we're destroying the object.
-     */
-    public function __destruct()
-    {
-        if (empty($this->configuration)) {
-            return;
-        }
-
-        $this->save();
-    }
-
-    /**
      * Add a new environment node to the project configuration.
      */
     public function addEnvironment(string $environment, array $configuration)
     {
         $this->configuration['environments'][$environment] = $configuration;
+
+        $this->save();
     }
 
     /**
@@ -93,6 +83,8 @@ class ProjectConfiguration implements Arrayable
     public function applyChangesToEnvironment(string $environment, ConfigurationChangeInterface $configurationChange)
     {
         $this->configuration['environments'][$environment] = $configurationChange->apply($this->getEnvironment($environment), $this->getProjectType());
+
+        $this->save();
     }
 
     /**
@@ -139,6 +131,8 @@ class ProjectConfiguration implements Arrayable
     {
         if ($this->hasEnvironment($environment)) {
             unset($this->configuration['environments'][$environment]);
+
+            $this->save();
         }
     }
 
