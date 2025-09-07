@@ -92,6 +92,7 @@ class StartAndMonitorDeploymentStep implements DeploymentStepInterface
             'cors' => 'CORS',
             'dns' => 'DNS',
             'ensure' => 'ensuring',
+            'execute' => 'executing',
             'http' => 'HTTP',
             'prepare' => 'preparing',
             'rest' => 'REST',
