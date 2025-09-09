@@ -16,7 +16,6 @@ namespace Ymir\Cli\EventListener;
 use Symfony\Component\Console\ConsoleEvents;
 use Symfony\Component\Console\Event\ConsoleCommandEvent;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
-use Ymir\Cli\Application;
 use Ymir\Cli\CliConfiguration;
 use Ymir\Cli\GitHubClient;
 
