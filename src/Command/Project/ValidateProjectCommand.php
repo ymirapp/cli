@@ -13,14 +13,18 @@ declare(strict_types=1);
 
 namespace Ymir\Cli\Command\Project;
 
+use Illuminate\Support\Collection;
 use Symfony\Component\Console\Input\InputArgument;
 use Ymir\Cli\ApiClient;
-use Ymir\Cli\CliConfiguration;
-use Ymir\Cli\Command\AbstractProjectCommand;
+use Ymir\Cli\Command\AbstractCommand;
+use Ymir\Cli\Command\LocalProjectCommandInterface;
 use Ymir\Cli\Dockerfile;
-use Ymir\Cli\Project\Configuration\ProjectConfiguration;
+use Ymir\Cli\Exception\InvalidInputException;
+use Ymir\Cli\ExecutionContextFactory;
+use Ymir\Cli\Project\EnvironmentConfiguration;
+use Ymir\Cli\Resource\Model\Project;
 
-class ValidateProjectCommand extends AbstractProjectCommand
+class ValidateProjectCommand extends AbstractCommand implements LocalProjectCommandInterface
 {
     /**
      * The alias of the command.
@@ -43,9 +47,12 @@ class ValidateProjectCommand extends AbstractProjectCommand
      */
     private $dockerfile;
 
-    public function __construct(ApiClient $apiClient, CliConfiguration $cliConfiguration, Dockerfile $dockerfile, ProjectConfiguration $projectConfiguration)
+    /**
+     * Constructor.
+     */
+    public function __construct(ApiClient $apiClient, ExecutionContextFactory $contextFactory, Dockerfile $dockerfile)
     {
-        parent::__construct($apiClient, $cliConfiguration, $projectConfiguration);
+        parent::__construct($apiClient, $contextFactory);
 
         $this->dockerfile = $dockerfile;
     }
@@ -59,7 +66,7 @@ class ValidateProjectCommand extends AbstractProjectCommand
             ->setName(self::NAME)
             ->setDescription('Validates the project\'s ymir.yml file')
             ->setAliases([self::ALIAS])
-            ->addArgument('environments', InputArgument::OPTIONAL, 'The names of the environments to validate');
+            ->addArgument('environments', InputArgument::OPTIONAL | InputArgument::IS_ARRAY, 'The names of the environments to validate');
     }
 
     /**
@@ -67,19 +74,27 @@ class ValidateProjectCommand extends AbstractProjectCommand
      */
     protected function perform()
     {
-        $environments = (array) $this->input->getArgument('environments');
-        $environments = $this->projectConfiguration->getEnvironments()->filter(function (array $configuration, string $environment) use ($environments) {
-            return empty($environments) || in_array($environment, $environments);
+        $requestedEnvironments = collect($this->input->getArrayArgument('environments'));
+
+        $projectEnvironments = $this->getProjectConfiguration()->getEnvironments();
+        $missingEnvironments = $requestedEnvironments->diff($projectEnvironments->keys());
+
+        if ($missingEnvironments->isNotEmpty()) {
+            throw new InvalidInputException(sprintf('Environment "%s" not found in ymir.yml file', $missingEnvironments->first()));
+        }
+
+        $environmentsToValidate = $projectEnvironments->when($requestedEnvironments->isNotEmpty(), function (Collection $environments) use ($requestedEnvironments) {
+            return $environments->only($requestedEnvironments);
         });
 
-        $environments->filter(function (array $configuration, string $environment) {
-            return 'image' === $this->projectConfiguration->getEnvironmentDeploymentType($environment);
-        })->each(function (array $configuration, string $environment) {
-            $this->dockerfile->validate($environment, $this->projectConfiguration->getEnvironmentArchitecture($environment));
+        $environmentsToValidate->filter(function (EnvironmentConfiguration $configuration): bool {
+            return $configuration->isImageDeploymentType();
+        })->each(function (EnvironmentConfiguration $configuration, string $environment): void {
+            $this->dockerfile->validate($environment, $configuration->getArchitecture());
         });
 
         $message = 'Project <comment>ymir.yml</comment> file is valid';
-        $response = $this->apiClient->validateProjectConfiguration($this->projectConfiguration, $environments->keys()->all());
+        $response = $this->apiClient->validateProjectConfiguration($this->getProject(), $this->getProjectConfiguration()->toArray(), $environmentsToValidate->keys()->all());
         $valid = $response->every(function (array $environment) {
             return empty($environment['warnings']);
         });
@@ -91,7 +106,7 @@ class ValidateProjectCommand extends AbstractProjectCommand
         $this->output->info($message);
 
         if (!$valid) {
-            $this->output->table(['Environment', 'Warning'], $response->filter(function (array $environment) {
+            $this->output->table(['Environment', 'Warning'], $response->filter(function (array $environment): bool {
                 return !empty($environment['warnings']);
             })->flatMap(function (array $environment, string $name) {
                 return collect($environment['warnings'])->map(function (string $warning) use ($name) {

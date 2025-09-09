@@ -13,11 +13,12 @@ declare(strict_types=1);
 
 namespace Ymir\Cli\Command\Database;
 
-use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
+use Ymir\Cli\Command\AbstractCommand;
+use Ymir\Cli\Resource\Model\Database;
 
-class CreateDatabaseCommand extends AbstractDatabaseCommand
+class CreateDatabaseCommand extends AbstractCommand
 {
     /**
      * The name of the command.
@@ -34,7 +35,7 @@ class CreateDatabaseCommand extends AbstractDatabaseCommand
         $this
             ->setName(self::NAME)
             ->setDescription('Create a new database on a public database server')
-            ->addArgument('name', InputArgument::OPTIONAL, 'The name of the new database')
+            ->addArgument('database', InputArgument::OPTIONAL, 'The name of the new database')
             ->addOption('server', null, InputOption::VALUE_REQUIRED, 'The ID or name of the database server where the database will be created');
     }
 
@@ -43,19 +44,7 @@ class CreateDatabaseCommand extends AbstractDatabaseCommand
      */
     protected function perform()
     {
-        $databaseServer = $this->determineDatabaseServer('On which database server would you like to create the new database?');
-
-        if (!$databaseServer['publicly_accessible']) {
-            throw new RuntimeException('Database on private database servers need to be manually created.');
-        }
-
-        $name = $this->input->getStringArgument('name');
-
-        if (empty($name)) {
-            $name = $this->output->ask('What is the name of the database');
-        }
-
-        $this->apiClient->createDatabase($databaseServer['id'], $name);
+        $this->provision(Database::class);
 
         $this->output->info('Database created');
     }

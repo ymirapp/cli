@@ -14,8 +14,10 @@ declare(strict_types=1);
 namespace Ymir\Cli\Command\Dns;
 
 use Symfony\Component\Console\Input\InputArgument;
+use Ymir\Cli\Command\AbstractCommand;
+use Ymir\Cli\Resource\Model\DnsZone;
 
-class ImportDnsRecordsCommand extends AbstractDnsCommand
+class ImportDnsRecordsCommand extends AbstractCommand
 {
     /**
      * The name of the command.
@@ -32,7 +34,7 @@ class ImportDnsRecordsCommand extends AbstractDnsCommand
         $this
             ->setName(self::NAME)
             ->setDescription('Import DNS records into a DNS zone')
-            ->addArgument('zone', InputArgument::REQUIRED, 'The name of the DNS zone that the DNS record belongs to')
+            ->addArgument('zone', InputArgument::REQUIRED, 'The ID or name of the DNS zone that the DNS record belongs to')
             ->addArgument('subdomain', InputArgument::IS_ARRAY | InputArgument::OPTIONAL, 'The subdomain(s) that we want to import');
     }
 
@@ -41,13 +43,14 @@ class ImportDnsRecordsCommand extends AbstractDnsCommand
      */
     protected function perform()
     {
+        $zone = $this->resolve(DnsZone::class, 'Which DNS zone would you like to import DNS records to?');
         $subdomains = $this->input->getArrayArgument('subdomain', false);
 
         if (empty($subdomains)) {
-            $subdomains = explode(',', (string) $this->output->ask('Please enter a comma-separated list of subdomains to import DNS records from (leave blank to import the root DNS records)'));
+            $subdomains = array_filter(explode(',', (string) $this->output->ask('Please enter a comma-separated list of subdomains to import DNS records from? (Leave blank to import the root DNS records)')));
         }
 
-        $this->apiClient->importDnsRecords($this->input->getStringArgument('zone'), $subdomains);
+        $this->apiClient->importDnsRecords($zone, $subdomains);
 
         $this->output->info('DNS records imported');
     }

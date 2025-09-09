@@ -14,8 +14,10 @@ declare(strict_types=1);
 namespace Ymir\Cli\Command\Email;
 
 use Symfony\Component\Console\Input\InputArgument;
+use Ymir\Cli\Command\AbstractCommand;
+use Ymir\Cli\Resource\Model\EmailIdentity;
 
-class DeleteEmailIdentityCommand extends AbstractEmailIdentityCommand
+class DeleteEmailIdentityCommand extends AbstractCommand
 {
     /**
      * The name of the command.
@@ -40,13 +42,13 @@ class DeleteEmailIdentityCommand extends AbstractEmailIdentityCommand
      */
     protected function perform()
     {
-        $identity = $this->determineEmailIdentity('Which email identity would you like to delete');
+        $identity = $this->resolve(EmailIdentity::class, 'Which email identity would you like to delete?');
 
-        if (!$this->output->confirm('Are you sure you want to delete this email identity?', false)) {
+        if (!$this->output->confirm(sprintf('Are you sure you want to delete the "<comment>%s</comment>" email identity?', $identity->getName()), false)) {
             return;
         }
 
-        $this->apiClient->deleteEmailIdentity((int) $identity['id']);
+        $this->apiClient->deleteEmailIdentity($identity);
 
         $this->output->info('Email identity deleted');
     }

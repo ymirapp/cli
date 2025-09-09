@@ -15,9 +15,12 @@ namespace Ymir\Cli\Command\Environment;
 
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
-use Ymir\Cli\Command\AbstractProjectCommand;
+use Ymir\Cli\Command\AbstractCommand;
+use Ymir\Cli\Command\LocalProjectCommandInterface;
+use Ymir\Cli\Project\Configuration\ImageDeploymentConfigurationChange;
+use Ymir\Cli\Resource\Model\Environment;
 
-class CreateEnvironmentCommand extends AbstractProjectCommand
+class CreateEnvironmentCommand extends AbstractCommand implements LocalProjectCommandInterface
 {
     /**
      * The name of the command.
@@ -35,7 +38,7 @@ class CreateEnvironmentCommand extends AbstractProjectCommand
             ->setName(self::NAME)
             ->setDescription('Create a new environment')
             ->addArgument('name', InputArgument::OPTIONAL, 'The name of the environment to create')
-            ->addOption('use-image', null, InputOption::VALUE_NONE, 'Whether the environment will be deployed using a container image');
+            ->addOption('no-image', null, InputOption::VALUE_NONE, 'Deploy the environment using a zip archive instead of a container image');
     }
 
     /**
@@ -43,13 +46,16 @@ class CreateEnvironmentCommand extends AbstractProjectCommand
      */
     protected function perform()
     {
-        $name = $this->input->getStringArgument('name') ?: $this->output->ask('What is the name of the environment');
-        $projectId = $this->projectConfiguration->getProjectId();
-        $projectType = $this->projectConfiguration->getProjectType();
+        $environment = $this->provision(Environment::class, [], $this->getProject());
+        $projectType = $this->getProjectConfiguration()->getProjectType();
 
-        $this->apiClient->createEnvironment($projectId, $name);
+        $configuration = $projectType->generateEnvironmentConfiguration($environment->getName());
 
-        $this->projectConfiguration->addEnvironment($name, $projectType->getEnvironmentConfiguration($name, $this->input->getBooleanOption('use-image') ? ['deployment' => 'image'] : []));
+        if (!$this->input->getOption('no-image')) {
+            $configuration = (new ImageDeploymentConfigurationChange())->apply($configuration, $projectType);
+        }
+
+        $this->getProjectConfiguration()->addEnvironment($configuration);
 
         $this->output->info('Environment created');
     }

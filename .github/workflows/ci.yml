@@ -1,11 +1,11 @@
 name: Continuous Integration
 on:
   push:
-    branches-ignore:
-      - 'release-please**'
-  pull_request:
-    branches-ignore:
-      - 'release-please**'
+    paths:
+      - '.github/workflows/ci.yml'
+      - 'src/**'
+      - 'tests/**'
+      - 'composer.json'
 
 jobs:
   code-quality:
@@ -28,15 +28,17 @@ jobs:
         run: composer php-cs-fixer
       - name: Run PHPStan
         run: composer phpstan
+      - name: Run Rector
+        run: composer rector
   php-test:
-    name: Run tests on ${{ matrix.php }}
+    name: Run tests on ${{ matrix.php }} ${{ matrix.dependency-version }}
     runs-on: ubuntu-latest
     needs: code-quality
     strategy:
       fail-fast: false
       matrix:
         dependency-version: ['']
-        php: ['7.3', '7.4', '8.0', '8.1', '8.2', '8.3', '8.4']
+        php: ['7.3', '7.4', '8.0', '8.1', '8.2', '8.3', '8.4', '8.5']
         include:
           - dependency-version: '--prefer-lowest'
             php: '7.3'
@@ -47,7 +49,11 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php }}
+      - name: Remove code quality dependencies
+        run: composer remove --dev phpstan/phpstan rector/rector
       - name: Install dependencies
         run: composer update ${{ matrix.dependency-version }} --no-ansi --no-interaction --no-scripts --no-suggest --prefer-dist
       - name: Run unit tests
-        run: composer tests-unit
+        run: composer tests:unit
+      - name: Run integration tests
+        run: composer tests:integration

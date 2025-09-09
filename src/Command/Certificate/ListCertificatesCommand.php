@@ -13,7 +13,10 @@ declare(strict_types=1);
 
 namespace Ymir\Cli\Command\Certificate;
 
-class ListCertificatesCommand extends AbstractCertificateCommand
+use Ymir\Cli\Command\AbstractCommand;
+use Ymir\Cli\Resource\Model\Certificate;
+
+class ListCertificatesCommand extends AbstractCommand
 {
     /**
      * The name of the command.
@@ -37,12 +40,12 @@ class ListCertificatesCommand extends AbstractCertificateCommand
      */
     protected function perform()
     {
-        $certificates = $this->apiClient->getCertificates($this->cliConfiguration->getActiveTeamId());
+        $certificates = $this->apiClient->getCertificates($this->getTeam());
 
         $this->output->table(
             ['Id', 'Provider', 'Region', 'Domains', 'Status', 'In Use'],
-            $certificates->map(function (array $certificate) {
-                return [$certificate['id'], $certificate['provider']['name'], $certificate['region'], $this->getDomainsList($certificate), $certificate['status'], $this->output->formatBoolean($certificate['in_use'])];
+            $certificates->map(function (Certificate $certificate) {
+                return [$certificate->getId(), $certificate->getProvider()->getName(), $certificate->getRegion(), $this->getDomainsList($certificate), $certificate->getStatus(), $this->output->formatBoolean($certificate->isInUse())];
             })->all()
         );
     }
@@ -50,8 +53,8 @@ class ListCertificatesCommand extends AbstractCertificateCommand
     /**
      * Get the list of domains from the certificate.
      */
-    private function getDomainsList($certificate): string
+    private function getDomainsList(Certificate $certificate): string
     {
-        return !empty($certificate['domains']) ? implode(PHP_EOL, collect($certificate['domains'])->pluck('domain_name')->all()) : '';
+        return implode(PHP_EOL, collect($certificate->getDomains())->pluck('domain_name')->all());
     }
 }

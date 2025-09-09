@@ -13,14 +13,16 @@ declare(strict_types=1);
 
 namespace Ymir\Cli\Command\Docker;
 
-use Symfony\Component\Console\Exception\RuntimeException;
+use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
 use Ymir\Cli\ApiClient;
-use Ymir\Cli\CliConfiguration;
 use Ymir\Cli\Command\AbstractCommand;
+use Ymir\Cli\Exception\Resource\ResourceStateException;
 use Ymir\Cli\Executable\DockerExecutable;
-use Ymir\Cli\Project\Configuration\ProjectConfiguration;
+use Ymir\Cli\ExecutionContextFactory;
+use Ymir\Cli\Resource\Model\Project;
 
+// TODO: Need to refactor this command
 class DeleteDockerImagesCommand extends AbstractCommand
 {
     /**
@@ -47,9 +49,9 @@ class DeleteDockerImagesCommand extends AbstractCommand
     /**
      * Constructor.
      */
-    public function __construct(ApiClient $apiClient, DockerExecutable $dockerExecutable, CliConfiguration $cliConfiguration, ProjectConfiguration $projectConfiguration)
+    public function __construct(ApiClient $apiClient, ExecutionContextFactory $contextFactory, DockerExecutable $dockerExecutable)
     {
-        parent::__construct($apiClient, $cliConfiguration, $projectConfiguration);
+        parent::__construct($apiClient, $contextFactory);
 
         $this->dockerExecutable = $dockerExecutable;
     }
@@ -61,7 +63,8 @@ class DeleteDockerImagesCommand extends AbstractCommand
     {
         $this
             ->setName(self::NAME)
-            ->setDescription('Delete a project\'s deployment docker images')
+            ->setDescription('Delete a project\'s local deployment docker images')
+            ->addArgument('project', InputArgument::OPTIONAL, 'The ID or name of the project to deployment docker images from')
             ->addOption('all', null, InputOption::VALUE_NONE, 'Delete deployment docker images for all projects');
     }
 
@@ -70,38 +73,29 @@ class DeleteDockerImagesCommand extends AbstractCommand
      */
     protected function perform()
     {
-        $pattern = $this->input->getBooleanOption('all') ? self::ALL_PATTERN : null;
+        $deletePrompt = 'Are you sure you want to delete <comment>all</comment> local Ymir deployment docker images?';
+        $pattern = self::ALL_PATTERN;
+        $project = null;
+        $successMessage = 'All local Ymir deployment docker images deleted successfully';
 
-        if (!is_string($pattern)) {
-            $pattern = $this->determinePattern();
+        if (!$this->input->getBooleanOption('all')) {
+            $project = $this->resolve(Project::class, 'Which project would you like to delete local Ymir deployment docker images from?');
         }
 
-        if (!is_string($pattern) || !$this->output->confirm(self::ALL_PATTERN === $pattern ? 'Are you sure you want to delete deployment docker images for all projects?' : 'Are you sure you want to delete the project\'s deployment docker images?', false)) {
+        if ($project instanceof Project && !$project->getRepositoryUri()) {
+            throw new ResourceStateException(sprintf('The "%s" project hasn\'t been deployed using container images', $project->getName()));
+        } elseif ($project instanceof Project) {
+            $deletePrompt = sprintf('Are you sure you want to delete the local Ymir deployment docker images for the "<comment>%s</comment>" project?', $project->getName());
+            $pattern = $project->getRepositoryUri();
+            $successMessage = sprintf('Local Ymir deployment docker images for the "<comment>%s</comment>" project deleted successfully', $project->getName());
+        }
+
+        if (!$this->output->confirm($deletePrompt, false)) {
             return;
         }
 
         $this->dockerExecutable->removeImagesMatchingPattern($pattern);
 
-        $this->output->info('Deployment docker images deleted successfully');
-    }
-
-    /**
-     * Determine the grep pattern to use.
-     */
-    private function determinePattern(): ?string
-    {
-        $project = $this->projectConfiguration->exists() ? $this->apiClient->getProject($this->projectConfiguration->getProjectId()) : null;
-
-        if (null !== $project && !empty($project['repository_uri'])) {
-            return $project['repository_uri'];
-        } elseif (null !== $project && empty($project['repository_uri'])) {
-            throw new RuntimeException(sprintf('The "%s" project has\'t been deployed using container images', $project['name']));
-        } elseif (!$this->input->isInteractive()) {
-            throw new RuntimeException('Must run command inside an existing project or with "--all" option in non-interactive mode');
-        }
-
-        $this->output->warning('No project detected in the current directory');
-
-        return $this->output->confirm('Do you want to delete all deployment docker images?', false) ? self::ALL_PATTERN : null;
+        $this->output->info($successMessage);
     }
 }

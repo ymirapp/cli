@@ -17,8 +17,8 @@ use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Pool;
 use GuzzleHttp\Psr7\Request;
 use Illuminate\Support\Enumerable;
-use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Helper\ProgressBar;
+use Ymir\Cli\Exception\SystemException;
 
 class FileUploader
 {
@@ -47,7 +47,7 @@ class FileUploader
     /**
      * Sends multiple requests concurrently.
      */
-    public function batch(string $method, Enumerable $requests, ?ProgressBar $progressBar = null)
+    public function batch(string $method, Enumerable $requests, ?ProgressBar $progressBar = null): void
     {
         if ($progressBar instanceof ProgressBar) {
             $progressBar->start(count($requests));
@@ -74,28 +74,28 @@ class FileUploader
     /**
      * Upload the given file to the given URL.
      */
-    public function uploadFile(string $filePath, string $url, array $headers = [], ?ProgressBar $progressBar = null)
+    public function uploadFile(string $filePath, string $url, array $headers = [], ?ProgressBar $progressBar = null): void
     {
         if (!is_readable($filePath)) {
-            throw new RuntimeException(sprintf('Cannot read the "%s" file', $filePath));
+            throw new SystemException(sprintf('Cannot read the "%s" file', $filePath));
         }
 
         $progressCallback = null;
         $file = fopen($filePath, 'r+');
 
         if (!is_resource($file)) {
-            throw new RuntimeException(sprintf('Cannot open the "%s" file', $filePath));
+            throw new SystemException(sprintf('Cannot open the "%s" file', $filePath));
         }
 
         if ($progressBar instanceof ProgressBar) {
             $progressBar->start((int) round(filesize($filePath) / 1024));
 
-            $progressCallback = function ($_, $__, $___, $uploaded) use ($progressBar) {
+            $progressCallback = function ($_, $__, $___, $uploaded) use ($progressBar): void {
                 $progressBar->setProgress((int) round($uploaded / 1024));
             };
         }
 
-        $this->retry(function () use ($file, $headers, $progressCallback, $url) {
+        $this->retry(function () use ($file, $headers, $progressCallback, $url): void {
             $this->client->request('PUT', $url, array_filter([
                 'body' => $file,
                 'headers' => array_merge(self::DEFAULT_HEADERS, $headers),

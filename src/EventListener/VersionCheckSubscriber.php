@@ -65,7 +65,7 @@ class VersionCheckSubscriber implements EventSubscriberInterface
     /**
      * Check for a new version of the CLI before you run a command.
      */
-    public function onConsoleCommand(ConsoleCommandEvent $event)
+    public function onConsoleCommand(ConsoleCommandEvent $event): void
     {
         if ($this->isRunningOnContinuousIntegrationEnvironment()) {
             return;

@@ -15,16 +15,10 @@ namespace Ymir\Cli\Tests\Unit\Project\Type;
 
 use Symfony\Component\Filesystem\Filesystem;
 use Ymir\Cli\Project\Type\AbstractProjectType;
-use Ymir\Cli\Tests\Mock\FilesystemMockTrait;
-use Ymir\Cli\Tests\Unit\TestCase;
+use Ymir\Cli\Tests\TestCase;
 
-/**
- * @covers \Ymir\Cli\Project\Type\AbstractProjectType
- */
 class AbstractProjectTypeTest extends TestCase
 {
-    use FilesystemMockTrait;
-
     private $tempDirectory;
 
     protected function setUp(): void
@@ -41,36 +35,38 @@ class AbstractProjectTypeTest extends TestCase
         (new Filesystem())->remove($this->tempDirectory);
     }
 
-    public function testGetEnvironmentConfigurationForProduction(): void
+    public function testGenerateEnvironmentConfigurationForProduction(): void
     {
-        $projectType = $this->getMockForAbstractClass(AbstractProjectType::class, [$this->getFilesystemMock()]);
+        $projectType = \Mockery::mock(AbstractProjectType::class, [\Mockery::mock(Filesystem::class)])->makePartial();
 
         $this->assertSame([
             'architecture' => 'arm64',
+            'gateway' => false,
             'foo' => 'bar',
-        ], $projectType->getEnvironmentConfiguration('production', ['foo' => 'bar']));
+        ], $projectType->generateEnvironmentConfiguration('production', ['foo' => 'bar'])->toArray());
     }
 
-    public function testGetEnvironmentConfigurationForStaging(): void
+    public function testGenerateEnvironmentConfigurationForStaging(): void
     {
-        $projectType = $this->getMockForAbstractClass(AbstractProjectType::class, [$this->getFilesystemMock()]);
+        $projectType = \Mockery::mock(AbstractProjectType::class, [\Mockery::mock(Filesystem::class)])->makePartial();
 
         $this->assertSame([
             'architecture' => 'arm64',
+            'gateway' => false,
             'foo' => 'bar',
             'cron' => false,
             'warmup' => false,
-        ], $projectType->getEnvironmentConfiguration('staging', ['foo' => 'bar']));
+        ], $projectType->generateEnvironmentConfiguration('staging', ['foo' => 'bar'])->toArray());
     }
 
-    public function testGetProjectFilesExcludesYmirYml()
+    public function testGetProjectFilesExcludesYmirYml(): void
     {
         $keepFilePath = $this->tempDirectory.'/keep.txt';
 
         touch($keepFilePath);
         touch($this->tempDirectory.'/ymir.yml');
 
-        $projectType = $this->getMockForAbstractClass(AbstractProjectType::class, [$this->getFilesystemMock()]);
+        $projectType = \Mockery::mock(AbstractProjectType::class, [\Mockery::mock(Filesystem::class)])->makePartial();
 
         $files = iterator_to_array($projectType->getProjectFiles($this->tempDirectory), false);
 
@@ -87,7 +83,7 @@ class AbstractProjectTypeTest extends TestCase
         touch($this->tempDirectory.'/ignored.log');
         file_put_contents($this->tempDirectory.'/.gitignore', '*.log');
 
-        $projectType = $this->getMockForAbstractClass(AbstractProjectType::class, [$this->getFilesystemMock()]);
+        $projectType = \Mockery::mock(AbstractProjectType::class, [\Mockery::mock(Filesystem::class)])->makePartial();
 
         $files = iterator_to_array($projectType->getProjectFiles($this->tempDirectory), false);
 
@@ -96,13 +92,12 @@ class AbstractProjectTypeTest extends TestCase
         $this->assertSame($keepFilePath, $files[0]->getPathname());
     }
 
-    public function testGetSlug()
+    public function testGetSlug(): void
     {
-        $projectType = $this->getMockForAbstractClass(AbstractProjectType::class, [$this->getFilesystemMock()]);
+        $projectType = \Mockery::mock(AbstractProjectType::class, [\Mockery::mock(Filesystem::class)])->makePartial();
 
-        $projectType->expects($this->once())
-                    ->method('getName')
-                    ->willReturn('Foo');
+        $projectType->shouldReceive('getName')->once()
+                    ->andReturn('Foo');
 
         $this->assertSame('foo', $projectType->getSlug());
     }

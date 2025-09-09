@@ -14,8 +14,12 @@ declare(strict_types=1);
 namespace Ymir\Cli\Command\Provider;
 
 use Symfony\Component\Console\Input\InputArgument;
+use Ymir\Cli\Command\AbstractCommand;
+use Ymir\Cli\Resource\Model\CloudProvider;
+use Ymir\Cli\Resource\Requirement\AwsCredentialsRequirement;
+use Ymir\Cli\Resource\Requirement\NameRequirement;
 
-class UpdateProviderCommand extends AbstractProviderCommand
+class UpdateProviderCommand extends AbstractCommand
 {
     /**
      * The name of the command.
@@ -32,7 +36,8 @@ class UpdateProviderCommand extends AbstractProviderCommand
         $this
             ->setName(self::NAME)
             ->setDescription('Update a cloud provider')
-            ->addArgument('provider', InputArgument::REQUIRED, 'The ID of the cloud provider to update');
+            ->addArgument('provider', InputArgument::OPTIONAL, 'The ID or name of the cloud provider to update')
+            ->addArgument('name', InputArgument::OPTIONAL, 'The new name of the cloud provider connection');
     }
 
     /**
@@ -40,11 +45,12 @@ class UpdateProviderCommand extends AbstractProviderCommand
      */
     protected function perform()
     {
-        $provider = $this->apiClient->getProvider($this->input->getNumericArgument('provider'));
+        $provider = $this->resolve(CloudProvider::class, 'Which cloud provider would you like to update?');
 
-        $name = (string) $this->output->ask('Please enter a name for the cloud provider connection', $provider->get('name'));
+        $name = $this->fulfill(new NameRequirement('What is the name of the cloud provider connection?', $provider->getName()));
+        $credentials = $this->fulfill(new AwsCredentialsRequirement());
 
-        $this->apiClient->updateProvider($provider->get('id'), $this->getAwsCredentials(), $name);
+        $this->apiClient->updateProvider($provider, $credentials, $name);
 
         $this->output->info('Cloud provider updated');
     }

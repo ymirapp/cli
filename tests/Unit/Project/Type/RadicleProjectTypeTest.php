@@ -14,20 +14,14 @@ declare(strict_types=1);
 namespace Ymir\Cli\Tests\Unit\Project\Type;
 
 use Symfony\Component\Filesystem\Filesystem;
-use Ymir\Cli\Build;
+use Ymir\Cli\Executable\ComposerExecutable;
+use Ymir\Cli\Project\Build;
+use Ymir\Cli\Project\Initialization;
 use Ymir\Cli\Project\Type\RadicleProjectType;
-use Ymir\Cli\Tests\Mock\ComposerExecutableMockTrait;
-use Ymir\Cli\Tests\Mock\FilesystemMockTrait;
-use Ymir\Cli\Tests\Unit\TestCase;
+use Ymir\Cli\Tests\TestCase;
 
-/**
- * @covers \Ymir\Cli\Project\Type\RadicleProjectType
- */
 class RadicleProjectTypeTest extends TestCase
 {
-    use ComposerExecutableMockTrait;
-    use FilesystemMockTrait;
-
     /**
      * @var string
      */
@@ -76,6 +70,41 @@ class RadicleProjectTypeTest extends TestCase
         ];
     }
 
+    public function testGenerateEnvironmentConfigurationForProduction(): void
+    {
+        $projectType = new RadicleProjectType(\Mockery::mock(ComposerExecutable::class), \Mockery::mock(Filesystem::class));
+
+        $this->assertSame([
+            'architecture' => 'arm64',
+            'gateway' => false,
+            'foo' => 'bar',
+            'build' => [
+                'COMPOSER_MIRROR_PATH_REPOS=1 composer install --no-dev',
+                'yarn install && yarn build && rm -rf node_modules',
+            ],
+        ], $projectType->generateEnvironmentConfiguration('production', ['foo' => 'bar'])->toArray());
+    }
+
+    public function testGenerateEnvironmentConfigurationForStaging(): void
+    {
+        $projectType = new RadicleProjectType(\Mockery::mock(ComposerExecutable::class), \Mockery::mock(Filesystem::class));
+
+        $this->assertSame([
+            'architecture' => 'arm64',
+            'gateway' => false,
+            'foo' => 'bar',
+            'cron' => false,
+            'warmup' => false,
+            'cdn' => [
+                'caching' => 'assets',
+            ],
+            'build' => [
+                'COMPOSER_MIRROR_PATH_REPOS=1 composer install',
+                'yarn install && yarn build && rm -rf node_modules',
+            ],
+        ], $projectType->generateEnvironmentConfiguration('staging', ['foo' => 'bar'])->toArray());
+    }
+
     public function testGetAssetFilesExcludesFilesBelowPublicDirectory(): void
     {
         mkdir($this->tempDirectory.'/public', 0777, true);
@@ -85,7 +114,7 @@ class RadicleProjectTypeTest extends TestCase
         touch($keepFilePath);
         touch($this->tempDirectory.'/excluded.txt');
 
-        $projectType = new RadicleProjectType($this->getComposerExecutableMock(), $this->getFilesystemMock());
+        $projectType = new RadicleProjectType(\Mockery::mock(ComposerExecutable::class), \Mockery::mock(Filesystem::class));
 
         $files = iterator_to_array($projectType->getAssetFiles($this->tempDirectory), false);
 
@@ -103,7 +132,7 @@ class RadicleProjectTypeTest extends TestCase
         touch($keepFilePath);
         touch($this->tempDirectory.'/public/wp/wp-content/excluded.txt');
 
-        $projectType = new RadicleProjectType($this->getComposerExecutableMock(), $this->getFilesystemMock());
+        $projectType = new RadicleProjectType(\Mockery::mock(ComposerExecutable::class), \Mockery::mock(Filesystem::class));
 
         $files = iterator_to_array($projectType->getAssetFiles($this->tempDirectory), false);
 
@@ -120,7 +149,7 @@ class RadicleProjectTypeTest extends TestCase
 
         touch($wpContentDirectory.'/excluded.txt');
 
-        $projectType = new RadicleProjectType($this->getComposerExecutableMock(), $this->getFilesystemMock());
+        $projectType = new RadicleProjectType(\Mockery::mock(ComposerExecutable::class), \Mockery::mock(Filesystem::class));
 
         $files = iterator_to_array($projectType->getBuildFiles($this->tempDirectory), false);
 
@@ -137,7 +166,7 @@ class RadicleProjectTypeTest extends TestCase
         touch($this->tempDirectory.'/excluded.txt');
         touch($requiredFile);
 
-        $projectType = new RadicleProjectType($this->getComposerExecutableMock(), $this->getFilesystemMock());
+        $projectType = new RadicleProjectType(\Mockery::mock(ComposerExecutable::class), \Mockery::mock(Filesystem::class));
 
         $files = iterator_to_array($projectType->getBuildFiles($this->tempDirectory), false);
 
@@ -155,7 +184,7 @@ class RadicleProjectTypeTest extends TestCase
         touch($this->tempDirectory.'/excluded.txt');
         touch($blockJsonPath);
 
-        $projectType = new RadicleProjectType($this->getComposerExecutableMock(), $this->getFilesystemMock());
+        $projectType = new RadicleProjectType(\Mockery::mock(ComposerExecutable::class), \Mockery::mock(Filesystem::class));
 
         $files = iterator_to_array($projectType->getBuildFiles($this->tempDirectory), false);
 
@@ -178,7 +207,7 @@ class RadicleProjectTypeTest extends TestCase
         touch($themeDirectory.'/excluded.txt');
         touch($requiredThemeFile);
 
-        $projectType = new RadicleProjectType($this->getComposerExecutableMock(), $this->getFilesystemMock());
+        $projectType = new RadicleProjectType(\Mockery::mock(ComposerExecutable::class), \Mockery::mock(Filesystem::class));
 
         $files = iterator_to_array($projectType->getBuildFiles($this->tempDirectory), false);
 
@@ -201,7 +230,7 @@ class RadicleProjectTypeTest extends TestCase
         touch($this->tempDirectory.'/excluded.txt');
         touch($requiredFile);
 
-        $projectType = new RadicleProjectType($this->getComposerExecutableMock(), $this->getFilesystemMock());
+        $projectType = new RadicleProjectType(\Mockery::mock(ComposerExecutable::class), \Mockery::mock(Filesystem::class));
 
         $files = iterator_to_array($projectType->getBuildFiles($this->tempDirectory), false);
 
@@ -217,7 +246,7 @@ class RadicleProjectTypeTest extends TestCase
         touch($this->tempDirectory.'/excluded.txt');
         touch($wpCliYmlPath);
 
-        $projectType = new RadicleProjectType($this->getComposerExecutableMock(), $this->getFilesystemMock());
+        $projectType = new RadicleProjectType(\Mockery::mock(ComposerExecutable::class), \Mockery::mock(Filesystem::class));
 
         $files = iterator_to_array($projectType->getBuildFiles($this->tempDirectory), false);
 
@@ -226,7 +255,7 @@ class RadicleProjectTypeTest extends TestCase
         $this->assertSame($wpCliYmlPath, $files[0]->getPathname());
     }
 
-    public function testGetBuildSteps()
+    public function testGetBuildSteps(): void
     {
         $this->assertSame([
             Build\CopyProjectFilesStep::class,
@@ -235,46 +264,52 @@ class RadicleProjectTypeTest extends TestCase
             Build\EnsureIntegrationIsInstalledStep::class,
             Build\CopyMustUsePluginStep::class,
             Build\ExtractAssetFilesStep::class,
-        ], (new RadicleProjectType($this->getComposerExecutableMock(), $this->getFilesystemMock()))->getBuildSteps());
+        ], (new RadicleProjectType(\Mockery::mock(ComposerExecutable::class), \Mockery::mock(Filesystem::class)))->getBuildSteps());
     }
 
-    public function testGetEnvironmentConfigurationForProduction(): void
+    public function testGetInitializationSteps(): void
     {
-        $projectType = new RadicleProjectType($this->getComposerExecutableMock(), $this->getFilesystemMock());
-
         $this->assertSame([
-            'architecture' => 'arm64',
-            'foo' => 'bar',
-            'build' => [
-                'COMPOSER_MIRROR_PATH_REPOS=1 composer install --no-dev',
-                'yarn install && yarn build && rm -rf node_modules',
-            ],
-        ], $projectType->getEnvironmentConfiguration('production', ['foo' => 'bar']));
+            Initialization\DatabaseInitializationStep::class,
+            Initialization\CacheInitializationStep::class,
+            Initialization\DockerInitializationStep::class,
+            Initialization\IntegrationInitializationStep::class,
+            Initialization\WordPressConfigurationInitializationStep::class,
+        ], (new RadicleProjectType(\Mockery::mock(ComposerExecutable::class), \Mockery::mock(Filesystem::class)))->getInitializationSteps());
     }
 
-    public function testGetEnvironmentConfigurationForStaging(): void
+    public function testGetMediaDirectoryName(): void
     {
-        $projectType = new RadicleProjectType($this->getComposerExecutableMock(), $this->getFilesystemMock());
+        $this->assertSame('uploads', (new RadicleProjectType(\Mockery::mock(ComposerExecutable::class), \Mockery::mock(Filesystem::class)))->getMediaDirectoryName());
+    }
 
-        $this->assertSame([
-            'architecture' => 'arm64',
-            'foo' => 'bar',
-            'cron' => false,
-            'warmup' => false,
-            'cdn' => [
-                'caching' => 'assets',
-            ],
-            'build' => [
-                'COMPOSER_MIRROR_PATH_REPOS=1 composer install',
-                'yarn install && yarn build && rm -rf node_modules',
-            ],
-        ], $projectType->getEnvironmentConfiguration('staging', ['foo' => 'bar']));
+    public function testGetMediaDirectoryPathWithBaseDirectoryEndingWithSlash(): void
+    {
+        $buildDir = '/path/to/build/';
+        $projectType = new RadicleProjectType(\Mockery::mock(ComposerExecutable::class), \Mockery::mock(Filesystem::class));
+
+        $this->assertSame($buildDir.'public/content/uploads', $projectType->getMediaDirectoryPath($buildDir));
+    }
+
+    public function testGetMediaDirectoryPathWithBaseDirectoryNotEndingWithSlash(): void
+    {
+        $buildDir = '/path/to/build';
+        $projectType = new RadicleProjectType(\Mockery::mock(ComposerExecutable::class), \Mockery::mock(Filesystem::class));
+
+        $this->assertSame($buildDir.'/public/content/uploads', $projectType->getMediaDirectoryPath($buildDir));
+    }
+
+    public function testGetMediaDirectoryPathWithoutBasePathReturnsRelativePath(): void
+    {
+        $projectType = new RadicleProjectType(\Mockery::mock(ComposerExecutable::class), \Mockery::mock(Filesystem::class));
+
+        $this->assertSame('public/content/uploads', $projectType->getMediaDirectoryPath());
     }
 
     public function testGetMustUsePluginsDirectoryPathWithBaseDirectoryEndingWithSlash(): void
     {
         $buildDir = '/path/to/build/';
-        $projectType = new RadicleProjectType($this->getComposerExecutableMock(), $this->getFilesystemMock());
+        $projectType = new RadicleProjectType(\Mockery::mock(ComposerExecutable::class), \Mockery::mock(Filesystem::class));
 
         $this->assertSame($buildDir.'public/content/mu-plugins', $projectType->getMustUsePluginsDirectoryPath($buildDir));
     }
@@ -282,27 +317,27 @@ class RadicleProjectTypeTest extends TestCase
     public function testGetMustUsePluginsDirectoryPathWithBaseDirectoryNotEndingWithSlash(): void
     {
         $buildDir = '/path/to/build';
-        $projectType = new RadicleProjectType($this->getComposerExecutableMock(), $this->getFilesystemMock());
+        $projectType = new RadicleProjectType(\Mockery::mock(ComposerExecutable::class), \Mockery::mock(Filesystem::class));
 
         $this->assertSame($buildDir.'/public/content/mu-plugins', $projectType->getMustUsePluginsDirectoryPath($buildDir));
     }
 
     public function testGetMustUsePluginsDirectoryPathWithoutBasePathReturnsRelativePath(): void
     {
-        $projectType = new RadicleProjectType($this->getComposerExecutableMock(), $this->getFilesystemMock());
+        $projectType = new RadicleProjectType(\Mockery::mock(ComposerExecutable::class), \Mockery::mock(Filesystem::class));
 
         $this->assertSame('public/content/mu-plugins', $projectType->getMustUsePluginsDirectoryPath());
     }
 
-    public function testGetName()
+    public function testGetName(): void
     {
-        $this->assertSame('Radicle', (new RadicleProjectType($this->getComposerExecutableMock(), $this->getFilesystemMock()))->getName());
+        $this->assertSame('Radicle', (new RadicleProjectType(\Mockery::mock(ComposerExecutable::class), \Mockery::mock(Filesystem::class)))->getName());
     }
 
     public function testGetPluginsDirectoryPathWithBaseDirectoryEndingWithSlash(): void
     {
         $buildDir = '/path/to/build/';
-        $projectType = new RadicleProjectType($this->getComposerExecutableMock(), $this->getFilesystemMock());
+        $projectType = new RadicleProjectType(\Mockery::mock(ComposerExecutable::class), \Mockery::mock(Filesystem::class));
 
         $this->assertSame($buildDir.'public/content/plugins', $projectType->getPluginsDirectoryPath($buildDir));
     }
@@ -310,19 +345,19 @@ class RadicleProjectTypeTest extends TestCase
     public function testGetPluginsDirectoryPathWithBaseDirectoryNotEndingWithSlash(): void
     {
         $buildDir = '/path/to/build';
-        $projectType = new RadicleProjectType($this->getComposerExecutableMock(), $this->getFilesystemMock());
+        $projectType = new RadicleProjectType(\Mockery::mock(ComposerExecutable::class), \Mockery::mock(Filesystem::class));
 
         $this->assertSame($buildDir.'/public/content/plugins', $projectType->getPluginsDirectoryPath($buildDir));
     }
 
     public function testGetPluginsDirectoryPathWithoutBasePathReturnsRelativePath(): void
     {
-        $projectType = new RadicleProjectType($this->getComposerExecutableMock(), $this->getFilesystemMock());
+        $projectType = new RadicleProjectType(\Mockery::mock(ComposerExecutable::class), \Mockery::mock(Filesystem::class));
 
         $this->assertSame('public/content/plugins', $projectType->getPluginsDirectoryPath());
     }
 
-    public function testGetProjectFilesExcludesUploadsDirectory()
+    public function testGetProjectFilesExcludesUploadsDirectory(): void
     {
         mkdir($this->tempDirectory.'/public/content/uploads', 0777, true);
 
@@ -331,7 +366,7 @@ class RadicleProjectTypeTest extends TestCase
         touch($keepFilePath);
         touch($this->tempDirectory.'/public/content/uploads/excluded.txt');
 
-        $projectType = new RadicleProjectType($this->getComposerExecutableMock(), $this->getFilesystemMock());
+        $projectType = new RadicleProjectType(\Mockery::mock(ComposerExecutable::class), \Mockery::mock(Filesystem::class));
 
         $files = iterator_to_array($projectType->getProjectFiles($this->tempDirectory), false);
 
@@ -340,88 +375,73 @@ class RadicleProjectTypeTest extends TestCase
         $this->assertSame($keepFilePath, $files[0]->getPathname());
     }
 
-    public function testGetSlug()
+    public function testGetSlug(): void
     {
-        $this->assertSame('radicle', (new RadicleProjectType($this->getComposerExecutableMock(), $this->getFilesystemMock()))->getSlug());
+        $this->assertSame('radicle', (new RadicleProjectType(\Mockery::mock(ComposerExecutable::class), \Mockery::mock(Filesystem::class)))->getSlug());
     }
 
-    public function testGetUploadsDirectoryPathWithBaseDirectoryEndingWithSlash(): void
+    public function testInstallIntegration(): void
     {
-        $buildDir = '/path/to/build/';
-        $projectType = new RadicleProjectType($this->getComposerExecutableMock(), $this->getFilesystemMock());
+        $composerExecutable = \Mockery::mock(ComposerExecutable::class);
 
-        $this->assertSame($buildDir.'public/content/uploads', $projectType->getUploadsDirectoryPath($buildDir));
-    }
+        $composerExecutable->shouldReceive('require')
+                           ->once()
+                           ->with('ymirapp/wordpress-plugin', '/path/to/project')
+                           ->ordered();
+        $composerExecutable->shouldReceive('require')
+                           ->once()
+                           ->with('ymirapp/laravel-bridge', '/path/to/project')
+                           ->ordered();
 
-    public function testGetUploadsDirectoryPathWithBaseDirectoryNotEndingWithSlash(): void
-    {
-        $buildDir = '/path/to/build';
-        $projectType = new RadicleProjectType($this->getComposerExecutableMock(), $this->getFilesystemMock());
-
-        $this->assertSame($buildDir.'/public/content/uploads', $projectType->getUploadsDirectoryPath($buildDir));
-    }
-
-    public function testGetUploadsDirectoryPathWithoutBasePathReturnsRelativePath(): void
-    {
-        $projectType = new RadicleProjectType($this->getComposerExecutableMock(), $this->getFilesystemMock());
-
-        $this->assertSame('public/content/uploads', $projectType->getUploadsDirectoryPath());
-    }
-
-    public function testInstallIntegration()
-    {
-        $composerExecutable = $this->getComposerExecutableMock();
-
-        $composerExecutable->expects($this->exactly(2))
-                           ->method('require')
-                           ->withConsecutive(
-                               [$this->identicalTo('ymirapp/wordpress-plugin'), $this->identicalTo('/path/to/project')],
-                               [$this->identicalTo('ymirapp/laravel-bridge'), $this->identicalTo('/path/to/project')]
-                           );
-
-        (new RadicleProjectType($composerExecutable, $this->getFilesystemMock()))->installIntegration('/path/to/project');
+        (new RadicleProjectType($composerExecutable, \Mockery::mock(Filesystem::class)))->installIntegration('/path/to/project');
     }
 
     public function testIsIntegrationInstalledReturnsFalseWhenLaravelBridgeIsMissing(): void
     {
-        $composerExecutable = $this->getComposerExecutableMock();
+        $composerExecutable = \Mockery::mock(ComposerExecutable::class);
 
-        $composerExecutable->expects($this->once())
-                            ->method('isPackageInstalled')
+        $composerExecutable->shouldReceive('isPackageInstalled')
+                           ->once()
                             ->with($this->identicalTo('ymirapp/laravel-bridge'), $this->identicalTo($this->tempDirectory))
-                            ->willReturn(false);
+                            ->andReturn(false);
 
-        $this->assertFalse((new RadicleProjectType($composerExecutable, $this->getFilesystemMock()))->isIntegrationInstalled($this->tempDirectory));
+        $this->assertFalse((new RadicleProjectType($composerExecutable, \Mockery::mock(Filesystem::class)))->isIntegrationInstalled($this->tempDirectory));
     }
 
     public function testIsIntegrationInstalledReturnsFalseWhenWordPressPluginIsMissing(): void
     {
-        $composerExecutable = $this->getComposerExecutableMock();
+        $composerExecutable = \Mockery::mock(ComposerExecutable::class);
 
-        $composerExecutable->expects($this->exactly(2))
-                           ->method('isPackageInstalled')
-                           ->withConsecutive(
-                               [$this->identicalTo('ymirapp/laravel-bridge'), $this->identicalTo($this->tempDirectory)],
-                               [$this->identicalTo('ymirapp/wordpress-plugin'), $this->identicalTo($this->tempDirectory)]
-                           )
-                           ->willReturnOnConsecutiveCalls(true, false);
+        $composerExecutable->shouldReceive('isPackageInstalled')
+                           ->once()
+                           ->with('ymirapp/laravel-bridge', $this->tempDirectory)
+                           ->andReturn(true)
+                           ->ordered();
+        $composerExecutable->shouldReceive('isPackageInstalled')
+                           ->once()
+                           ->with('ymirapp/wordpress-plugin', $this->tempDirectory)
+                           ->andReturn(false)
+                           ->ordered();
 
-        $this->assertFalse((new RadicleProjectType($composerExecutable, $this->getFilesystemMock()))->isIntegrationInstalled($this->tempDirectory));
+        $this->assertFalse((new RadicleProjectType($composerExecutable, \Mockery::mock(Filesystem::class)))->isIntegrationInstalled($this->tempDirectory));
     }
 
     public function testIsIntegrationInstalledReturnsTrueWhenLaravelBridgeAndWordPressPluginAreInstalled(): void
     {
-        $composerExecutable = $this->getComposerExecutableMock();
+        $composerExecutable = \Mockery::mock(ComposerExecutable::class);
 
-        $composerExecutable->expects($this->exactly(2))
-                           ->method('isPackageInstalled')
-                           ->withConsecutive(
-                               [$this->identicalTo('ymirapp/laravel-bridge'), $this->identicalTo($this->tempDirectory)],
-                               [$this->identicalTo('ymirapp/wordpress-plugin'), $this->identicalTo($this->tempDirectory)]
-                           )
-                           ->willReturn(true);
+        $composerExecutable->shouldReceive('isPackageInstalled')
+                           ->once()
+                           ->with('ymirapp/laravel-bridge', $this->tempDirectory)
+                           ->andReturn(true)
+                           ->ordered();
+        $composerExecutable->shouldReceive('isPackageInstalled')
+                           ->once()
+                           ->with('ymirapp/wordpress-plugin', $this->tempDirectory)
+                           ->andReturn(true)
+                           ->ordered();
 
-        $this->assertTrue((new RadicleProjectType($composerExecutable, $this->getFilesystemMock()))->isIntegrationInstalled($this->tempDirectory));
+        $this->assertTrue((new RadicleProjectType($composerExecutable, \Mockery::mock(Filesystem::class)))->isIntegrationInstalled($this->tempDirectory));
     }
 
     public function testMatchesProjectReturnsFalseWhenAppDirectoryIsMissing(): void
@@ -432,7 +452,7 @@ class RadicleProjectTypeTest extends TestCase
         touch($this->tempDirectory.'/bedrock/application.php');
         touch($this->tempDirectory.'/public/wp-config.php');
 
-        $this->assertFalse((new RadicleProjectType($this->getComposerExecutableMock(), new Filesystem()))->matchesProject($this->tempDirectory));
+        $this->assertFalse((new RadicleProjectType(\Mockery::mock(ComposerExecutable::class), new Filesystem()))->matchesProject($this->tempDirectory));
     }
 
     public function testMatchesProjectReturnsFalseWhenApplicationConfigIsMissing(): void
@@ -441,7 +461,7 @@ class RadicleProjectTypeTest extends TestCase
 
         touch($this->tempDirectory.'/public/wp-config.php');
 
-        $this->assertFalse((new RadicleProjectType($this->getComposerExecutableMock(), new Filesystem()))->matchesProject($this->tempDirectory));
+        $this->assertFalse((new RadicleProjectType(\Mockery::mock(ComposerExecutable::class), new Filesystem()))->matchesProject($this->tempDirectory));
     }
 
     public function testMatchesProjectReturnsFalseWhenWpConfigIsMissing(): void
@@ -451,7 +471,7 @@ class RadicleProjectTypeTest extends TestCase
 
         touch($this->tempDirectory.'/bedrock/application.php');
 
-        $this->assertFalse((new RadicleProjectType($this->getComposerExecutableMock(), new Filesystem()))->matchesProject($this->tempDirectory));
+        $this->assertFalse((new RadicleProjectType(\Mockery::mock(ComposerExecutable::class), new Filesystem()))->matchesProject($this->tempDirectory));
     }
 
     public function testMatchesProjectReturnsTrueForRadicleStructure(): void
@@ -462,6 +482,6 @@ class RadicleProjectTypeTest extends TestCase
         touch($this->tempDirectory.'/bedrock/application.php');
         touch($this->tempDirectory.'/public/wp-config.php');
 
-        $this->assertTrue((new RadicleProjectType($this->getComposerExecutableMock(), new Filesystem()))->matchesProject($this->tempDirectory));
+        $this->assertTrue((new RadicleProjectType(\Mockery::mock(ComposerExecutable::class), new Filesystem()))->matchesProject($this->tempDirectory));
     }
 }

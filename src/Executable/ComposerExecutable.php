@@ -18,7 +18,7 @@ class ComposerExecutable extends AbstractExecutable
     /**
      * Create a new project from the given package into the given directory.
      */
-    public function createProject(string $package, string $directory = '.')
+    public function createProject(string $package, string $directory = '.'): void
     {
         $this->run(sprintf('create-project %s %s', $package, $directory));
     }
@@ -56,7 +56,7 @@ class ComposerExecutable extends AbstractExecutable
     /**
      * Add the given package to the project's "composer.json" file and install it.
      */
-    public function require(string $package, ?string $cwd = null)
+    public function require(string $package, ?string $cwd = null): void
     {
         $this->run(sprintf('require %s', $package), $cwd);
     }

@@ -13,6 +13,9 @@ declare(strict_types=1);
 
 namespace Ymir\Cli\Command;
 
+use Ymir\Cli\ApiClient;
+use Ymir\Cli\CliConfiguration;
+use Ymir\Cli\ExecutionContextFactory;
 use Ymir\Sdk\Exception\ClientException;
 
 class LoginCommand extends AbstractCommand
@@ -23,6 +26,23 @@ class LoginCommand extends AbstractCommand
      * @var string
      */
     public const NAME = 'login';
+
+    /**
+     * The global Ymir CLI configuration.
+     *
+     * @var CliConfiguration
+     */
+    private $cliConfiguration;
+
+    /**
+     * Constructor.
+     */
+    public function __construct(ApiClient $apiClient, CliConfiguration $cliConfiguration, ExecutionContextFactory $contextFactory)
+    {
+        parent::__construct($apiClient, $contextFactory);
+
+        $this->cliConfiguration = $cliConfiguration;
+    }
 
     /**
      * {@inheritdoc}
@@ -39,9 +59,7 @@ class LoginCommand extends AbstractCommand
      */
     protected function perform()
     {
-        if ($this->apiClient->isAuthenticated()
-            && !$this->output->confirm('You are already logged in. Do you want to log in again?', false)
-        ) {
+        if ($this->apiClient->isAuthenticated() && !$this->output->confirm('You are already logged in. Do you want to log in again?', false)) {
             return;
         }
 
@@ -63,9 +81,7 @@ class LoginCommand extends AbstractCommand
 
         $team = $this->apiClient->getActiveTeam();
 
-        if (isset($team['id'])) {
-            $this->cliConfiguration->setActiveTeamId($team['id']);
-        }
+        $this->cliConfiguration->setActiveTeamId($team->getId());
 
         $this->output->info('Logged in successfully');
     }

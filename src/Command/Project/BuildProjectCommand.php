@@ -17,16 +17,16 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\DependencyInjection\ServiceLocator;
 use Ymir\Cli\ApiClient;
-use Ymir\Cli\Build\BuildContainerImageStep;
-use Ymir\Cli\Build\BuildStepInterface;
-use Ymir\Cli\Build\CompressBuildFilesStep;
-use Ymir\Cli\Build\CopyUploadsDirectoryStep;
-use Ymir\Cli\Build\DebugBuildStep;
-use Ymir\Cli\CliConfiguration;
-use Ymir\Cli\Command\AbstractProjectCommand;
-use Ymir\Cli\Project\Configuration\ProjectConfiguration;
+use Ymir\Cli\Command\AbstractCommand;
+use Ymir\Cli\Command\LocalProjectCommandInterface;
+use Ymir\Cli\Exception\Project\UnsupportedProjectException;
+use Ymir\Cli\ExecutionContextFactory;
+use Ymir\Cli\Project\Build;
+use Ymir\Cli\Project\EnvironmentConfiguration;
+use Ymir\Cli\Project\Type\SupportsMediaInterface;
+use Ymir\Cli\Resource\Model\Environment;
 
-class BuildProjectCommand extends AbstractProjectCommand
+class BuildProjectCommand extends AbstractCommand implements LocalProjectCommandInterface
 {
     /**
      * The alias of the command.
@@ -50,11 +50,11 @@ class BuildProjectCommand extends AbstractProjectCommand
     private $buildStepLocator;
 
     /**
-     * {@inheritdoc}
+     * Constructor.
      */
-    public function __construct(ApiClient $apiClient, ServiceLocator $buildStepLocator, CliConfiguration $cliConfiguration, ProjectConfiguration $projectConfiguration)
+    public function __construct(ApiClient $apiClient, ServiceLocator $buildStepLocator, ExecutionContextFactory $contextFactory)
     {
-        parent::__construct($apiClient, $cliConfiguration, $projectConfiguration);
+        parent::__construct($apiClient, $contextFactory);
 
         $this->buildStepLocator = $buildStepLocator;
     }
@@ -66,11 +66,11 @@ class BuildProjectCommand extends AbstractProjectCommand
     {
         $this
             ->setName(self::NAME)
-            ->setDescription('Build the project for deployment')
+            ->setDescription('Build the project for an environment')
             ->setAliases([self::ALIAS])
-            ->addArgument('environment', InputArgument::OPTIONAL, 'The name of the environment to build', 'staging')
+            ->addArgument('environment', InputArgument::OPTIONAL, 'The name of the environment to build')
             ->addOption('debug', null, InputOption::VALUE_NONE, 'Run the build in debug mode')
-            ->addOption('with-uploads', null, InputOption::VALUE_NONE, 'Copy the "uploads" directory during the build');
+            ->addOption('with-media', null, InputOption::VALUE_NONE, 'Copy the media directory during the build');
     }
 
     /**
@@ -78,29 +78,39 @@ class BuildProjectCommand extends AbstractProjectCommand
      */
     protected function perform()
     {
-        $this->output->info('Building project');
+        $projectType = $this->getProjectConfiguration()->getProjectType();
+        $withMediaOption = $this->input->getBooleanOption('with-media');
 
-        if ($this->input->getBooleanOption('with-uploads')) {
-            $this->performBuildStep($this->buildStepLocator->get(CopyUploadsDirectoryStep::class));
+        if ($withMediaOption && !$projectType instanceof SupportsMediaInterface) {
+            throw new UnsupportedProjectException('This project type doesn\'t support media operations');
         }
 
-        collect($this->projectConfiguration->getProjectType()->getBuildSteps())->map(function (string $buildStep) {
+        $environment = $this->resolve(Environment::class, 'Which <comment>%s</comment> environment would you like to build?');
+        $environmentConfiguration = $this->getProjectConfiguration()->getEnvironment($environment->getName());
+
+        $this->output->info(sprintf('Building <comment>%s</comment> project for the <comment>%s</comment> environment', $this->getProject()->getName(), $environment->getName()));
+
+        if ($withMediaOption) {
+            $this->performBuildStep($this->buildStepLocator->get(Build\CopyMediaDirectoryStep::class), $environmentConfiguration);
+        }
+
+        collect($this->getProjectConfiguration()->getProjectType()->getBuildSteps())->map(function (string $buildStep) {
             return $this->buildStepLocator->get($buildStep);
-        })->each(function (BuildStepInterface $buildStep) {
-            $this->performBuildStep($buildStep);
+        })->each(function (Build\BuildStepInterface $buildStep) use ($environmentConfiguration): void {
+            $this->performBuildStep($buildStep, $environmentConfiguration);
         });
 
         if ($this->input->getBooleanOption('debug')) {
-            $this->performBuildStep($this->buildStepLocator->get(DebugBuildStep::class));
+            $this->performBuildStep($this->buildStepLocator->get(Build\DebugBuildStep::class), $environmentConfiguration);
         }
 
-        switch ($this->projectConfiguration->getEnvironmentDeploymentType($this->input->getStringArgument('environment'))) {
+        switch ($environmentConfiguration->getDeploymentType()) {
             case 'image':
-                $this->performBuildStep($this->buildStepLocator->get(BuildContainerImageStep::class));
+                $this->performBuildStep($this->buildStepLocator->get(Build\BuildContainerImageStep::class), $environmentConfiguration);
 
                 break;
             default:
-                $this->performBuildStep($this->buildStepLocator->get(CompressBuildFilesStep::class));
+                $this->performBuildStep($this->buildStepLocator->get(Build\CompressBuildFilesStep::class), $environmentConfiguration);
 
                 break;
         }
@@ -111,9 +121,10 @@ class BuildProjectCommand extends AbstractProjectCommand
     /**
      * Perform a build step.
      */
-    private function performBuildStep(BuildStepInterface $buildStep)
+    private function performBuildStep(Build\BuildStepInterface $buildStep, EnvironmentConfiguration $environmentConfiguration): void
     {
         $this->output->writeStep($buildStep->getDescription());
-        $buildStep->perform($this->input->getStringArgument('environment'), $this->projectConfiguration);
+
+        $buildStep->perform($environmentConfiguration, $this->getProjectConfiguration());
     }
 }

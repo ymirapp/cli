@@ -13,8 +13,8 @@ declare(strict_types=1);
 
 namespace Ymir\Cli\Process;
 
-use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Process\Process as SymfonyProcess;
+use Ymir\Cli\Exception\Executable\ExecutableException;
 
 class Process extends SymfonyProcess
 {
@@ -27,7 +27,7 @@ class Process extends SymfonyProcess
         $process->run();
 
         if (!$process->isSuccessful()) {
-            throw new RuntimeException($process->getErrorOutput() ?: $process->getOutput());
+            throw new ExecutableException($process->getErrorOutput() ?: $process->getOutput());
         }
 
         return $process;

@@ -17,10 +17,16 @@ use Carbon\Carbon;
 use Carbon\CarbonInterval;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
+use Ymir\Cli\Command\AbstractCommand;
+use Ymir\Cli\Command\HandlesEnvironmentLogsTrait;
+use Ymir\Cli\Command\LocalProjectCommandInterface;
 use Ymir\Cli\Exception\InvalidInputException;
+use Ymir\Cli\Resource\Model\Environment;
 
-class QueryEnvironmentLogsCommand extends AbstractEnvironmentLogsCommand
+class QueryEnvironmentLogsCommand extends AbstractCommand implements LocalProjectCommandInterface
 {
+    use HandlesEnvironmentLogsTrait;
+
     /**
      * The name of the command.
      *
@@ -36,7 +42,7 @@ class QueryEnvironmentLogsCommand extends AbstractEnvironmentLogsCommand
         $this
             ->setName(self::NAME)
             ->setDescription('Retrieve logs for an environment function')
-            ->addArgument('environment', InputArgument::OPTIONAL, 'The name of the environment to get the logs of', 'staging')
+            ->addArgument('environment', InputArgument::OPTIONAL, 'The name of the environment to get the logs of')
             ->addArgument('function', InputArgument::OPTIONAL, 'The environment function to get the logs of', 'website')
             ->addOption('lines', null, InputOption::VALUE_REQUIRED, 'The number of log lines to display', 10)
             ->addOption('order', null, InputOption::VALUE_REQUIRED, 'The order to display the logs in', 'asc')
@@ -49,7 +55,8 @@ class QueryEnvironmentLogsCommand extends AbstractEnvironmentLogsCommand
      */
     protected function perform()
     {
-        $environment = $this->input->getStringArgument('environment');
+        $environment = $this->resolve(Environment::class, 'Which <comment>%s</comment> environment would you like to query logs for?');
+
         $function = strtolower($this->input->getStringArgument('function'));
         $lines = (int) $this->input->getNumericOption('lines');
         $order = strtolower($this->input->getStringOption('order'));
@@ -60,7 +67,7 @@ class QueryEnvironmentLogsCommand extends AbstractEnvironmentLogsCommand
             throw new InvalidInputException('The order must be either "asc" or "desc"');
         }
 
-        $logs = $this->apiClient->getEnvironmentLogs($this->projectConfiguration->getProjectId(), $environment, $function, Carbon::now()->sub(CarbonInterval::fromString($this->input->getStringOption('period')))->getTimestampMs(), 'desc');
+        $logs = $this->apiClient->getEnvironmentLogs($this->getProject(), $environment, $function, Carbon::now()->sub(CarbonInterval::fromString($this->input->getStringOption('period')))->getTimestampMs(), 'desc');
 
         if ($logs->isEmpty()) {
             $this->output->info('No logs found for the given period');

@@ -15,6 +15,9 @@ namespace Ymir\Cli\Command\Network;
 
 use Symfony\Component\Console\Input\InputArgument;
 use Ymir\Cli\Command\AbstractCommand;
+use Ymir\Cli\Exception\Resource\ResourceStateException;
+use Ymir\Cli\Resource\Model\BastionHost;
+use Ymir\Cli\Resource\Model\Network;
 
 class RemoveBastionHostCommand extends AbstractCommand
 {
@@ -41,8 +44,14 @@ class RemoveBastionHostCommand extends AbstractCommand
      */
     protected function perform()
     {
-        $this->apiClient->removeBastionHost($this->determineNetwork('Which network would like to remove the bastion host from'));
+        $network = $this->resolve(Network::class, 'Which network would you like to remove the bastion host from?');
 
-        $this->output->infoWithDelayWarning('Bastion host removed');
+        if (!$network->getBastionHost() instanceof BastionHost) {
+            throw new ResourceStateException(sprintf('The "%s" network doesn\'t have a bastion host', $network->getName()));
+        }
+
+        $this->apiClient->removeBastionHost($network);
+
+        $this->output->infoWithDelayWarning(sprintf('Bastion host removed from the "%s" network', $network->getName()));
     }
 }

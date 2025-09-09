@@ -15,8 +15,11 @@ namespace Ymir\Cli\Command\Certificate;
 
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
+use Ymir\Cli\Command\AbstractCommand;
+use Ymir\Cli\Resource\Model\CloudProvider;
+use Ymir\Cli\Resource\Requirement\RegionRequirement;
 
-class RequestCertificateCommand extends AbstractCertificateCommand
+class RequestCertificateCommand extends AbstractCommand
 {
     /**
      * The name of the command.
@@ -34,7 +37,7 @@ class RequestCertificateCommand extends AbstractCertificateCommand
             ->setName(self::NAME)
             ->setDescription('Request a new SSL certificate')
             ->addArgument('domains', InputArgument::IS_ARRAY | InputArgument::OPTIONAL, 'List of domains that the SSL certificate is for')
-            ->addOption('provider', null, InputOption::VALUE_REQUIRED, 'The cloud provider where the certificate will be created')
+            ->addOption('provider', null, InputOption::VALUE_REQUIRED, 'The ID of the cloud provider where the certificate will be created')
             ->addOption('region', null, InputOption::VALUE_REQUIRED, 'The cloud provider region where the certificate will be located');
     }
 
@@ -46,7 +49,7 @@ class RequestCertificateCommand extends AbstractCertificateCommand
         $domains = $this->input->getArrayArgument('domains');
 
         if (empty($domains)) {
-            $domains = array_map('trim', explode(',', (string) $this->output->ask('Please enter a comma-separated list of domains for the certificate')));
+            $domains = array_map('trim', explode(',', (string) $this->output->ask('Which domains should the SSL certificate have? (Use a comma-separated list)')));
         }
 
         if (1 === count($domains) && false === stripos($domains[0], '*.') && $this->output->confirm(sprintf('Do you want your certificate to also cover "<comment>*.%s</comment>" subdomains?', $domains[0]))) {
@@ -55,16 +58,17 @@ class RequestCertificateCommand extends AbstractCertificateCommand
             $domains[] = substr($domains[0], 2);
         }
 
-        $providerId = $this->determineCloudProvider('Enter the ID of the cloud provider where the SSL certificate will be created');
+        $provider = $this->resolve(CloudProvider::class, 'Which cloud provider would you like to request the SSL certificate on?');
+        $region = $this->fulfill(new RegionRequirement('Which region should the SSL certificate be created in?'), ['provider' => $provider]);
 
-        $certificate = $this->apiClient->createCertificate($providerId, $domains, $this->determineRegion('Enter the name of the region where the SSL certificate will be created', $providerId));
+        $certificate = $this->apiClient->createCertificate($provider, $domains, $region);
 
-        $isManaged = collect($certificate['domains'])->contains('managed', true);
+        $isManaged = collect($certificate->getDomains())->contains('managed', true);
         $validationRecords = [];
 
         if (!$isManaged) {
             $validationRecords = $this->wait(function () use ($certificate) {
-                return $this->parseCertificateValidationRecords($this->apiClient->getCertificate($certificate['id']));
+                return $this->apiClient->getCertificate($certificate->getId())->getValidationRecords();
             });
         }
 

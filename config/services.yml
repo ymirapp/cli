@@ -4,8 +4,8 @@ parameters:
   build_artifact_path: '%hidden_directory%/build.zip'
   cli_configuration_filepath: '%home_directory%/.ymir/config.json'
   hidden_directory: '%working_directory%/.ymir'
+  media_directory: '%hidden_directory%/media'
   stub_directory: '%application_directory%/stubs'
-  uploads_directory: '%hidden_directory%/uploads'
   version: '1.54.1'
 
 services:
@@ -13,30 +13,36 @@ services:
     autowire: true
     public: false
     bind:
-      iterable $projectTypes: !tagged project_types
+      iterable $projectTypes: !tagged project_type
       string $assetsDirectory: '%assets_directory%'
       string $baseUrl: '%ymir_api_url%'
       string $buildDirectory: '%build_directory%'
       string $buildArtifactPath: '%build_artifact_path%'
       string $hiddenDirectory: '%hidden_directory%'
       string $homeDirectory: '%home_directory%'
+      string $mediaDirectory: '%media_directory%'
       string $projectDirectory: '%working_directory%'
       string $stubDirectory: '%stub_directory%'
-      string $uploadsDirectory: '%uploads_directory%'
       string $version: '%version%'
-      Symfony\Component\DependencyInjection\ServiceLocator $buildStepLocator: !tagged_locator build_steps
+      Symfony\Component\DependencyInjection\ServiceLocator $buildStepLocator: !tagged_locator build_step
+      Symfony\Component\DependencyInjection\ServiceLocator $initializationStepLocator: !tagged_locator initialization_step
+      Symfony\Component\DependencyInjection\ServiceLocator $resourceDefinitionLocator: !tagged_locator { tag: 'resource_definition', index_by: 'getModelClass', default_index_method: 'getModelClass' }
 
   _instanceof:
     Symfony\Component\Console\Command\Command:
       tags: ['command']
     Symfony\Component\EventDispatcher\EventSubscriberInterface:
       tags: ['subscriber']
-    Ymir\Cli\Build\BuildStepInterface:
-      tags: ['build_steps']
+    Ymir\Cli\Project\Build\BuildStepInterface:
+      tags: ['build_step']
     Ymir\Cli\Project\Configuration\WordPress\WordPressConfigurationChangeInterface:
-      tags: ['wordpress_configuration_changes']
+      tags: ['wordpress_configuration_change']
+    Ymir\Cli\Project\Initialization\InitializationStepInterface:
+      tags: ['initialization_step']
     Ymir\Cli\Project\Type\ProjectTypeInterface:
-      tags: ['project_types']
+      tags: ['project_type']
+    Ymir\Cli\Resource\Definition\ResourceDefinitionInterface:
+      tags: ['resource_definition']
 
   GuzzleHttp\:
     resource: '%vendor_directory%/guzzlehttp/guzzle/src'
@@ -65,27 +71,31 @@ services:
     arguments:
       $configurationFilePath: '%cli_configuration_filepath%'
 
-  Ymir\Cli\Command\Project\ConfigureProjectCommand:
-    arguments:
-      $configurationChanges: !tagged wordpress_configuration_changes
-
   Ymir\Cli\Command\Project\DeployProjectCommand:
     arguments:
       $deploymentSteps:
-        - '@Ymir\Cli\Deployment\UploadFunctionCodeStep'
-        - '@Ymir\Cli\Deployment\ProcessAssetsStep'
-        - '@Ymir\Cli\Deployment\StartAndMonitorDeploymentStep'
+        - '@Ymir\Cli\Project\Deployment\UploadFunctionCodeStep'
+        - '@Ymir\Cli\Project\Deployment\ProcessAssetsStep'
+        - '@Ymir\Cli\Project\Deployment\StartAndMonitorDeploymentStep'
 
   Ymir\Cli\Command\Project\RedeployProjectCommand:
     arguments:
       $deploymentSteps:
-        - '@Ymir\Cli\Deployment\StartAndMonitorDeploymentStep'
+        - '@Ymir\Cli\Project\Deployment\StartAndMonitorDeploymentStep'
 
   Ymir\Cli\Command\Project\RollbackProjectCommand:
     arguments:
       $deploymentSteps:
-        - '@Ymir\Cli\Deployment\StartAndMonitorDeploymentStep'
+        - '@Ymir\Cli\Project\Deployment\StartAndMonitorDeploymentStep'
 
   Ymir\Cli\EventDispatcher\AutowiredEventDispatcher:
     arguments:
       - !tagged subscriber
+
+  Ymir\Cli\Project\Initialization\WordPressConfigurationInitializationStep:
+    arguments:
+      $configurationChanges: !tagged wordpress_configuration_change
+
+  Ymir\Cli\Command\WordPress\ConfigureCommand:
+    arguments:
+      $configurationChanges: !tagged wordpress_configuration_change

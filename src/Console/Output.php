@@ -15,7 +15,6 @@ namespace Ymir\Cli\Console;
 
 use Illuminate\Support\Collection;
 use Illuminate\Support\Enumerable;
-use Symfony\Component\Console\Exception\InvalidArgumentException;
 use Symfony\Component\Console\Formatter\OutputFormatter;
 use Symfony\Component\Console\Formatter\OutputFormatterInterface;
 use Symfony\Component\Console\Helper\Helper;
@@ -30,6 +29,9 @@ use Symfony\Component\Console\Question\Question;
 use Symfony\Component\Console\Terminal;
 use Ymir\Cli\Command\Project\DeployProjectCommand;
 use Ymir\Cli\Command\Project\RedeployProjectCommand;
+use Ymir\Cli\Exception\InvalidArgumentException;
+use Ymir\Cli\Resource\Model\RegionalResourceModelInterface;
+use Ymir\Cli\Support\Arr;
 
 class Output implements OutputInterface
 {
@@ -104,9 +106,9 @@ class Output implements OutputInterface
     /**
      * Asks a choice question.
      */
-    public function askSlug(string $question, ?string $default = null): string
+    public function askSlug(string $question, ?string $default = null, ?callable $validator = null): string
     {
-        $answer = $this->ask($question, $default);
+        $answer = $this->ask($question, $default, $validator);
 
         return is_string($answer) ? (string) preg_replace('/[^a-z0-9-_]+/i', '-', strtolower(trim($answer))) : '';
     }
@@ -129,14 +131,13 @@ class Output implements OutputInterface
     /**
      * Ask a choice question that uses the ID for answers.
      */
-    public function choiceWithId(string $question, Collection $collection): int
+    public function choiceWithId(string $question, $choices): int
     {
-        return (int) $this->choice(
-            $question,
-            $collection->mapWithKeys(function (array $item) {
-                return [$item['id'] => $item['name']];
-            })->all()
-        );
+        $choices = $this->getChoices($choices);
+
+        $answer = $this->choice($question, $choices);
+
+        return !array_key_exists($answer, $choices) ? (int) Arr::get(array_flip($choices), $answer) : (int) $answer;
     }
 
     /**
@@ -144,15 +145,25 @@ class Output implements OutputInterface
      */
     public function choiceWithResourceDetails(string $question, Collection $collection): string
     {
-        return (string) preg_replace('/^([^ ]*) .*/', '$1', (string) $this->choice($question, $collection->map(function (array $resource) {
-            return sprintf('%s (%s) [%s]', $resource['name'], $resource['region'], $this->formatStatus($resource['status']));
-        })->all()));
+        $choices = $collection->mapWithKeys(function (RegionalResourceModelInterface $resource) {
+            $displayName = sprintf('%s (%s)', $resource->getName(), $resource->getRegion());
+
+            if (method_exists($resource, 'getStatus')) {
+                $displayName .= sprintf(' [%s]', $this->formatStatus($resource->getStatus()));
+            }
+
+            return [$resource->getId() => $displayName];
+        });
+
+        $answer = $this->choice($question, $choices->all());
+
+        return (string) (array_key_exists($answer, $choices->all()) ? $answer : $choices->flip()->get($answer));
     }
 
     /**
      * Write out a comment message.
      */
-    public function comment(string $message)
+    public function comment(string $message): void
     {
         $this->writeln(sprintf('<comment>%s</comment>', $message));
     }
@@ -168,7 +179,7 @@ class Output implements OutputInterface
     /**
      * Write out an exception message.
      */
-    public function exception(\Exception $exception)
+    public function exception(\Exception $exception): void
     {
         $this->block($exception->getMessage(), null, 'fg=white;bg=red', '  ', true);
     }
@@ -216,7 +227,7 @@ class Output implements OutputInterface
     /**
      * Formats a horizontal table.
      */
-    public function horizontalTable(array $headers, array $rows)
+    public function horizontalTable(array $headers, array $rows): void
     {
         $this->createTable()
              ->setHorizontal(true)
@@ -231,7 +242,7 @@ class Output implements OutputInterface
     /**
      * Write out an important message.
      */
-    public function important(string $message)
+    public function important(string $message): void
     {
         $this->writeln(sprintf('<fg=red>Important:</> %s', $message));
     }
@@ -239,7 +250,7 @@ class Output implements OutputInterface
     /**
      * Write out an informational message.
      */
-    public function info(string $message)
+    public function info(string $message): void
     {
         $this->writeln(sprintf('<info>%s</info>', $message));
     }
@@ -247,7 +258,7 @@ class Output implements OutputInterface
     /**
      * Write out an informational message with an accompanied warning about a delay.
      */
-    public function infoWithDelayWarning(string $message)
+    public function infoWithDelayWarning(string $message): void
     {
         $this->infoWithWarning($message, 'process takes several minutes to complete');
     }
@@ -255,7 +266,7 @@ class Output implements OutputInterface
     /**
      * Write out an informational message with an accompanied warning about having to redeploy an environment.
      */
-    public function infoWithRedeployWarning(string $message, string $environment)
+    public function infoWithRedeployWarning(string $message, string $environment): void
     {
         $this->info($message);
         $this->newLine();
@@ -265,7 +276,7 @@ class Output implements OutputInterface
     /**
      * Write out an informational message followed by a value and an optional comment.
      */
-    public function infoWithValue(string $message, string $value, string $comment = '')
+    public function infoWithValue(string $message, string $value, string $comment = ''): void
     {
         $format = '<info>%s:</info> %s';
 
@@ -279,7 +290,7 @@ class Output implements OutputInterface
     /**
      * Write out an informational message with an accompanied warning.
      */
-    public function infoWithWarning(string $message, string $warning)
+    public function infoWithWarning(string $message, string $warning): void
     {
         $this->writeln(sprintf('<info>%s</info> (<comment>%s</comment>)', $message, $warning));
     }
@@ -327,7 +338,7 @@ class Output implements OutputInterface
     /**
      * Write out a list of items.
      */
-    public function list(iterable $items)
+    public function list(iterable $items): void
     {
         $this->newLine();
 
@@ -357,7 +368,7 @@ class Output implements OutputInterface
     /**
      * Add newline(s).
      */
-    public function newLine(int $count = 1)
+    public function newLine(int $count = 1): void
     {
         $this->output->write(str_repeat(\PHP_EOL, $count));
     }
@@ -365,7 +376,7 @@ class Output implements OutputInterface
     /**
      * Write out a note message.
      */
-    public function note(string $message)
+    public function note(string $message): void
     {
         $this->writeln(sprintf('<comment>Note:</comment> %s', $message));
     }
@@ -373,7 +384,7 @@ class Output implements OutputInterface
     /**
      * {@inheritdoc}
      */
-    public function setDecorated(bool $decorated)
+    public function setDecorated(bool $decorated): void
     {
         $this->output->setDecorated($decorated);
     }
@@ -381,7 +392,7 @@ class Output implements OutputInterface
     /**
      * {@inheritdoc}
      */
-    public function setFormatter(OutputFormatterInterface $formatter)
+    public function setFormatter(OutputFormatterInterface $formatter): void
     {
         $this->output->setFormatter($formatter);
     }
@@ -389,7 +400,7 @@ class Output implements OutputInterface
     /**
      * {@inheritdoc}
      */
-    public function setVerbosity(int $level)
+    public function setVerbosity(int $level): void
     {
         $this->output->setVerbosity($level);
     }
@@ -397,7 +408,7 @@ class Output implements OutputInterface
     /**
      * Formats a table.
      */
-    public function table(array $headers, array $rows)
+    public function table(array $headers, array $rows): void
     {
         $this->createTable()
              ->setHeaders($headers)
@@ -411,15 +422,25 @@ class Output implements OutputInterface
     /**
      * Write out a warning message.
      */
-    public function warning(string $message)
+    public function warning(string $message): void
     {
         $this->writeln(sprintf('<comment>Warning:</comment> %s', $message));
     }
 
     /**
+     * Write out a warning message that requires a confirmation to proceed.
+     */
+    public function warningConfirmation(string $message): bool
+    {
+        $this->warning($message);
+
+        return $this->confirm('Do you want to proceed?', false);
+    }
+
+    /**
      * {@inheritdoc}
      */
-    public function write($messages, bool $newline = false, int $type = self::OUTPUT_NORMAL)
+    public function write($messages, bool $newline = false, int $type = self::OUTPUT_NORMAL): void
     {
         $this->output->write($messages, $newline, $type);
     }
@@ -427,7 +448,7 @@ class Output implements OutputInterface
     /**
      * {@inheritdoc}
      */
-    public function writeln($messages, int $type = self::OUTPUT_NORMAL)
+    public function writeln($messages, int $type = self::OUTPUT_NORMAL): void
     {
         $this->output->writeln($messages, $type);
     }
@@ -435,7 +456,7 @@ class Output implements OutputInterface
     /**
      * Write the build step message.
      */
-    public function writeStep(string $step)
+    public function writeStep(string $step): void
     {
         $this->writeln(sprintf('  > %s', $step));
     }
@@ -476,7 +497,7 @@ class Output implements OutputInterface
     /**
      * Formats a message as a block of text.
      */
-    private function block($messages, ?string $type = null, ?string $style = null, string $prefix = ' ', bool $padding = false, bool $escape = true)
+    private function block($messages, ?string $type = null, ?string $style = null, string $prefix = ' ', bool $padding = false, bool $escape = true): void
     {
         $messages = \is_array($messages) ? array_values($messages) : [$messages];
 

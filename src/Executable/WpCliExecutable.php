@@ -14,8 +14,9 @@ declare(strict_types=1);
 namespace Ymir\Cli\Executable;
 
 use Illuminate\Support\Collection;
-use Symfony\Component\Console\Exception\RuntimeException;
+use Ymir\Cli\Exception\Executable\ExecutableException;
 use Ymir\Cli\Exception\Executable\WpCliException;
+use Ymir\Cli\Exception\RuntimeException;
 use Ymir\Cli\Process\Process;
 
 class WpCliExecutable extends AbstractExecutable
@@ -23,7 +24,7 @@ class WpCliExecutable extends AbstractExecutable
     /**
      * Download WordPress.
      */
-    public function downloadWordPress(?string $cwd = null)
+    public function downloadWordPress(?string $cwd = null): void
     {
         $this->run('core download', $cwd);
     }
@@ -80,7 +81,7 @@ class WpCliExecutable extends AbstractExecutable
         $plugins = json_decode($process->getOutput(), true);
 
         if (JSON_ERROR_NONE !== json_last_error()) {
-            throw new RuntimeException('Unable to get the list of installed plugins');
+            throw new ExecutableException('Unable to get the list of installed plugins');
         }
 
         return collect($plugins);

@@ -13,10 +13,12 @@ declare(strict_types=1);
 
 namespace Ymir\Cli\Command\Team;
 
-use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Input\InputArgument;
+use Ymir\Cli\ApiClient;
+use Ymir\Cli\CliConfiguration;
 use Ymir\Cli\Command\AbstractCommand;
-use Ymir\Cli\Support\Arr;
+use Ymir\Cli\ExecutionContextFactory;
+use Ymir\Cli\Resource\Model\Team;
 
 class SelectTeamCommand extends AbstractCommand
 {
@@ -26,6 +28,23 @@ class SelectTeamCommand extends AbstractCommand
      * @var string
      */
     public const NAME = 'team:select';
+
+    /**
+     * The global Ymir CLI configuration.
+     *
+     * @var CliConfiguration
+     */
+    private $cliConfiguration;
+
+    /**
+     * Constructor.
+     */
+    public function __construct(ApiClient $apiClient, CliConfiguration $cliConfiguration, ExecutionContextFactory $contextFactory)
+    {
+        parent::__construct($apiClient, $contextFactory);
+
+        $this->cliConfiguration = $cliConfiguration;
+    }
 
     /**
      * {@inheritdoc}
@@ -43,35 +62,10 @@ class SelectTeamCommand extends AbstractCommand
      */
     protected function perform()
     {
-        $teams = $this->apiClient->getTeams();
+        $team = $this->resolve(Team::class, 'Which team would you like to switch to?');
 
-        if ($teams->isEmpty()) {
-            throw new RuntimeException('You\'re not on any team');
-        }
+        $this->cliConfiguration->setActiveTeamId($team->getId());
 
-        $teamId = $this->input->getNumericArgument('team');
-
-        if (0 !== $teamId && !$teams->contains('id', $teamId)) {
-            throw new RuntimeException(sprintf('You\'re not on a team with ID %s', $teamId));
-        } elseif (0 === $teamId) {
-            $user = $this->apiClient->getAuthenticatedUser();
-
-            $teamId = $this->output->choiceWithId('Enter the ID of the team that you want to switch to', $teams->map(function (array $team) use ($user) {
-                $owner = (string) Arr::get($team, 'owner.name');
-
-                if ($user['id'] === Arr::get($team, 'owner.id')) {
-                    $owner = 'You';
-                }
-
-                return [
-                    'id' => $team['id'],
-                    'name' => sprintf('%s (<info>Owner</info>: %s)', $team['name'], $owner),
-                ];
-            }));
-        }
-
-        $this->cliConfiguration->setActiveTeamId($teamId);
-
-        $this->output->infoWithValue('Your active team is now', $teams->firstWhere('id', $teamId)['name']);
+        $this->output->infoWithValue('Your active team is now', $team->getName());
     }
 }

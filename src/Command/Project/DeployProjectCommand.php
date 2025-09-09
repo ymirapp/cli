@@ -13,14 +13,15 @@ declare(strict_types=1);
 
 namespace Ymir\Cli\Command\Project;
 
-use Illuminate\Support\Collection;
-use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
 use Ymir\Cli\ApiClient;
-use Ymir\Cli\CliConfiguration;
-use Ymir\Cli\Command\Uploads\ImportUploadsCommand;
-use Ymir\Cli\Project\Configuration\ProjectConfiguration;
+use Ymir\Cli\Command\Media\ImportMediaCommand;
+use Ymir\Cli\Exception\Project\DeploymentFailedException;
+use Ymir\Cli\Exception\Project\UnsupportedProjectException;
+use Ymir\Cli\ExecutionContextFactory;
+use Ymir\Cli\Project\Type\SupportsMediaInterface;
+use Ymir\Cli\Resource\Model\Deployment;
 
 class DeployProjectCommand extends AbstractProjectDeploymentCommand
 {
@@ -46,21 +47,21 @@ class DeployProjectCommand extends AbstractProjectDeploymentCommand
     private $assetsDirectory;
 
     /**
-     * The build "uploads" directory.
+     * The build media directory.
      *
      * @var string
      */
-    private $uploadsDirectory;
+    private $mediaDirectory;
 
     /**
      * Constructor.
      */
-    public function __construct(ApiClient $apiClient, string $assetsDirectory, CliConfiguration $cliConfiguration, ProjectConfiguration $projectConfiguration, string $uploadsDirectory, array $deploymentSteps = [])
+    public function __construct(ApiClient $apiClient, string $assetsDirectory, ExecutionContextFactory $contextFactory, string $mediaDirectory, array $deploymentSteps = [])
     {
-        parent::__construct($apiClient, $cliConfiguration, $projectConfiguration, $deploymentSteps);
+        parent::__construct($apiClient, $contextFactory, $deploymentSteps);
 
         $this->assetsDirectory = $assetsDirectory;
-        $this->uploadsDirectory = $uploadsDirectory;
+        $this->mediaDirectory = $mediaDirectory;
     }
 
     /**
@@ -72,35 +73,48 @@ class DeployProjectCommand extends AbstractProjectDeploymentCommand
             ->setName(self::NAME)
             ->setDescription('Deploy project to an environment')
             ->setAliases([self::ALIAS])
-            ->addArgument('environment', InputArgument::OPTIONAL, 'The name of the environment to deploy to', 'staging')
+            ->addArgument('environment', InputArgument::OPTIONAL, 'The name of the environment to deploy to')
             ->addOption('debug-build', null, InputOption::VALUE_NONE, 'Run the deployment build in debug mode')
             ->addOption('force-assets', null, InputOption::VALUE_NONE, 'Force processing assets')
-            ->addOption('with-uploads', null, InputOption::VALUE_NONE, 'Import the "uploads" directory during the deployment');
+            ->addOption('with-media', null, InputOption::VALUE_NONE, 'Import the media directory during the deployment');
     }
 
     /**
      * {@inheritdoc}
      */
-    protected function createDeployment(): Collection
+    protected function createDeployment(): Deployment
     {
-        $environment = $this->input->getStringArgument('environment');
-        $projectId = $this->projectConfiguration->getProjectId();
-        $withUploadsOption = $this->input->getBooleanOption('with-uploads');
+        $projectType = $this->getProjectConfiguration()->getProjectType();
+        $withMediaOption = $this->input->getBooleanOption('with-media');
 
-        $this->invoke(ValidateProjectCommand::NAME, ['environments' => $environment]);
-        $this->invoke(BuildProjectCommand::NAME, array_merge(['environment' => $environment], $this->input->getBooleanOption('debug-build') ? ['--debug' => null] : [], $withUploadsOption ? ['--with-uploads' => null] : []));
-
-        if ($withUploadsOption) {
-            $this->invoke(ImportUploadsCommand::NAME, ['path' => $this->uploadsDirectory, '--environment' => $environment, '--force' => null]);
+        if ($withMediaOption && !$projectType instanceof SupportsMediaInterface) {
+            throw new UnsupportedProjectException('This project type doesn\'t support media operations');
         }
 
-        $deployment = $this->apiClient->createDeployment($projectId, $environment, $this->projectConfiguration, $this->generateDirectoryHash($this->assetsDirectory));
+        $environment = $this->getEnvironment()->getName();
 
-        if (!$deployment->has('id')) {
-            throw new RuntimeException('There was an error creating the deployment');
+        $this->invoke(ValidateProjectCommand::NAME, ['environments' => [$environment]]);
+        $this->invoke(BuildProjectCommand::NAME, array_merge(['environment' => $environment], $this->input->getBooleanOption('debug-build') ? ['--debug' => null] : [], $withMediaOption ? ['--with-media' => null] : []));
+
+        if ($withMediaOption) {
+            $this->invoke(ImportMediaCommand::NAME, ['path' => $this->mediaDirectory, '--environment' => $environment, '--force' => null]);
+        }
+
+        $deployment = $this->apiClient->createDeployment($this->getProject(), $this->getEnvironment(), $this->getProjectConfiguration()->toArray(), $this->generateDirectoryHash($this->assetsDirectory));
+
+        if (!$deployment->getId()) {
+            throw new DeploymentFailedException('There was an error creating the deployment');
         }
 
         return $deployment;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function getEnvironmentQuestion(): string
+    {
+        return 'Which <comment>%s</comment> environment would you like to deploy to?';
     }
 
     /**
@@ -118,11 +132,11 @@ class DeployProjectCommand extends AbstractProjectDeploymentCommand
     {
         $iterator = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($directory), \RecursiveIteratorIterator::SELF_FIRST);
 
-        return hash('sha256', collect($iterator)->filter(function (\SplFileInfo $file) {
+        return hash('sha256', collect($iterator)->filter(function (\SplFileInfo $file): bool {
             return $file->isFile();
-        })->mapWithKeys(function (\SplFileInfo $file) {
+        })->mapWithKeys(function (\SplFileInfo $file): array {
             return [substr($file->getRealPath(), (int) strrpos($file->getRealPath(), '.ymir')) => $file->getRealPath()];
-        })->map(function (string $realPath, string $relativePath) {
+        })->map(function (string $realPath, string $relativePath): string {
             return sprintf('%s|%s', $relativePath, hash_file('sha256', $realPath));
         })->implode(''));
     }

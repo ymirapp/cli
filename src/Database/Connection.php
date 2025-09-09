@@ -13,6 +13,8 @@ declare(strict_types=1);
 
 namespace Ymir\Cli\Database;
 
+use Ymir\Cli\Resource\Model\DatabaseServer;
+
 class Connection
 {
     /**
@@ -25,7 +27,7 @@ class Connection
     /**
      * The database server the connection is for.
      *
-     * @var array
+     * @var DatabaseServer
      */
     private $databaseServer;
 
@@ -46,7 +48,7 @@ class Connection
     /**
      * Constructor.
      */
-    public function __construct(string $database, array $databaseServer, string $user, string $password)
+    public function __construct(string $database, DatabaseServer $databaseServer, string $user, string $password)
     {
         $this->database = $database;
         $this->databaseServer = $databaseServer;
@@ -59,7 +61,7 @@ class Connection
         return $this->database;
     }
 
-    public function getDatabaseServer(): array
+    public function getDatabaseServer(): DatabaseServer
     {
         return $this->databaseServer;
     }
@@ -71,7 +73,7 @@ class Connection
 
     public function getHost(): string
     {
-        return $this->databaseServer['publicly_accessible'] ? $this->databaseServer['endpoint'] : '127.0.0.1';
+        return $this->databaseServer->isPublic() ? $this->databaseServer->getEndpoint() : '127.0.0.1';
     }
 
     public function getPassword(): string
@@ -81,7 +83,7 @@ class Connection
 
     public function getPort(): string
     {
-        return $this->databaseServer['publicly_accessible'] ? '3306' : '3305';
+        return $this->databaseServer->isPublic() ? '3306' : '3305';
     }
 
     public function getUser(): string
@@ -94,6 +96,6 @@ class Connection
      */
     public function needsSshTunnel(): bool
     {
-        return !$this->databaseServer['publicly_accessible'];
+        return !$this->databaseServer->isPublic();
     }
 }

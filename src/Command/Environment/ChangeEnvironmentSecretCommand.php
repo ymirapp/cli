@@ -14,9 +14,11 @@ declare(strict_types=1);
 namespace Ymir\Cli\Command\Environment;
 
 use Symfony\Component\Console\Input\InputArgument;
-use Ymir\Cli\Command\AbstractProjectCommand;
+use Ymir\Cli\Command\AbstractCommand;
+use Ymir\Cli\Command\LocalProjectCommandInterface;
+use Ymir\Cli\Resource\Model\Environment;
 
-class ChangeEnvironmentSecretCommand extends AbstractProjectCommand
+class ChangeEnvironmentSecretCommand extends AbstractCommand implements LocalProjectCommandInterface
 {
     /**
      * The name of the command.
@@ -33,7 +35,7 @@ class ChangeEnvironmentSecretCommand extends AbstractProjectCommand
         $this
             ->setName(self::NAME)
             ->setDescription('Change an environment\'s secret')
-            ->addArgument('environment', InputArgument::OPTIONAL, 'The name of the environment where the secret is', 'staging')
+            ->addArgument('environment', InputArgument::OPTIONAL, 'The name of the environment where the secret is')
             ->addArgument('name', InputArgument::OPTIONAL, 'The name of the secret')
             ->addArgument('value', InputArgument::OPTIONAL, 'The secret value');
     }
@@ -43,20 +45,21 @@ class ChangeEnvironmentSecretCommand extends AbstractProjectCommand
      */
     protected function perform()
     {
-        $environment = $this->input->getStringArgument('environment');
+        $environment = $this->resolve(Environment::class, 'Which <comment>%s</comment> environment would you like to change a secret of?');
+
         $name = $this->input->getStringArgument('name');
         $value = $this->input->getStringArgument('value');
 
         if (empty($name)) {
-            $name = $this->output->ask('What is the name of the secret');
+            $name = $this->output->ask('What is the name of the secret being changed?');
         }
 
         if (empty($value)) {
-            $value = $this->output->ask('What is the secret value');
+            $value = $this->output->ask('Which value should the secret have?');
         }
 
-        $this->apiClient->changeSecret($this->projectConfiguration->getProjectId(), $environment, $name, $value);
+        $this->apiClient->changeSecret($this->getProject(), $environment, $name, $value);
 
-        $this->output->infoWithRedeployWarning('Secret changed', $environment);
+        $this->output->infoWithRedeployWarning('Secret changed', $environment->getName());
     }
 }

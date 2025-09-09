@@ -16,6 +16,8 @@ namespace Ymir\Cli\Project\Type;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Finder\SplFileInfo;
+use Ymir\Cli\Project\EnvironmentConfiguration;
+use Ymir\Cli\Project\Initialization;
 use Ymir\Cli\Support\Arr;
 
 abstract class AbstractProjectType implements ProjectTypeInterface
@@ -38,18 +40,22 @@ abstract class AbstractProjectType implements ProjectTypeInterface
     /**
      * {@inheritdoc}
      */
-    public function getEnvironmentConfiguration(string $environment, array $baseConfiguration = []): array
+    public function generateEnvironmentConfiguration(string $environment, array $baseConfiguration = []): EnvironmentConfiguration
     {
-        $configuration = array_merge([
-            'architecture' => 'arm64',
-        ], $baseConfiguration);
+        return new EnvironmentConfiguration($environment, $this->generateEnvironmentConfigurationArray($environment, $baseConfiguration));
+    }
 
-        if ('staging' === $environment) {
-            $configuration = Arr::add($configuration, 'cron', false);
-            $configuration = Arr::add($configuration, 'warmup', false);
-        }
-
-        return $configuration;
+    /**
+     * {@inheritDoc}
+     */
+    public function getInitializationSteps(): array
+    {
+        return [
+            Initialization\DatabaseInitializationStep::class,
+            Initialization\CacheInitializationStep::class,
+            Initialization\DockerInitializationStep::class,
+            Initialization\IntegrationInitializationStep::class,
+        ];
     }
 
     /**
@@ -74,6 +80,24 @@ abstract class AbstractProjectType implements ProjectTypeInterface
     public function getSlug(): string
     {
         return strtolower($this->getName());
+    }
+
+    /**
+     * Generate the environment configuration array for the given environment.
+     */
+    protected function generateEnvironmentConfigurationArray(string $environment, array $baseConfiguration = []): array
+    {
+        $configuration = array_merge([
+            'architecture' => 'arm64',
+            'gateway' => false,
+        ], $baseConfiguration);
+
+        if ('staging' === $environment) {
+            $configuration = Arr::add($configuration, 'cron', false);
+            $configuration = Arr::add($configuration, 'warmup', false);
+        }
+
+        return $configuration;
     }
 
     /**

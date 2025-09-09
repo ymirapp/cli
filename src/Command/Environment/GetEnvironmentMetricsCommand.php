@@ -16,10 +16,12 @@ namespace Ymir\Cli\Command\Environment;
 use Symfony\Component\Console\Helper\TableSeparator;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
-use Ymir\Cli\Command\AbstractProjectCommand;
+use Ymir\Cli\Command\AbstractCommand;
+use Ymir\Cli\Command\LocalProjectCommandInterface;
 use Ymir\Cli\Exception\InvalidInputException;
+use Ymir\Cli\Resource\Model\Environment;
 
-class GetEnvironmentMetricsCommand extends AbstractProjectCommand
+class GetEnvironmentMetricsCommand extends AbstractCommand implements LocalProjectCommandInterface
 {
     /**
      * The name of the command.
@@ -36,7 +38,7 @@ class GetEnvironmentMetricsCommand extends AbstractProjectCommand
         $this
             ->setName(self::NAME)
             ->setDescription('Get cost and usage metrics of the environment')
-            ->addArgument('environment', InputArgument::OPTIONAL, 'The name of the environment to get the metrics of', 'staging')
+            ->addArgument('environment', InputArgument::OPTIONAL, 'The name of the environment to get the metrics of')
             ->addOption('period', null, InputOption::VALUE_REQUIRED, 'The period to gather metrics for (1m, 5m, 30m, 1h, 8h, 1d, 3d, 7d, 1mo)', '1d');
     }
 
@@ -51,11 +53,12 @@ class GetEnvironmentMetricsCommand extends AbstractProjectCommand
             throw new InvalidInputException('The given "period" is invalid. You may use: 1m, 5m, 30m, 1h, 8h, 1d, 3d, 7d, 1mo');
         }
 
-        $environment = $this->input->getStringArgument('environment');
-        $metrics = $this->apiClient->getEnvironmentMetrics($this->projectConfiguration->getProjectId(), $environment, $period);
+        $environment = $this->resolve(Environment::class, 'Which <comment>%s</comment> environment would you like to get metrics for?');
+
+        $metrics = $this->apiClient->getEnvironmentMetrics($this->getProject(), $environment, $period);
 
         $this->output->newLine();
-        $this->output->writeln(sprintf('  <info>Environment:</info> <comment>%s</comment>', $environment));
+        $this->output->writeln(sprintf('  <info>Environment:</info> <comment>%s</comment>', $environment->getName()));
 
         $headers = [''];
         $row1 = [''];
@@ -70,6 +73,7 @@ class GetEnvironmentMetricsCommand extends AbstractProjectCommand
             $row3 = array_merge($row3, [new TableSeparator(), '$'.number_format($metrics['cdn']['cost_bandwidth'], 2), '$'.number_format($metrics['cdn']['cost_requests'], 2)]);
             $total += $metrics['cdn']['cost_bandwidth'] + $metrics['cdn']['cost_requests'];
         }
+
         if (!empty($metrics['gateway'])) {
             $headers = array_merge($headers, [new TableSeparator(), 'API Gateway']);
             $row1 = array_merge($row1, [new TableSeparator(), 'Requests']);
@@ -77,6 +81,7 @@ class GetEnvironmentMetricsCommand extends AbstractProjectCommand
             $row3 = array_merge($row3, [new TableSeparator(), '$'.number_format($metrics['gateway']['cost_requests'], 2)]);
             $total += $metrics['gateway']['cost_requests'];
         }
+
         if (!empty($metrics['website'])) {
             $headers = array_merge($headers, [new TableSeparator(), 'Website Lambda function', '', '']);
             $row1 = array_merge($row1, [new TableSeparator(), 'Invocations', 'Duration', 'Avg duration']);
@@ -84,6 +89,7 @@ class GetEnvironmentMetricsCommand extends AbstractProjectCommand
             $row3 = array_merge($row3, [new TableSeparator(), '$'.number_format($metrics['website']['cost_invocations'], 2), '$'.number_format($metrics['website']['cost_duration'], 2), '-']);
             $total += $metrics['website']['cost_duration'] + $metrics['website']['cost_invocations'];
         }
+
         if (!empty($metrics['console'])) {
             $headers = array_merge($headers, [new TableSeparator(), 'Console Lambda function', '', '']);
             $row1 = array_merge($row1, [new TableSeparator(), 'Invocations', 'Duration', 'Avg duration']);

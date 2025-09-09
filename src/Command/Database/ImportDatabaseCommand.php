@@ -14,20 +14,19 @@ declare(strict_types=1);
 namespace Ymir\Cli\Command\Database;
 
 use Illuminate\Support\LazyCollection;
-use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Filesystem\Filesystem;
 use Ymir\Cli\ApiClient;
-use Ymir\Cli\CliConfiguration;
 use Ymir\Cli\Database\Connection;
 use Ymir\Cli\Database\PDO;
 use Ymir\Cli\Exception\InvalidInputException;
+use Ymir\Cli\Exception\SystemException;
 use Ymir\Cli\Executable\SshExecutable;
+use Ymir\Cli\ExecutionContextFactory;
 use Ymir\Cli\Process\Process;
-use Ymir\Cli\Project\Configuration\ProjectConfiguration;
 
-class ImportDatabaseCommand extends AbstractDatabaseCommand
+class ImportDatabaseCommand extends AbstractDatabaseTunnelCommand
 {
     /**
      * The name of the command.
@@ -46,9 +45,9 @@ class ImportDatabaseCommand extends AbstractDatabaseCommand
     /**
      * Constructor.
      */
-    public function __construct(ApiClient $apiClient, CliConfiguration $cliConfiguration, Filesystem $filesystem, ProjectConfiguration $projectConfiguration, SshExecutable $sshExecutable)
+    public function __construct(ApiClient $apiClient, ExecutionContextFactory $contextFactory, Filesystem $filesystem, SshExecutable $sshExecutable)
     {
-        parent::__construct($apiClient, $cliConfiguration, $projectConfiguration, $sshExecutable);
+        parent::__construct($apiClient, $contextFactory, $sshExecutable);
 
         $this->filesystem = $filesystem;
     }
@@ -74,7 +73,7 @@ class ImportDatabaseCommand extends AbstractDatabaseCommand
     protected function perform()
     {
         $filename = $this->getFilename();
-        $connection = $this->getConnection();
+        $connection = $this->getConnection('Which <comment>%s</comment> database would you like to import the SQL backup to?', 'Which database server would you like to import a database to?');
         $tunnel = null;
 
         if ($connection->needsSshTunnel()) {
@@ -90,26 +89,6 @@ class ImportDatabaseCommand extends AbstractDatabaseCommand
         }
 
         $this->output->info('Database imported successfully');
-    }
-
-    /**
-     * Get the connection to the database by prompting for any missing information.
-     */
-    private function getConnection(): Connection
-    {
-        $databaseServer = $this->determineDatabaseServer('Which database server would you like to import a database to?');
-        $database = $this->input->getStringArgument('database');
-
-        if (empty($database) && !$databaseServer['publicly_accessible']) {
-            throw new RuntimeException('You must specify the database name to import the SQL backup to for a private database server');
-        } elseif (empty($database)) {
-            $database = $this->output->choice('Which database would you like to import the SQL backup to?', $this->apiClient->getDatabases($databaseServer['id']));
-        }
-
-        $user = $this->determineUser();
-        $password = $this->determinePassword($user);
-
-        return new Connection($database, $databaseServer, $user, $password);
     }
 
     /**
@@ -131,7 +110,7 @@ class ImportDatabaseCommand extends AbstractDatabaseCommand
     /**
      * Imports the given SQL backup file using the given database connection.
      */
-    private function importBackup(Connection $connection, string $filename)
+    private function importBackup(Connection $connection, string $filename): void
     {
         try {
             $isCompressed = str_ends_with($filename, '.gz');
@@ -144,7 +123,7 @@ class ImportDatabaseCommand extends AbstractDatabaseCommand
             $file = $fopen($filename, 'r');
 
             if (!is_resource($file)) {
-                throw new RuntimeException('Failed to open file: '.$filename);
+                throw new SystemException(sprintf('Failed to open file: %s', $filename));
             }
 
             $lines = LazyCollection::make(function () use (&$file, $feof, $fgets) {
@@ -155,7 +134,7 @@ class ImportDatabaseCommand extends AbstractDatabaseCommand
             $pdo = PDO::fromConnection($connection);
             $query = '';
 
-            $lines->each(function ($line) use ($pdo, &$query) {
+            $lines->each(function ($line) use ($pdo, &$query): void {
                 if (!is_string($line)) {
                     return;
                 }
@@ -174,17 +153,17 @@ class ImportDatabaseCommand extends AbstractDatabaseCommand
                 }
             });
         } catch (\Throwable $exception) {
-            if ($exception instanceof RuntimeException) {
+            if ($exception instanceof SystemException) {
                 throw $exception;
             }
 
             $message = $exception->getMessage();
 
             if ($exception instanceof \PDOException) {
-                $message = 'Failed to import database: '.$message;
+                $message = sprintf('Failed to import database: %s', $message);
             }
 
-            throw new RuntimeException($message);
+            throw new SystemException($message);
         } finally {
             if (isset($file, $fclose) && is_resource($file)) {
                 $fclose($file);

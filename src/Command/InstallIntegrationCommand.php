@@ -13,11 +13,7 @@ declare(strict_types=1);
 
 namespace Ymir\Cli\Command;
 
-use Ymir\Cli\ApiClient;
-use Ymir\Cli\CliConfiguration;
-use Ymir\Cli\Project\Configuration\ProjectConfiguration;
-
-class InstallIntegrationCommand extends AbstractProjectCommand
+class InstallIntegrationCommand extends AbstractCommand implements LocalProjectCommandInterface
 {
     /**
      * The name of the command.
@@ -27,30 +23,13 @@ class InstallIntegrationCommand extends AbstractProjectCommand
     public const NAME = 'install-integration';
 
     /**
-     * The project directory where we want to install the plugin.
-     *
-     * @var string
-     */
-    private $projectDirectory;
-
-    /**
-     * Constructor.
-     */
-    public function __construct(ApiClient $apiClient, CliConfiguration $cliConfiguration, ProjectConfiguration $projectConfiguration, string $projectDirectory)
-    {
-        parent::__construct($apiClient, $cliConfiguration, $projectConfiguration);
-
-        $this->projectDirectory = rtrim($projectDirectory, '/');
-    }
-
-    /**
      * {@inheritdoc}
      */
     protected function configure()
     {
         $this
             ->setName(self::NAME)
-            ->setDescription('Installs the Ymir integration for the project');
+            ->setDescription('Install the Ymir integration for the project type');
     }
 
     /**
@@ -58,18 +37,18 @@ class InstallIntegrationCommand extends AbstractProjectCommand
      */
     protected function perform()
     {
-        $projectType = $this->projectConfiguration->getProjectType();
+        $projectType = $this->getProjectConfiguration()->getProjectType();
 
-        if ($projectType->isIntegrationInstalled($this->projectDirectory)) {
-            $this->output->info('Ymir integration already installed');
+        if ($projectType->isIntegrationInstalled($this->getProjectDirectory())) {
+            $this->output->info(sprintf('The Ymir integration for %s is already installed', $projectType->getName()));
 
             return;
         }
 
-        $this->output->info(sprintf('Installing Ymir %s integration', $projectType->getName()));
+        $this->output->info(sprintf('Installing the Ymir integration for %s', $projectType->getName()));
 
-        $projectType->installIntegration($this->projectDirectory);
+        $projectType->installIntegration($this->getProjectDirectory());
 
-        $this->output->info(sprintf('Ymir %s integration installed', $projectType->getName()));
+        $this->output->info(sprintf('Ymir %s integration installed successfully', $projectType->getName()));
     }
 }

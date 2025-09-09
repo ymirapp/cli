@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Ymir\Cli\Command\Database;
 
 use Ymir\Cli\Command\AbstractCommand;
+use Ymir\Cli\Resource\Model\DatabaseServer;
 
 class ListDatabaseServersCommand extends AbstractCommand
 {
@@ -41,18 +42,18 @@ class ListDatabaseServersCommand extends AbstractCommand
     {
         $this->output->table(
             ['Id', 'Name', 'Provider', 'Network', 'Region', 'Status', 'Locked', 'Public', 'Type', 'Storage'],
-            $this->apiClient->getDatabaseServers($this->cliConfiguration->getActiveTeamId())->map(function (array $database) {
+            $this->apiClient->getDatabaseServers($this->getTeam())->map(function (DatabaseServer $databaseServer) {
                 return [
-                    $database['id'],
-                    $database['name'],
-                    $database['network']['provider']['name'],
-                    $database['network']['name'],
-                    $database['region'],
-                    $this->output->formatStatus($database['status']),
-                    $this->output->formatBoolean($database['locked']),
-                    $this->output->formatBoolean($database['publicly_accessible']),
-                    $database['type'],
-                    $database['storage'] ? $database['storage'].'GB' : 'N/A',
+                    $databaseServer->getId(),
+                    $databaseServer->getName(),
+                    $databaseServer->getNetwork()->getProvider()->getName(),
+                    $databaseServer->getNetwork()->getName(),
+                    $databaseServer->getRegion(),
+                    $this->output->formatStatus($databaseServer->getStatus()),
+                    $this->output->formatBoolean($databaseServer->isLocked()),
+                    $this->output->formatBoolean($databaseServer->isPublic()),
+                    $databaseServer->getType(),
+                    $databaseServer->getStorage() ? $databaseServer->getStorage().'GB' : 'N/A',
                 ];
             })->all()
         );

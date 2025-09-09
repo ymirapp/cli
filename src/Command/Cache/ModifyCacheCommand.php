@@ -15,9 +15,12 @@ namespace Ymir\Cli\Command\Cache;
 
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
+use Ymir\Cli\Command\AbstractCommand;
 use Ymir\Cli\Exception\InvalidInputException;
+use Ymir\Cli\Resource\Model\CacheCluster;
+use Ymir\Cli\Resource\Requirement\CacheClusterTypeRequirement;
 
-class ModifyCacheCommand extends AbstractCacheCommand
+class ModifyCacheCommand extends AbstractCommand
 {
     /**
      * The name of the command.
@@ -43,21 +46,19 @@ class ModifyCacheCommand extends AbstractCacheCommand
      */
     protected function perform()
     {
-        $cache = $this->determineCache('Which cache cluster would you like to modify');
-        $type = $this->input->getStringOption('type', true);
-        $types = $this->getCacheTypeDescriptions($cache['provider']['id'], $cache['engine']);
+        $cacheCluster = $this->resolve(CacheCluster::class, 'Which cache cluster would you like to modify?');
+        $newType = $this->fulfill(new CacheClusterTypeRequirement(sprintf('What should the cache cluster type be changed to? <fg=default>(Currently: <comment>%s</comment>)</>', $cacheCluster->getType())), [
+            'engine' => $cacheCluster->getEngine(),
+            'network' => $cacheCluster->getNetwork(),
+        ]);
 
-        if (null === $type) {
-            $type = $this->output->choice(sprintf('What should the cache cluster type be changed to? <fg=default>(Currently: <comment>%s</comment>)</>', $cache['type']), $types);
-        } elseif (!$types->has($type)) {
-            throw new InvalidInputException(sprintf('The type "%s" isn\'t a valid cache cluster type', $type));
+        if ($newType === $cacheCluster->getType()) {
+            throw new InvalidInputException(sprintf('The cache cluster is already a "%s" type', $cacheCluster->getType()));
+        } elseif (!$this->output->warningConfirmation('Modifying the cache cluster will cause your cache cluster to become unavailable for a few minutes')) {
+            return;
         }
 
-        if (!$this->output->confirm('Modifying the cache cluster will cause your cache cluster to become unavailable for a few minutes. Do you want to proceed?', false)) {
-            exit;
-        }
-
-        $this->apiClient->updateCache((int) $cache['id'], $type);
+        $this->apiClient->updateCache($cacheCluster, $newType);
 
         $this->output->infoWithDelayWarning('Cache cluster modified');
     }

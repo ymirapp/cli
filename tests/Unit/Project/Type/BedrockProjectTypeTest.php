@@ -14,20 +14,14 @@ declare(strict_types=1);
 namespace Ymir\Cli\Tests\Unit\Project\Type;
 
 use Symfony\Component\Filesystem\Filesystem;
-use Ymir\Cli\Build;
+use Ymir\Cli\Executable\ComposerExecutable;
+use Ymir\Cli\Project\Build;
+use Ymir\Cli\Project\Initialization;
 use Ymir\Cli\Project\Type\BedrockProjectType;
-use Ymir\Cli\Tests\Mock\ComposerExecutableMockTrait;
-use Ymir\Cli\Tests\Mock\FilesystemMockTrait;
-use Ymir\Cli\Tests\Unit\TestCase;
+use Ymir\Cli\Tests\TestCase;
 
-/**
- * @covers \Ymir\Cli\Project\Type\BedrockProjectType
- */
 class BedrockProjectTypeTest extends TestCase
 {
-    use ComposerExecutableMockTrait;
-    use FilesystemMockTrait;
-
     /**
      * @var string
      */
@@ -76,6 +70,39 @@ class BedrockProjectTypeTest extends TestCase
         ];
     }
 
+    public function testGenerateEnvironmentConfigurationForProduction(): void
+    {
+        $projectType = new BedrockProjectType(\Mockery::mock(ComposerExecutable::class), \Mockery::mock(Filesystem::class));
+
+        $this->assertSame([
+            'architecture' => 'arm64',
+            'gateway' => false,
+            'foo' => 'bar',
+            'build' => [
+                'COMPOSER_MIRROR_PATH_REPOS=1 composer install --no-dev',
+            ],
+        ], $projectType->generateEnvironmentConfiguration('production', ['foo' => 'bar'])->toArray());
+    }
+
+    public function testGenerateEnvironmentConfigurationForStaging(): void
+    {
+        $projectType = new BedrockProjectType(\Mockery::mock(ComposerExecutable::class), \Mockery::mock(Filesystem::class));
+
+        $this->assertSame([
+            'architecture' => 'arm64',
+            'gateway' => false,
+            'foo' => 'bar',
+            'cron' => false,
+            'warmup' => false,
+            'cdn' => [
+                'caching' => 'assets',
+            ],
+            'build' => [
+                'COMPOSER_MIRROR_PATH_REPOS=1 composer install',
+            ],
+        ], $projectType->generateEnvironmentConfiguration('staging', ['foo' => 'bar'])->toArray());
+    }
+
     public function testGetAssetFilesExcludesFilesBelowWebDirectory(): void
     {
         mkdir($this->tempDirectory.'/web', 0777, true);
@@ -85,7 +112,7 @@ class BedrockProjectTypeTest extends TestCase
         touch($keepFilePath);
         touch($this->tempDirectory.'/excluded.txt');
 
-        $projectType = new BedrockProjectType($this->getComposerExecutableMock(), $this->getFilesystemMock());
+        $projectType = new BedrockProjectType(\Mockery::mock(ComposerExecutable::class), \Mockery::mock(Filesystem::class));
 
         $files = iterator_to_array($projectType->getAssetFiles($this->tempDirectory), false);
 
@@ -103,7 +130,7 @@ class BedrockProjectTypeTest extends TestCase
         touch($keepFilePath);
         touch($this->tempDirectory.'/web/wp/wp-content/excluded.txt');
 
-        $projectType = new BedrockProjectType($this->getComposerExecutableMock(), $this->getFilesystemMock());
+        $projectType = new BedrockProjectType(\Mockery::mock(ComposerExecutable::class), \Mockery::mock(Filesystem::class));
 
         $files = iterator_to_array($projectType->getAssetFiles($this->tempDirectory), false);
 
@@ -120,7 +147,7 @@ class BedrockProjectTypeTest extends TestCase
 
         touch($wpContentDirectory.'/excluded.txt');
 
-        $projectType = new BedrockProjectType($this->getComposerExecutableMock(), $this->getFilesystemMock());
+        $projectType = new BedrockProjectType(\Mockery::mock(ComposerExecutable::class), \Mockery::mock(Filesystem::class));
 
         $files = iterator_to_array($projectType->getBuildFiles($this->tempDirectory), false);
 
@@ -137,7 +164,7 @@ class BedrockProjectTypeTest extends TestCase
         touch($this->tempDirectory.'/excluded.txt');
         touch($requiredFile);
 
-        $projectType = new BedrockProjectType($this->getComposerExecutableMock(), $this->getFilesystemMock());
+        $projectType = new BedrockProjectType(\Mockery::mock(ComposerExecutable::class), \Mockery::mock(Filesystem::class));
 
         $files = iterator_to_array($projectType->getBuildFiles($this->tempDirectory), false);
 
@@ -155,7 +182,7 @@ class BedrockProjectTypeTest extends TestCase
         touch($this->tempDirectory.'/excluded.txt');
         touch($blockJsonPath);
 
-        $projectType = new BedrockProjectType($this->getComposerExecutableMock(), $this->getFilesystemMock());
+        $projectType = new BedrockProjectType(\Mockery::mock(ComposerExecutable::class), \Mockery::mock(Filesystem::class));
 
         $files = iterator_to_array($projectType->getBuildFiles($this->tempDirectory), false);
 
@@ -178,7 +205,7 @@ class BedrockProjectTypeTest extends TestCase
         touch($themeDirectory.'/excluded.txt');
         touch($requiredThemeFile);
 
-        $projectType = new BedrockProjectType($this->getComposerExecutableMock(), $this->getFilesystemMock());
+        $projectType = new BedrockProjectType(\Mockery::mock(ComposerExecutable::class), \Mockery::mock(Filesystem::class));
 
         $files = iterator_to_array($projectType->getBuildFiles($this->tempDirectory), false);
 
@@ -201,7 +228,7 @@ class BedrockProjectTypeTest extends TestCase
         touch($this->tempDirectory.'/excluded.txt');
         touch($requiredFile);
 
-        $projectType = new BedrockProjectType($this->getComposerExecutableMock(), $this->getFilesystemMock());
+        $projectType = new BedrockProjectType(\Mockery::mock(ComposerExecutable::class), \Mockery::mock(Filesystem::class));
 
         $files = iterator_to_array($projectType->getBuildFiles($this->tempDirectory), false);
 
@@ -217,7 +244,7 @@ class BedrockProjectTypeTest extends TestCase
         touch($this->tempDirectory.'/excluded.txt');
         touch($wpCliYmlPath);
 
-        $projectType = new BedrockProjectType($this->getComposerExecutableMock(), $this->getFilesystemMock());
+        $projectType = new BedrockProjectType(\Mockery::mock(ComposerExecutable::class), \Mockery::mock(Filesystem::class));
 
         $files = iterator_to_array($projectType->getBuildFiles($this->tempDirectory), false);
 
@@ -226,7 +253,7 @@ class BedrockProjectTypeTest extends TestCase
         $this->assertSame($wpCliYmlPath, $files[0]->getPathname());
     }
 
-    public function testGetBuildSteps()
+    public function testGetBuildSteps(): void
     {
         $this->assertSame([
             Build\CopyProjectFilesStep::class,
@@ -235,49 +262,57 @@ class BedrockProjectTypeTest extends TestCase
             Build\EnsureIntegrationIsInstalledStep::class,
             Build\CopyMustUsePluginStep::class,
             Build\ExtractAssetFilesStep::class,
-        ], (new BedrockProjectType($this->getComposerExecutableMock(), $this->getFilesystemMock()))->getBuildSteps());
+        ], (new BedrockProjectType(\Mockery::mock(ComposerExecutable::class), \Mockery::mock(Filesystem::class)))->getBuildSteps());
     }
 
-    public function testGetEnvironmentConfigurationForProduction(): void
+    public function testGetInitializationSteps(): void
     {
-        $projectType = new BedrockProjectType($this->getComposerExecutableMock(), $this->getFilesystemMock());
-
         $this->assertSame([
-            'architecture' => 'arm64',
-            'foo' => 'bar',
-            'build' => [
-                'COMPOSER_MIRROR_PATH_REPOS=1 composer install --no-dev',
-            ],
-        ], $projectType->getEnvironmentConfiguration('production', ['foo' => 'bar']));
+            Initialization\DatabaseInitializationStep::class,
+            Initialization\CacheInitializationStep::class,
+            Initialization\DockerInitializationStep::class,
+            Initialization\IntegrationInitializationStep::class,
+            Initialization\WordPressConfigurationInitializationStep::class,
+        ], (new BedrockProjectType(\Mockery::mock(ComposerExecutable::class), \Mockery::mock(Filesystem::class)))->getInitializationSteps());
     }
 
-    public function testGetEnvironmentConfigurationForStaging(): void
+    public function testGetInstallationMessage(): void
     {
-        $projectType = new BedrockProjectType($this->getComposerExecutableMock(), $this->getFilesystemMock());
-
-        $this->assertSame([
-            'architecture' => 'arm64',
-            'foo' => 'bar',
-            'cron' => false,
-            'warmup' => false,
-            'cdn' => [
-                'caching' => 'assets',
-            ],
-            'build' => [
-                'COMPOSER_MIRROR_PATH_REPOS=1 composer install',
-            ],
-        ], $projectType->getEnvironmentConfiguration('staging', ['foo' => 'bar']));
+        $this->assertSame('Creating new Bedrock project using Composer', (new BedrockProjectType(\Mockery::mock(ComposerExecutable::class), \Mockery::mock(Filesystem::class)))->getInstallationMessage());
     }
 
-    public function testGetInstallationMessage()
+    public function testGetMediaDirectoryName(): void
     {
-        $this->assertSame('Creating new Bedrock project using Composer', (new BedrockProjectType($this->getComposerExecutableMock(), $this->getFilesystemMock()))->getInstallationMessage());
+        $this->assertSame('uploads', (new BedrockProjectType(\Mockery::mock(ComposerExecutable::class), \Mockery::mock(Filesystem::class)))->getMediaDirectoryName());
+    }
+
+    public function testGetMediaDirectoryPathWithBaseDirectoryEndingWithSlash(): void
+    {
+        $buildDir = '/path/to/build/';
+        $projectType = new BedrockProjectType(\Mockery::mock(ComposerExecutable::class), \Mockery::mock(Filesystem::class));
+
+        $this->assertSame($buildDir.'web/app/uploads', $projectType->getMediaDirectoryPath($buildDir));
+    }
+
+    public function testGetMediaDirectoryPathWithBaseDirectoryNotEndingWithSlash(): void
+    {
+        $buildDir = '/path/to/build';
+        $projectType = new BedrockProjectType(\Mockery::mock(ComposerExecutable::class), \Mockery::mock(Filesystem::class));
+
+        $this->assertSame($buildDir.'/web/app/uploads', $projectType->getMediaDirectoryPath($buildDir));
+    }
+
+    public function testGetMediaDirectoryPathWithoutBasePathReturnsRelativePath(): void
+    {
+        $projectType = new BedrockProjectType(\Mockery::mock(ComposerExecutable::class), \Mockery::mock(Filesystem::class));
+
+        $this->assertSame('web/app/uploads', $projectType->getMediaDirectoryPath());
     }
 
     public function testGetMustUsePluginsDirectoryPathWithBaseDirectoryEndingWithSlash(): void
     {
         $buildDir = '/path/to/build/';
-        $projectType = new BedrockProjectType($this->getComposerExecutableMock(), $this->getFilesystemMock());
+        $projectType = new BedrockProjectType(\Mockery::mock(ComposerExecutable::class), \Mockery::mock(Filesystem::class));
 
         $this->assertSame($buildDir.'web/app/mu-plugins', $projectType->getMustUsePluginsDirectoryPath($buildDir));
     }
@@ -285,27 +320,27 @@ class BedrockProjectTypeTest extends TestCase
     public function testGetMustUsePluginsDirectoryPathWithBaseDirectoryNotEndingWithSlash(): void
     {
         $buildDir = '/path/to/build';
-        $projectType = new BedrockProjectType($this->getComposerExecutableMock(), $this->getFilesystemMock());
+        $projectType = new BedrockProjectType(\Mockery::mock(ComposerExecutable::class), \Mockery::mock(Filesystem::class));
 
         $this->assertSame($buildDir.'/web/app/mu-plugins', $projectType->getMustUsePluginsDirectoryPath($buildDir));
     }
 
     public function testGetMustUsePluginsDirectoryPathWithoutBasePathReturnsRelativePath(): void
     {
-        $projectType = new BedrockProjectType($this->getComposerExecutableMock(), $this->getFilesystemMock());
+        $projectType = new BedrockProjectType(\Mockery::mock(ComposerExecutable::class), \Mockery::mock(Filesystem::class));
 
         $this->assertSame('web/app/mu-plugins', $projectType->getMustUsePluginsDirectoryPath());
     }
 
-    public function testGetName()
+    public function testGetName(): void
     {
-        $this->assertSame('Bedrock', (new BedrockProjectType($this->getComposerExecutableMock(), $this->getFilesystemMock()))->getName());
+        $this->assertSame('Bedrock', (new BedrockProjectType(\Mockery::mock(ComposerExecutable::class), \Mockery::mock(Filesystem::class)))->getName());
     }
 
     public function testGetPluginsDirectoryPathWithBaseDirectoryEndingWithSlash(): void
     {
         $buildDir = '/path/to/build/';
-        $projectType = new BedrockProjectType($this->getComposerExecutableMock(), $this->getFilesystemMock());
+        $projectType = new BedrockProjectType(\Mockery::mock(ComposerExecutable::class), \Mockery::mock(Filesystem::class));
 
         $this->assertSame($buildDir.'web/app/plugins', $projectType->getPluginsDirectoryPath($buildDir));
     }
@@ -313,19 +348,19 @@ class BedrockProjectTypeTest extends TestCase
     public function testGetPluginsDirectoryPathWithBaseDirectoryNotEndingWithSlash(): void
     {
         $buildDir = '/path/to/build';
-        $projectType = new BedrockProjectType($this->getComposerExecutableMock(), $this->getFilesystemMock());
+        $projectType = new BedrockProjectType(\Mockery::mock(ComposerExecutable::class), \Mockery::mock(Filesystem::class));
 
         $this->assertSame($buildDir.'/web/app/plugins', $projectType->getPluginsDirectoryPath($buildDir));
     }
 
     public function testGetPluginsDirectoryPathWithoutBasePathReturnsRelativePath(): void
     {
-        $projectType = new BedrockProjectType($this->getComposerExecutableMock(), $this->getFilesystemMock());
+        $projectType = new BedrockProjectType(\Mockery::mock(ComposerExecutable::class), \Mockery::mock(Filesystem::class));
 
         $this->assertSame('web/app/plugins', $projectType->getPluginsDirectoryPath());
     }
 
-    public function testGetProjectFilesExcludesUploadsDirectory()
+    public function testGetProjectFilesExcludesUploadsDirectory(): void
     {
         mkdir($this->tempDirectory.'/web/app/uploads', 0777, true);
 
@@ -334,7 +369,7 @@ class BedrockProjectTypeTest extends TestCase
         touch($keepFilePath);
         touch($this->tempDirectory.'/web/app/uploads/excluded.txt');
 
-        $projectType = new BedrockProjectType($this->getComposerExecutableMock(), $this->getFilesystemMock());
+        $projectType = new BedrockProjectType(\Mockery::mock(ComposerExecutable::class), \Mockery::mock(Filesystem::class));
 
         $files = iterator_to_array($projectType->getProjectFiles($this->tempDirectory), false);
 
@@ -343,90 +378,63 @@ class BedrockProjectTypeTest extends TestCase
         $this->assertSame($keepFilePath, $files[0]->getPathname());
     }
 
-    public function testGetSlug()
+    public function testGetSlug(): void
     {
-        $this->assertSame('bedrock', (new BedrockProjectType($this->getComposerExecutableMock(), $this->getFilesystemMock()))->getSlug());
+        $this->assertSame('bedrock', (new BedrockProjectType(\Mockery::mock(ComposerExecutable::class), \Mockery::mock(Filesystem::class)))->getSlug());
     }
 
-    public function testGetUploadsDirectoryPathWithBaseDirectoryEndingWithSlash(): void
+    public function testInstallIntegration(): void
     {
-        $buildDir = '/path/to/build/';
-        $projectType = new BedrockProjectType($this->getComposerExecutableMock(), $this->getFilesystemMock());
+        $composerExecutable = \Mockery::mock(ComposerExecutable::class);
 
-        $this->assertSame($buildDir.'web/app/uploads', $projectType->getUploadsDirectoryPath($buildDir));
-    }
-
-    public function testGetUploadsDirectoryPathWithBaseDirectoryNotEndingWithSlash(): void
-    {
-        $buildDir = '/path/to/build';
-        $projectType = new BedrockProjectType($this->getComposerExecutableMock(), $this->getFilesystemMock());
-
-        $this->assertSame($buildDir.'/web/app/uploads', $projectType->getUploadsDirectoryPath($buildDir));
-    }
-
-    public function testGetUploadsDirectoryPathWithoutBasePathReturnsRelativePath(): void
-    {
-        $projectType = new BedrockProjectType($this->getComposerExecutableMock(), $this->getFilesystemMock());
-
-        $this->assertSame('web/app/uploads', $projectType->getUploadsDirectoryPath());
-    }
-
-    public function testInstallIntegration()
-    {
-        $composerExecutable = $this->getComposerExecutableMock();
-
-        $composerExecutable->expects($this->once())
-                           ->method('require')
+        $composerExecutable->shouldReceive('require')->once()
                            ->with($this->identicalTo('ymirapp/wordpress-plugin'), $this->identicalTo('/path/to/project'));
 
-        (new BedrockProjectType($composerExecutable, $this->getFilesystemMock()))->installIntegration('/path/to/project');
+        (new BedrockProjectType($composerExecutable, \Mockery::mock(Filesystem::class)))->installIntegration('/path/to/project');
     }
 
-    public function testInstallProject()
+    public function testInstallProject(): void
     {
-        $composerExecutable = $this->getComposerExecutableMock();
+        $composerExecutable = \Mockery::mock(ComposerExecutable::class);
 
-        $composerExecutable->expects($this->once())
-                           ->method('createProject')
+        $composerExecutable->shouldReceive('createProject')->once()
                            ->with($this->identicalTo('roots/bedrock'), $this->identicalTo('/path/to/project'));
 
-        (new BedrockProjectType($composerExecutable, $this->getFilesystemMock()))->installProject('/path/to/project');
+        (new BedrockProjectType($composerExecutable, \Mockery::mock(Filesystem::class)))->installProject('/path/to/project');
     }
 
     public function testIsEligibleForInstallationReturnsFalseWhenDirectoryIsNotEmpty(): void
     {
         touch($this->tempDirectory.'/dummy.txt');
 
-        $this->assertFalse((new BedrockProjectType($this->getComposerExecutableMock(), $this->getFilesystemMock()))->isEligibleForInstallation($this->tempDirectory));
+        $this->assertFalse((new BedrockProjectType(\Mockery::mock(ComposerExecutable::class), \Mockery::mock(Filesystem::class)))->isEligibleForInstallation($this->tempDirectory));
     }
 
     public function testIsEligibleForInstallationReturnsTrueWhenDirectoryIsEmpty(): void
     {
-        $this->assertTrue((new BedrockProjectType($this->getComposerExecutableMock(), $this->getFilesystemMock()))->isEligibleForInstallation($this->tempDirectory));
+        $this->assertTrue((new BedrockProjectType(\Mockery::mock(ComposerExecutable::class), \Mockery::mock(Filesystem::class)))->isEligibleForInstallation($this->tempDirectory));
     }
 
     public function testIsIntegrationInstalledReturnsFalseWhenWordPressPluginIsNotInstalled(): void
     {
-        $composerExecutable = $this->getComposerExecutableMock();
+        $composerExecutable = \Mockery::mock(ComposerExecutable::class);
 
-        $composerExecutable->expects($this->once())
-                           ->method('isPackageInstalled')
+        $composerExecutable->shouldReceive('isPackageInstalled')->once()
                            ->with($this->identicalTo('ymirapp/wordpress-plugin'), $this->identicalTo($this->tempDirectory))
-                           ->willReturn(false);
+                           ->andReturn(false);
 
-        $this->assertFalse((new BedrockProjectType($composerExecutable, $this->getFilesystemMock()))->isIntegrationInstalled($this->tempDirectory));
+        $this->assertFalse((new BedrockProjectType($composerExecutable, \Mockery::mock(Filesystem::class)))->isIntegrationInstalled($this->tempDirectory));
     }
 
     public function testIsIntegrationInstalledReturnsTrueWhenWordPressPluginIsInstalled(): void
     {
-        $composerExecutable = $this->getComposerExecutableMock();
+        $composerExecutable = \Mockery::mock(ComposerExecutable::class);
 
-        $composerExecutable->expects($this->once())
-                           ->method('isPackageInstalled')
+        $composerExecutable->shouldReceive('isPackageInstalled')->once()
                            ->with($this->identicalTo('ymirapp/wordpress-plugin'), $this->identicalTo($this->tempDirectory))
-                           ->willReturn(true);
+                           ->andReturn(true);
 
-        $this->assertTrue((new BedrockProjectType($composerExecutable, $this->getFilesystemMock()))->isIntegrationInstalled($this->tempDirectory));
+        $this->assertTrue((new BedrockProjectType($composerExecutable, \Mockery::mock(Filesystem::class)))->isIntegrationInstalled($this->tempDirectory));
     }
 
     public function testMatchesProjectReturnsFalseWhenAppDirectoryIsMissing(): void
@@ -437,7 +445,7 @@ class BedrockProjectTypeTest extends TestCase
         touch($this->tempDirectory.'/config/application.php');
         touch($this->tempDirectory.'/web/wp-config.php');
 
-        $this->assertFalse((new BedrockProjectType($this->getComposerExecutableMock(), new Filesystem()))->matchesProject($this->tempDirectory));
+        $this->assertFalse((new BedrockProjectType(\Mockery::mock(ComposerExecutable::class), new Filesystem()))->matchesProject($this->tempDirectory));
     }
 
     public function testMatchesProjectReturnsFalseWhenApplicationConfigIsMissing(): void
@@ -446,7 +454,7 @@ class BedrockProjectTypeTest extends TestCase
 
         touch($this->tempDirectory.'/web/wp-config.php');
 
-        $this->assertFalse((new BedrockProjectType($this->getComposerExecutableMock(), new Filesystem()))->matchesProject($this->tempDirectory));
+        $this->assertFalse((new BedrockProjectType(\Mockery::mock(ComposerExecutable::class), new Filesystem()))->matchesProject($this->tempDirectory));
     }
 
     public function testMatchesProjectReturnsFalseWhenWpConfigIsMissing(): void
@@ -456,7 +464,7 @@ class BedrockProjectTypeTest extends TestCase
 
         touch($this->tempDirectory.'/config/application.php');
 
-        $this->assertFalse((new BedrockProjectType($this->getComposerExecutableMock(), new Filesystem()))->matchesProject($this->tempDirectory));
+        $this->assertFalse((new BedrockProjectType(\Mockery::mock(ComposerExecutable::class), new Filesystem()))->matchesProject($this->tempDirectory));
     }
 
     public function testMatchesProjectReturnsTrueForBedrockStructure(): void
@@ -467,6 +475,6 @@ class BedrockProjectTypeTest extends TestCase
         touch($this->tempDirectory.'/config/application.php');
         touch($this->tempDirectory.'/web/wp-config.php');
 
-        $this->assertTrue((new BedrockProjectType($this->getComposerExecutableMock(), new Filesystem()))->matchesProject($this->tempDirectory));
+        $this->assertTrue((new BedrockProjectType(\Mockery::mock(ComposerExecutable::class), new Filesystem()))->matchesProject($this->tempDirectory));
     }
 }

@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Ymir\Cli\Project\Configuration;
 
+use Ymir\Cli\Project\EnvironmentConfiguration;
 use Ymir\Cli\Project\Type\ProjectTypeInterface;
 
 interface ConfigurationChangeInterface
@@ -20,5 +21,5 @@ interface ConfigurationChangeInterface
     /**
      * Apply the configuration changes.
      */
-    public function apply(array $options, ProjectTypeInterface $projectType): array;
+    public function apply(EnvironmentConfiguration $configuration, ProjectTypeInterface $projectType): EnvironmentConfiguration;
 }

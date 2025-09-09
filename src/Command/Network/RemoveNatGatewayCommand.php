@@ -15,6 +15,8 @@ namespace Ymir\Cli\Command\Network;
 
 use Symfony\Component\Console\Input\InputArgument;
 use Ymir\Cli\Command\AbstractCommand;
+use Ymir\Cli\Exception\Resource\ResourceStateException;
+use Ymir\Cli\Resource\Model\Network;
 
 class RemoveNatGatewayCommand extends AbstractCommand
 {
@@ -41,8 +43,14 @@ class RemoveNatGatewayCommand extends AbstractCommand
      */
     protected function perform()
     {
-        $this->apiClient->removeNatGateway($this->determineNetwork('Which network would like to remove the NAT gateway from'));
+        $network = $this->resolve(Network::class, 'Which network would you like to remove the NAT gateway from?');
 
-        $this->output->infoWithDelayWarning('NAT gateway removed');
+        if (!$network->hasNatGateway()) {
+            throw new ResourceStateException(sprintf('The "%s" network doesn\'t have a NAT gateway', $network->getName()));
+        }
+
+        $this->apiClient->removeNatGateway($network);
+
+        $this->output->infoWithDelayWarning(sprintf('NAT gateway removed from the "%s" network', $network->getName()));
     }
 }

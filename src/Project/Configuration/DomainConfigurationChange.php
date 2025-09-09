@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Ymir\Cli\Project\Configuration;
 
+use Ymir\Cli\Project\EnvironmentConfiguration;
 use Ymir\Cli\Project\Type\ProjectTypeInterface;
 
 class DomainConfigurationChange implements ConfigurationChangeInterface
@@ -35,14 +36,16 @@ class DomainConfigurationChange implements ConfigurationChangeInterface
     /**
      * {@inheritdoc}
      */
-    public function apply(array $options, ProjectTypeInterface $projectType): array
+    public function apply(EnvironmentConfiguration $configuration, ProjectTypeInterface $projectType): EnvironmentConfiguration
     {
-        if (empty($options['domain'])) {
-            $options['domain'] = $this->domain;
-        } elseif (is_array($options['domain']) || (is_string($options['domain']) && strtolower($options['domain']) !== strtolower($this->domain))) {
-            $options['domain'] = collect((array) $this->domain)->merge($options['domain'])->unique()->values()->all();
-        }
+        $domains = collect($configuration->getDomains())
+            ->push($this->domain)
+            ->unique(function (string $domain): string {
+                return strtolower($domain);
+            })
+            ->values()
+            ->all();
 
-        return $options;
+        return $configuration->with(['domain' => 1 === count($domains) ? reset($domains) : $domains]);
     }
 }

@@ -13,17 +13,19 @@ declare(strict_types=1);
 
 namespace Ymir\Cli\Command\Cache;
 
-use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
 use Ymir\Cli\ApiClient;
-use Ymir\Cli\CliConfiguration;
+use Ymir\Cli\Command\AbstractCommand;
 use Ymir\Cli\Command\Network\AddBastionHostCommand;
+use Ymir\Cli\Exception\InvalidInputException;
+use Ymir\Cli\Exception\Resource\ResourceStateException;
 use Ymir\Cli\Executable\SshExecutable;
-use Ymir\Cli\Project\Configuration\ProjectConfiguration;
-use Ymir\Cli\Support\Arr;
+use Ymir\Cli\ExecutionContextFactory;
+use Ymir\Cli\Resource\Model\BastionHost;
+use Ymir\Cli\Resource\Model\CacheCluster;
 
-class CacheTunnelCommand extends AbstractCacheCommand
+class CacheTunnelCommand extends AbstractCommand
 {
     /**
      * The name of the command.
@@ -37,14 +39,14 @@ class CacheTunnelCommand extends AbstractCacheCommand
      *
      * @var SshExecutable
      */
-    protected $sshExecutable;
+    private $sshExecutable;
 
     /**
      * Constructor.
      */
-    public function __construct(ApiClient $apiClient, CliConfiguration $cliConfiguration, ProjectConfiguration $projectConfiguration, SshExecutable $sshExecutable)
+    public function __construct(ApiClient $apiClient, ExecutionContextFactory $contextFactory, SshExecutable $sshExecutable)
     {
-        parent::__construct($apiClient, $cliConfiguration, $projectConfiguration);
+        parent::__construct($apiClient, $contextFactory);
 
         $this->sshExecutable = $sshExecutable;
     }
@@ -66,29 +68,32 @@ class CacheTunnelCommand extends AbstractCacheCommand
      */
     protected function perform()
     {
-        $cache = $this->determineCache('Which cache cluster would you like to connect to');
-
-        if ('available' !== $cache['status']) {
-            throw new RuntimeException(sprintf('The "%s" cache isn\'t available', $cache['name']));
-        }
-
-        $network = $this->apiClient->getNetwork(Arr::get($cache, 'network.id'));
-
-        if (!is_array($network->get('bastion_host'))) {
-            throw new RuntimeException(sprintf('The cache network does\'t have a bastion host to connect to. You can add one to the network with the "%s" command.', AddBastionHostCommand::NAME));
-        }
-
+        $cacheCluster = $this->resolve(CacheCluster::class, 'Which cache cluster would you like to connect to?');
         $localPort = (int) $this->input->getNumericOption('port');
 
-        if (6379 === $localPort) {
-            throw new RuntimeException('Cannot use port 6379 as the local port for the SSH tunnel to the cache cluster');
+        if ('available' !== $cacheCluster->getStatus()) {
+            throw new InvalidInputException(sprintf('The "%s" cache cluster isn\'t available', $cacheCluster->getName()));
+        } elseif (empty($localPort)) {
+            throw new InvalidInputException('You must provide a valid "port" option');
+        } elseif (6379 === $localPort) {
+            throw new InvalidInputException('Cannot use port 6379 as the local port for the SSH tunnel to the cache cluster');
         }
 
-        $this->output->info(sprintf('Creating SSH tunnel to the "<comment>%s</comment>" cache cluster. You can connect using: <comment>localhost:%s</comment>', $cache['name'], $localPort));
+        $network = $cacheCluster->getNetwork();
 
-        $tunnel = $this->sshExecutable->openTunnelToBastionHost($network->get('bastion_host'), $localPort, $cache['endpoint'], 6379);
+        if (!$network->getBastionHost() instanceof BastionHost) {
+            throw new ResourceStateException(sprintf('The cache cluster network doesn\'t have a bastion host to connect to, but you can add one to the network with the "%s" command', AddBastionHostCommand::NAME));
+        }
 
-        $this->output->info('Once finished, press "<comment>Ctrl+C</comment>" to close the tunnel');
+        $this->output->info(sprintf('Opening SSH tunnel to the "<comment>%s</comment>" cache cluster...', $cacheCluster->getName()));
+
+        $tunnel = $this->sshExecutable->openTunnelToBastionHost($network->getBastionHost(), $localPort, $cacheCluster->getEndpoint(), 6379);
+
+        $this->output->newLine();
+        $this->output->info(sprintf('SSH tunnel to the "<comment>%s</comment>" cache cluster opened', $cacheCluster->getName()));
+        $this->output->writeln(sprintf('<info>Local endpoint:</info> 127.0.0.1:%s', $localPort));
+        $this->output->newLine();
+        $this->output->writeln('The tunnel will remain open as long as this command is running. Press <comment>Ctrl+C</comment> to close the tunnel.');
 
         $tunnel->wait();
     }

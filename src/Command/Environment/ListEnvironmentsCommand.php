@@ -13,9 +13,12 @@ declare(strict_types=1);
 
 namespace Ymir\Cli\Command\Environment;
 
-use Ymir\Cli\Command\AbstractProjectCommand;
+use Symfony\Component\Console\Input\InputArgument;
+use Ymir\Cli\Command\AbstractCommand;
+use Ymir\Cli\Resource\Model\Environment;
+use Ymir\Cli\Resource\Model\Project;
 
-class ListEnvironmentsCommand extends AbstractProjectCommand
+class ListEnvironmentsCommand extends AbstractCommand
 {
     /**
      * The name of the command.
@@ -31,7 +34,8 @@ class ListEnvironmentsCommand extends AbstractProjectCommand
     {
         $this
             ->setName(self::NAME)
-            ->setDescription('List the project\'s environments');
+            ->setDescription('List the project environments')
+            ->addArgument('project', InputArgument::OPTIONAL, 'The ID or name of the project to list the environments of');
     }
 
     /**
@@ -39,10 +43,12 @@ class ListEnvironmentsCommand extends AbstractProjectCommand
      */
     protected function perform()
     {
+        $project = $this->resolve(Project::class, 'Which project would you like to list the environments for?');
+
         $this->output->table(
             ['Id', 'Name', 'URL'],
-            $this->apiClient->getEnvironments($this->projectConfiguration->getProjectId())->map(function (array $environment) {
-                return [$environment['id'], $environment['name'], 'https://'.$environment['vanity_domain_name']];
+            $this->apiClient->getEnvironments($project)->map(function (Environment $environment) {
+                return [$environment->getId(), $environment->getName(), 'https://'.$environment->getVanityDomainName()];
             })->all()
         );
     }

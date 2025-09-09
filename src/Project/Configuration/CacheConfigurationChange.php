@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Ymir\Cli\Project\Configuration;
 
+use Ymir\Cli\Project\EnvironmentConfiguration;
 use Ymir\Cli\Project\Type\ProjectTypeInterface;
 
 class CacheConfigurationChange implements ConfigurationChangeInterface
@@ -35,8 +36,8 @@ class CacheConfigurationChange implements ConfigurationChangeInterface
     /**
      * {@inheritdoc}
      */
-    public function apply(array $options, ProjectTypeInterface $projectType): array
+    public function apply(EnvironmentConfiguration $configuration, ProjectTypeInterface $projectType): EnvironmentConfiguration
     {
-        return array_merge($options, ['cache' => $this->cache]);
+        return $configuration->with(['cache' => $this->cache]);
     }
 }

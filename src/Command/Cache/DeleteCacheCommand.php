@@ -14,9 +14,11 @@ declare(strict_types=1);
 namespace Ymir\Cli\Command\Cache;
 
 use Symfony\Component\Console\Input\InputArgument;
+use Ymir\Cli\Command\AbstractCommand;
 use Ymir\Cli\Command\Network\RemoveNatGatewayCommand;
+use Ymir\Cli\Resource\Model\CacheCluster;
 
-class DeleteCacheCommand extends AbstractCacheCommand
+class DeleteCacheCommand extends AbstractCommand
 {
     /**
      * The name of the command.
@@ -41,13 +43,13 @@ class DeleteCacheCommand extends AbstractCacheCommand
      */
     protected function perform()
     {
-        $cache = $this->determineCache('Which cache cluster would you like to delete');
+        $cacheCluster = $this->resolve(CacheCluster::class, 'Which cache cluster would you like to delete?');
 
-        if (!$this->output->confirm('Are you sure you want to delete this cache cluster?', false)) {
+        if (!$this->output->confirm(sprintf('Are you sure you want to delete the "%s" cache cluster?', $cacheCluster->getName()), false)) {
             return;
         }
 
-        $this->apiClient->deleteCache($cache['id']);
+        $this->apiClient->deleteCache($cacheCluster);
 
         $this->output->infoWithDelayWarning('Cache cluster deleted');
         $this->output->newLine();

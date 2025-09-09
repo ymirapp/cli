@@ -13,9 +13,9 @@ declare(strict_types=1);
 
 namespace Ymir\Cli\Command\Project;
 
-use Illuminate\Support\Collection;
-use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Input\InputArgument;
+use Ymir\Cli\Exception\Project\DeploymentFailedException;
+use Ymir\Cli\Resource\Model\Deployment;
 
 class RedeployProjectCommand extends AbstractProjectDeploymentCommand
 {
@@ -42,21 +42,29 @@ class RedeployProjectCommand extends AbstractProjectDeploymentCommand
             ->setName(self::NAME)
             ->setDescription('Redeploy project to an environment')
             ->setAliases([self::ALIAS])
-            ->addArgument('environment', InputArgument::OPTIONAL, 'The name of the environment to redeploy', 'staging');
+            ->addArgument('environment', InputArgument::OPTIONAL, 'The name of the environment to redeploy');
     }
 
     /**
      * {@inheritdoc}
      */
-    protected function createDeployment(): Collection
+    protected function createDeployment(): Deployment
     {
-        $redeployment = $this->apiClient->createRedeployment($this->projectConfiguration->getProjectId(), $this->input->getStringArgument('environment'));
+        $redeployment = $this->apiClient->createRedeployment($this->getProject(), $this->getEnvironment());
 
-        if (!$redeployment->has('id')) {
-            throw new RuntimeException('There was an error creating the redeployment');
+        if (!$redeployment->getId()) {
+            throw new DeploymentFailedException('There was an error creating the redeployment');
         }
 
         return $redeployment;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function getEnvironmentQuestion(): string
+    {
+        return 'Which <comment>%s</comment> environment would you like to redeploy?';
     }
 
     /**

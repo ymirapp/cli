@@ -43,7 +43,7 @@ class BeaverBuilderConfigurationChange extends AbstractWordPressConfigurationCha
     /**
      * {@inheritdoc}
      */
-    protected function getOptionsToMerge(): array
+    protected function getConfiguration(): array
     {
         return [
             'cdn' => [

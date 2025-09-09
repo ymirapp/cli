@@ -15,8 +15,10 @@ namespace Ymir\Cli\Command\Certificate;
 
 use Symfony\Component\Console\Helper\TableSeparator;
 use Symfony\Component\Console\Input\InputArgument;
+use Ymir\Cli\Command\AbstractCommand;
+use Ymir\Cli\Resource\Model\Certificate;
 
-class GetCertificateInfoCommand extends AbstractCertificateCommand
+class GetCertificateInfoCommand extends AbstractCommand
 {
     /**
      * The name of the command.
@@ -33,7 +35,7 @@ class GetCertificateInfoCommand extends AbstractCertificateCommand
         $this
             ->setName(self::NAME)
             ->setDescription('Get information on an SSL certificate')
-            ->addArgument('certificate', InputArgument::REQUIRED, 'The ID of the SSL certificate to fetch the information of');
+            ->addArgument('certificate', InputArgument::OPTIONAL, 'The ID of the SSL certificate to fetch the information of');
     }
 
     /**
@@ -41,14 +43,14 @@ class GetCertificateInfoCommand extends AbstractCertificateCommand
      */
     protected function perform()
     {
-        $certificate = $this->apiClient->getCertificate($this->getCertificateArgument());
+        $certificate = $this->resolve(Certificate::class, 'Which SSL certificate would you like to get information about?');
 
         $this->output->horizontalTable(
             ['Domains', new TableSeparator(), 'Provider', 'Region', new TableSeparator(), 'Status', 'In Use'],
-            [[implode(PHP_EOL, $this->getDomainNames($certificate['domains'])), new TableSeparator(), $certificate['provider']['name'], $certificate['region'], new TableSeparator(), $certificate['status'], $this->output->formatBoolean($certificate['in_use'])]]
+            [[implode(PHP_EOL, $this->getDomainNames($certificate->getDomains())), new TableSeparator(), $certificate->getProvider()->getName(), $certificate->getRegion(), new TableSeparator(), $certificate->getStatus(), $this->output->formatBoolean($certificate->isInUse())]]
         );
 
-        $validationRecords = $this->parseCertificateValidationRecords($certificate);
+        $validationRecords = $certificate->getValidationRecords();
 
         if (!empty($validationRecords)) {
             $this->output->newLine();

@@ -15,16 +15,10 @@ namespace Ymir\Cli\Tests\Unit\Project\Type;
 
 use Symfony\Component\Filesystem\Filesystem;
 use Ymir\Cli\Project\Type\AbstractWordPressProjectType;
-use Ymir\Cli\Tests\Mock\FilesystemMockTrait;
-use Ymir\Cli\Tests\Unit\TestCase;
+use Ymir\Cli\Tests\TestCase;
 
-/**
- * @covers \Ymir\Cli\Project\Type\AbstractWordPressProjectType
- */
 class AbstractWordPressProjectTypeTest extends TestCase
 {
-    use FilesystemMockTrait;
-
     private $tempDirectory;
 
     protected function setUp(): void
@@ -41,66 +35,67 @@ class AbstractWordPressProjectTypeTest extends TestCase
         (new Filesystem())->remove($this->tempDirectory);
     }
 
-    public function testGetAssetFilesFiltersOutMoFiles()
+    public function testGenerateEnvironmentConfigurationForStaging(): void
     {
-        $keepFilePath = $this->tempDirectory.'/keep.txt';
-
-        touch($keepFilePath);
-        touch($this->tempDirectory.'/translation.mo');
-
-        $projectType = $this->getMockForAbstractClass(AbstractWordPressProjectType::class, [$this->getFilesystemMock()]);
-
-        $files = iterator_to_array($projectType->getAssetFiles($this->tempDirectory), false);
-
-        $this->assertCount(1, $files);
-
-        $this->assertSame($keepFilePath, $files[0]->getPathname());
-    }
-
-    public function testGetAssetFilesFiltersOutPhpFiles()
-    {
-        $keepFilePath = $this->tempDirectory.'/keep.txt';
-
-        touch($keepFilePath);
-        touch($this->tempDirectory.'/index.php');
-
-        $projectType = $this->getMockForAbstractClass(AbstractWordPressProjectType::class, [$this->getFilesystemMock()]);
-
-        $files = iterator_to_array($projectType->getAssetFiles($this->tempDirectory), false);
-
-        $this->assertCount(1, $files);
-
-        $this->assertSame($keepFilePath, $files[0]->getPathname());
-    }
-
-    public function testGetAssetFilesFiltersOutPoFiles()
-    {
-        $keepFilePath = $this->tempDirectory.'/keep.txt';
-
-        touch($keepFilePath);
-        touch($this->tempDirectory.'/language.po');
-
-        $projectType = $this->getMockForAbstractClass(AbstractWordPressProjectType::class, [$this->getFilesystemMock()]);
-
-        $files = iterator_to_array($projectType->getAssetFiles($this->tempDirectory), false);
-
-        $this->assertCount(1, $files);
-
-        $this->assertSame($keepFilePath, $files[0]->getPathname());
-    }
-
-    public function testGetEnvironmentConfigurationForStaging(): void
-    {
-        $projectType = $this->getMockForAbstractClass(AbstractWordPressProjectType::class, [$this->getFilesystemMock()]);
+        $projectType = $this->getMockForAbstractClass(AbstractWordPressProjectType::class, [\Mockery::mock(Filesystem::class)]);
 
         $this->assertSame([
             'architecture' => 'arm64',
+            'gateway' => false,
             'foo' => 'bar',
             'cron' => false,
             'warmup' => false,
             'cdn' => [
                 'caching' => 'assets',
             ],
-        ], $projectType->getEnvironmentConfiguration('staging', ['foo' => 'bar']));
+        ], $projectType->generateEnvironmentConfiguration('staging', ['foo' => 'bar'])->toArray());
+    }
+
+    public function testGetAssetFilesFiltersOutMoFiles(): void
+    {
+        $keepFilePath = $this->tempDirectory.'/keep.txt';
+
+        touch($keepFilePath);
+        touch($this->tempDirectory.'/translation.mo');
+
+        $projectType = $this->getMockForAbstractClass(AbstractWordPressProjectType::class, [\Mockery::mock(Filesystem::class)]);
+
+        $files = iterator_to_array($projectType->getAssetFiles($this->tempDirectory), false);
+
+        $this->assertCount(1, $files);
+
+        $this->assertSame($keepFilePath, $files[0]->getPathname());
+    }
+
+    public function testGetAssetFilesFiltersOutPhpFiles(): void
+    {
+        $keepFilePath = $this->tempDirectory.'/keep.txt';
+
+        touch($keepFilePath);
+        touch($this->tempDirectory.'/index.php');
+
+        $projectType = $this->getMockForAbstractClass(AbstractWordPressProjectType::class, [\Mockery::mock(Filesystem::class)]);
+
+        $files = iterator_to_array($projectType->getAssetFiles($this->tempDirectory), false);
+
+        $this->assertCount(1, $files);
+
+        $this->assertSame($keepFilePath, $files[0]->getPathname());
+    }
+
+    public function testGetAssetFilesFiltersOutPoFiles(): void
+    {
+        $keepFilePath = $this->tempDirectory.'/keep.txt';
+
+        touch($keepFilePath);
+        touch($this->tempDirectory.'/language.po');
+
+        $projectType = $this->getMockForAbstractClass(AbstractWordPressProjectType::class, [\Mockery::mock(Filesystem::class)]);
+
+        $files = iterator_to_array($projectType->getAssetFiles($this->tempDirectory), false);
+
+        $this->assertCount(1, $files);
+
+        $this->assertSame($keepFilePath, $files[0]->getPathname());
     }
 }

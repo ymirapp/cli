@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace Ymir\Cli\Command\Team;
 
-use Symfony\Component\Console\Exception\RuntimeException;
 use Ymir\Cli\Command\AbstractCommand;
 
 class CurrentTeamCommand extends AbstractCommand
@@ -40,26 +39,17 @@ class CurrentTeamCommand extends AbstractCommand
      */
     protected function perform()
     {
-        $team = $this->apiClient->getTeam($this->cliConfiguration->getActiveTeamId());
-
-        if (!isset($team['id'], $team['name'])) {
-            throw new RuntimeException('Unable to get the details on your currently active team');
-        }
-
+        $team = $this->getTeam();
         $user = $this->apiClient->getAuthenticatedUser();
 
         $this->output->info('Your currently active team is:');
         $this->output->horizontalTable(
             ['Id', 'Name', 'Owner'],
-            [$team->only(['id', 'name', 'owner'])->mapWithKeys(function ($value, $key) use ($user) {
-                if ('owner' == $key && $value['id'] === $user['id']) {
-                    $value = 'You';
-                } elseif ('owner' == $key && $value['id'] !== $user['id']) {
-                    $value = $value['name'];
-                }
-
-                return [$key => $value];
-            })->all()]
+            [[
+                $team->getId(),
+                $team->getName(),
+                $team->getOwner()->getId() === $user->getId() ? 'You' : $team->getOwner()->getName(),
+            ]]
         );
     }
 }

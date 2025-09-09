@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Ymir\Cli\Command\Cache;
 
 use Ymir\Cli\Command\AbstractCommand;
+use Ymir\Cli\Resource\Model\CacheCluster;
 
 class ListCachesCommand extends AbstractCommand
 {
@@ -41,16 +42,16 @@ class ListCachesCommand extends AbstractCommand
     {
         $this->output->table(
             ['Id', 'Name', 'Provider', 'Network', 'Region', 'Status', 'Engine', 'Type'],
-            $this->apiClient->getCaches($this->cliConfiguration->getActiveTeamId())->map(function (array $cache) {
+            $this->apiClient->getCaches($this->getTeam())->map(function (CacheCluster $cache) {
                 return [
-                    $cache['id'],
-                    $cache['name'],
-                    $cache['network']['provider']['name'],
-                    $cache['network']['name'],
-                    $cache['region'],
-                    $this->output->formatStatus($cache['status']),
-                    $cache['engine'],
-                    $cache['type'],
+                    $cache->getId(),
+                    $cache->getName(),
+                    $cache->getNetwork()->getProvider()->getName(),
+                    $cache->getNetwork()->getName(),
+                    $cache->getRegion(),
+                    $this->output->formatStatus($cache->getStatus()),
+                    $cache->getEngine(),
+                    $cache->getType(),
                 ];
             })->all()
         );

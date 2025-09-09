@@ -14,9 +14,15 @@ declare(strict_types=1);
 namespace Ymir\Cli\Project\Type;
 
 use Symfony\Component\Finder\Finder;
+use Ymir\Cli\Project\EnvironmentConfiguration;
 
 interface ProjectTypeInterface
 {
+    /**
+     * Generate the configuration for the project type for the given environment.
+     */
+    public function generateEnvironmentConfiguration(string $environment, array $baseConfiguration = []): EnvironmentConfiguration;
+
     /**
      * Get the Finder object for finding all the asset files that we have to extract in the given project directory.
      */
@@ -33,9 +39,9 @@ interface ProjectTypeInterface
     public function getBuildSteps(): array;
 
     /**
-     * Get the configuration for the project type for the given environment.
+     * Get the initialization steps when initializing the project type.
      */
-    public function getEnvironmentConfiguration(string $environment, array $baseConfiguration = []): array;
+    public function getInitializationSteps(): array;
 
     /**
      * Get the project type name.
@@ -55,7 +61,7 @@ interface ProjectTypeInterface
     /**
      * Install the Ymir integration in the given project directory.
      */
-    public function installIntegration(string $projectDirectory);
+    public function installIntegration(string $projectDirectory): void;
 
     /**
      * Check if the Ymir integration is installed in the given project directory.

@@ -16,6 +16,7 @@ namespace Ymir\Cli\Command\Network;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
 use Ymir\Cli\Command\AbstractCommand;
+use Ymir\Cli\Resource\Model\Network;
 
 class CreateNetworkCommand extends AbstractCommand
 {
@@ -35,7 +36,7 @@ class CreateNetworkCommand extends AbstractCommand
             ->setName(self::NAME)
             ->setDescription('Create a new network')
             ->addArgument('name', InputArgument::OPTIONAL, 'The name of the network')
-            ->addOption('provider', null, InputOption::VALUE_REQUIRED, 'The cloud provider region where the network will created')
+            ->addOption('provider', null, InputOption::VALUE_REQUIRED, 'The ID of the cloud provider region where the network will created')
             ->addOption('region', null, InputOption::VALUE_REQUIRED, 'The cloud provider region where the network will be located');
     }
 
@@ -44,15 +45,7 @@ class CreateNetworkCommand extends AbstractCommand
      */
     protected function perform()
     {
-        $name = $this->input->getStringArgument('name');
-
-        if (empty($name)) {
-            $name = $this->output->ask('What is the name of the network being created');
-        }
-
-        $providerId = $this->determineCloudProvider('Enter the ID of the cloud provider where the DNS zone will be created');
-
-        $this->apiClient->createNetwork($providerId, $name, $this->determineRegion('Enter the name of the region where the network will be created', $providerId));
+        $this->provision(Network::class);
 
         $this->output->infoWithDelayWarning('Network created');
     }

@@ -14,9 +14,7 @@ declare(strict_types=1);
 namespace Ymir\Cli;
 
 use Illuminate\Support\Collection;
-use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Filesystem\Filesystem;
-use Ymir\Cli\Command\Team\SelectTeamCommand;
 
 class CliConfiguration
 {
@@ -76,13 +74,9 @@ class CliConfiguration
     /**
      * Get the active team ID from the global configuration file.
      */
-    public function getActiveTeamId(): int
+    public function getActiveTeamId(): ?int
     {
-        if (!$this->hasActiveTeam()) {
-            throw new RuntimeException(sprintf('Please select a team using the "%s" command', SelectTeamCommand::NAME));
-        }
-
-        return (int) $this->get('active_team');
+        return $this->hasActiveTeam() ? (int) $this->get('active_team') : null;
     }
 
     /**
@@ -120,7 +114,7 @@ class CliConfiguration
     /**
      * Set the access token in the global configuration file.
      */
-    public function setAccessToken(string $token)
+    public function setAccessToken(string $token): void
     {
         $this->set('token', $token);
     }
@@ -128,7 +122,7 @@ class CliConfiguration
     /**
      * Set the active team ID in the global configuration file.
      */
-    public function setActiveTeamId(int $teamId)
+    public function setActiveTeamId(int $teamId): void
     {
         $this->set('active_team', $teamId);
     }
@@ -136,7 +130,7 @@ class CliConfiguration
     /**
      * Set the CLI version on GitHub.
      */
-    public function setGitHubCliVersion(string $version)
+    public function setGitHubCliVersion(string $version): void
     {
         $this->set('github_cli_version', $version);
     }
@@ -144,7 +138,7 @@ class CliConfiguration
     /**
      * Set the timestamp when GitHub was last checked for a CLI update.
      */
-    public function setGitHubLastCheckedTimestamp(int $timestamp)
+    public function setGitHubLastCheckedTimestamp(int $timestamp): void
     {
         $this->set('github_last_checked', $timestamp);
     }
@@ -182,7 +176,7 @@ class CliConfiguration
     /**
      * Set the configuration option.
      */
-    private function set(string $option, $value)
+    private function set(string $option, $value): void
     {
         $this->options[$option] = $value;
     }

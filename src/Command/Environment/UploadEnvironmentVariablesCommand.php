@@ -13,15 +13,16 @@ declare(strict_types=1);
 
 namespace Ymir\Cli\Command\Environment;
 
-use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Filesystem\Filesystem;
 use Ymir\Cli\ApiClient;
-use Ymir\Cli\CliConfiguration;
-use Ymir\Cli\Command\AbstractProjectCommand;
-use Ymir\Cli\Project\Configuration\ProjectConfiguration;
+use Ymir\Cli\Command\AbstractCommand;
+use Ymir\Cli\Command\LocalProjectCommandInterface;
+use Ymir\Cli\Exception\Resource\ResourceStateException;
+use Ymir\Cli\ExecutionContextFactory;
+use Ymir\Cli\Resource\Model\Environment;
 
-class UploadEnvironmentVariablesCommand extends AbstractProjectCommand
+class UploadEnvironmentVariablesCommand extends AbstractCommand implements LocalProjectCommandInterface
 {
     /**
      * The name of the command.
@@ -38,21 +39,13 @@ class UploadEnvironmentVariablesCommand extends AbstractProjectCommand
     private $filesystem;
 
     /**
-     * The project directory where the project files are copied from.
-     *
-     * @var string
-     */
-    private $projectDirectory;
-
-    /**
      * Constructor.
      */
-    public function __construct(ApiClient $apiClient, CliConfiguration $cliConfiguration, Filesystem $filesystem, ProjectConfiguration $projectConfiguration, string $projectDirectory)
+    public function __construct(ApiClient $apiClient, ExecutionContextFactory $contextFactory, Filesystem $filesystem)
     {
-        parent::__construct($apiClient, $cliConfiguration, $projectConfiguration);
+        parent::__construct($apiClient, $contextFactory);
 
         $this->filesystem = $filesystem;
-        $this->projectDirectory = rtrim($projectDirectory, '/');
     }
 
     /**
@@ -63,7 +56,7 @@ class UploadEnvironmentVariablesCommand extends AbstractProjectCommand
         $this
             ->setName(self::NAME)
             ->setDescription('Upload the environment variables in an environment file to an environment')
-            ->addArgument('environment', InputArgument::OPTIONAL, 'The name of the environment to upload environment variables to', 'staging');
+            ->addArgument('environment', InputArgument::OPTIONAL, 'The name of the environment to upload environment variables to');
     }
 
     /**
@@ -71,24 +64,25 @@ class UploadEnvironmentVariablesCommand extends AbstractProjectCommand
      */
     protected function perform()
     {
-        $environment = $this->input->getStringArgument('environment');
-        $fileName = sprintf('.env.%s', $environment);
-        $filePath = $this->projectDirectory.'/'.$fileName;
+        $environment = $this->resolve(Environment::class, 'Which <comment>%s</comment> environment would you like to upload environment variables to?');
+
+        $fileName = sprintf('.env.%s', $environment->getName());
+        $filePath = $this->getProjectDirectory().'/'.$fileName;
 
         if (!$this->filesystem->exists($filePath)) {
-            throw new RuntimeException(sprintf('No environment file found for the "%s" environment. Please download it using the "%s" command.', $environment, DownloadEnvironmentVariablesCommand::NAME));
+            throw new ResourceStateException(sprintf('No environment file found for the "%s" environment, but you can download it using the "%s" command', $environment->getName(), DownloadEnvironmentVariablesCommand::NAME));
         } elseif (!$this->output->confirm('Uploading the environment file will overwrite all environment variables. Are you sure you want to proceed?', false)) {
             return;
         }
 
-        $this->apiClient->changeEnvironmentVariables($this->projectConfiguration->getProjectId(), $environment, collect(explode(PHP_EOL, (string) file_get_contents($filePath)))->mapWithKeys(function (string $line) {
+        $this->apiClient->changeEnvironmentVariables($this->getProject(), $environment, collect(explode(PHP_EOL, (string) file_get_contents($filePath)))->mapWithKeys(function (string $line) {
             $matches = [];
             preg_match('/([^=]*)=(.*)/', $line, $matches);
 
             return isset($matches[1], $matches[2]) ? [$matches[1] => $matches[2]] : [];
         })->all(), true);
 
-        $this->output->infoWithRedeployWarning('Environment variables uploaded', $environment);
+        $this->output->infoWithRedeployWarning('Environment variables uploaded', $environment->getName());
 
         if ($this->output->confirm(sprintf('Do you want to delete the "<comment>%s</comment>" environment file?', $fileName))) {
             $this->filesystem->remove($filePath);

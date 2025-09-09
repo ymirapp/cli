@@ -13,17 +13,12 @@ declare(strict_types=1);
 
 namespace Ymir\Cli\Command\Database;
 
-use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
-use Ymir\Cli\ApiClient;
-use Ymir\Cli\CliConfiguration;
-use Ymir\Cli\Command\Network\AddBastionHostCommand;
-use Ymir\Cli\Executable\SshExecutable;
-use Ymir\Cli\Project\Configuration\ProjectConfiguration;
-use Ymir\Cli\Support\Arr;
+use Ymir\Cli\Exception\InvalidInputException;
+use Ymir\Cli\Resource\Model\DatabaseServer;
 
-class DatabaseServerTunnelCommand extends AbstractDatabaseServerCommand
+class DatabaseServerTunnelCommand extends AbstractDatabaseTunnelCommand
 {
     /**
      * The name of the command.
@@ -31,23 +26,6 @@ class DatabaseServerTunnelCommand extends AbstractDatabaseServerCommand
      * @var string
      */
     public const NAME = 'database:server:tunnel';
-
-    /**
-     * The SSH executable.
-     *
-     * @var SshExecutable
-     */
-    protected $sshExecutable;
-
-    /**
-     * Constructor.
-     */
-    public function __construct(ApiClient $apiClient, CliConfiguration $cliConfiguration, ProjectConfiguration $projectConfiguration, SshExecutable $sshExecutable)
-    {
-        parent::__construct($apiClient, $cliConfiguration, $projectConfiguration);
-
-        $this->sshExecutable = $sshExecutable;
-    }
 
     /**
      * {@inheritdoc}
@@ -66,31 +44,20 @@ class DatabaseServerTunnelCommand extends AbstractDatabaseServerCommand
      */
     protected function perform()
     {
-        $databaseServer = $this->determineDatabaseServer('Which database server would you like to connect to');
-
-        if ('available' !== $databaseServer['status']) {
-            throw new RuntimeException(sprintf('The "%s" database server isn\'t available', $databaseServer['name']));
-        } elseif ($databaseServer['publicly_accessible']) {
-            throw new RuntimeException(sprintf('The "%s" database server is publicly accessible and isn\'t on a private subnet', $databaseServer['name']));
-        }
-
-        $network = $this->apiClient->getNetwork(Arr::get($databaseServer, 'network.id'));
-
-        if (!is_array($network->get('bastion_host'))) {
-            throw new RuntimeException(sprintf('The database server network does\'t have a bastion host to connect to. You can add one to the network with the "%s" command.', AddBastionHostCommand::NAME));
-        }
-
+        $databaseServer = $this->resolve(DatabaseServer::class, 'Which database server would you like to connect to?');
         $localPort = (int) $this->input->getNumericOption('port');
 
-        if (3306 === $localPort) {
-            throw new RuntimeException('Cannot use port 3306 as the local port for the SSH tunnel to the database server');
+        if (empty($localPort)) {
+            throw new InvalidInputException('You must provide a valid "port" option');
         }
 
-        $this->output->info(sprintf('Opening SSH tunnel to the "<comment>%s</comment>" database server. You can connect using: <comment>localhost:%s</comment>', $databaseServer['name'], $localPort));
+        $tunnel = $this->openSshTunnel($databaseServer, $localPort);
 
-        $tunnel = $this->sshExecutable->openTunnelToBastionHost($network->get('bastion_host'), $localPort, $databaseServer['endpoint'], 3306);
-
-        $this->output->info('Once finished, press "<comment>Ctrl+C</comment>" to close the tunnel');
+        $this->output->newLine();
+        $this->output->info(sprintf('SSH tunnel to the "<comment>%s</comment>" database server opened', $databaseServer->getName()));
+        $this->output->writeln(sprintf('<info>Local endpoint:</info> 127.0.0.1:%s', $localPort));
+        $this->output->newLine();
+        $this->output->writeln('The tunnel will remain open as long as this command is running. Press <comment>Ctrl+C</comment> to close the tunnel.');
 
         $tunnel->wait();
     }

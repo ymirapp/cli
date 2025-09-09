@@ -13,8 +13,6 @@ declare(strict_types=1);
 
 namespace Ymir\Cli\Exception\Executable;
 
-use Symfony\Component\Console\Exception\RuntimeException;
-
-class WpCliException extends RuntimeException
+class WpCliException extends ExecutableException
 {
 }

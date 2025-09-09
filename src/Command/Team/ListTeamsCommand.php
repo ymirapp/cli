@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Ymir\Cli\Command\Team;
 
 use Ymir\Cli\Command\AbstractCommand;
+use Ymir\Cli\Resource\Model\Team;
 
 class ListTeamsCommand extends AbstractCommand
 {
@@ -45,11 +46,11 @@ class ListTeamsCommand extends AbstractCommand
 
         $this->output->table(
             ['Id', 'Name', 'Owner'],
-            $this->apiClient->getTeams()->map(function (array $team) use ($user) {
+            $this->apiClient->getTeams()->map(function (Team $team) use ($user) {
                 return [
-                    $team['id'],
-                    $team['name'],
-                    $team['owner']['id'] === $user['id'] ? 'You' : $team['owner']['name'],
+                    $team->getId(),
+                    $team->getName(),
+                    $team->getOwner()->getId() === $user->getId() ? 'You' : $team->getOwner()->getName(),
                 ];
             })->all()
         );

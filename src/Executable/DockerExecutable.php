@@ -13,14 +13,14 @@ declare(strict_types=1);
 
 namespace Ymir\Cli\Executable;
 
-use Symfony\Component\Console\Exception\RuntimeException;
+use Ymir\Cli\Exception\RuntimeException;
 
 class DockerExecutable extends AbstractExecutable
 {
     /**
      * Build a docker image.
      */
-    public function build(string $file, string $tag, string $architecture = '', ?string $cwd = null)
+    public function build(string $file, string $tag, string $architecture = '', ?string $cwd = null): void
     {
         $platform = 'linux/amd64';
 
@@ -56,7 +56,7 @@ class DockerExecutable extends AbstractExecutable
     /**
      * Login to a Docker registry.
      */
-    public function login(string $username, string $password, string $server, ?string $cwd = null)
+    public function login(string $username, string $password, string $server, ?string $cwd = null): void
     {
         $this->run(sprintf('login --username %s --password %s %s', $username, $password, $server), $cwd);
     }
@@ -64,7 +64,7 @@ class DockerExecutable extends AbstractExecutable
     /**
      * Push a docker image.
      */
-    public function push(string $image, ?string $cwd = null)
+    public function push(string $image, ?string $cwd = null): void
     {
         $this->run(sprintf('push %s', $image), $cwd, null);
     }
@@ -72,7 +72,7 @@ class DockerExecutable extends AbstractExecutable
     /**
      * Remove all images matching grep pattern.
      */
-    public function removeImagesMatchingPattern(string $pattern, ?string $cwd = null)
+    public function removeImagesMatchingPattern(string $pattern, ?string $cwd = null): void
     {
         try {
             $this->run(sprintf('rmi -f $(docker images | grep \'%s\')', $pattern), $cwd);
@@ -93,7 +93,7 @@ class DockerExecutable extends AbstractExecutable
     /**
      * Create a docker image tag.
      */
-    public function tag(string $sourceImage, string $targetImage, ?string $cwd = null)
+    public function tag(string $sourceImage, string $targetImage, ?string $cwd = null): void
     {
         $this->run(sprintf('tag %s %s', $sourceImage, $targetImage), $cwd);
     }

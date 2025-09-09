@@ -13,7 +13,10 @@ declare(strict_types=1);
 
 namespace Ymir\Cli\Command\Email;
 
-class ListEmailIdentitiesCommand extends AbstractEmailIdentityCommand
+use Ymir\Cli\Command\AbstractCommand;
+use Ymir\Cli\Resource\Model\EmailIdentity;
+
+class ListEmailIdentitiesCommand extends AbstractCommand
 {
     /**
      * The name of the command.
@@ -39,8 +42,8 @@ class ListEmailIdentitiesCommand extends AbstractEmailIdentityCommand
     {
         $this->output->table(
             ['Id', 'Name', 'Type', 'Provider', 'Region', 'Verified', 'Managed'],
-            $this->apiClient->getEmailIdentities($this->cliConfiguration->getActiveTeamId())->map(function (array $identity) {
-                return [$identity['id'], $identity['name'], $identity['type'], $identity['provider']['name'], $identity['region'], $this->output->formatBoolean($identity['verified']), $this->output->formatBoolean($identity['managed'])];
+            $this->apiClient->getEmailIdentities($this->getTeam())->map(function (EmailIdentity $identity) {
+                return [$identity->getId(), $identity->getName(), $identity->getType(), $identity->getProvider()->getName(), $identity->getRegion(), $this->output->formatBoolean($identity->isVerified()), $this->output->formatBoolean($identity->isManaged())];
             })->all()
         );
     }

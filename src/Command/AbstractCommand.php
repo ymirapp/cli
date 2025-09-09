@@ -15,23 +15,22 @@ namespace Ymir\Cli\Command;
 
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Ymir\Cli\ApiClient;
-use Ymir\Cli\CliConfiguration;
-use Ymir\Cli\Command\Network\CreateNetworkCommand;
-use Ymir\Cli\Command\Provider\ConnectProviderCommand;
 use Ymir\Cli\Console\HiddenInputOption;
 use Ymir\Cli\Console\Input;
 use Ymir\Cli\Console\InputDefinition;
 use Ymir\Cli\Console\Output;
-use Ymir\Cli\Exception\CommandCancelledException;
-use Ymir\Cli\Exception\InvalidInputException;
-use Ymir\Cli\Project\Configuration\ProjectConfiguration;
-use Ymir\Cli\Support\Arr;
-use Ymir\Sdk\Exception\ClientException;
+use Ymir\Cli\Exception\RuntimeException;
+use Ymir\Cli\ExecutionContext;
+use Ymir\Cli\ExecutionContextFactory;
+use Ymir\Cli\Project\ProjectConfiguration;
+use Ymir\Cli\Resource\Model\Project;
+use Ymir\Cli\Resource\Model\ResourceModelInterface;
+use Ymir\Cli\Resource\Model\Team;
+use Ymir\Cli\Resource\Requirement\RequirementInterface;
 
 abstract class AbstractCommand extends Command
 {
@@ -41,13 +40,6 @@ abstract class AbstractCommand extends Command
      * @var ApiClient
      */
     protected $apiClient;
-
-    /**
-     * The global Ymir CLI configuration.
-     *
-     * @var CliConfiguration
-     */
-    protected $cliConfiguration;
 
     /**
      * The console input.
@@ -64,20 +56,27 @@ abstract class AbstractCommand extends Command
     protected $output;
 
     /**
-     * The Ymir project configuration.
+     * The execution context.
      *
-     * @var ProjectConfiguration
+     * @var ExecutionContext|null
      */
-    protected $projectConfiguration;
+    private $context;
+
+    /**
+     * The execution context factory.
+     *
+     * @var ExecutionContextFactory
+     */
+    private $contextFactory;
 
     /**
      * Constructor.
      */
-    public function __construct(ApiClient $apiClient, CliConfiguration $cliConfiguration, ProjectConfiguration $projectConfiguration)
+    public function __construct(ApiClient $apiClient, ExecutionContextFactory $contextFactory)
     {
         $this->apiClient = $apiClient;
-        $this->cliConfiguration = $cliConfiguration;
-        $this->projectConfiguration = $projectConfiguration;
+        $this->context = null;
+        $this->contextFactory = $contextFactory;
 
         $this->setDefinition(new InputDefinition());
 
@@ -95,6 +94,14 @@ abstract class AbstractCommand extends Command
     }
 
     /**
+     * Whether the command must always be run in interactive mode or not.
+     */
+    public function mustBeInteractive(): bool
+    {
+        return false;
+    }
+
+    /**
      * {@inheritdoc}
      */
     public function run(InputInterface $input, OutputInterface $output): int
@@ -106,145 +113,63 @@ abstract class AbstractCommand extends Command
     }
 
     /**
-     * Determine the cloud provider to use.
-     */
-    protected function determineCloudProvider(string $question): int
-    {
-        $providerId = $this->input->getStringOption('provider', true);
-        $providers = $this->apiClient->getProviders($this->cliConfiguration->getActiveTeamId());
-
-        if (is_numeric($providerId) && $providers->contains('id', $providerId)) {
-            return (int) $providerId;
-        } elseif (is_numeric($providerId) && $providers->contains('id', $providerId)) {
-            throw new InvalidInputException('The given "provider" isn\'t available to currently active team');
-        }
-
-        if ($this->projectConfiguration->exists()) {
-            $providers = collect([$this->apiClient->getProject($this->projectConfiguration->getProjectId())->get('provider')]);
-        }
-
-        if ($providers->isEmpty()) {
-            throw new RuntimeException(sprintf('There are no cloud providers connected to currently active team. You can connect to one using the "%s" command.', ConnectProviderCommand::NAME));
-        }
-
-        return 1 === count($providers) ? $providers[0]['id'] : $this->output->choiceWithId($question, $providers);
-    }
-
-    /**
-     * Determine the network to use.
-     */
-    protected function determineNetwork(string $question): int
-    {
-        $networkIdOrName = null;
-
-        if ($this->input->hasArgument('network')) {
-            $networkIdOrName = $this->input->getStringArgument('network');
-        } elseif ($this->input->hasOption('network')) {
-            $networkIdOrName = $this->input->getStringOption('network', true);
-        }
-
-        $networks = $this->apiClient->getNetworks($this->cliConfiguration->getActiveTeamId());
-
-        if (empty($networkIdOrName)) {
-            $networkIdOrName = $this->output->choiceWithResourceDetails($question, $networks);
-        } elseif (1 < $networks->where('name', $networkIdOrName)->count()) {
-            throw new RuntimeException(sprintf('Unable to select a network because more than one network has the name "%s"', $networkIdOrName));
-        }
-
-        $network = $networks->firstWhere('name', $networkIdOrName) ?? $networks->firstWhere('id', $networkIdOrName);
-
-        if (empty($network['id'])) {
-            throw new InvalidInputException(sprintf('Unable to find a network with "%s" as the ID or name', $networkIdOrName));
-        }
-
-        return (int) $network['id'];
-    }
-
-    /**
-     * Determine the network to use or create one otherwise.
-     */
-    protected function determineOrCreateNetwork(string $question): int
-    {
-        $networks = $this->apiClient->getNetworks($this->cliConfiguration->getActiveTeamId())->whereNotIn('status', ['deleting', 'failed']);
-
-        if ($networks->isEmpty() && !$this->output->confirm('Your team doesn\'t have any provisioned networks. Would you like to create one first? <fg=default>(Answering "<comment>no</comment>" will cancel the command.)</>')) {
-            throw new CommandCancelledException();
-        }
-
-        if ($networks->isEmpty()) {
-            $this->retryApi(function () {
-                $this->invoke(CreateNetworkCommand::NAME);
-            }, 'Do you want to try creating a network again?');
-
-            return (int) Arr::get($this->apiClient->getNetworks($this->cliConfiguration->getActiveTeamId())->last(), 'id');
-        }
-
-        return $this->determineNetwork($question);
-    }
-
-    /**
-     * Determine the project to use.
-     */
-    protected function determineProject(string $question): int
-    {
-        $projects = $this->apiClient->getProjects($this->cliConfiguration->getActiveTeamId());
-
-        if ($projects->isEmpty()) {
-            throw new RuntimeException('There are no projects on the currently active team.');
-        }
-
-        $projectIdOrName = $this->input->getStringArgument('project');
-
-        if (empty($projectIdOrName) && $this->projectConfiguration->exists()) {
-            $projectIdOrName = $this->projectConfiguration->getProjectId();
-        } elseif (empty($projectIdOrName)) {
-            $projectIdOrName = $this->output->choiceWithId($question, $projects);
-        }
-
-        if (1 < $projects->where('name', $projectIdOrName)->count()) {
-            throw new RuntimeException(sprintf('Unable to select a project because more than one project has the name "%s"', $projectIdOrName));
-        }
-
-        $project = $projects->firstWhere('name', $projectIdOrName) ?? $projects->firstWhere('id', $projectIdOrName);
-
-        if (empty($project['id'])) {
-            throw new InvalidInputException(sprintf('Unable to find a project with "%s" as the ID or name', $projectIdOrName));
-        }
-
-        return (int) $project['id'];
-    }
-
-    /**
-     * Determine the cloud provider region to use.
-     */
-    protected function determineRegion(string $question, int $providerId): string
-    {
-        $region = $this->input->getStringOption('region', true);
-        $regions = $this->apiClient->getRegions($providerId);
-
-        if ($regions->isEmpty()) {
-            throw new RuntimeException('The Ymir API failed to return the cloud provider regions');
-        } elseif (!empty($region) && $regions->keys()->contains(strtolower($region))) {
-            return $region;
-        } elseif (!empty($region) && !$regions->keys()->contains(strtolower($region))) {
-            throw new InvalidInputException('The given "region" isn\'t a valid cloud provider region');
-        }
-
-        return $this->projectConfiguration->exists() ? $this->apiClient->getProject($this->projectConfiguration->getProjectId())->get('region') : (string) $this->output->choice($question, $regions);
-    }
-
-    /**
      * {@inheritdoc}
      */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        if (!$input->isInteractive() && $this->mustBeInteractive()) {
-            throw new RuntimeException(sprintf('Cannot run "%s" command in non-interactive mode', $input->getFirstArgument()));
-        } elseif (LoginCommand::NAME !== $this->getName() && !$this->apiClient->isAuthenticated()) {
-            throw new RuntimeException(sprintf('Please authenticate using the "%s" command before using this command', LoginCommand::NAME));
+        return $this->perform() ?? self::SUCCESS;
+    }
+
+    /**
+     * Fulfill a specific requirement using the current context.
+     */
+    protected function fulfill(RequirementInterface $requirement, array $fulfilledRequirements = [])
+    {
+        return $this->getContext()->fulfill($requirement, $fulfilledRequirements);
+    }
+
+    /**
+     * Get the execution context.
+     */
+    protected function getContext(): ExecutionContext
+    {
+        if (!$this->context instanceof ExecutionContext) {
+            $this->context = $this->createExecutionContext();
         }
 
-        return $this->perform() ?? Command::SUCCESS;
+        return $this->context;
+    }
+
+    /**
+     * Get the project associated with the local configuration file.
+     */
+    protected function getProject(): Project
+    {
+        return $this->getContext()->getProjectOrFail();
+    }
+
+    /**
+     * Get the project configuration.
+     */
+    protected function getProjectConfiguration(): ProjectConfiguration
+    {
+        return $this->getContext()->getProjectConfiguration();
+    }
+
+    /**
+     * Get the project directory.
+     */
+    protected function getProjectDirectory(): string
+    {
+        return $this->getContext()->getProjectDirectory();
+    }
+
+    /**
+     * Get the active team.
+     */
+    protected function getTeam(): Team
+    {
+        return $this->getContext()->getTeamOrFail();
     }
 
     /**
@@ -262,30 +187,51 @@ abstract class AbstractCommand extends Command
     }
 
     /**
-     * Whether the command must always be run in interactive mode or not.
+     * Provision a new resource using the given resource model class.
+     *
+     * @template T of ResourceModelInterface
+     *
+     * @param class-string<T> $resourceClass
+     *
+     * @return T|null
      */
-    protected function mustBeInteractive(): bool
+    protected function provision(string $resourceClass, array $fulfilledRequirements = [], ?ResourceModelInterface $parent = null): ?ResourceModelInterface
     {
-        return false;
+        $context = $this->getContext();
+
+        if ($parent instanceof ResourceModelInterface) {
+            $context = $context->withParentResource($parent);
+        }
+
+        return $context->provision($resourceClass, $fulfilledRequirements);
     }
 
     /**
-     * Retry an API operation.
+     * Resolve an existing resource using the given resource model class.
+     *
+     * @template T of ResourceModelInterface
+     *
+     * @param class-string<T> $resourceClass
+     *
+     * @return T
      */
-    protected function retryApi(callable $callable, string $message)
+    protected function resolve(string $resourceClass, string $question, ?ResourceModelInterface $parent = null): ResourceModelInterface
     {
-        while (true) {
-            try {
-                return $callable();
-            } catch (ClientException $exception) {
-                $this->output->newLine();
-                $this->output->exception($exception);
+        $context = $this->getContext();
 
-                if (!$this->output->confirm($message)) {
-                    throw new CommandCancelledException();
-                }
-            }
+        if ($parent instanceof ResourceModelInterface) {
+            $context = $context->withParentResource($parent);
         }
+
+        return $context->resolve($resourceClass, $question);
+    }
+
+    /**
+     * Set the project associated with the current context.
+     */
+    protected function setProject(Project $project): void
+    {
+        $this->context = $this->getContext()->withProject($project);
     }
 
     /**
@@ -309,4 +255,12 @@ abstract class AbstractCommand extends Command
      * Perform the command.
      */
     abstract protected function perform();
+
+    /**
+     * Creates the execution context.
+     */
+    private function createExecutionContext(): ExecutionContext
+    {
+        return $this->contextFactory->create($this->input, $this->output);
+    }
 }

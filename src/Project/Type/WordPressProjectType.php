@@ -13,12 +13,12 @@ declare(strict_types=1);
 
 namespace Ymir\Cli\Project\Type;
 
-use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
-use Ymir\Cli\Build;
+use Ymir\Cli\Exception\SystemException;
 use Ymir\Cli\Executable\WpCliExecutable;
 use Ymir\Cli\GitHubClient;
+use Ymir\Cli\Project\Build;
 use Ymir\Cli\Support\Arr;
 
 class WordPressProjectType extends AbstractWordPressProjectType implements InstallableProjectTypeInterface
@@ -97,7 +97,7 @@ class WordPressProjectType extends AbstractWordPressProjectType implements Insta
     /**
      * {@inheritdoc}
      */
-    public function installIntegration(string $projectDirectory)
+    public function installIntegration(string $projectDirectory): void
     {
         $pluginsDirectory = $projectDirectory.'/wp-content/plugins';
 
@@ -110,7 +110,7 @@ class WordPressProjectType extends AbstractWordPressProjectType implements Insta
             ->depth('== 0');
 
         if (1 !== count($files)) {
-            throw new RuntimeException('Unable to find the extracted WordPress plugin');
+            throw new SystemException('Unable to find the extracted WordPress plugin');
         }
 
         $this->filesystem->rename($pluginsDirectory.'/'.Arr::first($files)->getFilename(), $pluginsDirectory.'/ymir-wordpress-plugin', true);
@@ -119,7 +119,7 @@ class WordPressProjectType extends AbstractWordPressProjectType implements Insta
     /**
      * {@inheritdoc}
      */
-    public function installProject(string $directory)
+    public function installProject(string $directory): void
     {
         $this->wpCliExecutable->downloadWordPress($directory);
     }
@@ -167,7 +167,7 @@ class WordPressProjectType extends AbstractWordPressProjectType implements Insta
      */
     public function matchesProject(string $projectDirectory): bool
     {
-        return $this->pathsExist($projectDirectory, ['/wp-config.php']);
+        return $this->pathsExist($projectDirectory, ['/wp-admin/', '/wp-content/', '/wp-config-sample.php']);
     }
 
     /**

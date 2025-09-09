@@ -58,7 +58,7 @@ class CleanupSubscriber implements EventSubscriberInterface
     /**
      * Remove hidden directory when console terminates.
      */
-    public function onConsoleTerminate()
+    public function onConsoleTerminate(): void
     {
         $this->filesystem->remove($this->hiddenDirectory);
     }

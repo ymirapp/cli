@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Ymir\Cli\Command\Provider;
 
 use Ymir\Cli\Command\AbstractCommand;
+use Ymir\Cli\Resource\Model\CloudProvider;
 
 class ListProvidersCommand extends AbstractCommand
 {
@@ -39,16 +40,16 @@ class ListProvidersCommand extends AbstractCommand
      */
     protected function perform()
     {
-        $providers = $this->apiClient->getProviders($this->cliConfiguration->getActiveTeamId());
+        $providers = $this->apiClient->getProviders($this->getTeam());
 
-        $this->output->info('The following cloud providers are connect your team:');
+        $this->output->info('The following cloud providers are connected to your team:');
 
         $this->output->table(
             ['Id', 'Name'],
-            $providers->map(function (array $provider) {
+            $providers->map(function (CloudProvider $provider) {
                 return [
-                    $provider['id'],
-                    $provider['name'],
+                    $provider->getId(),
+                    $provider->getName(),
                 ];
             })->all()
         );

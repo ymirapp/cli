@@ -14,9 +14,10 @@ declare(strict_types=1);
 namespace Ymir\Cli\Project\Type;
 
 use Symfony\Component\Finder\Finder;
+use Ymir\Cli\Project\Initialization\WordPressConfigurationInitializationStep;
 use Ymir\Cli\Support\Arr;
 
-abstract class AbstractWordPressProjectType extends AbstractProjectType
+abstract class AbstractWordPressProjectType extends AbstractProjectType implements SupportsMediaInterface
 {
     /**
      * {@inheritdoc}
@@ -43,17 +44,31 @@ abstract class AbstractWordPressProjectType extends AbstractProjectType
     }
 
     /**
+     * {@inheritDoc}
+     */
+    public function getInitializationSteps(): array
+    {
+        $steps = parent::getInitializationSteps();
+
+        $steps[] = WordPressConfigurationInitializationStep::class;
+
+        return $steps;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getMediaDirectoryName(): string
+    {
+        return 'uploads';
+    }
+
+    /**
      * {@inheritdoc}
      */
-    public function getEnvironmentConfiguration(string $environment, array $baseConfiguration = []): array
+    public function getMediaDirectoryPath(string $projectDirectory = ''): string
     {
-        $configuration = parent::getEnvironmentConfiguration($environment, $baseConfiguration);
-
-        if ('staging' === $environment) {
-            $configuration = Arr::add($configuration, 'cdn.caching', 'assets');
-        }
-
-        return $configuration;
+        return $this->getPath($this->getUploadsDirectory(), $projectDirectory);
     }
 
     /**
@@ -84,18 +99,21 @@ abstract class AbstractWordPressProjectType extends AbstractProjectType
     public function getProjectFiles(string $projectDirectory): Finder
     {
         return parent::getProjectFiles($projectDirectory)
-            ->exclude(ltrim($this->getUploadsDirectoryPath(), '/'));
+            ->exclude(ltrim($this->getMediaDirectoryPath(), '/'));
     }
 
     /**
-     * Get the path to the "uploads" directory.
-     *
-     * If the project directory is given, it will return the absolute path to the "uploads" directory. Otherwise, it
-     * will return the relative path.
+     * {@inheritdoc}
      */
-    public function getUploadsDirectoryPath(string $projectDirectory = ''): string
+    protected function generateEnvironmentConfigurationArray(string $environment, array $baseConfiguration = []): array
     {
-        return $this->getPath($this->getUploadsDirectory(), $projectDirectory);
+        $configuration = parent::generateEnvironmentConfigurationArray($environment, $baseConfiguration);
+
+        if ('staging' === $environment) {
+            $configuration = Arr::add($configuration, 'cdn.caching', 'assets');
+        }
+
+        return $configuration;
     }
 
     /**

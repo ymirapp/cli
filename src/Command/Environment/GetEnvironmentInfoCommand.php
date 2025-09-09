@@ -14,11 +14,16 @@ declare(strict_types=1);
 namespace Ymir\Cli\Command\Environment;
 
 use Symfony\Component\Console\Input\InputArgument;
-use Ymir\Cli\Command\AbstractProjectCommand;
+use Ymir\Cli\Command\AbstractCommand;
+use Ymir\Cli\Command\RendersEnvironmentInfoTrait;
 use Ymir\Cli\Exception\InvalidInputException;
+use Ymir\Cli\Resource\Model\Environment;
+use Ymir\Cli\Resource\Model\Project;
 
-class GetEnvironmentInfoCommand extends AbstractProjectCommand
+class GetEnvironmentInfoCommand extends AbstractCommand
 {
+    use RendersEnvironmentInfoTrait;
+
     /**
      * The name of the command.
      *
@@ -42,88 +47,24 @@ class GetEnvironmentInfoCommand extends AbstractProjectCommand
      */
     protected function perform()
     {
-        $environments = $this->input->getArgument('environment');
+        $project = $this->resolve(Project::class, 'Which project would you like to get environment information for?');
+        $environmentName = $this->input->getStringArgument('environment');
+        $environments = $this->apiClient->getEnvironments($project);
 
-        if (!is_array($environments)) {
-            $environments = (array) $environments;
+        if (!empty($environmentName) && !$environments->has($environmentName)) {
+            throw new InvalidInputException(sprintf('Environment "%s" doesn\'t exist', $environmentName));
+        } elseif (!empty($environmentName)) {
+            $environments = $environments->filter(function (Environment $environment) use ($environmentName): bool {
+                return $environmentName === $environment->getName();
+            });
         }
 
-        if (empty($environments)) {
-            $this->output->info('Listing information on all environments found in <comment>ymir.yml</comment> file');
-            $environments = $this->projectConfiguration->getEnvironments()->keys()->all();
+        if (empty($environmentName)) {
+            $this->output->info(sprintf('Listing information on all <comment>%s</comment> environments', $project->getName()));
         }
 
-        foreach ($environments as $environment) {
+        $environments->each(function (Environment $environment): void {
             $this->displayEnvironmentTable($environment);
-        }
-    }
-
-    /**
-     * Display the table with the environment information.
-     */
-    private function displayEnvironmentTable(string $environment)
-    {
-        $database = $this->getEnvironmentDatabase($environment);
-        $environment = $this->apiClient->getEnvironment($this->projectConfiguration->getProjectId(), $environment);
-
-        $headers = ['Name', 'Domain'];
-        $row = $environment->only(['name', 'vanity_domain_name'])->values()->all();
-
-        if (!empty($environment['gateway'])) {
-            $headers[] = strtoupper($environment['gateway']['type']).' Gateway';
-            $row[] = $environment['gateway']['domain_name'] ?? '<fg=red>Unavailable</>';
-        } else {
-            $headers[] = 'Gateway';
-            $row[] = '<fg=red>Disabled</>';
-        }
-
-        $headers = array_merge($headers, ['CDN', 'Public assets']);
-
-        if (empty($environment['content_delivery_network'])) {
-            $row[] = '<fg=red>Unavailable</>';
-        } elseif (!empty($environment['content_delivery_network']['domain_name'])) {
-            $row[] = $environment['content_delivery_network']['domain_name'];
-        } elseif (!empty($environment['content_delivery_network']['status'])) {
-            $row[] = sprintf('<comment>%s</comment>', ucfirst($environment['content_delivery_network']['status']));
-        }
-
-        $row[] = $environment['public_store_domain_name'];
-
-        if (is_string($database)) {
-            $headers[] = 'Database';
-            $row[] = $database;
-        }
-
-        $this->output->horizontalTable($headers, [$row]);
-    }
-
-    /**
-     * Get the information on the given environment's database.
-     */
-    private function getEnvironmentDatabase(string $environment): ?string
-    {
-        $environment = $this->projectConfiguration->getEnvironment($environment);
-
-        if (empty($environment['database'])) {
-            return null;
-        }
-
-        $databaseName = $environment['database']['server'] ?? $environment['database'];
-
-        if (!is_string($databaseName)) {
-            return null;
-        }
-
-        $database = $this->apiClient->getDatabaseServers($this->cliConfiguration->getActiveTeamId())->firstWhere('name', $databaseName);
-
-        if (!is_array($database)) {
-            throw new InvalidInputException(sprintf('There is no "%s" database server on your current team', $databaseName));
-        }
-
-        if (!empty($database['status']) && 'available' !== $database['status']) {
-            return sprintf('<comment>%s</comment>', ucfirst($database['status']));
-        }
-
-        return $database['endpoint'] ?? '<fg=red>Unavailable</>';
+        });
     }
 }

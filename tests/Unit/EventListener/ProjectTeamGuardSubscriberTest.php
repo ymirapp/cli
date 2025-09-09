@@ -13,32 +13,22 @@ declare(strict_types=1);
 
 namespace Ymir\Cli\Tests\Unit\EventListener;
 
-use Illuminate\Support\Collection;
+use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\ConsoleEvents;
 use Symfony\Component\Console\Event\ConsoleCommandEvent;
-use Symfony\Component\Console\Exception\RuntimeException;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Output\OutputInterface;
 use Ymir\Cli\EventListener\ProjectTeamGuardSubscriber;
-use Ymir\Cli\Tests\Mock\ApiClientMockTrait;
-use Ymir\Cli\Tests\Mock\CliConfigurationMockTrait;
-use Ymir\Cli\Tests\Mock\CommandMockTrait;
-use Ymir\Cli\Tests\Mock\InputInterfaceMockTrait;
-use Ymir\Cli\Tests\Mock\OutputInterfaceMockTrait;
-use Ymir\Cli\Tests\Mock\ProjectConfigurationMockTrait;
-use Ymir\Cli\Tests\Unit\TestCase;
+use Ymir\Cli\Exception\RuntimeException;
+use Ymir\Cli\Project\ProjectLocator;
+use Ymir\Cli\Resource\Model\Project;
+use Ymir\Cli\Resource\Model\Team;
+use Ymir\Cli\Team\TeamLocator;
+use Ymir\Cli\Tests\TestCase;
 
-/**
- * @covers \Ymir\Cli\EventListener\ProjectTeamGuardSubscriber
- */
 class ProjectTeamGuardSubscriberTest extends TestCase
 {
-    use ApiClientMockTrait;
-    use CliConfigurationMockTrait;
-    use CommandMockTrait;
-    use InputInterfaceMockTrait;
-    use OutputInterfaceMockTrait;
-    use ProjectConfigurationMockTrait;
-
-    public function testGetSubscribedEvents()
+    public function testGetSubscribedEvents(): void
     {
         $events = ProjectTeamGuardSubscriber::getSubscribedEvents();
 
@@ -46,212 +36,114 @@ class ProjectTeamGuardSubscriberTest extends TestCase
         $this->assertSame('onConsoleCommand', $events[ConsoleEvents::COMMAND]);
     }
 
-    public function testOnConsoleCommandReturnsEarlyWhenCommandIsIgnored()
+    public function testOnConsoleCommandReturnsEarlyWhenCommandIsIgnored(): void
     {
-        $apiClient = $this->getApiClientMock();
-        $cliConfiguration = $this->getCliConfigurationMock();
-        $projectConfiguration = $this->getProjectConfigurationMock();
-        $command = $this->getCommandMock();
+        $projectLocator = \Mockery::mock(ProjectLocator::class)->shouldIgnoreMissing();
+        $teamLocator = \Mockery::mock(TeamLocator::class)->shouldIgnoreMissing();
+        $command = \Mockery::mock(Command::class);
+        $team = Team::fromArray(['id' => 42, 'name' => 'team', 'owner' => ['id' => 1, 'name' => 'owner', 'email' => 'foo@bar.com']]);
 
-        $projectConfiguration->expects($this->once())
-                             ->method('exists')
-                             ->willReturn(true);
+        $projectLocator->shouldReceive('getProject')->once()
+                       ->andReturn($this->getProject());
 
-        $cliConfiguration->expects($this->once())
-                         ->method('hasActiveTeam')
-                         ->willReturn(true);
+        $command->shouldReceive('getName')->once()
+                ->andReturn('help');
 
-        $command->expects($this->once())
-                ->method('getName')
-                ->willReturn('help');
+        $teamLocator->shouldReceive('getTeam')->once()
+                    ->andReturn($team);
 
-        $cliConfiguration->expects($this->never())
-                         ->method('getActiveTeamId');
-
-        (new ProjectTeamGuardSubscriber($apiClient, $cliConfiguration, $projectConfiguration))->onConsoleCommand($this->getConsoleCommandEvent($command));
+        (new ProjectTeamGuardSubscriber($projectLocator, $teamLocator))->onConsoleCommand($this->getConsoleCommandEvent($command));
     }
 
-    public function testOnConsoleCommandReturnsEarlyWhenCommandIsNotInstance()
+    public function testOnConsoleCommandReturnsEarlyWhenCommandIsNotInstance(): void
     {
-        $apiClient = $this->getApiClientMock();
-        $cliConfiguration = $this->getCliConfigurationMock();
-        $projectConfiguration = $this->getProjectConfigurationMock();
+        $projectLocator = \Mockery::mock(ProjectLocator::class)->shouldIgnoreMissing();
+        $teamLocator = \Mockery::mock(TeamLocator::class)->shouldIgnoreMissing();
 
-        $projectConfiguration->expects($this->once())
-                             ->method('exists')
-                             ->willReturn(true);
+        $projectLocator->shouldReceive('getProject')->once()
+                       ->andReturn($this->getProject());
 
-        $cliConfiguration->expects($this->never())
-                         ->method('getActiveTeamId');
-
-        (new ProjectTeamGuardSubscriber($apiClient, $cliConfiguration, $projectConfiguration))->onConsoleCommand($this->getConsoleCommandEvent());
+        (new ProjectTeamGuardSubscriber($projectLocator, $teamLocator))->onConsoleCommand($this->getConsoleCommandEvent());
     }
 
-    public function testOnConsoleCommandReturnsEarlyWhenNoActiveTeam()
+    public function testOnConsoleCommandReturnsEarlyWhenNoActiveTeam(): void
     {
-        $apiClient = $this->getApiClientMock();
-        $cliConfiguration = $this->getCliConfigurationMock();
-        $projectConfiguration = $this->getProjectConfigurationMock();
-        $command = $this->getCommandMock();
+        $projectLocator = \Mockery::mock(ProjectLocator::class)->shouldIgnoreMissing();
+        $teamLocator = \Mockery::mock(TeamLocator::class)->shouldIgnoreMissing();
+        $command = \Mockery::mock(Command::class);
 
-        $projectConfiguration->expects($this->once())
-                             ->method('exists')
-                             ->willReturn(true);
+        $projectLocator->shouldReceive('getProject')->once()
+                       ->andReturn($this->getProject());
 
-        $cliConfiguration->expects($this->once())
-                         ->method('hasActiveTeam')
-                         ->willReturn(false);
-
-        $cliConfiguration->expects($this->never())
-                         ->method('getActiveTeamId');
-
-        (new ProjectTeamGuardSubscriber($apiClient, $cliConfiguration, $projectConfiguration))->onConsoleCommand($this->getConsoleCommandEvent($command));
+        (new ProjectTeamGuardSubscriber($projectLocator, $teamLocator))->onConsoleCommand($this->getConsoleCommandEvent($command));
     }
 
-    public function testOnConsoleCommandReturnsEarlyWhenProjectConfigurationDoesNotExist()
+    public function testOnConsoleCommandReturnsEarlyWhenProjectConfigurationDoesNotExist(): void
     {
-        $apiClient = $this->getApiClientMock();
-        $cliConfiguration = $this->getCliConfigurationMock();
-        $projectConfiguration = $this->getProjectConfigurationMock();
-        $command = $this->getCommandMock();
+        $projectLocator = \Mockery::mock(ProjectLocator::class)->shouldIgnoreMissing();
+        $teamLocator = \Mockery::mock(TeamLocator::class)->shouldIgnoreMissing();
+        $command = \Mockery::mock(Command::class);
 
-        $projectConfiguration->expects($this->once())
-                             ->method('exists')
-                             ->willReturn(false);
+        $projectLocator->shouldReceive('getProject')->once()
+                       ->andReturn(null);
 
-        $cliConfiguration->expects($this->never())
-                         ->method('hasActiveTeam');
-
-        $cliConfiguration->expects($this->never())
-                         ->method('getActiveTeamId');
-
-        (new ProjectTeamGuardSubscriber($apiClient, $cliConfiguration, $projectConfiguration))->onConsoleCommand($this->getConsoleCommandEvent($command));
+        (new ProjectTeamGuardSubscriber($projectLocator, $teamLocator))->onConsoleCommand($this->getConsoleCommandEvent($command));
     }
 
-    public function testOnConsoleCommandReturnsEarlyWhenProjectTeamIdIsEmpty()
+    public function testOnConsoleCommandReturnsEarlyWhenTeamIdsMatch(): void
     {
-        $apiClient = $this->getApiClientMock();
-        $cliConfiguration = $this->getCliConfigurationMock();
-        $projectConfiguration = $this->getProjectConfigurationMock();
-        $command = $this->getCommandMock();
+        $projectLocator = \Mockery::mock(ProjectLocator::class)->shouldIgnoreMissing();
+        $teamLocator = \Mockery::mock(TeamLocator::class)->shouldIgnoreMissing();
+        $command = \Mockery::mock(Command::class);
+        $team = Team::fromArray(['id' => 42, 'name' => 'team', 'owner' => ['id' => 1, 'name' => 'owner', 'email' => 'foo@bar.com']]);
 
-        $projectConfiguration->expects($this->once())
-                             ->method('exists')
-                             ->willReturn(true);
+        $projectLocator->shouldReceive('getProject')->once()
+                       ->andReturn($this->getProject(['id' => 1, 'name' => 'foo', 'region' => 'us-east-1', 'provider' => ['id' => 1, 'name' => 'aws', 'team' => ['id' => 42, 'name' => 'team', 'owner' => ['id' => 1, 'name' => 'owner', 'email' => 'foo@bar.com']]]]));
 
-        $command->expects($this->once())
-                ->method('getName')
-                ->willReturn('some-command');
+        $command->shouldReceive('getName')->once()
+                ->andReturn('some-command');
 
-        $cliConfiguration->expects($this->once())
-                         ->method('hasActiveTeam')
-                         ->willReturn(true);
+        $teamLocator->shouldReceive('getTeam')->once()
+                    ->andReturn($team);
 
-        $cliConfiguration->expects($this->once())
-                         ->method('getActiveTeamId')
-                         ->willReturn(42);
-
-        $projectConfiguration->expects($this->once())
-                             ->method('getProjectId')
-                             ->willReturn(1);
-
-        $apiClient->expects($this->once())
-                  ->method('getProject')
-                  ->with($this->identicalTo(1))
-                  ->willReturn(new Collection(['provider' => ['team' => []]]));
-
-        $apiClient->expects($this->never())
-                  ->method('getTeam');
-
-        (new ProjectTeamGuardSubscriber($apiClient, $cliConfiguration, $projectConfiguration))->onConsoleCommand($this->getConsoleCommandEvent($command));
+        (new ProjectTeamGuardSubscriber($projectLocator, $teamLocator))->onConsoleCommand($this->getConsoleCommandEvent($command));
     }
 
-    public function testOnConsoleCommandReturnsEarlyWhenTeamIdsMatch()
-    {
-        $apiClient = $this->getApiClientMock();
-        $cliConfiguration = $this->getCliConfigurationMock();
-        $projectConfiguration = $this->getProjectConfigurationMock();
-        $command = $this->getCommandMock();
-
-        $projectConfiguration->expects($this->once())
-                             ->method('exists')
-                             ->willReturn(true);
-
-        $command->expects($this->once())
-                ->method('getName')
-                ->willReturn('some-command');
-
-        $cliConfiguration->expects($this->once())
-                         ->method('hasActiveTeam')
-                         ->willReturn(true);
-
-        $cliConfiguration->expects($this->once())
-                         ->method('getActiveTeamId')
-                         ->willReturn(42);
-
-        $projectConfiguration->expects($this->once())
-                             ->method('getProjectId')
-                             ->willReturn(1);
-
-        $apiClient->expects($this->once())
-                  ->method('getProject')
-                  ->with($this->identicalTo(1))
-                  ->willReturn(new Collection(['provider' => ['team' => ['id' => 42]]]));
-
-        $apiClient->expects($this->never())
-                  ->method('getTeam');
-
-        (new ProjectTeamGuardSubscriber($apiClient, $cliConfiguration, $projectConfiguration))->onConsoleCommand($this->getConsoleCommandEvent($command));
-    }
-
-    public function testOnConsoleCommandThrowsExceptionWhenTeamsDontMatch()
+    public function testOnConsoleCommandThrowsExceptionWhenTeamsDontMatch(): void
     {
         $this->expectException(RuntimeException::class);
-        $this->expectExceptionMessage('Your active team "Active Team" does not match the project\'s team "Project Team". Use the "team:select 24" command to switch to the project\'s team.');
+        $this->expectExceptionMessage('Your active team "Active Team" doesn\'t match the project\'s team "Project Team", but you can use the "team:select 24" command to switch to the project\'s team');
 
-        $apiClient = $this->getApiClientMock();
-        $cliConfiguration = $this->getCliConfigurationMock();
-        $projectConfiguration = $this->getProjectConfigurationMock();
-        $command = $this->getCommandMock();
+        $projectLocator = \Mockery::mock(ProjectLocator::class)->shouldIgnoreMissing();
+        $teamLocator = \Mockery::mock(TeamLocator::class)->shouldIgnoreMissing();
+        $command = \Mockery::mock(Command::class);
 
-        $projectConfiguration->expects($this->once())
-                             ->method('exists')
-                             ->willReturn(true);
+        $projectLocator->shouldReceive('getProject')->once()
+                       ->andReturn($this->getProject(['id' => 1, 'name' => 'foo', 'region' => 'us-east-1', 'provider' => ['id' => 1, 'name' => 'aws', 'team' => ['id' => 24, 'name' => 'Project Team', 'owner' => ['id' => 1, 'name' => 'owner', 'email' => 'foo@bar.com']]]]));
 
-        $command->expects($this->once())
-                ->method('getName')
-                ->willReturn('some-command');
+        $command->shouldReceive('getName')->once()
+                ->andReturn('some-command');
 
-        $cliConfiguration->expects($this->once())
-                         ->method('hasActiveTeam')
-                         ->willReturn(true);
+        $teamLocator->shouldReceive('getTeam')->once()
+                    ->andReturn(Team::fromArray(['id' => 42, 'name' => 'Active Team', 'owner' => ['id' => 1, 'name' => 'owner', 'email' => 'foo@bar.com']]));
 
-        $cliConfiguration->expects($this->once())
-                         ->method('getActiveTeamId')
-                         ->willReturn(42);
-
-        $projectConfiguration->expects($this->once())
-                             ->method('getProjectId')
-                             ->willReturn(1);
-
-        $apiClient->expects($this->once())
-                  ->method('getProject')
-                  ->with($this->identicalTo(1))
-                  ->willReturn(new Collection(['provider' => ['team' => ['id' => 24, 'name' => 'Project Team']]]));
-
-        $apiClient->expects($this->once())
-                  ->method('getTeam')
-                  ->with($this->identicalTo(42))
-                  ->willReturn(new Collection(['name' => 'Active Team']));
-
-        (new ProjectTeamGuardSubscriber($apiClient, $cliConfiguration, $projectConfiguration))->onConsoleCommand($this->getConsoleCommandEvent($command));
+        (new ProjectTeamGuardSubscriber($projectLocator, $teamLocator))->onConsoleCommand($this->getConsoleCommandEvent($command));
     }
 
     private function getConsoleCommandEvent($command = null): ConsoleCommandEvent
     {
-        $input = $this->getInputInterfaceMock();
-        $output = $this->getOutputInterfaceMock();
+        $input = \Mockery::mock(InputInterface::class);
+        $output = \Mockery::mock(OutputInterface::class);
 
         return new ConsoleCommandEvent($command, $input, $output);
+    }
+
+    private function getProject(array $data = []): Project
+    {
+        if (empty($data)) {
+            $data = ['id' => 1, 'name' => 'foo', 'region' => 'us-east-1', 'provider' => ['id' => 1, 'name' => 'aws', 'team' => ['id' => 1, 'name' => 'team', 'owner' => ['id' => 1, 'name' => 'owner', 'email' => 'foo@bar.com']]]];
+        }
+
+        return Project::fromArray($data);
     }
 }

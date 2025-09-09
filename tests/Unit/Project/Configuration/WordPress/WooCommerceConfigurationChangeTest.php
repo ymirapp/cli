@@ -14,16 +14,12 @@ declare(strict_types=1);
 namespace Ymir\Cli\Tests\Unit\Project\Configuration\WordPress;
 
 use Ymir\Cli\Project\Configuration\WordPress\WooCommerceConfigurationChange;
-use Ymir\Cli\Tests\Mock\AbstractWordPressProjectMockTrait;
-use Ymir\Cli\Tests\Unit\TestCase;
+use Ymir\Cli\Project\EnvironmentConfiguration;
+use Ymir\Cli\Project\Type\AbstractWordPressProjectType;
+use Ymir\Cli\Tests\TestCase;
 
-/**
- * @covers \Ymir\Cli\Project\Configuration\WordPress\WooCommerceConfigurationChange
- */
 class WooCommerceConfigurationChangeTest extends TestCase
 {
-    use AbstractWordPressProjectMockTrait;
-
     private $configurationChange;
 
     /**
@@ -34,13 +30,12 @@ class WooCommerceConfigurationChangeTest extends TestCase
         $this->configurationChange = new WooCommerceConfigurationChange();
     }
 
-    public function testApplyDoesntDuplicateExistingOptions()
+    public function testApplyDoesntDuplicateExistingOptions(): void
     {
-        $projectType = $this->getAbstractWordPressProjectTypeMock();
+        $projectType = \Mockery::mock(AbstractWordPressProjectType::class);
 
-        $projectType->expects($this->once())
-                    ->method('getPluginsDirectoryPath')
-                    ->willReturn('wp-content/plugins');
+        $projectType->shouldReceive('getPluginsDirectoryPath')->once()
+                    ->andReturn('wp-content/plugins');
 
         $this->assertSame([
             'build' => ['include' => [
@@ -51,7 +46,7 @@ class WooCommerceConfigurationChangeTest extends TestCase
                 'excluded_paths' => ['/addons', '/cart', '/checkout', '/foo', '/my-account'],
                 'forwarded_headers' => ['authorization', 'origin', 'x-http-method-override', 'x-wp-nonce'],
             ],
-        ], $this->configurationChange->apply([
+        ], $this->configurationChange->apply(new EnvironmentConfiguration('staging', [
             'build' => ['include' => [
                 'wp-content/plugins/woocommerce',
             ]],
@@ -59,16 +54,15 @@ class WooCommerceConfigurationChangeTest extends TestCase
                 'cookies_whitelist' => ['foo_cookie', 'woocommerce_cart_hash', 'woocommerce_items_in_cart', 'woocommerce_recently_viewed', 'wp_woocommerce_session_*'],
                 'excluded_paths' => ['/addons', '/cart', '/checkout', '/foo', '/my-account'],
             ],
-        ], $projectType));
+        ]), $projectType)->toArray());
     }
 
-    public function testApplyDoesntEraseExistingOptions()
+    public function testApplyDoesntEraseExistingOptions(): void
     {
-        $projectType = $this->getAbstractWordPressProjectTypeMock();
+        $projectType = \Mockery::mock(AbstractWordPressProjectType::class);
 
-        $projectType->expects($this->once())
-                    ->method('getPluginsDirectoryPath')
-                    ->willReturn('wp-content/plugins');
+        $projectType->shouldReceive('getPluginsDirectoryPath')->once()
+                    ->andReturn('wp-content/plugins');
 
         $this->assertSame([
             'build' => ['include' => [
@@ -80,22 +74,21 @@ class WooCommerceConfigurationChangeTest extends TestCase
                 'excluded_paths' => ['/addons', '/cart', '/checkout', '/foo', '/my-account'],
                 'forwarded_headers' => ['authorization', 'origin', 'x-http-method-override', 'x-wp-nonce'],
             ],
-        ], $this->configurationChange->apply([
+        ], $this->configurationChange->apply(new EnvironmentConfiguration('staging', [
             'build' => ['include' => ['wp-content/plugins/foo']],
             'cdn' => [
                 'cookies_whitelist' => ['foo_cookie'],
                 'excluded_paths' => ['/foo'],
             ],
-        ], $projectType));
+        ]), $projectType)->toArray());
     }
 
-    public function testApplyWithImageDeployment()
+    public function testApplyWithImageDeployment(): void
     {
-        $projectType = $this->getAbstractWordPressProjectTypeMock();
+        $projectType = \Mockery::mock(AbstractWordPressProjectType::class);
 
-        $projectType->expects($this->once())
-                    ->method('getPluginsDirectoryPath')
-                    ->willReturn('wp-content/plugins');
+        $projectType->shouldReceive('getPluginsDirectoryPath')->once()
+                    ->andReturn('wp-content/plugins');
 
         $this->assertSame([
             'cdn' => [
@@ -104,16 +97,15 @@ class WooCommerceConfigurationChangeTest extends TestCase
                 'forwarded_headers' => ['authorization', 'origin', 'x-http-method-override', 'x-wp-nonce'],
             ],
             'deployment' => 'image',
-        ], $this->configurationChange->apply(['deployment' => 'image'], $projectType));
+        ], $this->configurationChange->apply(new EnvironmentConfiguration('staging', ['deployment' => 'image']), $projectType)->toArray());
     }
 
-    public function testApplyWithNoImageDeployment()
+    public function testApplyWithNoImageDeployment(): void
     {
-        $projectType = $this->getAbstractWordPressProjectTypeMock();
+        $projectType = \Mockery::mock(AbstractWordPressProjectType::class);
 
-        $projectType->expects($this->once())
-                    ->method('getPluginsDirectoryPath')
-                    ->willReturn('wp-content/plugins');
+        $projectType->shouldReceive('getPluginsDirectoryPath')->once()
+                    ->andReturn('wp-content/plugins');
 
         $this->assertSame([
             'build' => ['include' => ['wp-content/plugins/woocommerce']],
@@ -122,10 +114,10 @@ class WooCommerceConfigurationChangeTest extends TestCase
                 'excluded_paths' => ['/addons', '/cart', '/checkout', '/my-account'],
                 'forwarded_headers' => ['authorization', 'origin', 'x-http-method-override', 'x-wp-nonce'],
             ],
-        ], $this->configurationChange->apply([], $projectType));
+        ], $this->configurationChange->apply(new EnvironmentConfiguration('staging', []), $projectType)->toArray());
     }
 
-    public function testGetName()
+    public function testGetName(): void
     {
         $this->assertSame('woocommerce', $this->configurationChange->getName());
     }

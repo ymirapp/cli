@@ -15,10 +15,14 @@ namespace Ymir\Cli\Command\Project;
 
 use Symfony\Component\Console\Input\InputArgument;
 use Ymir\Cli\Command\AbstractCommand;
-use Ymir\Cli\Command\Environment\GetEnvironmentInfoCommand;
+use Ymir\Cli\Command\RendersEnvironmentInfoTrait;
+use Ymir\Cli\Resource\Model\Environment;
+use Ymir\Cli\Resource\Model\Project;
 
 class GetProjectInfoCommand extends AbstractCommand
 {
+    use RendersEnvironmentInfoTrait;
+
     /**
      * The alias of the command.
      *
@@ -50,19 +54,15 @@ class GetProjectInfoCommand extends AbstractCommand
      */
     protected function perform()
     {
-        $projectId = $this->projectConfiguration->exists() ? $this->projectConfiguration->getProjectId() : null;
-
-        if (null === $projectId) {
-            $projectId = $this->determineProject('Which project would you like to fetch the information on');
-        }
-
-        $project = $this->apiClient->getProject($projectId);
+        $project = $this->resolve(Project::class, 'Which project would you like to get information about?');
 
         $this->output->horizontalTable(
             ['Name', 'Provider', 'Region'],
-            [[$project['name'], $project['provider']['name'], $project['region']]]
+            [[$project->getName(), $project->getProvider()->getName(), $project->getRegion()]]
         );
 
-        $this->invoke(GetEnvironmentInfoCommand::NAME);
+        $this->apiClient->getEnvironments($project)->each(function (Environment $environment): void {
+            $this->displayEnvironmentTable($environment);
+        });
     }
 }

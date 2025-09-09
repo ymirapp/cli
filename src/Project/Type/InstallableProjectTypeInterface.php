@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace Ymir\Cli\Project\Type;
 
-interface InstallableProjectTypeInterface extends ProjectTypeInterface
+interface InstallableProjectTypeInterface
 {
     /**
      * Get the message to display to the user when installing the project.
@@ -23,7 +23,7 @@ interface InstallableProjectTypeInterface extends ProjectTypeInterface
     /**
      * Install the project in the given directory.
      */
-    public function installProject(string $directory);
+    public function installProject(string $directory): void;
 
     /**
      * Determines if the project is eligible for installation in the given directory.

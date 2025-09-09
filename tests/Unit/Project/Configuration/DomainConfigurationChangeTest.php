@@ -14,61 +14,54 @@ declare(strict_types=1);
 namespace Ymir\Cli\Tests\Unit\Project\Configuration;
 
 use Ymir\Cli\Project\Configuration\DomainConfigurationChange;
-use Ymir\Cli\Tests\Mock\ProjectTypeInterfaceMockTrait;
-use Ymir\Cli\Tests\Unit\TestCase;
+use Ymir\Cli\Project\EnvironmentConfiguration;
+use Ymir\Cli\Project\Type\ProjectTypeInterface;
+use Ymir\Cli\Tests\TestCase;
 
-/**
- * @covers \Ymir\Cli\Project\Configuration\DomainConfigurationChange
- */
 class DomainConfigurationChangeTest extends TestCase
 {
-    use ProjectTypeInterfaceMockTrait;
-
-    public function testApplyDoesNothingIfNewDomainIsAlreadyOnTopInDomainOption()
+    public function testApplyAppendsNewDomainToExistingDomainOption(): void
     {
         $existingDomain = $this->faker->domainName;
         $newDomain = $this->faker->domainName;
 
         $this->assertSame([
-            'domain' => [$newDomain, $existingDomain],
-        ], (new DomainConfigurationChange($newDomain))->apply(['domain' => [$newDomain, $existingDomain]], $this->getProjectTypeInterfaceMock()));
+            'domain' => [$existingDomain, $newDomain],
+        ], (new DomainConfigurationChange($newDomain))->apply(new EnvironmentConfiguration('staging', ['domain' => $existingDomain]), \Mockery::mock(ProjectTypeInterface::class))->toArray());
     }
 
-    public function testApplyDoesNothingIfNewDomainSameAsExistingStringDomainOption()
+    public function testApplyDoesNothingIfNewDomainIsAlreadyInDomainOption(): void
+    {
+        $existingDomain = $this->faker->domainName;
+        $newDomain = $this->faker->domainName;
+
+        $this->assertSame([
+            'domain' => [$existingDomain, $newDomain],
+        ], (new DomainConfigurationChange($newDomain))->apply(new EnvironmentConfiguration('staging', ['domain' => [$existingDomain, $newDomain]]), \Mockery::mock(ProjectTypeInterface::class))->toArray());
+    }
+
+    public function testApplyDoesNothingIfNewDomainSameAsExistingStringDomainOption(): void
     {
         $domain = $this->faker->domainName;
 
         $this->assertSame([
             'domain' => $domain,
-        ], (new DomainConfigurationChange($domain))->apply(['domain' => $domain], $this->getProjectTypeInterfaceMock()));
+        ], (new DomainConfigurationChange($domain))->apply(new EnvironmentConfiguration('staging', ['domain' => $domain]), \Mockery::mock(ProjectTypeInterface::class))->toArray());
     }
 
-    public function testApplyWithMovesNewDomainToTopIfExistsInDomainOption()
+    public function testApplyIsCaseInsensitive(): void
     {
-        $existingDomain = $this->faker->domainName;
-        $newDomain = $this->faker->domainName;
-
         $this->assertSame([
-            'domain' => [$newDomain, $existingDomain],
-        ], (new DomainConfigurationChange($newDomain))->apply(['domain' => [$existingDomain, $newDomain]], $this->getProjectTypeInterfaceMock()));
+            'domain' => 'EXAMPLE.COM',
+        ], (new DomainConfigurationChange('example.com'))->apply(new EnvironmentConfiguration('staging', ['domain' => 'EXAMPLE.COM']), \Mockery::mock(ProjectTypeInterface::class))->toArray());
     }
 
-    public function testApplyWithNoDomainOption()
+    public function testApplyWithNoDomainOption(): void
     {
         $domain = $this->faker->domainName;
 
         $this->assertSame([
             'domain' => $domain,
-        ], (new DomainConfigurationChange($domain))->apply([], $this->getProjectTypeInterfaceMock()));
-    }
-
-    public function testApplyWithPrependsNewDomainToExistingDomainOption()
-    {
-        $existingDomain = $this->faker->domainName;
-        $newDomain = $this->faker->domainName;
-
-        $this->assertSame([
-            'domain' => [$newDomain, $existingDomain],
-        ], (new DomainConfigurationChange($newDomain))->apply(['domain' => $existingDomain], $this->getProjectTypeInterfaceMock()));
+        ], (new DomainConfigurationChange($domain))->apply(new EnvironmentConfiguration('staging', []), \Mockery::mock(ProjectTypeInterface::class))->toArray());
     }
 }

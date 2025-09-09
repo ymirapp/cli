@@ -15,6 +15,7 @@ namespace Ymir\Cli\Command\Project;
 
 use Symfony\Component\Console\Input\InputArgument;
 use Ymir\Cli\Command\AbstractCommand;
+use Ymir\Cli\Resource\Model\Project;
 
 class DeleteProjectCommand extends AbstractCommand
 {
@@ -49,19 +50,18 @@ class DeleteProjectCommand extends AbstractCommand
      */
     protected function perform()
     {
-        $projectId = $this->determineProject('Which project would you like to delete');
-        $project = $this->apiClient->getProject($projectId);
+        $project = $this->resolve(Project::class, 'Which project would you like to delete?');
 
-        if (!$this->output->confirm(sprintf('Are you sure you want to delete the <comment>%s</comment> project?', $project['name']), false)) {
+        if (!$this->output->confirm(sprintf('Are you sure you want to delete the <comment>%s</comment> project?', $project->getName()), false)) {
             return;
         }
 
         $deleteResources = $this->output->confirm('Do you want to delete all the project resources on the cloud provider?', false);
 
-        $this->apiClient->deleteProject($projectId, $deleteResources);
+        $this->apiClient->deleteProject($project, $deleteResources);
 
-        if ($this->projectConfiguration->exists() && $projectId === $this->projectConfiguration->getProjectId()) {
-            $this->projectConfiguration->delete();
+        if ($this->getProjectConfiguration()->exists() && $project->getId() === $this->getProjectConfiguration()->getProjectId()) {
+            $this->getProjectConfiguration()->delete();
         }
 
         $message = 'Project deleted';

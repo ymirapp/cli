@@ -13,12 +13,16 @@ declare(strict_types=1);
 
 namespace Ymir\Cli\Command\Database;
 
-use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
+use Ymir\Cli\Command\AbstractCommand;
 use Ymir\Cli\Exception\InvalidInputException;
+use Ymir\Cli\Exception\Resource\ResourceStateException;
+use Ymir\Cli\Resource\Model\DatabaseServer;
+use Ymir\Cli\Resource\Requirement\DatabaseServerStorageRequirement;
+use Ymir\Cli\Resource\Requirement\DatabaseServerTypeRequirement;
 
-class ModifyDatabaseServerCommand extends AbstractDatabaseServerCommand
+class ModifyDatabaseServerCommand extends AbstractCommand
 {
     /**
      * The name of the command.
@@ -45,64 +49,30 @@ class ModifyDatabaseServerCommand extends AbstractDatabaseServerCommand
      */
     protected function perform()
     {
-        $databaseServer = $this->determineDatabaseServer('Which database server would you like to modify?');
+        $databaseServer = $this->resolve(DatabaseServer::class, 'Which database server would you like to modify?');
 
-        if (self::AURORA_DATABASE_TYPE === $databaseServer['type']) {
-            throw new RuntimeException('You cannot modify an Aurora database server');
+        if (DatabaseServer::AURORA_DATABASE_TYPE === $databaseServer->getType()) {
+            throw new ResourceStateException('You cannot modify an Aurora database server');
         }
 
-        $this->apiClient->updateDatabaseServer((int) $databaseServer['id'], $this->determineStorage((int) $databaseServer['storage']), $this->determineType($databaseServer['network']['provider']['id'], $databaseServer['type']));
+        $newStorage = $this->fulfill(new DatabaseServerStorageRequirement(sprintf('What should the new maximum amount of storage (in GB) allocated to the database server be? <fg=default>(Currently: <comment>%sGB</comment>)</>', $databaseServer->getStorage()), (string) $databaseServer->getStorage()), ['type' => $databaseServer->getType()]);
+
+        if (empty($newStorage)) {
+            throw new InvalidInputException('You must provide a database server storage value');
+        } elseif ($newStorage < $databaseServer->getStorage()) {
+            throw new InvalidInputException('You cannot reduce the maximum amount of storage allocated to the database server');
+        } elseif ($newStorage > $databaseServer->getStorage() && !$this->output->warningConfirmation('Modifying the database server storage is an irreversible change')) {
+            return;
+        }
+
+        $newType = $this->fulfill(new DatabaseServerTypeRequirement(sprintf('What should the database server type be changed to? <fg=default>(Currently: <comment>%s</comment>)</>', $databaseServer->getType()), $databaseServer->getType()), ['network' => $databaseServer->getNetwork()]);
+
+        if ($newType !== $databaseServer->getType() && !$this->output->warningConfirmation('Modifying the database server type will cause your database to become unavailable for a few minutes')) {
+            return;
+        }
+
+        $this->apiClient->updateDatabaseServer($databaseServer, $newStorage, $newType);
 
         $this->output->infoWithDelayWarning('Database server modified');
-    }
-
-    /**
-     * Determine the new maximum amount of storage allocated to the database.
-     */
-    private function determineStorage(int $storage): int
-    {
-        $storageOption = $this->input->getNumericOption('storage');
-
-        if (null !== $storageOption) {
-            return $storageOption;
-        } elseif (!$this->input->isInteractive()) {
-            return $storage;
-        }
-
-        $storage = $this->output->ask(sprintf('What should the new maximum amount of storage (in GB) allocated to the database server be? <fg=default>(Currently: <comment>%sGB</comment>)</>', $storage), (string) $storage);
-
-        if (!is_numeric($storage)) {
-            throw new InvalidInputException('The maximum allocated storage needs to be a numeric value');
-        }
-
-        return (int) $storage;
-    }
-
-    /**
-     * Determine the new database server type.
-     */
-    private function determineType(int $providerId, string $type): string
-    {
-        $typeOption = $this->input->getStringOption('type');
-
-        if (null === $typeOption && !$this->input->isInteractive()) {
-            return $type;
-        }
-
-        $types = $this->apiClient->getDatabaseServerTypes($providerId);
-
-        if (null !== $typeOption && $types->has($typeOption)) {
-            return $type;
-        } elseif (null !== $typeOption && !$types->has($typeOption)) {
-            throw new InvalidInputException(sprintf('The type "%s" isn\'t a valid database type', $typeOption));
-        }
-
-        $newType = $this->output->choice(sprintf('What should the database server type be changed to? <fg=default>(Currently: <comment>%s</comment>)</>', $type), $types, $type);
-
-        if ($newType !== $type && !$this->output->confirm('Modifying the database server type will cause your database to become unavailable for a few minutes. Do you want to proceed?', false)) {
-            exit;
-        }
-
-        return $newType;
     }
 }

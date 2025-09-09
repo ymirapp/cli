@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Ymir\Cli\Command\Network;
 
 use Ymir\Cli\Command\AbstractCommand;
+use Ymir\Cli\Resource\Model\Network;
 
 class ListNetworksCommand extends AbstractCommand
 {
@@ -39,12 +40,17 @@ class ListNetworksCommand extends AbstractCommand
      */
     protected function perform()
     {
-        $networks = $this->apiClient->getNetworks($this->cliConfiguration->getActiveTeamId());
-
         $this->output->table(
             ['Id', 'Name', 'Provider', 'Region', 'Status', 'NAT Gateway'],
-            $networks->map(function (array $network) {
-                return [$network['id'], $network['name'], $network['provider']['name'], $network['region'], $this->output->formatStatus($network['status']), $this->output->formatBoolean($network['has_nat_gateway'])];
+            $this->apiClient->getNetworks($this->getTeam())->map(function (Network $network) {
+                return [
+                    $network->getId(),
+                    $network->getName(),
+                    $network->getProvider()->getName(),
+                    $network->getRegion(),
+                    $this->output->formatStatus($network->getStatus()),
+                    $this->output->formatBoolean($network->hasNatGateway()),
+                ];
             })->all()
         );
     }

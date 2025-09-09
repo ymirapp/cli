@@ -14,22 +14,15 @@ declare(strict_types=1);
 namespace Ymir\Cli\Tests\Unit\Project\Type;
 
 use Symfony\Component\Filesystem\Filesystem;
-use Ymir\Cli\Build;
+use Ymir\Cli\Executable\WpCliExecutable;
+use Ymir\Cli\GitHubClient;
+use Ymir\Cli\Project\Build;
+use Ymir\Cli\Project\Initialization;
 use Ymir\Cli\Project\Type\WordPressProjectType;
-use Ymir\Cli\Tests\Mock\FilesystemMockTrait;
-use Ymir\Cli\Tests\Mock\GitHubClientMockTrait;
-use Ymir\Cli\Tests\Mock\WpCliExecutableMockTrait;
-use Ymir\Cli\Tests\Unit\TestCase;
+use Ymir\Cli\Tests\TestCase;
 
-/**
- * @covers \Ymir\Cli\Project\Type\WordPressProjectType
- */
 class WordPressProjectTypeTest extends TestCase
 {
-    use FilesystemMockTrait;
-    use GitHubClientMockTrait;
-    use WpCliExecutableMockTrait;
-
     /**
      * @var string
      */
@@ -78,6 +71,33 @@ class WordPressProjectTypeTest extends TestCase
         ];
     }
 
+    public function testGenerateEnvironmentConfigurationForProduction(): void
+    {
+        $projectType = new WordPressProjectType(\Mockery::mock(Filesystem::class), \Mockery::mock(GitHubClient::class), \Mockery::mock(WpCliExecutable::class));
+
+        $this->assertSame([
+            'architecture' => 'arm64',
+            'gateway' => false,
+            'foo' => 'bar',
+        ], $projectType->generateEnvironmentConfiguration('production', ['foo' => 'bar'])->toArray());
+    }
+
+    public function testGenerateEnvironmentConfigurationForStaging(): void
+    {
+        $projectType = new WordPressProjectType(\Mockery::mock(Filesystem::class), \Mockery::mock(GitHubClient::class), \Mockery::mock(WpCliExecutable::class));
+
+        $this->assertSame([
+            'architecture' => 'arm64',
+            'gateway' => false,
+            'foo' => 'bar',
+            'cron' => false,
+            'warmup' => false,
+            'cdn' => [
+                'caching' => 'assets',
+            ],
+        ], $projectType->generateEnvironmentConfiguration('staging', ['foo' => 'bar'])->toArray());
+    }
+
     /**
      * @dataProvider provideRequiredFileTypes
      */
@@ -88,7 +108,7 @@ class WordPressProjectTypeTest extends TestCase
         touch($this->tempDirectory.'/excluded.txt');
         touch($requiredFile);
 
-        $projectType = new WordPressProjectType($this->getFilesystemMock(), $this->getGitHubClientMock(), $this->getWpCliExecutableMock());
+        $projectType = new WordPressProjectType(\Mockery::mock(Filesystem::class), \Mockery::mock(GitHubClient::class), \Mockery::mock(WpCliExecutable::class));
 
         $files = iterator_to_array($projectType->getBuildFiles($this->tempDirectory), false);
 
@@ -106,7 +126,7 @@ class WordPressProjectTypeTest extends TestCase
         touch($this->tempDirectory.'/excluded.txt');
         touch($blockJsonPath);
 
-        $projectType = new WordPressProjectType($this->getFilesystemMock(), $this->getGitHubClientMock(), $this->getWpCliExecutableMock());
+        $projectType = new WordPressProjectType(\Mockery::mock(Filesystem::class), \Mockery::mock(GitHubClient::class), \Mockery::mock(WpCliExecutable::class));
 
         $files = iterator_to_array($projectType->getBuildFiles($this->tempDirectory), false);
 
@@ -129,7 +149,7 @@ class WordPressProjectTypeTest extends TestCase
         touch($themeDirectory.'/excluded.txt');
         touch($requiredThemeFile);
 
-        $projectType = new WordPressProjectType($this->getFilesystemMock(), $this->getGitHubClientMock(), $this->getWpCliExecutableMock());
+        $projectType = new WordPressProjectType(\Mockery::mock(Filesystem::class), \Mockery::mock(GitHubClient::class), \Mockery::mock(WpCliExecutable::class));
 
         $files = iterator_to_array($projectType->getBuildFiles($this->tempDirectory), false);
 
@@ -152,7 +172,7 @@ class WordPressProjectTypeTest extends TestCase
         touch($this->tempDirectory.'/excluded.txt');
         touch($requiredFile);
 
-        $projectType = new WordPressProjectType($this->getFilesystemMock(), $this->getGitHubClientMock(), $this->getWpCliExecutableMock());
+        $projectType = new WordPressProjectType(\Mockery::mock(Filesystem::class), \Mockery::mock(GitHubClient::class), \Mockery::mock(WpCliExecutable::class));
 
         $files = iterator_to_array($projectType->getBuildFiles($this->tempDirectory), false);
 
@@ -168,7 +188,7 @@ class WordPressProjectTypeTest extends TestCase
         touch($this->tempDirectory.'/excluded.txt');
         touch($wpCliYmlPath);
 
-        $projectType = new WordPressProjectType($this->getFilesystemMock(), $this->getGitHubClientMock(), $this->getWpCliExecutableMock());
+        $projectType = new WordPressProjectType(\Mockery::mock(Filesystem::class), \Mockery::mock(GitHubClient::class), \Mockery::mock(WpCliExecutable::class));
 
         $files = iterator_to_array($projectType->getBuildFiles($this->tempDirectory), false);
 
@@ -177,7 +197,7 @@ class WordPressProjectTypeTest extends TestCase
         $this->assertSame($wpCliYmlPath, $files[0]->getPathname());
     }
 
-    public function testGetBuildSteps()
+    public function testGetBuildSteps(): void
     {
         $this->assertSame([
             Build\CopyProjectFilesStep::class,
@@ -187,18 +207,57 @@ class WordPressProjectTypeTest extends TestCase
             Build\CopyMustUsePluginStep::class,
             Build\ModifyWordPressConfigurationStep::class,
             Build\ExtractAssetFilesStep::class,
-        ], (new WordPressProjectType($this->getFilesystemMock(), $this->getGitHubClientMock(), $this->getWpCliExecutableMock()))->getBuildSteps());
+        ], (new WordPressProjectType(\Mockery::mock(Filesystem::class), \Mockery::mock(GitHubClient::class), \Mockery::mock(WpCliExecutable::class)))->getBuildSteps());
     }
 
-    public function testGetInstallationMessage()
+    public function testGetInitializationSteps(): void
     {
-        $this->assertSame('Downloading WordPress using WP-CLI', (new WordPressProjectType($this->getFilesystemMock(), $this->getGitHubClientMock(), $this->getWpCliExecutableMock()))->getInstallationMessage());
+        $this->assertSame([
+            Initialization\DatabaseInitializationStep::class,
+            Initialization\CacheInitializationStep::class,
+            Initialization\DockerInitializationStep::class,
+            Initialization\IntegrationInitializationStep::class,
+            Initialization\WordPressConfigurationInitializationStep::class,
+        ], (new WordPressProjectType(\Mockery::mock(Filesystem::class), \Mockery::mock(GitHubClient::class), \Mockery::mock(WpCliExecutable::class)))->getInitializationSteps());
+    }
+
+    public function testGetInstallationMessage(): void
+    {
+        $this->assertSame('Downloading WordPress using WP-CLI', (new WordPressProjectType(\Mockery::mock(Filesystem::class), \Mockery::mock(GitHubClient::class), \Mockery::mock(WpCliExecutable::class)))->getInstallationMessage());
+    }
+
+    public function testGetMediaDirectoryName(): void
+    {
+        $this->assertSame('uploads', (new WordPressProjectType(\Mockery::mock(Filesystem::class), \Mockery::mock(GitHubClient::class), \Mockery::mock(WpCliExecutable::class)))->getMediaDirectoryName());
+    }
+
+    public function testGetMediaDirectoryPathWithBaseDirectoryEndingWithSlash(): void
+    {
+        $buildDir = '/path/to/build/';
+        $projectType = new WordPressProjectType(\Mockery::mock(Filesystem::class), \Mockery::mock(GitHubClient::class), \Mockery::mock(WpCliExecutable::class));
+
+        $this->assertSame($buildDir.'wp-content/uploads', $projectType->getMediaDirectoryPath($buildDir));
+    }
+
+    public function testGetMediaDirectoryPathWithBaseDirectoryNotEndingWithSlash(): void
+    {
+        $buildDir = '/path/to/build';
+        $projectType = new WordPressProjectType(\Mockery::mock(Filesystem::class), \Mockery::mock(GitHubClient::class), \Mockery::mock(WpCliExecutable::class));
+
+        $this->assertSame($buildDir.'/wp-content/uploads', $projectType->getMediaDirectoryPath($buildDir));
+    }
+
+    public function testGetMediaDirectoryPathWithoutBasePathReturnsRelativePath(): void
+    {
+        $projectType = new WordPressProjectType(\Mockery::mock(Filesystem::class), \Mockery::mock(GitHubClient::class), \Mockery::mock(WpCliExecutable::class));
+
+        $this->assertSame('wp-content/uploads', $projectType->getMediaDirectoryPath());
     }
 
     public function testGetMustUsePluginsDirectoryPathWithBaseDirectoryEndingWithSlash(): void
     {
         $buildDir = '/path/to/build/';
-        $projectType = new WordPressProjectType($this->getFilesystemMock(), $this->getGitHubClientMock(), $this->getWpCliExecutableMock());
+        $projectType = new WordPressProjectType(\Mockery::mock(Filesystem::class), \Mockery::mock(GitHubClient::class), \Mockery::mock(WpCliExecutable::class));
 
         $this->assertSame($buildDir.'wp-content/mu-plugins', $projectType->getMustUsePluginsDirectoryPath($buildDir));
     }
@@ -206,27 +265,27 @@ class WordPressProjectTypeTest extends TestCase
     public function testGetMustUsePluginsDirectoryPathWithBaseDirectoryNotEndingWithSlash(): void
     {
         $buildDir = '/path/to/build';
-        $projectType = new WordPressProjectType($this->getFilesystemMock(), $this->getGitHubClientMock(), $this->getWpCliExecutableMock());
+        $projectType = new WordPressProjectType(\Mockery::mock(Filesystem::class), \Mockery::mock(GitHubClient::class), \Mockery::mock(WpCliExecutable::class));
 
         $this->assertSame($buildDir.'/wp-content/mu-plugins', $projectType->getMustUsePluginsDirectoryPath($buildDir));
     }
 
     public function testGetMustUsePluginsDirectoryPathWithoutBasePathReturnsRelativePath(): void
     {
-        $projectType = new WordPressProjectType($this->getFilesystemMock(), $this->getGitHubClientMock(), $this->getWpCliExecutableMock());
+        $projectType = new WordPressProjectType(\Mockery::mock(Filesystem::class), \Mockery::mock(GitHubClient::class), \Mockery::mock(WpCliExecutable::class));
 
         $this->assertSame('wp-content/mu-plugins', $projectType->getMustUsePluginsDirectoryPath());
     }
 
-    public function testGetName()
+    public function testGetName(): void
     {
-        $this->assertSame('WordPress', (new WordPressProjectType($this->getFilesystemMock(), $this->getGitHubClientMock(), $this->getWpCliExecutableMock()))->getName());
+        $this->assertSame('WordPress', (new WordPressProjectType(\Mockery::mock(Filesystem::class), \Mockery::mock(GitHubClient::class), \Mockery::mock(WpCliExecutable::class)))->getName());
     }
 
     public function testGetPluginsDirectoryPathWithBaseDirectoryEndingWithSlash(): void
     {
         $buildDir = '/path/to/build/';
-        $projectType = new WordPressProjectType($this->getFilesystemMock(), $this->getGitHubClientMock(), $this->getWpCliExecutableMock());
+        $projectType = new WordPressProjectType(\Mockery::mock(Filesystem::class), \Mockery::mock(GitHubClient::class), \Mockery::mock(WpCliExecutable::class));
 
         $this->assertSame($buildDir.'wp-content/plugins', $projectType->getPluginsDirectoryPath($buildDir));
     }
@@ -234,19 +293,19 @@ class WordPressProjectTypeTest extends TestCase
     public function testGetPluginsDirectoryPathWithBaseDirectoryNotEndingWithSlash(): void
     {
         $buildDir = '/path/to/build';
-        $projectType = new WordPressProjectType($this->getFilesystemMock(), $this->getGitHubClientMock(), $this->getWpCliExecutableMock());
+        $projectType = new WordPressProjectType(\Mockery::mock(Filesystem::class), \Mockery::mock(GitHubClient::class), \Mockery::mock(WpCliExecutable::class));
 
         $this->assertSame($buildDir.'/wp-content/plugins', $projectType->getPluginsDirectoryPath($buildDir));
     }
 
     public function testGetPluginsDirectoryPathWithoutBasePathReturnsRelativePath(): void
     {
-        $projectType = new WordPressProjectType($this->getFilesystemMock(), $this->getGitHubClientMock(), $this->getWpCliExecutableMock());
+        $projectType = new WordPressProjectType(\Mockery::mock(Filesystem::class), \Mockery::mock(GitHubClient::class), \Mockery::mock(WpCliExecutable::class));
 
         $this->assertSame('wp-content/plugins', $projectType->getPluginsDirectoryPath());
     }
 
-    public function testGetProjectFilesExcludesUploadsDirectory()
+    public function testGetProjectFilesExcludesUploadsDirectory(): void
     {
         mkdir($this->tempDirectory.'/wp-content/uploads', 0777, true);
 
@@ -255,7 +314,7 @@ class WordPressProjectTypeTest extends TestCase
         touch($keepFilePath);
         touch($this->tempDirectory.'/wp-content/uploads/excluded.txt');
 
-        $projectType = new WordPressProjectType(new Filesystem(), $this->getGitHubClientMock(), $this->getWpCliExecutableMock());
+        $projectType = new WordPressProjectType(new Filesystem(), \Mockery::mock(GitHubClient::class), \Mockery::mock(WpCliExecutable::class));
 
         $files = iterator_to_array($projectType->getProjectFiles($this->tempDirectory), false);
 
@@ -264,14 +323,14 @@ class WordPressProjectTypeTest extends TestCase
         $this->assertSame($keepFilePath, $files[0]->getPathname());
     }
 
-    public function testGetProjectFilesIncludesWpConfigEvenIfItsInGitignore()
+    public function testGetProjectFilesIncludesWpConfigEvenIfItsInGitignore(): void
     {
         $wpConfigFilePath = $this->tempDirectory.'/wp-config.php';
 
         touch($wpConfigFilePath);
         file_put_contents($this->tempDirectory.'/.gitignore', 'wp-config.php');
 
-        $projectType = new WordPressProjectType(new Filesystem(), $this->getGitHubClientMock(), $this->getWpCliExecutableMock());
+        $projectType = new WordPressProjectType(new Filesystem(), \Mockery::mock(GitHubClient::class), \Mockery::mock(WpCliExecutable::class));
 
         $files = iterator_to_array($projectType->getProjectFiles($this->tempDirectory), false);
 
@@ -280,89 +339,125 @@ class WordPressProjectTypeTest extends TestCase
         $this->assertSame($wpConfigFilePath, $files[0]->getPathname());
     }
 
-    public function testGetSlug()
+    public function testGetSlug(): void
     {
-        $this->assertSame('wordpress', (new WordPressProjectType($this->getFilesystemMock(), $this->getGitHubClientMock(), $this->getWpCliExecutableMock()))->getSlug());
+        $this->assertSame('wordpress', (new WordPressProjectType(\Mockery::mock(Filesystem::class), \Mockery::mock(GitHubClient::class), \Mockery::mock(WpCliExecutable::class)))->getSlug());
     }
 
-    public function testGetUploadsDirectoryPathWithBaseDirectoryEndingWithSlash(): void
+    public function testInstallIntegration(): void
     {
-        $buildDir = '/path/to/build/';
-        $projectType = new WordPressProjectType($this->getFilesystemMock(), $this->getGitHubClientMock(), $this->getWpCliExecutableMock());
+        $gitHubClient = \Mockery::mock(GitHubClient::class);
+        $zipArchive = \Mockery::mock(\ZipArchive::class);
 
-        $this->assertSame($buildDir.'wp-content/uploads', $projectType->getUploadsDirectoryPath($buildDir));
+        $gitHubClient->shouldReceive('downloadLatestVersion')->once()
+                     ->with('ymirapp/wordpress-plugin')
+                     ->andReturn($zipArchive);
+
+        $zipArchive->shouldReceive('extractTo')->once()
+                   ->with($this->tempDirectory.'/wp-content/plugins')
+                   ->andReturnUsing(function ($directory) {
+                       mkdir($directory.'/ymirapp-wordpress-plugin-1.0.0', 0777, true);
+
+                       return true;
+                   });
+
+        (new WordPressProjectType(new Filesystem(), $gitHubClient, \Mockery::mock(WpCliExecutable::class)))->installIntegration($this->tempDirectory);
+
+        $this->assertDirectoryExists($this->tempDirectory.'/wp-content/plugins/ymir-wordpress-plugin');
     }
 
-    public function testGetUploadsDirectoryPathWithBaseDirectoryNotEndingWithSlash(): void
+    public function testInstallProject(): void
     {
-        $buildDir = '/path/to/build';
-        $projectType = new WordPressProjectType($this->getFilesystemMock(), $this->getGitHubClientMock(), $this->getWpCliExecutableMock());
+        $wpCliExecutable = \Mockery::mock(WpCliExecutable::class);
 
-        $this->assertSame($buildDir.'/wp-content/uploads', $projectType->getUploadsDirectoryPath($buildDir));
-    }
+        $wpCliExecutable->shouldReceive('downloadWordPress')->once()
+                        ->with('/path/to/project');
 
-    public function testGetUploadsDirectoryPathWithoutBasePathReturnsRelativePath(): void
-    {
-        $projectType = new WordPressProjectType($this->getFilesystemMock(), $this->getGitHubClientMock(), $this->getWpCliExecutableMock());
-
-        $this->assertSame('wp-content/uploads', $projectType->getUploadsDirectoryPath());
-    }
-
-    public function testInstallProject()
-    {
-        $wpCliExecutable = $this->getWpCliExecutableMock();
-
-        $wpCliExecutable->expects($this->once())
-                        ->method('downloadWordPress')
-                        ->with($this->identicalTo('/path/to/project'));
-
-        (new WordPressProjectType($this->getFilesystemMock(), $this->getGitHubClientMock(), $wpCliExecutable))->installProject('/path/to/project');
+        (new WordPressProjectType(\Mockery::mock(Filesystem::class), \Mockery::mock(GitHubClient::class), $wpCliExecutable))->installProject('/path/to/project');
     }
 
     public function testIsEligibleForInstallationReturnsFalseWhenWpCliReturnsAWordPressVersion(): void
     {
-        $wpCliExecutable = $this->getWpCliExecutableMock();
+        $wpCliExecutable = \Mockery::mock(WpCliExecutable::class);
 
-        $wpCliExecutable->expects($this->once())
-                        ->method('getVersion')
-                        ->with($this->identicalTo($this->tempDirectory))
-                        ->willReturn('version');
+        $wpCliExecutable->shouldReceive('getVersion')->once()
+                        ->with($this->tempDirectory)
+                        ->andReturn('version');
 
-        $this->assertFalse((new WordPressProjectType($this->getFilesystemMock(), $this->getGitHubClientMock(), $wpCliExecutable))->isEligibleForInstallation($this->tempDirectory));
+        $this->assertFalse((new WordPressProjectType(\Mockery::mock(Filesystem::class), \Mockery::mock(GitHubClient::class), $wpCliExecutable))->isEligibleForInstallation($this->tempDirectory));
     }
 
     public function testIsEligibleForInstallationReturnsFalseWhenWpCliThrowsException(): void
     {
-        $wpCliExecutable = $this->getWpCliExecutableMock();
+        $wpCliExecutable = \Mockery::mock(WpCliExecutable::class);
 
-        $wpCliExecutable->expects($this->once())
-                        ->method('getVersion')
-                        ->willThrowException(new \Exception());
+        $wpCliExecutable->shouldReceive('getVersion')->once()
+                        ->andThrow(new \Exception());
 
-        $this->assertFalse((new WordPressProjectType($this->getFilesystemMock(), $this->getGitHubClientMock(), $wpCliExecutable))->isEligibleForInstallation($this->tempDirectory));
+        $this->assertFalse((new WordPressProjectType(\Mockery::mock(Filesystem::class), \Mockery::mock(GitHubClient::class), $wpCliExecutable))->isEligibleForInstallation($this->tempDirectory));
     }
 
     public function testIsEligibleForInstallationReturnsTrueWhenWpCliFailsToReturnAWordPressVersion(): void
     {
-        $wpCliExecutable = $this->getWpCliExecutableMock();
+        $wpCliExecutable = \Mockery::mock(WpCliExecutable::class);
 
-        $wpCliExecutable->expects($this->once())
-                        ->method('getVersion')
-                        ->with($this->identicalTo($this->tempDirectory))
-                        ->willReturn(null);
+        $wpCliExecutable->shouldReceive('getVersion')->once()
+                        ->with($this->tempDirectory)
+                        ->andReturn(null);
 
-        $this->assertTrue((new WordPressProjectType($this->getFilesystemMock(), $this->getGitHubClientMock(), $wpCliExecutable))->isEligibleForInstallation($this->tempDirectory));
+        $this->assertTrue((new WordPressProjectType(\Mockery::mock(Filesystem::class), \Mockery::mock(GitHubClient::class), $wpCliExecutable))->isEligibleForInstallation($this->tempDirectory));
     }
 
-    public function testMatchesProjectReturnsFalseWhenWpConfigIsMissing(): void
+    public function testIsIntegrationInstalledReturnsFalseWhenPluginsDirectoryIsMissing(): void
     {
-        $this->assertFalse((new WordPressProjectType(new Filesystem(), $this->getGitHubClientMock(), $this->getWpCliExecutableMock()))->matchesProject($this->tempDirectory));
+        $this->assertFalse((new WordPressProjectType(new Filesystem(), \Mockery::mock(GitHubClient::class), \Mockery::mock(WpCliExecutable::class)))->isIntegrationInstalled($this->tempDirectory));
     }
 
-    public function testMatchesProjectReturnsTrueWhenWpConfigIsPresent(): void
+    public function testIsIntegrationInstalledReturnsFalseWhenYmirPhpIsMissing(): void
     {
-        touch($this->tempDirectory.'/wp-config.php');
+        mkdir($this->tempDirectory.'/wp-content/plugins/ymir-wordpress-plugin', 0777, true);
 
-        $this->assertTrue((new WordPressProjectType(new Filesystem(), $this->getGitHubClientMock(), $this->getWpCliExecutableMock()))->matchesProject($this->tempDirectory));
+        $this->assertFalse((new WordPressProjectType(new Filesystem(), \Mockery::mock(GitHubClient::class), \Mockery::mock(WpCliExecutable::class)))->isIntegrationInstalled($this->tempDirectory));
+    }
+
+    public function testIsIntegrationInstalledReturnsTrueWhenYmirPhpIsPresent(): void
+    {
+        mkdir($this->tempDirectory.'/wp-content/plugins/ymir-wordpress-plugin', 0777, true);
+        file_put_contents($this->tempDirectory.'/wp-content/plugins/ymir-wordpress-plugin/ymir.php', "<?php\n/**\n * Plugin Name: Ymir\n */");
+
+        $this->assertTrue((new WordPressProjectType(new Filesystem(), \Mockery::mock(GitHubClient::class), \Mockery::mock(WpCliExecutable::class)))->isIntegrationInstalled($this->tempDirectory));
+    }
+
+    public function testMatchesProjectReturnsFalseWhenWpAdminIsMissing(): void
+    {
+        mkdir($this->tempDirectory.'/wp-content', 0777, true);
+        touch($this->tempDirectory.'/wp-config-sample.php');
+
+        $this->assertFalse((new WordPressProjectType(new Filesystem(), \Mockery::mock(GitHubClient::class), \Mockery::mock(WpCliExecutable::class)))->matchesProject($this->tempDirectory));
+    }
+
+    public function testMatchesProjectReturnsFalseWhenWpConfigSampleIsMissing(): void
+    {
+        mkdir($this->tempDirectory.'/wp-admin', 0777, true);
+        mkdir($this->tempDirectory.'/wp-content', 0777, true);
+
+        $this->assertFalse((new WordPressProjectType(new Filesystem(), \Mockery::mock(GitHubClient::class), \Mockery::mock(WpCliExecutable::class)))->matchesProject($this->tempDirectory));
+    }
+
+    public function testMatchesProjectReturnsFalseWhenWpContentIsMissing(): void
+    {
+        mkdir($this->tempDirectory.'/wp-admin', 0777, true);
+        touch($this->tempDirectory.'/wp-config-sample.php');
+
+        $this->assertFalse((new WordPressProjectType(new Filesystem(), \Mockery::mock(GitHubClient::class), \Mockery::mock(WpCliExecutable::class)))->matchesProject($this->tempDirectory));
+    }
+
+    public function testMatchesProjectReturnsTrueForWordPressStructure(): void
+    {
+        mkdir($this->tempDirectory.'/wp-admin', 0777, true);
+        mkdir($this->tempDirectory.'/wp-content', 0777, true);
+        touch($this->tempDirectory.'/wp-config-sample.php');
+
+        $this->assertTrue((new WordPressProjectType(new Filesystem(), \Mockery::mock(GitHubClient::class), \Mockery::mock(WpCliExecutable::class)))->matchesProject($this->tempDirectory));
     }
 }

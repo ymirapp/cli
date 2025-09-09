@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace Ymir\Cli\Exception;
 
-class CommandCancelledException extends \RuntimeException
+class CommandCancelledException extends RuntimeException implements ExceptionInterface
 {
     /**
      * Constructor.

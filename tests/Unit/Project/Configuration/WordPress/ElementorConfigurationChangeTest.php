@@ -14,16 +14,12 @@ declare(strict_types=1);
 namespace Ymir\Cli\Tests\Unit\Project\Configuration\WordPress;
 
 use Ymir\Cli\Project\Configuration\WordPress\ElementorConfigurationChange;
-use Ymir\Cli\Tests\Mock\AbstractWordPressProjectMockTrait;
-use Ymir\Cli\Tests\Unit\TestCase;
+use Ymir\Cli\Project\EnvironmentConfiguration;
+use Ymir\Cli\Project\Type\AbstractWordPressProjectType;
+use Ymir\Cli\Tests\TestCase;
 
-/**
- * @covers \Ymir\Cli\Project\Configuration\WordPress\ElementorConfigurationChange
- */
 class ElementorConfigurationChangeTest extends TestCase
 {
-    use AbstractWordPressProjectMockTrait;
-
     private $configurationChange;
 
     /**
@@ -34,60 +30,60 @@ class ElementorConfigurationChangeTest extends TestCase
         $this->configurationChange = new ElementorConfigurationChange();
     }
 
-    public function testApplyDoesntDuplicateExistingOptions()
+    public function testApplyDoesntDuplicateExistingOptions(): void
     {
-        $projectType = $this->getAbstractWordPressProjectTypeMock();
+        $projectType = \Mockery::mock(AbstractWordPressProjectType::class);
 
         $this->assertSame([
             'cdn' => [
                 'excluded_paths' => ['/uploads/elementor/*'],
             ],
-        ], $this->configurationChange->apply([
+        ], $this->configurationChange->apply(new EnvironmentConfiguration('staging', [
             'cdn' => [
                 'excluded_paths' => ['/uploads/elementor/*'],
             ],
-        ], $projectType));
+        ]), $projectType)->toArray());
     }
 
-    public function testApplyDoesntEraseExistingOptions()
+    public function testApplyDoesntEraseExistingOptions(): void
     {
-        $projectType = $this->getAbstractWordPressProjectTypeMock();
+        $projectType = \Mockery::mock(AbstractWordPressProjectType::class);
 
         $this->assertSame([
             'cdn' => [
                 'excluded_paths' => ['/foo', '/uploads/elementor/*'],
             ],
-        ], $this->configurationChange->apply([
+        ], $this->configurationChange->apply(new EnvironmentConfiguration('staging', [
             'cdn' => [
                 'excluded_paths' => ['/foo'],
             ],
-        ], $projectType));
+        ]), $projectType)->toArray());
     }
 
-    public function testApplyWithImageDeployment()
+    public function testApplyWithImageDeployment(): void
     {
-        $projectType = $this->getAbstractWordPressProjectTypeMock();
+        $projectType = \Mockery::mock(AbstractWordPressProjectType::class);
 
         $this->assertSame([
             'cdn' => [
                 'excluded_paths' => ['/uploads/elementor/*'],
             ],
             'deployment' => 'image',
-        ], $this->configurationChange->apply(['deployment' => 'image'], $projectType));
+        ], $this->configurationChange->apply(new EnvironmentConfiguration('staging', ['deployment' => 'image']), $projectType)->toArray());
     }
 
-    public function testApplyWithNoImageDeployment()
+    public function testApplyWithNoImageDeployment(): void
     {
-        $projectType = $this->getAbstractWordPressProjectTypeMock();
+        $projectType = \Mockery::mock(AbstractWordPressProjectType::class);
 
         $this->assertSame([
             'cdn' => [
                 'excluded_paths' => ['/uploads/elementor/*'],
             ],
-        ], $this->configurationChange->apply([], $projectType));
+        ], $this->configurationChange->apply(new EnvironmentConfiguration('staging', []), $projectType)->toArray());
     }
 
-    public function testGetName()
+    public function testGetName(): void
     {
         $this->assertSame('elementor', $this->configurationChange->getName());
     }

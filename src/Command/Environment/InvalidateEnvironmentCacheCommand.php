@@ -15,9 +15,11 @@ namespace Ymir\Cli\Command\Environment;
 
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
-use Ymir\Cli\Command\AbstractProjectCommand;
+use Ymir\Cli\Command\AbstractCommand;
+use Ymir\Cli\Command\LocalProjectCommandInterface;
+use Ymir\Cli\Resource\Model\Environment;
 
-class InvalidateEnvironmentCacheCommand extends AbstractProjectCommand
+class InvalidateEnvironmentCacheCommand extends AbstractCommand implements LocalProjectCommandInterface
 {
     /**
      * The name of the command.
@@ -34,7 +36,7 @@ class InvalidateEnvironmentCacheCommand extends AbstractProjectCommand
         $this
             ->setName(self::NAME)
             ->setDescription('Invalidate the environment\'s content delivery network cache')
-            ->addArgument('environment', InputArgument::OPTIONAL, 'The name of the environment to invalidate the cache of', 'staging')
+            ->addArgument('environment', InputArgument::OPTIONAL, 'The name of the environment to invalidate the cache of')
             ->addOption('path', null, InputOption::VALUE_OPTIONAL | InputOption::VALUE_IS_ARRAY, 'The path(s) to invalidate on the content delivery network', ['*']);
     }
 
@@ -43,6 +45,10 @@ class InvalidateEnvironmentCacheCommand extends AbstractProjectCommand
      */
     protected function perform()
     {
-        $this->apiClient->invalidateCache($this->projectConfiguration->getProjectId(), $this->input->getStringArgument('environment'), $this->input->getArrayOption('path'));
+        $environment = $this->resolve(Environment::class, 'Which <comment>%s</comment> environment would you like to invalidate the cache of?');
+
+        $this->apiClient->invalidateCache($this->getProject(), $environment, $this->input->getArrayOption('path'));
+
+        $this->output->info('Cache invalidation started');
     }
 }

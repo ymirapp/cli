@@ -13,18 +13,18 @@ declare(strict_types=1);
 
 namespace Ymir\Cli\EventListener;
 
-use Illuminate\Support\Arr;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\ConsoleEvents;
 use Symfony\Component\Console\Event\ConsoleCommandEvent;
-use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
-use Ymir\Cli\ApiClient;
-use Ymir\Cli\CliConfiguration;
 use Ymir\Cli\Command\LoginCommand;
 use Ymir\Cli\Command\Project\InitializeProjectCommand;
-use Ymir\Cli\Command\Team;
-use Ymir\Cli\Project\Configuration\ProjectConfiguration;
+use Ymir\Cli\Command\Team as TeamCommand;
+use Ymir\Cli\Exception\RuntimeException;
+use Ymir\Cli\Project\ProjectLocator;
+use Ymir\Cli\Resource\Model\Project;
+use Ymir\Cli\Resource\Model\Team;
+use Ymir\Cli\Team\TeamLocator;
 
 class ProjectTeamGuardSubscriber implements EventSubscriberInterface
 {
@@ -36,40 +36,32 @@ class ProjectTeamGuardSubscriber implements EventSubscriberInterface
         'list',
         LoginCommand::NAME,
         InitializeProjectCommand::NAME,
-        Team\CurrentTeamCommand::NAME,
-        Team\ListTeamsCommand::NAME,
-        Team\SelectTeamCommand::NAME,
+        TeamCommand\CurrentTeamCommand::NAME,
+        TeamCommand\ListTeamsCommand::NAME,
+        TeamCommand\SelectTeamCommand::NAME,
     ];
 
     /**
-     * The API client that interacts with the Ymir API.
+     * The Ymir project locator.
      *
-     * @var ApiClient
+     * @var ProjectLocator
      */
-    private $apiClient;
+    private $projectLocator;
 
     /**
-     * The global Ymir CLI configuration.
+     * The Ymir team locator.
      *
-     * @var CliConfiguration
+     * @var TeamLocator
      */
-    private $cliConfiguration;
-
-    /**
-     * The Ymir project configuration.
-     *
-     * @var ProjectConfiguration
-     */
-    private $projectConfiguration;
+    private $teamLocator;
 
     /**
      * Constructor.
      */
-    public function __construct(ApiClient $apiClient, CliConfiguration $cliConfiguration, ProjectConfiguration $projectConfiguration)
+    public function __construct(ProjectLocator $projectLocator, TeamLocator $teamLocator)
     {
-        $this->apiClient = $apiClient;
-        $this->cliConfiguration = $cliConfiguration;
-        $this->projectConfiguration = $projectConfiguration;
+        $this->projectLocator = $projectLocator;
+        $this->teamLocator = $teamLocator;
     }
 
     /**
@@ -85,21 +77,19 @@ class ProjectTeamGuardSubscriber implements EventSubscriberInterface
     /**
      * Checks that the current team matches the project team if in a project directory.
      */
-    public function onConsoleCommand(ConsoleCommandEvent $event)
+    public function onConsoleCommand(ConsoleCommandEvent $event): void
     {
-        if (!$this->projectConfiguration->exists() || !$this->cliConfiguration->hasActiveTeam() || !$event->getCommand() instanceof Command || in_array($event->getCommand()->getName(), self::IGNORED_COMMANDS)) {
+        $activeTeam = $this->teamLocator->getTeam();
+        $project = $this->projectLocator->getProject();
+
+        if (!$project instanceof Project || !$activeTeam instanceof Team || !$event->getCommand() instanceof Command || in_array($event->getCommand()->getName(), self::IGNORED_COMMANDS)) {
             return;
         }
 
-        $activeTeamId = $this->cliConfiguration->getActiveTeamId();
-        $projectTeam = Arr::get($this->apiClient->getProject($this->projectConfiguration->getProjectId()), 'provider.team');
+        $projectTeam = $project->getTeam();
 
-        if (empty($projectTeam['id']) || $activeTeamId === $projectTeam['id']) {
-            return;
+        if ($activeTeam->getId() !== $projectTeam->getId()) {
+            throw new RuntimeException(sprintf('Your active team "%s" doesn\'t match the project\'s team "%s", but you can use the "%s %d" command to switch to the project\'s team', $activeTeam->getName(), $projectTeam->getName(), TeamCommand\SelectTeamCommand::NAME, $projectTeam->getId()));
         }
-
-        $activeTeam = $this->apiClient->getTeam($activeTeamId);
-
-        throw new RuntimeException(sprintf('Your active team "%s" does not match the project\'s team "%s". Use the "%s %d" command to switch to the project\'s team.', $activeTeam['name'], $projectTeam['name'], Team\SelectTeamCommand::NAME, $projectTeam['id']));
     }
 }

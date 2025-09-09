@@ -15,8 +15,8 @@ namespace Ymir\Cli\Project\Type;
 
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
-use Ymir\Cli\Build;
 use Ymir\Cli\Executable\ComposerExecutable;
+use Ymir\Cli\Project\Build;
 use Ymir\Cli\Support\Arr;
 
 class RadicleProjectType extends AbstractWordPressProjectType
@@ -74,17 +74,6 @@ class RadicleProjectType extends AbstractWordPressProjectType
     /**
      * {@inheritdoc}
      */
-    public function getEnvironmentConfiguration(string $environment, array $baseConfiguration = []): array
-    {
-        return Arr::add(parent::getEnvironmentConfiguration($environment, $baseConfiguration), 'build', [
-            'COMPOSER_MIRROR_PATH_REPOS=1 composer install'.('production' === $environment ? ' --no-dev' : ''),
-            'yarn install && yarn build && rm -rf node_modules',
-        ]);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
     public function getName(): string
     {
         return 'Radicle';
@@ -93,7 +82,7 @@ class RadicleProjectType extends AbstractWordPressProjectType
     /**
      * {@inheritdoc}
      */
-    public function installIntegration(string $projectDirectory)
+    public function installIntegration(string $projectDirectory): void
     {
         $this->composerExecutable->require('ymirapp/wordpress-plugin', $projectDirectory);
         $this->composerExecutable->require('ymirapp/laravel-bridge', $projectDirectory);
@@ -122,6 +111,17 @@ class RadicleProjectType extends AbstractWordPressProjectType
     protected function buildWordPressCorePathPattern(string $path): string
     {
         return sprintf('/^public\/wp\/%s/', $path);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function generateEnvironmentConfigurationArray(string $environment, array $baseConfiguration = []): array
+    {
+        return Arr::add(parent::generateEnvironmentConfigurationArray($environment, $baseConfiguration), 'build', [
+            'COMPOSER_MIRROR_PATH_REPOS=1 composer install'.('production' === $environment ? ' --no-dev' : ''),
+            'yarn install && yarn build && rm -rf node_modules',
+        ]);
     }
 
     /**

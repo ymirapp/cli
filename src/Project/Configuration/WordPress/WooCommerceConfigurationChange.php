@@ -38,7 +38,7 @@ class WooCommerceConfigurationChange extends AbstractWordPressConfigurationChang
     /**
      * {@inheritdoc}
      */
-    protected function getOptionsToMerge(): array
+    protected function getConfiguration(): array
     {
         return [
             'cdn' => [

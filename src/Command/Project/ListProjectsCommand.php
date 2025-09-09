@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Ymir\Cli\Command\Project;
 
 use Ymir\Cli\Command\AbstractCommand;
+use Ymir\Cli\Resource\Model\Project;
 
 class ListProjectsCommand extends AbstractCommand
 {
@@ -39,12 +40,12 @@ class ListProjectsCommand extends AbstractCommand
      */
     protected function perform()
     {
-        $projects = $this->apiClient->getProjects($this->cliConfiguration->getActiveTeamId());
+        $projects = $this->apiClient->getProjects($this->getTeam());
 
         $this->output->table(
             ['Id', 'Name', 'Provider', 'Region'],
-            $projects->map(function (array $project) {
-                return [$project['id'], $project['name'], $project['provider']['name'], $project['region']];
+            $projects->map(function (Project $project) {
+                return [$project->getId(), $project->getName(), $project->getProvider()->getName(), $project->getRegion()];
             })->all()
         );
     }

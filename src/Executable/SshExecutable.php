@@ -13,10 +13,12 @@ declare(strict_types=1);
 
 namespace Ymir\Cli\Executable;
 
-use Symfony\Component\Console\Exception\InvalidArgumentException;
+use Carbon\Carbon;
 use Symfony\Component\Filesystem\Filesystem;
+use Ymir\Cli\Exception\Executable\ExecutableException;
 use Ymir\Cli\Exception\Executable\SshPortInUseException;
 use Ymir\Cli\Process\Process;
+use Ymir\Cli\Resource\Model\BastionHost;
 
 class SshExecutable extends AbstractExecutable
 {
@@ -59,28 +61,34 @@ class SshExecutable extends AbstractExecutable
     /**
      * Opens an SSH tunnel to a bastion host and returns the running tunnel process.
      */
-    public function openTunnelToBastionHost(array $bastionHost, int $localPort, string $remoteHost, int $remotePort, ?string $cwd = null): Process
+    public function openTunnelToBastionHost(BastionHost $bastionHost, int $localPort, string $remoteHost, int $remotePort, ?string $cwd = null): Process
     {
-        if (!isset($bastionHost['endpoint'], $bastionHost['private_key'])) {
-            throw new InvalidArgumentException('Bastion host configuration must contain an "endpoint" and a "private_key"');
-        }
-
         if (!is_dir($this->sshDirectory)) {
             $this->filesystem->mkdir($this->sshDirectory, 0700);
         }
 
         $identityFilePath = $this->sshDirectory.'/ymir-tunnel';
 
-        $this->filesystem->dumpFile($identityFilePath, $bastionHost['private_key']);
+        $this->filesystem->dumpFile($identityFilePath, $bastionHost->getPrivateKey());
         $this->filesystem->chmod($identityFilePath, 0600);
 
-        $process = $this->getProcess(sprintf('ec2-user@%s -i %s -o LogLevel=debug -L %s:%s:%s -N', $bastionHost['endpoint'], $identityFilePath, $localPort, $remoteHost, $remotePort), $cwd, null);
-        $process->start(function ($type, $buffer) use ($localPort) {
+        $process = $this->getProcess(sprintf('ec2-user@%s -i %s -o LogLevel=debug -L %s:%s:%s -N', $bastionHost->getEndpoint(), $identityFilePath, $localPort, $remoteHost, $remotePort), $cwd, null);
+        $process->start(function ($type, $buffer) use ($localPort): void {
             if (Process::ERR === $type && false !== stripos($buffer, sprintf('%s: address already in use', $localPort))) {
                 throw new SshPortInUseException($localPort);
             }
         });
 
-        return $process;
+        $timeout = Carbon::now()->addSeconds(10);
+
+        while ($process->isRunning() && Carbon::now()->lessThan($timeout)) {
+            if (str_contains($process->getIncrementalErrorOutput(), sprintf('Authenticated to %s', $bastionHost->getEndpoint()))) {
+                return $process;
+            }
+
+            usleep(100000);
+        }
+
+        throw new ExecutableException('Attempt to create a SSH tunnel to the bastion host timed out after 10 seconds');
     }
 }

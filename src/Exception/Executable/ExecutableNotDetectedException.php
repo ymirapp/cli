@@ -13,10 +13,9 @@ declare(strict_types=1);
 
 namespace Ymir\Cli\Exception\Executable;
 
-use Symfony\Component\Console\Exception\RuntimeException;
 use Ymir\Cli\Executable\ExecutableInterface;
 
-class ExecutableNotDetectedException extends RuntimeException
+class ExecutableNotDetectedException extends ExecutableException
 {
     /**
      * Constructor.

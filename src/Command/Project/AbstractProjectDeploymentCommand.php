@@ -13,16 +13,17 @@ declare(strict_types=1);
 
 namespace Ymir\Cli\Command\Project;
 
-use Illuminate\Support\Collection;
 use Ymir\Cli\ApiClient;
-use Ymir\Cli\CliConfiguration;
-use Ymir\Cli\Command\AbstractProjectCommand;
+use Ymir\Cli\Command\AbstractCommand;
 use Ymir\Cli\Command\Email\CreateEmailIdentityCommand;
 use Ymir\Cli\Command\Environment\GetEnvironmentUrlCommand;
-use Ymir\Cli\Deployment\DeploymentStepInterface;
-use Ymir\Cli\Project\Configuration\ProjectConfiguration;
+use Ymir\Cli\Command\LocalProjectCommandInterface;
+use Ymir\Cli\ExecutionContextFactory;
+use Ymir\Cli\Project\Deployment\DeploymentStepInterface;
+use Ymir\Cli\Resource\Model\Deployment;
+use Ymir\Cli\Resource\Model\Environment;
 
-abstract class AbstractProjectDeploymentCommand extends AbstractProjectCommand
+abstract class AbstractProjectDeploymentCommand extends AbstractCommand implements LocalProjectCommandInterface
 {
     /**
      * The deployment steps to perform.
@@ -32,11 +33,18 @@ abstract class AbstractProjectDeploymentCommand extends AbstractProjectCommand
     private $deploymentSteps;
 
     /**
+     * The environment being deployed to.
+     *
+     * @var Environment|null
+     */
+    private $environment;
+
+    /**
      * Constructor.
      */
-    public function __construct(ApiClient $apiClient, CliConfiguration $cliConfiguration, ProjectConfiguration $projectConfiguration, array $deploymentSteps = [])
+    public function __construct(ApiClient $apiClient, ExecutionContextFactory $contextFactory, array $deploymentSteps = [])
     {
-        parent::__construct($apiClient, $cliConfiguration, $projectConfiguration);
+        parent::__construct($apiClient, $contextFactory);
 
         $this->deploymentSteps = [];
 
@@ -46,37 +54,49 @@ abstract class AbstractProjectDeploymentCommand extends AbstractProjectCommand
     }
 
     /**
+     * Get the environment being deployed to.
+     */
+    protected function getEnvironment(): Environment
+    {
+        return $this->environment;
+    }
+
+    /**
      * {@inheritdoc}
      */
     protected function perform()
     {
+        $this->environment = $this->resolve(Environment::class, $this->getEnvironmentQuestion());
+
         $deployment = $this->createDeployment();
-        $environment = $this->input->getStringArgument('environment');
 
         foreach ($this->deploymentSteps as $deploymentStep) {
-            $deploymentStep->perform($deployment, $environment, $this->input, $this->output);
+            $deploymentStep->perform($this->getContext(), $deployment, $this->environment);
         }
 
-        $this->output->info($this->getSuccessMessage($environment));
+        $this->output->info($this->getSuccessMessage($this->environment->getName()));
 
-        $this->invoke(GetEnvironmentUrlCommand::NAME, ['environment' => $environment]);
+        $this->invoke(GetEnvironmentUrlCommand::NAME, ['environment' => $this->environment->getName()]);
 
-        if (!array_key_exists('domain', $this->projectConfiguration->getEnvironment($environment))) {
+        if (!$this->getProjectConfiguration()->getEnvironment($this->environment->getName())->hasDomainConfiguration()) {
             $this->output->newLine();
             $this->output->note(sprintf('You cannot send emails using the "<comment>ymirsites.com</comment>" domain. Please use the "<comment>%s</comment>" command to add an email address or domain for sending emails.', CreateEmailIdentityCommand::NAME));
+
+            $this->output->newLine();
+            $this->output->writeln("This environment isn't mapped to a domain.\n\nPlease refer to this guide to learn how: https://docs.ymirapp.com/guides/domain-mapping.html");
 
             return;
         }
 
-        $unmanagedDomains = collect($this->apiClient->getDeployment((int) $deployment->get('id'))->get('unmanaged_domains'));
+        $unmanagedDomains = collect($this->apiClient->getDeployment($deployment->getId())->getUnmanagedDomains());
 
         if ($unmanagedDomains->isEmpty()) {
             return;
         }
 
-        $vanityDomainName = $this->apiClient->getEnvironmentVanityDomainName($this->projectConfiguration->getProjectId(), $environment);
+        $vanityDomainName = $this->environment->getVanityDomainName();
 
-        $unmanagedDomains = $unmanagedDomains->filter(function (string $unmanagedDomain) use ($vanityDomainName) {
+        $unmanagedDomains = $unmanagedDomains->filter(function (string $unmanagedDomain) use ($vanityDomainName): bool {
             try {
                 return !collect((array) dns_get_record($unmanagedDomain, DNS_CNAME))->contains('target', $vanityDomainName);
             } catch (\Throwable $exception) {
@@ -102,7 +122,12 @@ abstract class AbstractProjectDeploymentCommand extends AbstractProjectCommand
     /**
      * Create the deployment and return its ID.
      */
-    abstract protected function createDeployment(): Collection;
+    abstract protected function createDeployment(): Deployment;
+
+    /**
+     * Get the question to ask for the environment.
+     */
+    abstract protected function getEnvironmentQuestion(): string;
 
     /**
      * Get the message to display when a deployment was successful.
@@ -112,7 +137,7 @@ abstract class AbstractProjectDeploymentCommand extends AbstractProjectCommand
     /**
      * Add a deployment step to the command.
      */
-    private function addDeploymentStep(DeploymentStepInterface $deploymentStep)
+    private function addDeploymentStep(DeploymentStepInterface $deploymentStep): void
     {
         $this->deploymentSteps[] = $deploymentStep;
     }

@@ -10,7 +10,9 @@
          processIsolation="false"
          stopOnFailure="false">
     <testsuites>
-        <!-- Unit tests need to run first -->
+        <testsuite name="integration">
+            <directory suffix="Test.php">./tests/Integration</directory>
+        </testsuite>
         <testsuite name="unit">
             <directory suffix="Test.php">./tests/Unit</directory>
         </testsuite>

@@ -15,9 +15,12 @@ namespace Ymir\Cli\Command\Environment;
 
 use Carbon\Carbon;
 use Symfony\Component\Console\Input\InputArgument;
-use Ymir\Cli\Command\AbstractProjectCommand;
+use Ymir\Cli\Command\AbstractCommand;
+use Ymir\Cli\Command\LocalProjectCommandInterface;
+use Ymir\Cli\Resource\Model\Environment;
+use Ymir\Cli\Resource\Model\Secret;
 
-class ListEnvironmentSecretsCommand extends AbstractProjectCommand
+class ListEnvironmentSecretsCommand extends AbstractCommand implements LocalProjectCommandInterface
 {
     /**
      * The name of the command.
@@ -34,7 +37,7 @@ class ListEnvironmentSecretsCommand extends AbstractProjectCommand
         $this
             ->setName(self::NAME)
             ->setDescription('List an environment\'s secrets')
-            ->addArgument('environment', InputArgument::OPTIONAL, 'The name of the environment to list secrets of', 'staging');
+            ->addArgument('environment', InputArgument::OPTIONAL, 'The name of the environment to list secrets of');
     }
 
     /**
@@ -42,10 +45,12 @@ class ListEnvironmentSecretsCommand extends AbstractProjectCommand
      */
     protected function perform()
     {
+        $environment = $this->resolve(Environment::class, 'Which <comment>%s</comment> environment would you like to list the secrets of?');
+
         $this->output->table(
             ['Id', 'Name', 'Last Updated'],
-            $this->apiClient->getSecrets($this->projectConfiguration->getProjectId(), $this->input->getStringArgument('environment'))->map(function (array $secret) {
-                return [$secret['id'], $secret['name'], Carbon::parse($secret['updated_at'])->diffForHumans()];
+            $this->apiClient->getSecrets($this->getProject(), $environment)->map(function (Secret $secret) {
+                return [$secret->getId(), $secret->getName(), Carbon::parse($secret->getUpdatedAt())->diffForHumans()];
             })->all()
         );
     }

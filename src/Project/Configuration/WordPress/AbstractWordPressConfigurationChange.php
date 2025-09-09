@@ -13,7 +13,8 @@ declare(strict_types=1);
 
 namespace Ymir\Cli\Project\Configuration\WordPress;
 
-use Symfony\Component\Console\Exception\InvalidArgumentException;
+use Ymir\Cli\Exception\LogicException;
+use Ymir\Cli\Project\EnvironmentConfiguration;
 use Ymir\Cli\Project\Type\AbstractWordPressProjectType;
 use Ymir\Cli\Project\Type\ProjectTypeInterface;
 use Ymir\Cli\Support\Arr;
@@ -23,20 +24,20 @@ abstract class AbstractWordPressConfigurationChange implements WordPressConfigur
     /**
      * {@inheritdoc}
      */
-    public function apply(array $options, ProjectTypeInterface $projectType): array
+    public function apply(EnvironmentConfiguration $configuration, ProjectTypeInterface $projectType): EnvironmentConfiguration
     {
         if (!$projectType instanceof AbstractWordPressProjectType) {
-            throw new InvalidArgumentException('Can only apply these configuration changes to WordPress projects');
+            throw new LogicException('Can only apply these configuration changes to WordPress projects');
         }
 
         $buildIncludePaths = $this->getBuildIncludePaths($projectType);
-        $optionsToMerge = $this->getOptionsToMerge();
+        $configurationChange = $this->getConfiguration();
 
-        if ('image' !== Arr::get($options, 'deployment') && !empty($buildIncludePaths)) {
-            Arr::set($optionsToMerge, 'build.include', $buildIncludePaths);
+        if (!$configuration->isImageDeploymentType() && !empty($buildIncludePaths)) {
+            Arr::set($configurationChange, 'build.include', $buildIncludePaths);
         }
 
-        return Arr::sortRecursive(Arr::uniqueRecursive(array_merge_recursive($options, $optionsToMerge)));
+        return $configuration->merge($configurationChange);
     }
 
     /**
@@ -56,9 +57,9 @@ abstract class AbstractWordPressConfigurationChange implements WordPressConfigur
     }
 
     /**
-     * Get the options to merge into the project configuration.
+     * Get the configuration to merge into the environment.
      */
-    protected function getOptionsToMerge(): array
+    protected function getConfiguration(): array
     {
         return [];
     }

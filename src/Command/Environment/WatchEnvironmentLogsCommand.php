@@ -15,10 +15,16 @@ namespace Ymir\Cli\Command\Environment;
 
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
+use Ymir\Cli\Command\AbstractCommand;
+use Ymir\Cli\Command\HandlesEnvironmentLogsTrait;
+use Ymir\Cli\Command\LocalProjectCommandInterface;
 use Ymir\Cli\Exception\InvalidInputException;
+use Ymir\Cli\Resource\Model\Environment;
 
-class WatchEnvironmentLogsCommand extends AbstractEnvironmentLogsCommand
+class WatchEnvironmentLogsCommand extends AbstractCommand implements LocalProjectCommandInterface
 {
+    use HandlesEnvironmentLogsTrait;
+
     /**
      * The name of the command.
      *
@@ -34,7 +40,7 @@ class WatchEnvironmentLogsCommand extends AbstractEnvironmentLogsCommand
         $this
             ->setName(self::NAME)
             ->setDescription('Continuously monitor and display the most recent logs for an environment function')
-            ->addArgument('environment', InputArgument::OPTIONAL, 'The name of the environment to get the logs of', 'staging')
+            ->addArgument('environment', InputArgument::OPTIONAL, 'The name of the environment to get the logs of')
             ->addArgument('function', InputArgument::OPTIONAL, 'The environment function to get the logs of', 'website')
             ->addOption('interval', null, InputOption::VALUE_REQUIRED, 'Interval (in seconds) to poll for new logs', 30)
             ->addOption('timezone', null, InputOption::VALUE_REQUIRED, 'The timezone to display the log times in');
@@ -45,7 +51,8 @@ class WatchEnvironmentLogsCommand extends AbstractEnvironmentLogsCommand
      */
     protected function perform()
     {
-        $environment = $this->input->getStringArgument('environment');
+        $environment = $this->resolve(Environment::class, 'Which <comment>%s</comment> environment would you like to watch logs for?');
+
         $function = strtolower($this->input->getStringArgument('function'));
         $interval = (int) $this->input->getNumericOption('interval');
         $since = (int) round(microtime(true) * 1000);
@@ -57,7 +64,7 @@ class WatchEnvironmentLogsCommand extends AbstractEnvironmentLogsCommand
         while (true) {
             sleep($interval);
 
-            $this->writeLogs($this->apiClient->getEnvironmentLogs($this->projectConfiguration->getProjectId(), $environment, $function, $since), $this->input->getStringOption('timezone'));
+            $this->writeLogs($this->apiClient->getEnvironmentLogs($this->getProject(), $environment, $function, $since), $this->input->getStringOption('timezone'));
 
             $since += $interval * 1000 + 1;
         }

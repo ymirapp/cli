@@ -14,20 +14,18 @@ declare(strict_types=1);
 namespace Ymir\Cli\Command\Database;
 
 use Carbon\Carbon;
-use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Filesystem\Filesystem;
 use Ymir\Cli\ApiClient;
-use Ymir\Cli\CliConfiguration;
-use Ymir\Cli\Database\Connection;
 use Ymir\Cli\Database\Mysqldump;
 use Ymir\Cli\Exception\InvalidInputException;
+use Ymir\Cli\Exception\SystemException;
 use Ymir\Cli\Executable\SshExecutable;
+use Ymir\Cli\ExecutionContextFactory;
 use Ymir\Cli\Process\Process;
-use Ymir\Cli\Project\Configuration\ProjectConfiguration;
 
-class ExportDatabaseCommand extends AbstractDatabaseCommand
+class ExportDatabaseCommand extends AbstractDatabaseTunnelCommand
 {
     /**
      * The name of the command.
@@ -46,9 +44,9 @@ class ExportDatabaseCommand extends AbstractDatabaseCommand
     /**
      * Constructor.
      */
-    public function __construct(ApiClient $apiClient, CliConfiguration $cliConfiguration, Filesystem $filesystem, ProjectConfiguration $projectConfiguration, SshExecutable $sshExecutable)
+    public function __construct(ApiClient $apiClient, ExecutionContextFactory $contextFactory, Filesystem $filesystem, SshExecutable $sshExecutable)
     {
-        parent::__construct($apiClient, $cliConfiguration, $projectConfiguration, $sshExecutable);
+        parent::__construct($apiClient, $contextFactory, $sshExecutable);
 
         $this->filesystem = $filesystem;
     }
@@ -79,7 +77,7 @@ class ExportDatabaseCommand extends AbstractDatabaseCommand
             throw new InvalidInputException('The compression method must be either "gzip" or "none"');
         }
 
-        $connection = $this->getConnection();
+        $connection = $this->getConnection('Which <comment>%s</comment> database would you like to export?', 'Which database server would you like to export a database from?');
         $filename = sprintf('%s_%s.%s', $connection->getDatabase(), Carbon::now()->toDateString(), 'gzip' === $compression ? 'sql.gz' : 'sql');
 
         if ($this->filesystem->exists($filename) && !$this->output->confirm(sprintf('The "<comment>%s</comment>" backup file already exists. Do you want to overwrite it?', $filename), false)) {
@@ -88,7 +86,7 @@ class ExportDatabaseCommand extends AbstractDatabaseCommand
 
         $tunnel = null;
 
-        if (!$connection->needsSshTunnel()) {
+        if ($connection->needsSshTunnel()) {
             $tunnel = $this->openSshTunnel($connection->getDatabaseServer());
         }
 
@@ -97,7 +95,7 @@ class ExportDatabaseCommand extends AbstractDatabaseCommand
         try {
             Mysqldump::fromConnection($connection, ['compress' => $compression])->start($filename);
         } catch (\Throwable $exception) {
-            throw new RuntimeException('Failed to export database: '.$exception->getMessage());
+            throw new SystemException(sprintf('Failed to export database: %s', $exception->getMessage()));
         } finally {
             if ($tunnel instanceof Process) {
                 $tunnel->stop();
@@ -105,25 +103,5 @@ class ExportDatabaseCommand extends AbstractDatabaseCommand
         }
 
         $this->output->infoWithValue('Database exported successfully to', $filename);
-    }
-
-    /**
-     * Get the connection to the database by prompting for any missing information.
-     */
-    private function getConnection(): Connection
-    {
-        $databaseServer = $this->determineDatabaseServer('Which database server would you like to export a database from?');
-        $database = $this->input->getStringArgument('database');
-
-        if (empty($database) && !$databaseServer['publicly_accessible']) {
-            throw new RuntimeException('You must specify the database name to export for a private database server');
-        } elseif (empty($database)) {
-            $database = $this->output->choice('Which database would you like to export?', $this->apiClient->getDatabases($databaseServer['id']));
-        }
-
-        $user = $this->determineUser();
-        $password = $this->determinePassword($user);
-
-        return new Connection($database, $databaseServer, $user, $password);
     }
 }

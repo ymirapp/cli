@@ -13,10 +13,12 @@ declare(strict_types=1);
 
 namespace Ymir\Cli\Command\Database;
 
-use Carbon\Carbon;
 use Symfony\Component\Console\Input\InputArgument;
+use Ymir\Cli\Command\AbstractCommand;
+use Ymir\Cli\Resource\Model\DatabaseServer;
+use Ymir\Cli\Resource\Model\DatabaseUser;
 
-class ListDatabaseUsersCommand extends AbstractDatabaseServerCommand
+class ListDatabaseUsersCommand extends AbstractCommand
 {
     /**
      * The name of the command.
@@ -41,10 +43,12 @@ class ListDatabaseUsersCommand extends AbstractDatabaseServerCommand
      */
     protected function perform()
     {
+        $databaseServer = $this->resolve(DatabaseServer::class, 'Which database server would you like to list users from?');
+
         $this->output->table(
             ['Id', 'Username', 'Created At'],
-            $this->apiClient->getDatabaseUsers($this->determineDatabaseServer('Which database server would you like to list users from')['id'])->map(function (array $database) {
-                return [$database['id'], $database['username'], Carbon::parse($database['created_at'])->diffForHumans()];
+            $this->apiClient->getDatabaseUsers($databaseServer)->map(function (DatabaseUser $databaseUser) {
+                return [$databaseUser->getId(), $databaseUser->getName(), $databaseUser->getCreatedAt()->diffForHumans()];
             })->all()
         );
     }

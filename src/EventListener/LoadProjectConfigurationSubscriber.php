@@ -15,9 +15,10 @@ namespace Ymir\Cli\EventListener;
 
 use Symfony\Component\Console\ConsoleEvents;
 use Symfony\Component\Console\Event\ConsoleCommandEvent;
-use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
-use Ymir\Cli\Project\Configuration\ProjectConfiguration;
+use Ymir\Cli\Command\LocalProjectCommandInterface;
+use Ymir\Cli\Exception\InvalidInputException;
+use Ymir\Cli\Project\ProjectConfiguration;
 
 class LoadProjectConfigurationSubscriber implements EventSubscriberInterface
 {
@@ -49,14 +50,18 @@ class LoadProjectConfigurationSubscriber implements EventSubscriberInterface
     /**
      * Load the Ymir project configuration.
      */
-    public function onConsoleCommand(ConsoleCommandEvent $event)
+    public function onConsoleCommand(ConsoleCommandEvent $event): void
     {
         $configurationFilePath = $event->getInput()->getOption('ymir-file');
 
         if (!is_string($configurationFilePath)) {
-            throw new RuntimeException('The "--ymir-file" option must be a string value');
+            throw new InvalidInputException('The "--ymir-file" option must be a string value');
         }
 
         $this->projectConfiguration->loadConfiguration($configurationFilePath);
+
+        if ($event->getCommand() instanceof LocalProjectCommandInterface) {
+            $this->projectConfiguration->validate();
+        }
     }
 }

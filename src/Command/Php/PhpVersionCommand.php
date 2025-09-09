@@ -14,10 +14,15 @@ declare(strict_types=1);
 namespace Ymir\Cli\Command\Php;
 
 use Symfony\Component\Console\Input\InputArgument;
-use Ymir\Cli\Command\AbstractInvocationCommand;
+use Ymir\Cli\Command\AbstractCommand;
+use Ymir\Cli\Command\HandlesInvocationTrait;
+use Ymir\Cli\Command\LocalProjectCommandInterface;
+use Ymir\Cli\Resource\Model\Environment;
 
-class PhpVersionCommand extends AbstractInvocationCommand
+class PhpVersionCommand extends AbstractCommand implements LocalProjectCommandInterface
 {
+    use HandlesInvocationTrait;
+
     /**
      * The name of the command.
      *
@@ -33,7 +38,7 @@ class PhpVersionCommand extends AbstractInvocationCommand
         $this
             ->setName(self::NAME)
             ->setDescription('Get the PHP version information on the cloud provider')
-            ->addArgument('environment', InputArgument::OPTIONAL, 'The name of the environment to get the PHP version of.', 'staging');
+            ->addArgument('environment', InputArgument::OPTIONAL, 'The name of the environment to get the PHP version of');
     }
 
     /**
@@ -41,11 +46,11 @@ class PhpVersionCommand extends AbstractInvocationCommand
      */
     protected function perform()
     {
-        $environment = $this->input->getStringArgument('environment');
+        $environment = $this->resolve(Environment::class, 'Which <comment>%s</comment> environment would you like to get the PHP version information from?');
 
-        $this->output->info(sprintf('Getting PHP version information from the "<comment>%s</comment>" environment', $environment));
+        $this->output->info(sprintf('Getting PHP version information from the "<comment>%s</comment>" environment', $environment->getName()));
 
-        $result = $this->invokePhpCommand('--version', $environment);
+        $result = $this->invokePhpCommand($this->getProject(), '--version', $environment);
 
         $this->output->newLine();
         $this->output->write("{$result['output']}");

@@ -15,6 +15,8 @@ namespace Ymir\Cli\Command\Network;
 
 use Symfony\Component\Console\Input\InputArgument;
 use Ymir\Cli\Command\AbstractCommand;
+use Ymir\Cli\Exception\Resource\ResourceStateException;
+use Ymir\Cli\Resource\Model\Network;
 
 class AddNatGatewayCommand extends AbstractCommand
 {
@@ -41,8 +43,14 @@ class AddNatGatewayCommand extends AbstractCommand
      */
     protected function perform()
     {
-        $this->apiClient->addNatGateway($this->determineNetwork('Which network would like to add a NAT gateway to'));
+        $network = $this->resolve(Network::class, 'Which network would you like to add a NAT gateway to?');
 
-        $this->output->infoWithDelayWarning('NAT gateway added');
+        if ($network->hasNatGateway()) {
+            throw new ResourceStateException(sprintf('The "%s" network already has a NAT gateway', $network->getName()));
+        }
+
+        $this->apiClient->addNatGateway($network);
+
+        $this->output->infoWithDelayWarning(sprintf('NAT gateway added to the "%s" network', $network->getName()));
     }
 }

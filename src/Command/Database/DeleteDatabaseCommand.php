@@ -13,11 +13,14 @@ declare(strict_types=1);
 
 namespace Ymir\Cli\Command\Database;
 
-use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
+use Ymir\Cli\Command\AbstractCommand;
+use Ymir\Cli\Exception\Resource\ResourceStateException;
+use Ymir\Cli\Resource\Model\Database;
+use Ymir\Cli\Resource\Model\DatabaseServer;
 
-class DeleteDatabaseCommand extends AbstractDatabaseCommand
+class DeleteDatabaseCommand extends AbstractCommand
 {
     /**
      * The name of the command.
@@ -34,7 +37,7 @@ class DeleteDatabaseCommand extends AbstractDatabaseCommand
         $this
             ->setName(self::NAME)
             ->setDescription('Delete a database on a public database server')
-            ->addArgument('name', InputArgument::OPTIONAL, 'The name of the database to delete')
+            ->addArgument('database', InputArgument::OPTIONAL, 'The name of the database to delete')
             ->addOption('server', null, InputOption::VALUE_REQUIRED, 'The ID or name of the database server where the database will be deleted');
     }
 
@@ -43,25 +46,19 @@ class DeleteDatabaseCommand extends AbstractDatabaseCommand
      */
     protected function perform()
     {
-        $databaseServer = $this->determineDatabaseServer('On which database server would you like to delete a database?');
+        $databaseServer = $this->resolve(DatabaseServer::class, 'Which database server would you like to delete a database from?');
 
-        if (!$databaseServer['publicly_accessible']) {
-            throw new RuntimeException('Database on private database servers need to be manually deleted.');
+        if (!$databaseServer->isPublic()) {
+            throw new ResourceStateException('Database on private database servers need to be manually deleted');
         }
 
-        $name = $this->input->getStringArgument('name');
+        $database = $this->resolve(Database::class, 'Which database would you like to delete?', $databaseServer);
 
-        if (empty($name)) {
-            $name = (string) $this->output->choice('Which database would you like to delete', $this->apiClient->getDatabases($databaseServer['id'])->filter(function (string $name) {
-                return !in_array($name, ['information_schema', 'innodb', 'mysql', 'performance_schema', 'sys']);
-            })->values());
-        }
-
-        if (!$this->output->confirm(sprintf('Are you sure you want to delete the "<comment>%s</comment>" database?', $name), false)) {
+        if (!$this->output->confirm(sprintf('Are you sure you want to delete the "<comment>%s</comment>" database?', $database->getName()), false)) {
             return;
         }
 
-        $this->apiClient->deleteDatabase($databaseServer['id'], $name);
+        $this->apiClient->deleteDatabase($database);
 
         $this->output->info('Database deleted');
     }

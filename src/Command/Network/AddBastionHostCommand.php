@@ -16,9 +16,12 @@ namespace Ymir\Cli\Command\Network;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Filesystem\Filesystem;
 use Ymir\Cli\ApiClient;
-use Ymir\Cli\CliConfiguration;
 use Ymir\Cli\Command\AbstractCommand;
-use Ymir\Cli\Project\Configuration\ProjectConfiguration;
+use Ymir\Cli\Exception\Resource\ProvisioningFailedException;
+use Ymir\Cli\Exception\Resource\ResourceStateException;
+use Ymir\Cli\ExecutionContextFactory;
+use Ymir\Cli\Resource\Model\BastionHost;
+use Ymir\Cli\Resource\Model\Network;
 
 class AddBastionHostCommand extends AbstractCommand
 {
@@ -46,12 +49,12 @@ class AddBastionHostCommand extends AbstractCommand
     /**
      * Constructor.
      */
-    public function __construct(ApiClient $apiClient, CliConfiguration $cliConfiguration, Filesystem $filesystem, string $homeDirectory, ProjectConfiguration $projectConfiguration)
+    public function __construct(ApiClient $apiClient, ExecutionContextFactory $contextFactory, Filesystem $filesystem, string $homeDirectory)
     {
-        parent::__construct($apiClient, $cliConfiguration, $projectConfiguration);
+        parent::__construct($apiClient, $contextFactory);
 
+        $this->homeDirectory = $homeDirectory;
         $this->filesystem = $filesystem;
-        $this->homeDirectory = rtrim($homeDirectory, '/');
     }
 
     /**
@@ -70,27 +73,31 @@ class AddBastionHostCommand extends AbstractCommand
      */
     protected function perform()
     {
-        $network = $this->apiClient->getNetwork($this->determineNetwork('Which network would like to add a bastion host to'));
+        $network = $this->resolve(Network::class, 'Which network would you like to add a bastion host to?');
 
-        $bastionHost = $this->apiClient->addBastionHost((int) $network->get('id'));
+        if ($network->getBastionHost() instanceof BastionHost) {
+            throw new ResourceStateException(sprintf('The "%s" network already has a bastion host', $network->getName()));
+        }
 
-        $this->output->infoWithDelayWarning('Bastion host added');
+        $bastionHost = $this->apiClient->addBastionHost($network);
+
+        $this->output->infoWithDelayWarning(sprintf('Bastion host added to the "%s" network', $network->getName()));
         $this->output->newLine();
         $this->output->comment('SSH private key:');
         $this->output->newLine();
-        $this->output->writeln($bastionHost['private_key']);
+        $this->output->writeln($bastionHost->getPrivateKey());
 
         if (!is_dir($this->homeDirectory.'/.ssh') || !$this->output->confirm('Would you like to create the SSH private key in your ~/.ssh directory?')) {
             return;
         }
 
-        $privateKeyFilename = $this->homeDirectory.'/.ssh/ymir-'.$network->get('name');
+        $privateKeyFilename = $this->homeDirectory.'/.ssh/ymir-'.$network->getName();
 
         if ($this->filesystem->exists($privateKeyFilename) && !$this->output->confirm('A SSH key already exists for this network. Do you want to overwrite it?', false)) {
             return;
         }
 
-        $this->filesystem->dumpFile($privateKeyFilename, $bastionHost->get('private_key'));
+        $this->filesystem->dumpFile($privateKeyFilename, $bastionHost->getPrivateKey());
         $this->filesystem->chmod($privateKeyFilename, 0600);
 
         $this->output->infoWithValue('SSH private key created', $privateKeyFilename);
@@ -104,14 +111,18 @@ class AddBastionHostCommand extends AbstractCommand
         $this->output->infoWithWarning('Waiting for bastion host to get assigned a public domain name', 'takes a few minutes');
 
         $bastionHost = $this->wait(function () use ($bastionHost) {
-            $bastionHost = $this->apiClient->getBastionHost((int) $bastionHost->get('id'));
+            $bastionHost = $this->apiClient->getBastionHost($bastionHost->getId());
 
-            return 'available' === $bastionHost->get('status') ? $bastionHost : [];
+            return 'available' === $bastionHost->getStatus() ? $bastionHost : null;
         }, 300, 5);
 
-        $this->filesystem->appendToFile($sshConfigFilename, sprintf("\nHost %s\n  User ec2-user\n  IdentitiesOnly yes\n  IdentityFile %s\n", $bastionHost->get('endpoint'), $privateKeyFilename));
+        if (!$bastionHost instanceof BastionHost) {
+            throw new ProvisioningFailedException('Timed out waiting for bastion host to be available');
+        }
+
+        $this->filesystem->appendToFile($sshConfigFilename, sprintf("\nHost %s\n  User ec2-user\n  IdentitiesOnly yes\n  IdentityFile %s\n", $bastionHost->getEndpoint(), $privateKeyFilename));
 
         $this->output->newLine();
-        $this->output->infoWithValue('SSH configured. Login using', sprintf('ssh %s', $bastionHost->get('endpoint')));
+        $this->output->infoWithValue('SSH configured. Login using', sprintf('ssh %s', $bastionHost->getEndpoint()));
     }
 }

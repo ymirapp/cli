@@ -13,15 +13,13 @@ declare(strict_types=1);
 
 namespace Ymir\Cli\Command\Cache;
 
-use Illuminate\Support\Collection;
-use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
-use Ymir\Cli\Exception\CommandCancelledException;
-use Ymir\Cli\Exception\InvalidInputException;
+use Ymir\Cli\Command\AbstractCommand;
 use Ymir\Cli\Project\Configuration\CacheConfigurationChange;
+use Ymir\Cli\Resource\Model\CacheCluster;
 
-class CreateCacheCommand extends AbstractCacheCommand
+class CreateCacheCommand extends AbstractCommand
 {
     /**
      * The name of the command.
@@ -49,56 +47,12 @@ class CreateCacheCommand extends AbstractCacheCommand
      */
     protected function perform()
     {
-        $engine = strtolower($this->input->getStringOption('engine'));
-        $name = $this->input->getStringArgument('name');
-
-        if (!in_array($engine, ['redis', 'valkey'])) {
-            throw new InvalidInputException('The engine must be either "redis" or "valkey"');
-        }
-
-        if (empty($name)) {
-            $name = $this->output->askSlug('What is the name of the cache cluster');
-        }
-
-        if (empty($name)) {
-            throw new InvalidInputException('Cache cluster name is required');
-        }
-
-        $network = $this->apiClient->getNetwork($this->determineOrCreateNetwork('On what network should the cache cluster be created?'));
-
-        if (!$network->get('has_nat_gateway') && !$this->output->confirm('A cache cluster will require Ymir to add a NAT gateway to your network (~$32/month). Would you like to proceed?')) {
-            throw new CommandCancelledException();
-        }
-
-        $type = $this->determineType($network, $engine);
-
-        $this->apiClient->createCache((int) $network->get('id'), $name, $engine, $type);
+        $cacheCluster = $this->provision(CacheCluster::class);
 
         $this->output->infoWithDelayWarning('Cache cluster created');
 
-        if ($this->projectConfiguration->exists() && $this->output->confirm('Would you like to add the cache cluster to your project configuration?')) {
-            $this->projectConfiguration->applyChangesToEnvironments(new CacheConfigurationChange($name));
+        if ($this->getProjectConfiguration()->exists() && $this->output->confirm('Would you like to add the cache cluster to your project configuration?')) {
+            $this->getProjectConfiguration()->applyChangesToEnvironments(new CacheConfigurationChange($cacheCluster->getName()));
         }
-    }
-
-    /**
-     * Determine the cache cluster type to create.
-     */
-    private function determineType(Collection $network, string $engine): string
-    {
-        if (!isset($network['provider']['id'])) {
-            throw new RuntimeException('The Ymir API failed to return information on the cloud provider');
-        }
-
-        $type = $this->input->getStringOption('type');
-        $types = $this->getCacheTypeDescriptions((int) $network['provider']['id'], $engine);
-
-        if (null !== $type && !$types->has($type)) {
-            throw new InvalidInputException(sprintf('The type "%s" isn\'t a valid cache cluster type', $type));
-        } elseif (null === $type) {
-            $type = (string) $this->output->choice('What should the cache cluster type be?', $types);
-        }
-
-        return $type;
     }
 }

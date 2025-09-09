@@ -13,8 +13,6 @@ declare(strict_types=1);
 
 namespace Ymir\Cli\Exception;
 
-use Symfony\Component\Console\Exception\RuntimeException;
-
 class InvalidInputException extends RuntimeException
 {
 }

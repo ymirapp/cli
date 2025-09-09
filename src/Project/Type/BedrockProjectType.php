@@ -15,8 +15,8 @@ namespace Ymir\Cli\Project\Type;
 
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
-use Ymir\Cli\Build;
 use Ymir\Cli\Executable\ComposerExecutable;
+use Ymir\Cli\Project\Build;
 use Ymir\Cli\Support\Arr;
 
 class BedrockProjectType extends AbstractWordPressProjectType implements InstallableProjectTypeInterface
@@ -74,16 +74,6 @@ class BedrockProjectType extends AbstractWordPressProjectType implements Install
     /**
      * {@inheritdoc}
      */
-    public function getEnvironmentConfiguration(string $environment, array $baseConfiguration = []): array
-    {
-        return Arr::add(parent::getEnvironmentConfiguration($environment, $baseConfiguration), 'build', [
-            'COMPOSER_MIRROR_PATH_REPOS=1 composer install'.('production' === $environment ? ' --no-dev' : ''),
-        ]);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
     public function getInstallationMessage(): string
     {
         return 'Creating new Bedrock project using Composer';
@@ -100,7 +90,7 @@ class BedrockProjectType extends AbstractWordPressProjectType implements Install
     /**
      * {@inheritdoc}
      */
-    public function installIntegration(string $projectDirectory)
+    public function installIntegration(string $projectDirectory): void
     {
         $this->composerExecutable->require('ymirapp/wordpress-plugin', $projectDirectory);
     }
@@ -108,7 +98,7 @@ class BedrockProjectType extends AbstractWordPressProjectType implements Install
     /**
      * {@inheritdoc}
      */
-    public function installProject(string $directory)
+    public function installProject(string $directory): void
     {
         $this->composerExecutable->createProject('roots/bedrock', $directory);
     }
@@ -143,6 +133,16 @@ class BedrockProjectType extends AbstractWordPressProjectType implements Install
     protected function buildWordPressCorePathPattern(string $path): string
     {
         return sprintf('/^web\/wp\/%s/', $path);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function generateEnvironmentConfigurationArray(string $environment, array $baseConfiguration = []): array
+    {
+        return Arr::add(parent::generateEnvironmentConfigurationArray($environment, $baseConfiguration), 'build', [
+            'COMPOSER_MIRROR_PATH_REPOS=1 composer install'.('production' === $environment ? ' --no-dev' : ''),
+        ]);
     }
 
     /**

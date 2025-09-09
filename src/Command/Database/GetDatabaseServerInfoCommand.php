@@ -15,8 +15,10 @@ namespace Ymir\Cli\Command\Database;
 
 use Symfony\Component\Console\Helper\TableSeparator;
 use Symfony\Component\Console\Input\InputArgument;
+use Ymir\Cli\Command\AbstractCommand;
+use Ymir\Cli\Resource\Model\DatabaseServer;
 
-class GetDatabaseServerInfoCommand extends AbstractDatabaseServerCommand
+class GetDatabaseServerInfoCommand extends AbstractCommand
 {
     /**
      * The name of the command.
@@ -41,23 +43,23 @@ class GetDatabaseServerInfoCommand extends AbstractDatabaseServerCommand
      */
     protected function perform()
     {
-        $databaseServer = $this->determineDatabaseServer('Which database server would you like to get information about');
+        $databaseServer = $this->resolve(DatabaseServer::class, 'Which database server would you like to get information about?');
 
         $this->output->horizontalTable(
             ['Id', 'Name', 'Status', 'Locked', 'Public', new TableSeparator(), 'Provider', 'Network', 'Region', 'Type', 'Storage', 'Endpoint'],
             [[
-                $databaseServer['id'],
-                $databaseServer['name'],
-                $this->output->formatStatus($databaseServer['status']),
-                $this->output->formatBoolean($databaseServer['locked']),
-                $this->output->formatBoolean($databaseServer['publicly_accessible']),
+                $databaseServer->getId(),
+                $databaseServer->getName(),
+                $this->output->formatStatus($databaseServer->getStatus()),
+                $this->output->formatBoolean($databaseServer->isLocked()),
+                $this->output->formatBoolean($databaseServer->isPublic()),
                 new TableSeparator(),
-                $databaseServer['network']['provider']['name'],
-                $databaseServer['network']['name'],
-                $databaseServer['region'],
-                $databaseServer['type'],
-                $databaseServer['storage'] ? $databaseServer['storage'].'GB' : 'N/A',
-                $databaseServer['endpoint'] ?? 'pending',
+                $databaseServer->getNetwork()->getProvider()->getName(),
+                $databaseServer->getNetwork()->getName(),
+                $databaseServer->getRegion(),
+                $databaseServer->getType(),
+                $databaseServer->getStorage() ? $databaseServer->getStorage().'GB' : 'N/A',
+                $databaseServer->getEndpoint() ?? 'pending',
             ]]
         );
     }
