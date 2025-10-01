@@ -42,16 +42,10 @@
     "require-dev": {
         "fakerphp/faker": "^1.17",
         "friendsofphp/php-cs-fixer": "^3.0",
-        "php-parallel-lint/php-parallel-lint": "^1.1",
-        "phpro/grumphp": "^1.0",
         "phpstan/phpstan": "^1.11.0",
-        "phpunit/phpunit": "^9.3",
-        "sebastian/phpcpd": "^6.0.3"
+        "phpunit/phpunit": "^9.3"
     },
     "config": {
-        "allow-plugins": {
-            "phpro/grumphp": true
-        },
         "optimize-autoloader": true,
         "preferred-install": "dist",
         "sort-packages": true
@@ -65,5 +59,10 @@
         "psr-4": {
             "Ymir\\Cli\\Tests\\": "tests"
         }
+    },
+    "scripts": {
+        "php-cs-fixer": "php-cs-fixer fix --dry-run --allow-risky=yes",
+        "phpstan": "phpstan analyze --ansi",
+        "tests-unit": "phpunit --testsuite unit"
     }
 }
