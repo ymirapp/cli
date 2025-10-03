@@ -78,7 +78,7 @@ class CliConfiguration
      */
     public function getActiveTeamId(): int
     {
-        if (!$this->has('active_team')) {
+        if (!$this->hasActiveTeam()) {
             throw new RuntimeException(sprintf('Please select a team using the "%s" command', SelectTeamCommand::NAME));
         }
 
@@ -107,6 +107,14 @@ class CliConfiguration
     public function hasAccessToken(): bool
     {
         return !empty($this->getAccessToken());
+    }
+
+    /**
+     * Check if the global configuration has an active team.
+     */
+    public function hasActiveTeam(): bool
+    {
+        return $this->has('active_team');
     }
 
     /**

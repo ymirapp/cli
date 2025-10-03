@@ -57,6 +57,10 @@ class ProjectTeamGuardSubscriberTest extends TestCase
                              ->method('exists')
                              ->willReturn(true);
 
+        $cliConfiguration->expects($this->once())
+                         ->method('hasActiveTeam')
+                         ->willReturn(true);
+
         $command->expects($this->once())
                 ->method('getName')
                 ->willReturn('help');
@@ -64,8 +68,7 @@ class ProjectTeamGuardSubscriberTest extends TestCase
         $cliConfiguration->expects($this->never())
                          ->method('getActiveTeamId');
 
-        $subscriber = new ProjectTeamGuardSubscriber($apiClient, $cliConfiguration, $projectConfiguration);
-        $subscriber->onConsoleCommand($this->getConsoleCommandEvent($command));
+        (new ProjectTeamGuardSubscriber($apiClient, $cliConfiguration, $projectConfiguration))->onConsoleCommand($this->getConsoleCommandEvent($command));
     }
 
     public function testOnConsoleCommandReturnsEarlyWhenCommandIsNotInstance()
@@ -81,8 +84,28 @@ class ProjectTeamGuardSubscriberTest extends TestCase
         $cliConfiguration->expects($this->never())
                          ->method('getActiveTeamId');
 
-        $subscriber = new ProjectTeamGuardSubscriber($apiClient, $cliConfiguration, $projectConfiguration);
-        $subscriber->onConsoleCommand($this->getConsoleCommandEvent());
+        (new ProjectTeamGuardSubscriber($apiClient, $cliConfiguration, $projectConfiguration))->onConsoleCommand($this->getConsoleCommandEvent());
+    }
+
+    public function testOnConsoleCommandReturnsEarlyWhenNoActiveTeam()
+    {
+        $apiClient = $this->getApiClientMock();
+        $cliConfiguration = $this->getCliConfigurationMock();
+        $projectConfiguration = $this->getProjectConfigurationMock();
+        $command = $this->getCommandMock();
+
+        $projectConfiguration->expects($this->once())
+                             ->method('exists')
+                             ->willReturn(true);
+
+        $cliConfiguration->expects($this->once())
+                         ->method('hasActiveTeam')
+                         ->willReturn(false);
+
+        $cliConfiguration->expects($this->never())
+                         ->method('getActiveTeamId');
+
+        (new ProjectTeamGuardSubscriber($apiClient, $cliConfiguration, $projectConfiguration))->onConsoleCommand($this->getConsoleCommandEvent($command));
     }
 
     public function testOnConsoleCommandReturnsEarlyWhenProjectConfigurationDoesNotExist()
@@ -97,10 +120,12 @@ class ProjectTeamGuardSubscriberTest extends TestCase
                              ->willReturn(false);
 
         $cliConfiguration->expects($this->never())
+                         ->method('hasActiveTeam');
+
+        $cliConfiguration->expects($this->never())
                          ->method('getActiveTeamId');
 
-        $subscriber = new ProjectTeamGuardSubscriber($apiClient, $cliConfiguration, $projectConfiguration);
-        $subscriber->onConsoleCommand($this->getConsoleCommandEvent($command));
+        (new ProjectTeamGuardSubscriber($apiClient, $cliConfiguration, $projectConfiguration))->onConsoleCommand($this->getConsoleCommandEvent($command));
     }
 
     public function testOnConsoleCommandReturnsEarlyWhenProjectTeamIdIsEmpty()
@@ -119,6 +144,10 @@ class ProjectTeamGuardSubscriberTest extends TestCase
                 ->willReturn('some-command');
 
         $cliConfiguration->expects($this->once())
+                         ->method('hasActiveTeam')
+                         ->willReturn(true);
+
+        $cliConfiguration->expects($this->once())
                          ->method('getActiveTeamId')
                          ->willReturn(42);
 
@@ -134,8 +163,7 @@ class ProjectTeamGuardSubscriberTest extends TestCase
         $apiClient->expects($this->never())
                   ->method('getTeam');
 
-        $subscriber = new ProjectTeamGuardSubscriber($apiClient, $cliConfiguration, $projectConfiguration);
-        $subscriber->onConsoleCommand($this->getConsoleCommandEvent($command));
+        (new ProjectTeamGuardSubscriber($apiClient, $cliConfiguration, $projectConfiguration))->onConsoleCommand($this->getConsoleCommandEvent($command));
     }
 
     public function testOnConsoleCommandReturnsEarlyWhenTeamIdsMatch()
@@ -154,6 +182,10 @@ class ProjectTeamGuardSubscriberTest extends TestCase
                 ->willReturn('some-command');
 
         $cliConfiguration->expects($this->once())
+                         ->method('hasActiveTeam')
+                         ->willReturn(true);
+
+        $cliConfiguration->expects($this->once())
                          ->method('getActiveTeamId')
                          ->willReturn(42);
 
@@ -169,12 +201,14 @@ class ProjectTeamGuardSubscriberTest extends TestCase
         $apiClient->expects($this->never())
                   ->method('getTeam');
 
-        $subscriber = new ProjectTeamGuardSubscriber($apiClient, $cliConfiguration, $projectConfiguration);
-        $subscriber->onConsoleCommand($this->getConsoleCommandEvent($command));
+        (new ProjectTeamGuardSubscriber($apiClient, $cliConfiguration, $projectConfiguration))->onConsoleCommand($this->getConsoleCommandEvent($command));
     }
 
     public function testOnConsoleCommandThrowsExceptionWhenTeamsDontMatch()
     {
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('Your active team "Active Team" does not match the project\'s team "Project Team". Use the "team:select 24" command to switch to the project\'s team.');
+
         $apiClient = $this->getApiClientMock();
         $cliConfiguration = $this->getCliConfigurationMock();
         $projectConfiguration = $this->getProjectConfigurationMock();
@@ -187,6 +221,10 @@ class ProjectTeamGuardSubscriberTest extends TestCase
         $command->expects($this->once())
                 ->method('getName')
                 ->willReturn('some-command');
+
+        $cliConfiguration->expects($this->once())
+                         ->method('hasActiveTeam')
+                         ->willReturn(true);
 
         $cliConfiguration->expects($this->once())
                          ->method('getActiveTeamId')
@@ -206,12 +244,7 @@ class ProjectTeamGuardSubscriberTest extends TestCase
                   ->with($this->identicalTo(42))
                   ->willReturn(new Collection(['name' => 'Active Team']));
 
-        $subscriber = new ProjectTeamGuardSubscriber($apiClient, $cliConfiguration, $projectConfiguration);
-
-        $this->expectException(RuntimeException::class);
-        $this->expectExceptionMessage('Your active team "Active Team" does not match the project\'s team "Project Team". Use the "team:select 24" command to switch to the project\'s team.');
-
-        $subscriber->onConsoleCommand($this->getConsoleCommandEvent($command));
+        (new ProjectTeamGuardSubscriber($apiClient, $cliConfiguration, $projectConfiguration))->onConsoleCommand($this->getConsoleCommandEvent($command));
     }
 
     private function getConsoleCommandEvent($command = null): ConsoleCommandEvent
