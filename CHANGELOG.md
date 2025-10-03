@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.54.1](https://github.com/ymirapp/cli/compare/v1.54.0...v1.54.1) (2025-10-03)
+
+
+### Bug Fixes
+
+* Abort the project team guard if there's no active team ([3f9dc18](https://github.com/ymirapp/cli/commit/3f9dc181ac9da41a8a27c2d9053cb852cc58aa86))
+
 ## [1.54.0](https://github.com/ymirapp/cli/compare/v1.53.0...v1.54.0) (2025-10-03)
 
 
