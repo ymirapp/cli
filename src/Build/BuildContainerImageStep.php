@@ -74,6 +74,6 @@ class BuildContainerImageStep implements BuildStepInterface
             throw new RuntimeException('Unable to find a "Dockerfile" to build the container image');
         }
 
-        $this->dockerExecutable->build($dockerfileName, sprintf('%s:%s', $projectConfiguration->getProjectName(), $environment), $this->buildDirectory);
+        $this->dockerExecutable->build($dockerfileName, sprintf('%s:%s', $projectConfiguration->getProjectName(), $environment), $projectConfiguration->getEnvironmentArchitecture($environment), $this->buildDirectory);
     }
 }

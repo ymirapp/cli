@@ -20,9 +20,15 @@ class DockerExecutable extends AbstractExecutable
     /**
      * Build a docker image.
      */
-    public function build(string $file, string $tag, ?string $cwd = null)
+    public function build(string $file, string $tag, string $architecture = '', ?string $cwd = null)
     {
-        $this->run(sprintf('build --pull --file=%s --tag=%s .', $file, $tag), $cwd, null);
+        $platform = 'linux/amd64';
+
+        if ('arm64' === $architecture) {
+            $platform = 'linux/arm64';
+        }
+
+        $this->run(sprintf('build --pull --file=%s --platform=%s --tag=%s .', $file, $platform, $tag), $cwd, null);
     }
 
     /**
