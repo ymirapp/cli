@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.54.0](https://github.com/ymirapp/cli/compare/v1.53.0...v1.54.0) (2025-10-03)
+
+
+### Features
+
+* Add support for building the image with a different architecture than the build environment ([9e9cd35](https://github.com/ymirapp/cli/commit/9e9cd3509a45998bb5b24ec8fd5b4eb5112ce316))
+* Support both `deployment` and `deployment.type` configuration options ([653ee67](https://github.com/ymirapp/cli/commit/653ee6738627824a6b000abb439dde7c549ec719))
+
+
+### Bug Fixes
+
+* Abort command when active team conflicts with project team ([2f59cc8](https://github.com/ymirapp/cli/commit/2f59cc867dadfb036facb1be72e51e84ecf28e14))
+* Add `execute` to list of formatted names ([53289dc](https://github.com/ymirapp/cli/commit/53289dc74816a060b8a63e5fcb096b3a4bf23705))
+
 ## [1.53.0](https://github.com/ymirapp/cli/compare/v1.52.0...v1.53.0) (2025-08-30)
 
 
