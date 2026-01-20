@@ -44,15 +44,13 @@ class EmailIdentityDefinition implements ResolvableResourceDefinitionInterface
     public function resolve(ExecutionContext $context, string $question): EmailIdentity
     {
         $input = $context->getInput();
-        $identityIdOrName = $input->getStringArgument('identity') ?: $input->getStringOption('identity', true);
+        $identityIdOrName = $input->getStringArgument('identity');
 
         $identities = $context->getApiClient()->getEmailIdentities($context->getTeam());
 
         if ($identities->isEmpty()) {
             throw new NoResourcesFoundException(sprintf('The currently active team has no email identities, but you can create one with the "%s" command', CreateEmailIdentityCommand::NAME));
-        }
-
-        if (empty($identityIdOrName)) {
+        } elseif (empty($identityIdOrName)) {
             $identityIdOrName = $context->getOutput()->choice($question, $identities->map(function (EmailIdentity $identity) {
                 return $identity->getName();
             }));

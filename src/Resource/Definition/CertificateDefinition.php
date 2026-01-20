@@ -44,15 +44,13 @@ class CertificateDefinition implements ResolvableResourceDefinitionInterface
     public function resolve(ExecutionContext $context, string $question): Certificate
     {
         $input = $context->getInput();
-        $certificateId = $input->getStringArgument('certificate') ?: $input->getStringOption('certificate', true);
+        $certificateId = $input->getStringArgument('certificate');
 
         $certificates = $context->getApiClient()->getCertificates($context->getTeam());
 
         if ($certificates->isEmpty()) {
             throw new NoResourcesFoundException(sprintf('The currently active team has no SSL certificates, but you can request one with the "%s" command', RequestCertificateCommand::NAME));
-        }
-
-        if (empty($certificateId)) {
+        } elseif (empty($certificateId)) {
             $certificateId = $context->getOutput()->choice($question, $certificates->mapWithKeys(function (Certificate $certificate) {
                 $domains = collect($certificate->getDomains())->pluck('domain_name')->implode(', ');
 

@@ -131,17 +131,4 @@ class EmailIdentityDefinitionTest extends TestCase
 
         $this->assertSame($emailIdentity, $definition->resolve($this->context, 'question'));
     }
-
-    public function testResolveWithOption(): void
-    {
-        $emailIdentity = EmailIdentityFactory::create(['id' => 123]);
-
-        $this->input->shouldReceive('getStringArgument')->with('identity')->andReturn('');
-        $this->input->shouldReceive('getStringOption')->with('identity', true)->andReturn('123');
-        $this->apiClient->shouldReceive('getEmailIdentities')->andReturn(new ResourceCollection([$emailIdentity]));
-
-        $definition = new EmailIdentityDefinition();
-
-        $this->assertSame($emailIdentity, $definition->resolve($this->context, 'question'));
-    }
 }

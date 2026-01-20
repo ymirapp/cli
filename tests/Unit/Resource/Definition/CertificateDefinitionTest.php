@@ -130,17 +130,4 @@ class CertificateDefinitionTest extends TestCase
 
         $this->assertSame($certificate, $definition->resolve($this->context, 'question'));
     }
-
-    public function testResolveWithOption(): void
-    {
-        $certificate = CertificateFactory::create(['id' => 123]);
-
-        $this->input->shouldReceive('getStringArgument')->with('certificate')->andReturn('');
-        $this->input->shouldReceive('getStringOption')->with('certificate', true)->andReturn('123');
-        $this->apiClient->shouldReceive('getCertificates')->andReturn(new ResourceCollection([$certificate]));
-
-        $definition = new CertificateDefinition();
-
-        $this->assertSame($certificate, $definition->resolve($this->context, 'question'));
-    }
 }

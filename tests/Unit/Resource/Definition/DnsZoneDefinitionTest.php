@@ -131,17 +131,4 @@ class DnsZoneDefinitionTest extends TestCase
 
         $this->assertSame($dnsZone, $definition->resolve($this->context, 'question'));
     }
-
-    public function testResolveWithOption(): void
-    {
-        $dnsZone = DnsZoneFactory::create(['id' => 123]);
-
-        $this->input->shouldReceive('getStringArgument')->with('zone')->andReturn('');
-        $this->input->shouldReceive('getStringOption')->with('zone', true)->andReturn('123');
-        $this->apiClient->shouldReceive('getDnsZones')->andReturn(new ResourceCollection([$dnsZone]));
-
-        $definition = new DnsZoneDefinition();
-
-        $this->assertSame($dnsZone, $definition->resolve($this->context, 'question'));
-    }
 }

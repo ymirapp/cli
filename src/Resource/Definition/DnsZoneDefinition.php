@@ -44,15 +44,13 @@ class DnsZoneDefinition implements ResolvableResourceDefinitionInterface
     public function resolve(ExecutionContext $context, string $question): DnsZone
     {
         $input = $context->getInput();
-        $zoneIdOrName = $input->getStringArgument('zone') ?: $input->getStringOption('zone', true);
+        $zoneIdOrName = $input->getStringArgument('zone');
 
         $zones = $context->getApiClient()->getDnsZones($context->getTeam());
 
         if ($zones->isEmpty()) {
             throw new NoResourcesFoundException(sprintf('The currently active team has no DNS zones, but you can create one with the "%s" command', CreateDnsZoneCommand::NAME));
-        }
-
-        if (empty($zoneIdOrName)) {
+        } elseif (empty($zoneIdOrName)) {
             $zoneIdOrName = $context->getOutput()->choice($question, $zones->map(function (DnsZone $zone) {
                 return $zone->getName();
             }));
