@@ -1,5 +1,21 @@
 # Changelog
 
+## [2.0.0](https://github.com/ymirapp/cli/compare/v1.54.1...v2.0.0) (2026-01-20)
+
+
+### ⚠ BREAKING CHANGES
+
+* rewrite cli to support non-wordpress projects
+
+### Features
+
+* Rewrite cli to support non-wordpress projects ([33305ac](https://github.com/ymirapp/cli/commit/33305ac4d201add879e62f8e574f168c1aeba99e))
+
+
+### Bug Fixes
+
+* Validate `--platform` option in `Dockerfile` ([b11eb82](https://github.com/ymirapp/cli/commit/b11eb826403270f1e5b6040200af6b173ad1590c))
+
 ## [1.54.1](https://github.com/ymirapp/cli/compare/v1.54.0...v1.54.1) (2025-10-03)
 
 
