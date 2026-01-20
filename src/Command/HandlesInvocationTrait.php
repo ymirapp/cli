@@ -47,7 +47,7 @@ trait HandlesInvocationTrait
         if (0 === $timeout) {
             return [];
         } elseif (!is_int($timeout)) {
-            $timeout = $this->getProjectConfiguration()->getEnvironment($environment->getName())->getConsoleTimeout();
+            $timeout = $this->getProjectConfiguration()->getEnvironmentConfiguration($environment->getName())->getConsoleTimeout();
         }
 
         $invocation = $this->wait(function () use ($invocationId) {

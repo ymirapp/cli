@@ -85,7 +85,7 @@ class ProjectConfiguration implements Arrayable
      */
     public function applyChangesToEnvironment(string $environment, ConfigurationChangeInterface $configurationChange): void
     {
-        $this->configuration['environments'][$environment] = $configurationChange->apply($this->getEnvironment($environment), $this->getProjectType())->toArray();
+        $this->configuration['environments'][$environment] = $configurationChange->apply($this->getEnvironmentConfiguration($environment), $this->getProjectType())->toArray();
 
         $this->save();
     }
@@ -154,13 +154,13 @@ class ProjectConfiguration implements Arrayable
     /**
      * Get the configuration information for the given environment.
      */
-    public function getEnvironment(string $environment): EnvironmentConfiguration
+    public function getEnvironmentConfiguration(string $environmentName): EnvironmentConfiguration
     {
-        if (!$this->hasEnvironment($environment)) {
-            throw new InvalidArgumentException(sprintf('Environment "%s" not found in Ymir project configuration file', $environment));
+        if (!$this->hasEnvironment($environmentName)) {
+            throw new InvalidArgumentException(sprintf('Environment "%s" not found in Ymir project configuration file', $environmentName));
         }
 
-        return new EnvironmentConfiguration($environment, (array) $this->configuration['environments'][$environment]);
+        return new EnvironmentConfiguration($environmentName, (array) $this->configuration['environments'][$environmentName]);
     }
 
     /**

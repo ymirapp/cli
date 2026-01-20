@@ -63,7 +63,7 @@ class CreateDockerfileCommandTest extends TestCase
         $this->assertStringContainsString('Dockerfile created', $tester->getDisplay());
         $this->assertFileExists($this->tempDir.'/Dockerfile');
 
-        $config = $this->projectConfiguration->getEnvironment('staging');
+        $config = $this->projectConfiguration->getEnvironmentConfiguration('staging');
         $this->assertTrue($config->isImageDeploymentType());
     }
 

@@ -66,7 +66,7 @@ class ChangeDomainCommand extends AbstractCommand implements LocalProjectCommand
             $currentDomain = strtolower((string) $this->output->ask('What is the current environment domain that you want to replace?'));
         }
 
-        $domains = $this->getProjectConfiguration()->getEnvironment($environment->getName())->getDomains();
+        $domains = $this->getProjectConfiguration()->getEnvironmentConfiguration($environment->getName())->getDomains();
         $newDomain = '';
 
         if (1 === count($domains)) {

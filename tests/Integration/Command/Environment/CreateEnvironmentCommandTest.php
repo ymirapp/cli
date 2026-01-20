@@ -39,7 +39,7 @@ class CreateEnvironmentCommandTest extends TestCase
 
         $this->assertStringContainsString('Environment created', $tester->getDisplay());
         $this->assertTrue($this->projectConfiguration->hasEnvironment('staging'));
-        $this->assertTrue($this->projectConfiguration->getEnvironment('staging')->isImageDeploymentType());
+        $this->assertTrue($this->projectConfiguration->getEnvironmentConfiguration('staging')->isImageDeploymentType());
     }
 
     public function testCreateEnvironmentInteractively(): void
@@ -77,6 +77,6 @@ class CreateEnvironmentCommandTest extends TestCase
         $tester = $this->executeCommand(CreateEnvironmentCommand::NAME, ['name' => 'staging', '--no-image' => true]);
 
         $this->assertStringContainsString('Environment created', $tester->getDisplay());
-        $this->assertFalse($this->projectConfiguration->getEnvironment('staging')->isImageDeploymentType());
+        $this->assertFalse($this->projectConfiguration->getEnvironmentConfiguration('staging')->isImageDeploymentType());
     }
 }

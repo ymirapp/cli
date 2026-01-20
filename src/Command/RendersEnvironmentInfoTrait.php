@@ -78,7 +78,7 @@ trait RendersEnvironmentInfoTrait
             return null;
         }
 
-        $databaseServerName = $this->getProjectConfiguration()->getEnvironment($environment)->getDatabaseServerName();
+        $databaseServerName = $this->getProjectConfiguration()->getEnvironmentConfiguration($environment)->getDatabaseServerName();
 
         if (!is_string($databaseServerName)) {
             return null;

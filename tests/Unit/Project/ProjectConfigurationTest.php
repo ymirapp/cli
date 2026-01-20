@@ -15,6 +15,8 @@ namespace Ymir\Cli\Tests\Unit\Project;
 
 use Symfony\Component\Filesystem\Filesystem;
 use Ymir\Cli\Exception\ConfigurationException;
+use Ymir\Cli\Exception\InvalidArgumentException;
+use Ymir\Cli\Project\EnvironmentConfiguration;
 use Ymir\Cli\Project\ProjectConfiguration;
 use Ymir\Cli\Tests\TestCase;
 
@@ -45,6 +47,27 @@ class ProjectConfigurationTest extends TestCase
     public function testExistsReturnsTrueIfFileExists(): void
     {
         $this->assertTrue((new ProjectConfiguration(new Filesystem(), [], $this->tempFile))->exists());
+    }
+
+    public function testGetEnvironmentConfigurationReturnsConfiguration(): void
+    {
+        file_put_contents($this->tempFile, "environments:\n  prod:\n    foo: bar");
+
+        $configuration = (new ProjectConfiguration(new Filesystem(), [], $this->tempFile))->getEnvironmentConfiguration('prod');
+
+        $this->assertInstanceOf(EnvironmentConfiguration::class, $configuration);
+        $this->assertSame('prod', $configuration->getName());
+        $this->assertSame(['foo' => 'bar'], $configuration->toArray());
+    }
+
+    public function testGetEnvironmentConfigurationThrowsExceptionIfEnvironmentDoesNotExist(): void
+    {
+        file_put_contents($this->tempFile, "environments:\n  prod:\n    foo: bar");
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Environment "staging" not found in Ymir project configuration file');
+
+        (new ProjectConfiguration(new Filesystem(), [], $this->tempFile))->getEnvironmentConfiguration('staging');
     }
 
     public function testGetProjectIdReturnsId(): void

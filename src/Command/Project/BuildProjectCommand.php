@@ -86,7 +86,7 @@ class BuildProjectCommand extends AbstractCommand implements LocalProjectCommand
         }
 
         $environment = $this->resolve(Environment::class, 'Which <comment>%s</comment> environment would you like to build?');
-        $environmentConfiguration = $this->getProjectConfiguration()->getEnvironment($environment->getName());
+        $environmentConfiguration = $this->getProjectConfiguration()->getEnvironmentConfiguration($environment->getName());
 
         $this->output->info(sprintf('Building <comment>%s</comment> project for the <comment>%s</comment> environment', $this->getProject()->getName(), $environment->getName()));
 

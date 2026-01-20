@@ -78,7 +78,7 @@ abstract class AbstractProjectDeploymentCommand extends AbstractCommand implemen
 
         $this->invoke(GetEnvironmentUrlCommand::NAME, ['environment' => $this->environment->getName()]);
 
-        if (!$this->getProjectConfiguration()->getEnvironment($this->environment->getName())->hasDomainConfiguration()) {
+        if (!$this->getProjectConfiguration()->getEnvironmentConfiguration($this->environment->getName())->hasDomainConfiguration()) {
             $this->output->newLine();
             $this->output->note(sprintf('You cannot send emails using the "<comment>ymirsites.com</comment>" domain. Please use the "<comment>%s</comment>" command to add an email address or domain for sending emails.', CreateEmailIdentityCommand::NAME));
 
