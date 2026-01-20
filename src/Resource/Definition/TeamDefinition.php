@@ -69,7 +69,7 @@ class TeamDefinition implements ProvisionableResourceDefinitionInterface, Resolv
         if ($input->hasArgument('team')) {
             $teamId = $input->getNumericArgument('team');
         } elseif ($input->hasOption('team')) {
-            $teamId = $input->getNumericOption('team');
+            $teamId = (int) $input->getNumericOption('team');
         }
 
         $teams = $context->getApiClient()->getTeams();

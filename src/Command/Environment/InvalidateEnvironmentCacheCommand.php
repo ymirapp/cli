@@ -47,7 +47,7 @@ class InvalidateEnvironmentCacheCommand extends AbstractCommand implements Local
     {
         $environment = $this->resolve(Environment::class, 'Which <comment>%s</comment> environment would you like to invalidate the cache of?');
 
-        $this->apiClient->invalidateCache($this->getProject(), $environment, $this->input->getArrayOption('path'));
+        $this->apiClient->invalidateCache($this->getProject(), $environment, (array) $this->input->getArrayOption('path'));
 
         $this->output->info('Cache invalidation started');
     }

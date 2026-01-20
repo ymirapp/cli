@@ -75,7 +75,7 @@ class CloudProviderDefinition implements ProvisionableResourceDefinitionInterfac
         if ($input->hasArgument('provider')) {
             $providerId = $input->getNumericArgument('provider');
         } elseif ($input->hasOption('provider')) {
-            $providerId = $input->getNumericOption('provider');
+            $providerId = (int) $input->getNumericOption('provider');
         }
 
         $providers = $context->getApiClient()->getProviders($context->getTeam());

@@ -85,7 +85,7 @@ class ImportMediaCommand extends AbstractCommand implements LocalProjectCommandI
     protected function perform()
     {
         $projectType = $this->getProjectConfiguration()->getProjectType();
-        $size = $this->input->getNumericOption('size');
+        $size = (int) $this->input->getNumericOption('size');
 
         if (!$projectType instanceof SupportsMediaInterface) {
             throw new UnsupportedProjectException('This project type doesn\'t support media operations');

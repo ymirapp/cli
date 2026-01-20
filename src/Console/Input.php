@@ -62,15 +62,17 @@ class Input
     /**
      * Get the value of a option that should be an array.
      */
-    public function getArrayOption(string $option): array
+    public function getArrayOption(string $option, bool $requiredNonInteractive = false): ?array
     {
-        $value = [];
+        $value = null;
 
         if ($this->hasOption($option)) {
             $value = $this->getOption($option);
         }
 
-        if (!is_array($value)) {
+        if (null === $value && $requiredNonInteractive && !$this->isInteractive()) {
+            throw new NonInteractiveRequiredOptionException($option);
+        } elseif (null !== $value && !is_array($value)) {
             throw new InvalidInputException(sprintf('The "--%s" option must be an array', $option));
         }
 
@@ -104,7 +106,7 @@ class Input
     /**
      * Get the value of a option that should be numeric. Returns null if not present.
      */
-    public function getNumericOption(string $option): ?int
+    public function getNumericOption(string $option, bool $requiredNonInteractive = false): ?int
     {
         $value = null;
 
@@ -112,13 +114,13 @@ class Input
             $value = $this->getOption($option);
         }
 
-        if (null === $value) {
-            return $value;
-        } elseif (!is_numeric($value)) {
+        if (null === $value && $requiredNonInteractive && !$this->isInteractive()) {
+            throw new NonInteractiveRequiredOptionException($option);
+        } elseif (null !== $value && !is_numeric($value)) {
             throw new InvalidInputException(sprintf('The "--%s" option must be a numeric value', $option));
         }
 
-        return (int) $value;
+        return is_numeric($value) ? (int) $value : null;
     }
 
     /**
