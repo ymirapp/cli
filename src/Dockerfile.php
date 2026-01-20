@@ -83,12 +83,18 @@ class Dockerfile
             return 1 === preg_match('/^[\s]*FROM/i', $line);
         });
 
-        // TODO: Validate "--platform" in FROM
-
         if ('arm64' === $architecture && 1 === preg_match('/ymirapp\/php-runtime/i', $fromLine)) {
             throw new SystemException('You must use the "ymirapp/arm-php-runtime" image with the "arm64" architecture');
         } elseif ('arm64' !== $architecture && 1 === preg_match('/ymirapp\/arm-php-runtime/i', $fromLine)) {
             throw new SystemException('You must use the "ymirapp/php-runtime" image with the "x86_64" architecture');
+        }
+
+        if (!preg_match('/--platform=([^\s]+)/i', $fromLine, $matches)) {
+            return;
+        } elseif ('arm64' === $architecture && !str_contains($matches[1], 'arm64')) {
+            throw new SystemException(sprintf('The "--platform" flag in the "Dockerfile" FROM instruction must be "linux/arm64" when using the "arm64" architecture, "%s" given', $matches[1]));
+        } elseif ('arm64' !== $architecture && str_contains($matches[1], 'arm64')) {
+            throw new SystemException(sprintf('The "--platform" flag in the "Dockerfile" FROM instruction must be "linux/amd64" when using the "x86_64" architecture, "%s" given', $matches[1]));
         }
     }
 
