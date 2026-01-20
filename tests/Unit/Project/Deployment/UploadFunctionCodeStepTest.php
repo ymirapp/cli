@@ -36,10 +36,11 @@ class UploadFunctionCodeStepTest extends TestCase
         $environment = EnvironmentFactory::create();
         $dockerExecutable = \Mockery::mock(DockerExecutable::class);
         $output = \Mockery::mock(Output::class)->shouldIgnoreMissing();
+        $project = ProjectFactory::create();
         $uploader = \Mockery::mock(FileUploader::class);
 
         $context->shouldReceive('getProject')->once()
-                ->andReturn(ProjectFactory::create());
+                ->andReturn($project);
 
         $context->shouldReceive('getApiClient')->once()
                 ->andReturn($apiClient);
@@ -53,6 +54,9 @@ class UploadFunctionCodeStepTest extends TestCase
                       'authorization_token' => base64_encode('user:password'),
                       'image_uri' => '123.dkr.ecr.us-east-1.amazonaws.com/project:staging',
                   ]));
+
+        $output->shouldReceive('infoWithDelayWarning')->once()
+               ->with(sprintf('Pushing <comment>%s</comment> container image', $project->getName()));
 
         $dockerExecutable->shouldReceive('login')->once()
                          ->with('user', 'password', '123.dkr.ecr.us-east-1.amazonaws.com', 'build');
@@ -149,7 +153,11 @@ class UploadFunctionCodeStepTest extends TestCase
         $environment = EnvironmentFactory::create();
         $dockerExecutable = \Mockery::mock(DockerExecutable::class);
         $output = \Mockery::mock(Output::class)->shouldIgnoreMissing();
+        $project = ProjectFactory::create();
         $uploader = \Mockery::mock(FileUploader::class);
+
+        $context->shouldReceive('getProject')->once()
+                ->andReturn($project);
 
         $context->shouldReceive('getOutput')->once()
                 ->andReturn($output);
@@ -162,7 +170,9 @@ class UploadFunctionCodeStepTest extends TestCase
                   ->andReturn('https://example.com');
 
         $uploader->shouldReceive('uploadFile')->once()
-                 ->with('artifact.zip', 'https://example.com', \Mockery::any(), \Mockery::any());
+                 ->with('artifact.zip', 'https://example.com', \Mockery::any(), \Mockery::on(function ($progressBar) use ($project) {
+                     return sprintf('Uploading <comment>%s</comment> build', $project->getName()) === $progressBar->getMessage();
+                 }));
 
         $step = new UploadFunctionCodeStep('artifact.zip', 'build', $dockerExecutable, $uploader);
 

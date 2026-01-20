@@ -96,7 +96,7 @@ class DeployProjectCommandTest extends TestCase
 
         $tester = $this->executeCommand(DeployProjectCommand::NAME, ['environment' => 'production']);
 
-        $this->assertStringContainsString('Project deployed successfully to "production" environment', $tester->getDisplay());
+        $this->assertStringContainsString('Project deployed successfully', $tester->getDisplay());
     }
 
     public function testPerformDeploysProjectInDebugMode(): void
@@ -142,7 +142,7 @@ class DeployProjectCommandTest extends TestCase
 
         $tester = $this->executeCommand(DeployProjectCommand::NAME, ['environment' => 'production', '--debug-build' => true]);
 
-        $this->assertStringContainsString('Project deployed successfully to "production" environment', $tester->getDisplay());
+        $this->assertStringContainsString('Project deployed successfully', $tester->getDisplay());
         $this->assertStringContainsString('Debugging', $tester->getDisplay());
     }
 
@@ -197,7 +197,7 @@ class DeployProjectCommandTest extends TestCase
 
         $tester = $this->executeCommand(DeployProjectCommand::NAME, ['environment' => 'production', '--with-media' => true]);
 
-        $this->assertStringContainsString('Project deployed successfully to "production" environment', $tester->getDisplay());
+        $this->assertStringContainsString('Project deployed successfully', $tester->getDisplay());
     }
 
     public function testPerformPassesForceAssetsOptionToDeploymentSteps(): void
@@ -285,7 +285,7 @@ class DeployProjectCommandTest extends TestCase
 
         $tester = $this->executeCommand(DeployProjectCommand::NAME, [], ['staging']);
 
-        $this->assertStringContainsString('Project deployed successfully to "staging" environment', $tester->getDisplay());
+        $this->assertStringContainsString('Project deployed successfully', $tester->getDisplay());
     }
 
     public function testPerformThrowsExceptionIfProjectDoesNotSupportMedia(): void

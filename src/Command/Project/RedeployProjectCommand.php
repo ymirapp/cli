@@ -70,8 +70,8 @@ class RedeployProjectCommand extends AbstractProjectDeploymentCommand
     /**
      * {@inheritdoc}
      */
-    protected function getSuccessMessage(string $environment): string
+    protected function getSuccessMessage(): string
     {
-        return sprintf('Project redeployed successfully to "<comment>%s</comment>" environment', $environment);
+        return 'Project redeployed successfully';
     }
 }

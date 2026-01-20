@@ -61,7 +61,7 @@ class RedeployProjectCommandTest extends TestCase
 
         $tester = $this->executeCommand(RedeployProjectCommand::NAME, [], ['staging']);
 
-        $this->assertStringContainsString('Project redeployed successfully to "staging" environment', $tester->getDisplay());
+        $this->assertStringContainsString('Project redeployed successfully', $tester->getDisplay());
         $this->assertStringContainsString('https://staging.ymir.com', $tester->getDisplay());
     }
 
@@ -97,9 +97,9 @@ class RedeployProjectCommandTest extends TestCase
 
         $tester = $this->executeCommand(RedeployProjectCommand::NAME, ['environment' => 'production']);
 
-        $this->assertStringContainsString('Redeployment starting', $tester->getDisplay());
+        $this->assertStringContainsString('Redeploying my-project to production', $tester->getDisplay());
         $this->assertStringContainsString('Updating lambda function', $tester->getDisplay());
-        $this->assertStringContainsString('Project redeployed successfully to "production" environment', $tester->getDisplay());
+        $this->assertStringContainsString('Project redeployed successfully', $tester->getDisplay());
         $this->assertStringContainsString('https://vanity.ymir.com', $tester->getDisplay());
     }
 }

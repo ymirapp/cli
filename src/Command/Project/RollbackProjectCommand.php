@@ -95,9 +95,9 @@ class RollbackProjectCommand extends AbstractProjectDeploymentCommand
     /**
      * {@inheritdoc}
      */
-    protected function getSuccessMessage(string $environment): string
+    protected function getSuccessMessage(): string
     {
-        return sprintf('Project "<comment>%s</comment>" environment rolled back successfully', $environment);
+        return 'Project rolled back successfully';
     }
 
     /**

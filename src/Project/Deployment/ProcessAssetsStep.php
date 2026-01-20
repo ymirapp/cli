@@ -77,7 +77,7 @@ class ProcessAssetsStep implements DeploymentStepInterface
             return;
         }
 
-        $output->info('Processing assets');
+        $output->info(sprintf('Processing <comment>%s</comment> assets', $project->getName()));
 
         $output->writeStep('Getting signed asset URLs');
         $assetFiles = $this->getAssetFiles();

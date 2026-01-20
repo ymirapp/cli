@@ -74,7 +74,8 @@ abstract class AbstractProjectDeploymentCommand extends AbstractCommand implemen
             $deploymentStep->perform($this->getContext(), $deployment, $this->environment);
         }
 
-        $this->output->info($this->getSuccessMessage($this->environment->getName()));
+        $this->output->info($this->getSuccessMessage());
+        $this->output->newLine();
 
         $this->invoke(GetEnvironmentUrlCommand::NAME, ['environment' => $this->environment->getName()]);
 
@@ -132,7 +133,7 @@ abstract class AbstractProjectDeploymentCommand extends AbstractCommand implemen
     /**
      * Get the message to display when a deployment was successful.
      */
-    abstract protected function getSuccessMessage(string $environment): string;
+    abstract protected function getSuccessMessage(): string;
 
     /**
      * Add a deployment step to the command.

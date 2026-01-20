@@ -15,22 +15,39 @@ namespace Ymir\Cli\Project\Deployment;
 
 use Illuminate\Support\Collection;
 use Ymir\Cli\ApiClient;
+use Ymir\Cli\Exception\LogicException;
 use Ymir\Cli\Exception\Project\DeploymentFailedException;
 use Ymir\Cli\ExecutionContext;
 use Ymir\Cli\Resource\Model\Deployment;
 use Ymir\Cli\Resource\Model\Environment;
+use Ymir\Cli\Resource\Model\Project;
 
 class StartAndMonitorDeploymentStep implements DeploymentStepInterface
 {
+    /**
+     * The list of deployment types and the verbs to use with them.
+     */
+    private const TYPE_VERBS = [
+        'deployment' => 'Deploying',
+        'redeployment' => 'Redeploying',
+        'rollback' => 'Rolling back',
+    ];
+
     /**
      * {@inheritdoc}
      */
     public function perform(ExecutionContext $context, Deployment $deployment, Environment $environment): void
     {
+        $project = $context->getProject();
+
+        if (!$project instanceof Project) {
+            throw new LogicException('No project found in the current context');
+        }
+
         $apiClient = $context->getApiClient();
         $output = $context->getOutput();
 
-        $output->info(sprintf('%s starting', ucfirst($deployment->getType())));
+        $output->info(sprintf('%s <comment>%s</comment> to <comment>%s</comment>', self::TYPE_VERBS[$deployment->getType()], $project->getName(), $environment->getName()));
 
         $this->registerCancellationHandler($context, $deployment);
 

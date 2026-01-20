@@ -19,6 +19,7 @@ use Ymir\Cli\ExecutionContext;
 use Ymir\Cli\Project\Deployment\StartAndMonitorDeploymentStep;
 use Ymir\Cli\Tests\Factory\DeploymentFactory;
 use Ymir\Cli\Tests\Factory\EnvironmentFactory;
+use Ymir\Cli\Tests\Factory\ProjectFactory;
 use Ymir\Cli\Tests\TestCase;
 
 class StartAndMonitorDeploymentStepTest extends TestCase
@@ -27,9 +28,13 @@ class StartAndMonitorDeploymentStepTest extends TestCase
     {
         $apiClient = \Mockery::mock(ApiClient::class);
         $context = \Mockery::mock(ExecutionContext::class);
-        $deployment = DeploymentFactory::create(['id' => 1, 'type' => 'zip', 'status' => 'pending']);
+        $deployment = DeploymentFactory::create(['id' => 1, 'type' => 'deployment', 'status' => 'pending']);
         $environment = EnvironmentFactory::create();
         $output = \Mockery::mock(Output::class);
+        $project = ProjectFactory::create();
+
+        $context->shouldReceive('getProject')->once()
+                ->andReturn($project);
 
         $context->shouldReceive('getApiClient')->times(2)
                 ->andReturn($apiClient);
@@ -46,7 +51,7 @@ class StartAndMonitorDeploymentStepTest extends TestCase
                   ->andReturn(DeploymentFactory::create(['id' => 1, 'status' => 'running', 'steps' => [['id' => 1, 'task' => 'CreateInfrastructure', 'status' => 'finished']]]));
 
         $output->shouldReceive('info')->once()
-               ->with('Zip starting');
+               ->with(sprintf('Deploying <comment>%s</comment> to <comment>%s</comment>', $project->getName(), $environment->getName()));
 
         $output->shouldReceive('writeStep')->once()
                ->with('Creating infrastructure');

@@ -111,7 +111,7 @@ class UploadFunctionCodeStep implements DeploymentStepInterface
 
         [$user, $password] = explode(':', $decodedToken);
 
-        $context->getOutput()->infoWithDelayWarning('Pushing container image');
+        $context->getOutput()->infoWithDelayWarning(sprintf('Pushing <comment>%s</comment> container image', $project->getName()));
 
         $this->dockerExecutable->login($user, $password, Arr::get(explode('/', $imageUri), 0), $this->buildDirectory);
         $this->dockerExecutable->tag(sprintf('%s:%s', $project->getName(), $environment), $imageUri, $this->buildDirectory);
@@ -123,11 +123,17 @@ class UploadFunctionCodeStep implements DeploymentStepInterface
      */
     private function uploadArtifact(ExecutionContext $context, Deployment $deployment): void
     {
+        $project = $context->getProject();
+
+        if (!$project instanceof Project) {
+            throw new LogicException('No project found in the current context');
+        }
+
         $output = $context->getOutput();
         $progressBar = new ProgressBar($output);
 
         $progressBar->setFormat('<info>%message%</info> (<comment>%percent%%</comment>)');
-        $progressBar->setMessage('Uploading build');
+        $progressBar->setMessage(sprintf('Uploading <comment>%s</comment> build', $project->getName()));
 
         $this->uploader->uploadFile($this->buildArtifactPath, $context->getApiClient()->getArtifactUploadUrl($deployment), [], $progressBar);
 

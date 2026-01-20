@@ -57,7 +57,7 @@ class RollbackProjectCommandTest extends TestCase
 
         $tester = $this->executeCommand(RollbackProjectCommand::NAME, [], ['staging']);
 
-        $this->assertStringContainsString('Project "staging" environment rolled back successfully', $tester->getDisplay());
+        $this->assertStringContainsString('Project rolled back successfully', $tester->getDisplay());
         $this->assertStringContainsString('https://staging.ymir.com', $tester->getDisplay());
     }
 
@@ -87,7 +87,7 @@ class RollbackProjectCommandTest extends TestCase
 
         $tester = $this->executeCommand(RollbackProjectCommand::NAME, ['environment' => 'production']);
 
-        $this->assertStringContainsString('Project "production" environment rolled back successfully', $tester->getDisplay());
+        $this->assertStringContainsString('Project rolled back successfully', $tester->getDisplay());
         $this->assertStringContainsString('https://vanity.ymir.com', $tester->getDisplay());
     }
 
@@ -121,7 +121,7 @@ class RollbackProjectCommandTest extends TestCase
         $tester = $this->executeCommand(RollbackProjectCommand::NAME, ['environment' => 'production', '--select' => true], ['1']); // Selecting deployment 1
 
         $this->assertStringContainsString('Which deployment would you like to rollback to?', $tester->getDisplay());
-        $this->assertStringContainsString('Project "production" environment rolled back successfully', $tester->getDisplay());
+        $this->assertStringContainsString('Project rolled back successfully', $tester->getDisplay());
     }
 
     public function testPerformThrowsExceptionIfNoDeployments(): void

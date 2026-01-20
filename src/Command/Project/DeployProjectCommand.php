@@ -120,9 +120,9 @@ class DeployProjectCommand extends AbstractProjectDeploymentCommand
     /**
      * {@inheritdoc}
      */
-    protected function getSuccessMessage(string $environment): string
+    protected function getSuccessMessage(): string
     {
-        return sprintf('Project deployed successfully to "<comment>%s</comment>" environment', $environment);
+        return 'Project deployed successfully';
     }
 
     /**

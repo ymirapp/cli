@@ -61,7 +61,7 @@ class ProcessAssetsStepTest extends TestCase
         $apiClient->shouldReceive('getDeployments')->never();
 
         $output->shouldReceive('info')->once()
-               ->with('Processing assets');
+               ->with(sprintf('Processing <comment>%s</comment> assets', $project->getName()));
 
         $apiClient->shouldReceive('getSignedAssetRequests')->once()
                   ->andReturn(collect([
@@ -114,7 +114,7 @@ class ProcessAssetsStepTest extends TestCase
                   ->andReturn(new ResourceCollection([]));
 
         $output->shouldReceive('info')->once()
-               ->with('Processing assets');
+               ->with(sprintf('Processing <comment>%s</comment> assets', $project->getName()));
 
         $apiClient->shouldReceive('getSignedAssetRequests')->once()
                   ->andReturn(collect([
