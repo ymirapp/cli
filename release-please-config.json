@@ -13,5 +13,12 @@
                 { "type":"chore", "section": "Miscellaneous" ,"hidden":true }
             ]
         }
-    }
+    },
+    "extra-files": [
+        {
+            "type": "yaml",
+            "path": "config/services.yml",
+            "jsonpath": "$.parameters.version"
+        }
+    ]
 }
