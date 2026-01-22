@@ -150,7 +150,7 @@ class ProjectDefinitionTest extends TestCase
         $this->input->shouldReceive('hasArgument')->with('project')->andReturn(false);
         $this->context->shouldReceive('getProject')->andReturn(null);
         $this->apiClient->shouldReceive('getProjects')->andReturn(new ResourceCollection([ProjectFactory::create()]));
-        $this->output->shouldReceive('choice')->andReturn('');
+        $this->output->shouldReceive('choiceWithResourceDetails')->andReturn('');
 
         $this->expectException(InvalidInputException::class);
         $this->expectExceptionMessage('You must provide a valid project ID or name');
@@ -194,7 +194,7 @@ class ProjectDefinitionTest extends TestCase
         $this->input->shouldReceive('hasArgument')->with('project')->andReturn(false);
         $this->context->shouldReceive('getProject')->andReturn(null);
         $this->apiClient->shouldReceive('getProjects')->andReturn(new ResourceCollection([$project]));
-        $this->output->shouldReceive('choice')->with('question', \Mockery::type(Enumerable::class))->andReturn('choice-project');
+        $this->output->shouldReceive('choiceWithResourceDetails')->with('question', \Mockery::type(Enumerable::class))->andReturn('choice-project');
 
         $definition = new ProjectDefinition();
 

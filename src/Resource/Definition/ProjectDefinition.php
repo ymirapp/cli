@@ -88,9 +88,7 @@ class ProjectDefinition implements ProvisionableResourceDefinitionInterface, Res
         if ($projects->isEmpty()) {
             throw new NoResourcesFoundException(sprintf('The currently active team has no projects, but you can create one with the "%s" command', InitializeProjectCommand::NAME));
         } elseif (empty($projectIdOrName)) {
-            $projectIdOrName = $context->getOutput()->choice($question, $projects->mapWithKeys(function (Project $project) {
-                return [$project->getId() => $project->getName()];
-            }));
+            $projectIdOrName = $context->getOutput()->choiceWithResourceDetails($question, $projects);
         }
 
         if (empty($projectIdOrName)) {

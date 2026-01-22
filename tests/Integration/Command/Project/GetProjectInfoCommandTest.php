@@ -83,7 +83,7 @@ class GetProjectInfoCommandTest extends TestCase
             Project::class => function () { return new ProjectDefinition(); },
         ]))]);
 
-        $tester = $this->executeCommand(GetProjectInfoCommand::NAME, [], ['my-project']);
+        $tester = $this->executeCommand(GetProjectInfoCommand::NAME, [], ['1']);
 
         $this->assertStringContainsString('my-project', $tester->getDisplay());
     }
