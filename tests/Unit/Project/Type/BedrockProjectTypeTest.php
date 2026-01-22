@@ -94,9 +94,6 @@ class BedrockProjectTypeTest extends TestCase
             'foo' => 'bar',
             'cron' => false,
             'warmup' => false,
-            'cdn' => [
-                'caching' => 'assets',
-            ],
             'build' => [
                 'COMPOSER_MIRROR_PATH_REPOS=1 composer install',
             ],

@@ -103,20 +103,6 @@ abstract class AbstractWordPressProjectType extends AbstractProjectType implemen
     }
 
     /**
-     * {@inheritdoc}
-     */
-    protected function generateEnvironmentConfigurationArray(string $environment, array $baseConfiguration = []): array
-    {
-        $configuration = parent::generateEnvironmentConfigurationArray($environment, $baseConfiguration);
-
-        if ('staging' === $environment) {
-            $configuration = Arr::add($configuration, 'cdn.caching', 'assets');
-        }
-
-        return $configuration;
-    }
-
-    /**
      * Get the Finder object for finding all the required files in the given project directory.
      */
     protected function getRequiredFiles(string $projectDirectory): Finder

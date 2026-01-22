@@ -95,9 +95,6 @@ class RadicleProjectTypeTest extends TestCase
             'foo' => 'bar',
             'cron' => false,
             'warmup' => false,
-            'cdn' => [
-                'caching' => 'assets',
-            ],
             'build' => [
                 'COMPOSER_MIRROR_PATH_REPOS=1 composer install',
                 'yarn install && yarn build && rm -rf node_modules',
