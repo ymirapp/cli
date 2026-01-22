@@ -415,7 +415,7 @@ class ApiClient
         return (new ResourceCollection($this->client->getCaches($team->getId())))->mapWithKeys(function (array $cache) {
             $cache = Model\CacheCluster::fromArray($cache);
 
-            return [$cache->getName() => $cache];
+            return [$cache->getId() => $cache];
         });
     }
 
@@ -477,7 +477,7 @@ class ApiClient
         return (new ResourceCollection($this->client->getDatabaseServers($team->getId())))->mapWithKeys(function (array $databaseServer) {
             $databaseServer = Model\DatabaseServer::fromArray($databaseServer);
 
-            return [$databaseServer->getName() => $databaseServer];
+            return [$databaseServer->getId() => $databaseServer];
         });
     }
 
@@ -501,7 +501,7 @@ class ApiClient
         return (new ResourceCollection($this->client->getDatabaseUsers($databaseServer->getId())))->mapWithKeys(function (array $databaseUser) {
             $databaseUser = Model\DatabaseUser::fromArray($databaseUser);
 
-            return [$databaseUser->getName() => $databaseUser];
+            return [$databaseUser->getId() => $databaseUser];
         });
     }
 
@@ -671,7 +671,7 @@ class ApiClient
         return (new ResourceCollection($this->client->getProjects($team->getId())))->mapWithKeys(function (array $project) {
             $project = Model\Project::fromArray($project);
 
-            return [$project->getName() => $project];
+            return [$project->getId() => $project];
         });
     }
 
