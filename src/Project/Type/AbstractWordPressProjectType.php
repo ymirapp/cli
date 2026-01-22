@@ -15,7 +15,6 @@ namespace Ymir\Cli\Project\Type;
 
 use Symfony\Component\Finder\Finder;
 use Ymir\Cli\Project\Initialization\WordPressConfigurationInitializationStep;
-use Ymir\Cli\Support\Arr;
 
 abstract class AbstractWordPressProjectType extends AbstractProjectType implements SupportsMediaInterface
 {
@@ -100,20 +99,6 @@ abstract class AbstractWordPressProjectType extends AbstractProjectType implemen
     {
         return parent::getProjectFiles($projectDirectory)
             ->exclude(ltrim($this->getMediaDirectoryPath(), '/'));
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function generateEnvironmentConfigurationArray(string $environment, array $baseConfiguration = []): array
-    {
-        $configuration = parent::generateEnvironmentConfigurationArray($environment, $baseConfiguration);
-
-        if ('staging' === $environment) {
-            $configuration = Arr::add($configuration, 'cdn.caching', 'assets');
-        }
-
-        return $configuration;
     }
 
     /**

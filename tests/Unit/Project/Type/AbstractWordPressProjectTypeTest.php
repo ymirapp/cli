@@ -45,9 +45,6 @@ class AbstractWordPressProjectTypeTest extends TestCase
             'foo' => 'bar',
             'cron' => false,
             'warmup' => false,
-            'cdn' => [
-                'caching' => 'assets',
-            ],
         ], $projectType->generateEnvironmentConfiguration('staging', ['foo' => 'bar'])->toArray());
     }
 
