@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.0.2](https://github.com/ymirapp/cli/compare/v2.0.1...v2.0.2) (2026-01-22)
+
+
+### Bug Fixes
+
+* Remove `assets` caching for staging environments ([5e8faa6](https://github.com/ymirapp/cli/commit/5e8faa668c98f1fccd66f9c8ab784b8187622fd7))
+
 ## [2.0.1](https://github.com/ymirapp/cli/compare/v2.0.0...v2.0.1) (2026-01-22)
 
 
