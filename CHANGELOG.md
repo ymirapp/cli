@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.0.1](https://github.com/ymirapp/cli/compare/v2.0.0...v2.0.1) (2026-01-22)
+
+
+### Bug Fixes
+
+* Display region in project selection choices ([f41f87a](https://github.com/ymirapp/cli/commit/f41f87a7859bbe6b64480fe8c663e1cb7e916d68))
+* Prevent resource name collisions in `ApiClient` collections ([50d6214](https://github.com/ymirapp/cli/commit/50d621420991d90401c64c62f6cbe39959534ebb))
+
 ## [2.0.0](https://github.com/ymirapp/cli/compare/v1.54.1...v2.0.0) (2026-01-20)
 
 
