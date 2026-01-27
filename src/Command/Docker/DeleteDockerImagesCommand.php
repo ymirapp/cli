@@ -22,7 +22,6 @@ use Ymir\Cli\Executable\DockerExecutable;
 use Ymir\Cli\ExecutionContextFactory;
 use Ymir\Cli\Resource\Model\Project;
 
-// TODO: Need to refactor this command
 class DeleteDockerImagesCommand extends AbstractCommand
 {
     /**
