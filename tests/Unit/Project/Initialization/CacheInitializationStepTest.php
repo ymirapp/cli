@@ -83,7 +83,7 @@ class CacheInitializationStepTest extends TestCase
         $this->apiClient->shouldReceive('getCaches')->once()->andReturn(new ResourceCollection([]));
         $this->output->shouldReceive('confirm')->with('Would you like to use a cache cluster for this project?', false)->once()->andReturn(true);
         $this->output->shouldReceive('confirm')->with(\Mockery::pattern('/Your team doesn\'t have any configured cache clusters/'))->once()->andReturn(true);
-        $this->context->shouldReceive('provision')->with(CacheCluster::class)->once()->andReturn($cacheCluster);
+        $this->context->shouldReceive('provision')->with(CacheCluster::class, ['region' => 'us-east-1'])->once()->andReturn($cacheCluster);
 
         $step = new CacheInitializationStep();
 
@@ -101,7 +101,7 @@ class CacheInitializationStepTest extends TestCase
         $this->output->shouldReceive('confirm')->with('Would you like to use a cache cluster for this project?', false)->once()->andReturn(true);
         $this->output->shouldReceive('confirm')->with('Would you like to use an existing cache cluster for this project?')->once()->andReturn(false);
         $this->output->shouldReceive('confirm')->with('Would you like to create a new one for this project instead?')->once()->andReturn(true);
-        $this->context->shouldReceive('provision')->with(CacheCluster::class)->once()->andReturn($cacheCluster);
+        $this->context->shouldReceive('provision')->with(CacheCluster::class, ['region' => 'us-east-1'])->once()->andReturn($cacheCluster);
 
         $step = new CacheInitializationStep();
 

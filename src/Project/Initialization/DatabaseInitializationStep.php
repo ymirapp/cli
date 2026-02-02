@@ -84,7 +84,7 @@ class DatabaseInitializationStep implements InitializationStepInterface
             (!$databaseServers->isEmpty() && $output->confirm('Would you like to create a new one for this project instead?'))
             || ($databaseServers->isEmpty() && $output->confirm(sprintf('Your team doesn\'t have any configured database servers in the "<comment>%s</comment>" region. Would you like to create one for this team first?', $region)))
         ) {
-            $databaseServer = $context->provision(DatabaseServer::class);
+            $databaseServer = $context->provision(DatabaseServer::class, ['region' => $region]);
         }
 
         return $databaseServer instanceof DatabaseServer ? $databaseServer : null;

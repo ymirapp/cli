@@ -55,6 +55,26 @@ class ResolveOrProvisionResourceRequirementTest extends TestCase
         $this->assertSame($resource, $requirement->fulfill($context));
     }
 
+    public function testFulfillProvisionsResourceWithMergedRequirements(): void
+    {
+        $context = \Mockery::mock(ExecutionContext::class);
+        $definition = \Mockery::mock(ProvisionableResourceDefinitionInterface::class, ResolvableResourceDefinitionInterface::class);
+        $provisioner = \Mockery::mock(ResourceProvisioner::class);
+        $resource = \Mockery::mock(ResourceModelInterface::class);
+
+        $context->shouldReceive('getProvisioner')->andReturn($provisioner);
+
+        $definition->shouldReceive('resolve')->once()->andThrow(new NoResourcesFoundException('No resources found'));
+
+        $provisioner->shouldReceive('provision')->once()
+                    ->with($definition, $context, ['fulfilled' => 'requirement', 'pre' => 'filled'])
+                    ->andReturn($resource);
+
+        $requirement = new ResolveOrProvisionResourceRequirement($definition, 'Question?', ['pre' => 'filled']);
+
+        $this->assertSame($resource, $requirement->fulfill($context, ['fulfilled' => 'requirement']));
+    }
+
     public function testFulfillReturnsResolvedResource(): void
     {
         $context = \Mockery::mock(ExecutionContext::class);

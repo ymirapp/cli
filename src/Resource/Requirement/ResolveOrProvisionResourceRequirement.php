@@ -55,7 +55,7 @@ class ResolveOrProvisionResourceRequirement extends ResourceRequirement
         try {
             return parent::fulfill($context, $fulfilledRequirements);
         } catch (NoResourcesFoundException $exception) {
-            return $context->getProvisioner()->provision($this->resource, $context, $this->preFulfilledRequirements);
+            return $context->getProvisioner()->provision($this->resource, $context, array_merge($fulfilledRequirements, $this->preFulfilledRequirements));
         }
     }
 }

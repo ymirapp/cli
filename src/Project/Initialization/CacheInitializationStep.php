@@ -56,7 +56,7 @@ class CacheInitializationStep implements InitializationStepInterface
         if (!$cacheClusters->isEmpty() && $output->confirm('Would you like to use an existing cache cluster for this project?')) {
             $cacheCluster = $cacheClusters->firstWhereIdOrName($output->choiceWithResourceDetails('Which cache cluster would you like to use?', $cacheClusters));
         } elseif ($output->confirm($provisionPrompt)) {
-            $cacheCluster = $context->provision(CacheCluster::class);
+            $cacheCluster = $context->provision(CacheCluster::class, ['region' => $region]);
         }
 
         return $cacheCluster instanceof CacheCluster ? $cacheCluster : null;
