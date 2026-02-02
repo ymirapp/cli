@@ -29,12 +29,28 @@ class ResourceRequirementTest extends TestCase
         $resource = SecretFactory::create();
 
         $definition->shouldReceive('resolve')->once()
-                   ->with($context, 'Question?')
+                   ->with($context, 'Question?', [])
                    ->andReturn($resource);
 
         $requirement = new ResourceRequirement($definition, 'Question?');
 
         $this->assertSame($resource, $requirement->fulfill($context));
+    }
+
+    public function testFulfillPassesFulfilledRequirementsToResolve(): void
+    {
+        $context = \Mockery::mock(ExecutionContext::class);
+        $definition = \Mockery::mock(ResolvableResourceDefinitionInterface::class);
+        $resource = SecretFactory::create();
+        $fulfilledRequirements = ['region' => 'us-west-2'];
+
+        $definition->shouldReceive('resolve')->once()
+                   ->with($context, 'Question?', $fulfilledRequirements)
+                   ->andReturn($resource);
+
+        $requirement = new ResourceRequirement($definition, 'Question?');
+
+        $this->assertSame($resource, $requirement->fulfill($context, $fulfilledRequirements));
     }
 
     public function testFulfillThrowsExceptionIfResolvedResourceIsInvalid(): void

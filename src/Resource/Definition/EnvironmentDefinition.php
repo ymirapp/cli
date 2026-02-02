@@ -66,7 +66,7 @@ class EnvironmentDefinition implements ProvisionableResourceDefinitionInterface,
     /**
      * {@inheritdoc}
      */
-    public function resolve(ExecutionContext $context, string $question): Environment
+    public function resolve(ExecutionContext $context, string $question, array $fulfilledRequirements = []): Environment
     {
         $input = $context->getInput();
         $project = $context->getParentResource() ?? $context->getProject();

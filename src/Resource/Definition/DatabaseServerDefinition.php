@@ -71,7 +71,7 @@ class DatabaseServerDefinition implements ProvisionableResourceDefinitionInterfa
     /**
      * {@inheritdoc}
      */
-    public function resolve(ExecutionContext $context, string $question): DatabaseServer
+    public function resolve(ExecutionContext $context, string $question, array $fulfilledRequirements = []): DatabaseServer
     {
         $input = $context->getInput();
         $serverIdOrName = null;
@@ -83,6 +83,12 @@ class DatabaseServerDefinition implements ProvisionableResourceDefinitionInterfa
         }
 
         $servers = $context->getApiClient()->getDatabaseServers($context->getTeam());
+
+        if (!empty($fulfilledRequirements['region'])) {
+            $servers = $servers->filter(function (DatabaseServer $databaseServer) use ($fulfilledRequirements) {
+                return $databaseServer->getRegion() === $fulfilledRequirements['region'];
+            });
+        }
 
         if ($servers->isEmpty()) {
             throw new NoResourcesFoundException(sprintf('The currently active team has no database servers, but you can create one with the "%s" command', CreateDatabaseServerCommand::NAME));

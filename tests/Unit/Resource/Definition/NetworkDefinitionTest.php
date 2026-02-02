@@ -98,6 +98,24 @@ class NetworkDefinitionTest extends TestCase
         ]));
     }
 
+    public function testResolveFiltersByRegion(): void
+    {
+        $networkUsEast1 = NetworkFactory::create(['id' => 1, 'name' => 'east-network', 'region' => 'us-east-1']);
+        $networkUsWest2 = NetworkFactory::create(['id' => 2, 'name' => 'west-network', 'region' => 'us-west-2']);
+
+        $this->input->shouldReceive('hasArgument')->with('network')->andReturn(false);
+        $this->input->shouldReceive('hasOption')->with('network')->andReturn(false);
+        $this->apiClient->shouldReceive('getNetworks')->andReturn(new ResourceCollection([$networkUsEast1, $networkUsWest2]));
+
+        $this->output->shouldReceive('choiceWithResourceDetails')->with('question', \Mockery::on(function ($networks) {
+            return 1 === $networks->count() && 'us-west-2' === $networks->first()->getRegion();
+        }))->andReturn('west-network');
+
+        $definition = new NetworkDefinition();
+
+        $this->assertSame($networkUsWest2, $definition->resolve($this->context, 'question', ['region' => 'us-west-2']));
+    }
+
     public function testResolveThrowsExceptionIfNameCollision(): void
     {
         $network1 = NetworkFactory::create(['id' => 1, 'name' => 'duplicate']);

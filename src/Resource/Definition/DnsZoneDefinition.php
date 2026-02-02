@@ -41,7 +41,7 @@ class DnsZoneDefinition implements ResolvableResourceDefinitionInterface
     /**
      * {@inheritdoc}
      */
-    public function resolve(ExecutionContext $context, string $question): DnsZone
+    public function resolve(ExecutionContext $context, string $question, array $fulfilledRequirements = []): DnsZone
     {
         $input = $context->getInput();
         $zoneIdOrName = $input->getStringArgument('zone');

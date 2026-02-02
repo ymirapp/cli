@@ -105,6 +105,23 @@ class CacheClusterDefinitionTest extends TestCase
         ]));
     }
 
+    public function testResolveFiltersByRegion(): void
+    {
+        $cacheUsEast1 = CacheClusterFactory::create(['id' => 1, 'name' => 'east-cache', 'region' => 'us-east-1']);
+        $cacheUsWest2 = CacheClusterFactory::create(['id' => 2, 'name' => 'west-cache', 'region' => 'us-west-2']);
+
+        $this->input->shouldReceive('getStringArgument')->with('cache')->andReturn('');
+        $this->apiClient->shouldReceive('getCaches')->andReturn(new ResourceCollection([$cacheUsEast1, $cacheUsWest2]));
+
+        $this->output->shouldReceive('choiceWithResourceDetails')->with('question', \Mockery::on(function ($caches) {
+            return 1 === $caches->count() && 'us-west-2' === $caches->first()->getRegion();
+        }))->andReturn('west-cache');
+
+        $definition = new CacheClusterDefinition();
+
+        $this->assertSame($cacheUsWest2, $definition->resolve($this->context, 'question', ['region' => 'us-west-2']));
+    }
+
     public function testResolveThrowsExceptionIfCacheClusterNotFound(): void
     {
         $this->input->shouldReceive('getStringArgument')->with('cache')->andReturn('non-existent');

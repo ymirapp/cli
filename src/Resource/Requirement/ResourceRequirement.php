@@ -42,7 +42,7 @@ class ResourceRequirement extends AbstractRequirement
      */
     public function fulfill(ExecutionContext $context, array $fulfilledRequirements = []): ResourceModelInterface
     {
-        $resolvedResource = $this->resource->resolve($context, $this->question);
+        $resolvedResource = $this->resource->resolve($context, $this->question, $fulfilledRequirements);
 
         if (!$resolvedResource instanceof ResourceModelInterface) {
             throw new LogicException('Required resource definition must return a resource model instance');

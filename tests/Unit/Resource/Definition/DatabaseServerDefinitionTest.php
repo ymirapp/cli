@@ -106,6 +106,24 @@ class DatabaseServerDefinitionTest extends TestCase
         ]));
     }
 
+    public function testResolveFiltersByRegion(): void
+    {
+        $serverUsEast1 = DatabaseServerFactory::create(['id' => 1, 'name' => 'east-server', 'region' => 'us-east-1']);
+        $serverUsWest2 = DatabaseServerFactory::create(['id' => 2, 'name' => 'west-server', 'region' => 'us-west-2']);
+
+        $this->input->shouldReceive('hasArgument')->with('server')->andReturn(false);
+        $this->input->shouldReceive('hasOption')->with('server')->andReturn(false);
+        $this->apiClient->shouldReceive('getDatabaseServers')->andReturn(new ResourceCollection([$serverUsEast1, $serverUsWest2]));
+
+        $this->output->shouldReceive('choiceWithResourceDetails')->with('question', \Mockery::on(function ($servers) {
+            return 1 === $servers->count() && 'us-west-2' === $servers->first()->getRegion();
+        }))->andReturn('west-server');
+
+        $definition = new DatabaseServerDefinition();
+
+        $this->assertSame($serverUsWest2, $definition->resolve($this->context, 'question', ['region' => 'us-west-2']));
+    }
+
     public function testResolveThrowsExceptionIfDatabaseServerNotFound(): void
     {
         $this->input->shouldReceive('hasArgument')->with('server')->andReturn(true);

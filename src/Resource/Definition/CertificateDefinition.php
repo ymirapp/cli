@@ -41,7 +41,7 @@ class CertificateDefinition implements ResolvableResourceDefinitionInterface
     /**
      * {@inheritdoc}
      */
-    public function resolve(ExecutionContext $context, string $question): Certificate
+    public function resolve(ExecutionContext $context, string $question, array $fulfilledRequirements = []): Certificate
     {
         $input = $context->getInput();
         $certificateId = $input->getStringArgument('certificate');

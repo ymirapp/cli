@@ -44,7 +44,7 @@ class ResolveOrProvisionResourceRequirementTest extends TestCase
 
         $context->shouldReceive('getProvisioner')->andReturn($provisioner);
 
-        $definition->shouldReceive('resolve')->once()->with($context, 'Question?')->andThrow(new NoResourcesFoundException('No resources found'));
+        $definition->shouldReceive('resolve')->once()->with($context, 'Question?', [])->andThrow(new NoResourcesFoundException('No resources found'));
 
         $provisioner->shouldReceive('provision')->once()
                     ->with($definition, $context, ['pre' => 'filled'])
@@ -61,7 +61,7 @@ class ResolveOrProvisionResourceRequirementTest extends TestCase
         $definition = \Mockery::mock(ProvisionableResourceDefinitionInterface::class, ResolvableResourceDefinitionInterface::class);
         $resource = \Mockery::mock(ResourceModelInterface::class);
 
-        $definition->shouldReceive('resolve')->once()->with($context, 'Question?')->andReturn($resource);
+        $definition->shouldReceive('resolve')->once()->with($context, 'Question?', [])->andReturn($resource);
 
         $requirement = new ResolveOrProvisionResourceRequirement($definition, 'Question?');
 

@@ -66,7 +66,7 @@ class DatabaseDefinition implements ProvisionableResourceDefinitionInterface, Re
     /**
      * {@inheritdoc}
      */
-    public function resolve(ExecutionContext $context, string $question): Database
+    public function resolve(ExecutionContext $context, string $question, array $fulfilledRequirements = []): Database
     {
         $databaseServer = $context->getParentResource();
 

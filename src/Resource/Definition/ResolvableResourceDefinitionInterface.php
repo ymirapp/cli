@@ -23,5 +23,5 @@ interface ResolvableResourceDefinitionInterface extends ResourceDefinitionInterf
      * If unable to resolve with the command-line input, the method will ask the user to select a resource with the
      * given question.
      */
-    public function resolve(ExecutionContext $context, string $question);
+    public function resolve(ExecutionContext $context, string $question, array $fulfilledRequirements = []);
 }

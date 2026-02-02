@@ -61,7 +61,7 @@ class TeamDefinition implements ProvisionableResourceDefinitionInterface, Resolv
     /**
      * {@inheritdoc}
      */
-    public function resolve(ExecutionContext $context, string $question): Team
+    public function resolve(ExecutionContext $context, string $question, array $fulfilledRequirements = []): Team
     {
         $input = $context->getInput();
         $teamId = null;

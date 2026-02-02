@@ -67,7 +67,7 @@ class DatabaseUserDefinition implements ProvisionableResourceDefinitionInterface
     /**
      * {@inheritdoc}
      */
-    public function resolve(ExecutionContext $context, string $question): DatabaseUser
+    public function resolve(ExecutionContext $context, string $question, array $fulfilledRequirements = []): DatabaseUser
     {
         $databaseServer = $context->getParentResource();
 

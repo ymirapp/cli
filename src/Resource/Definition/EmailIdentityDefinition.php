@@ -41,7 +41,7 @@ class EmailIdentityDefinition implements ResolvableResourceDefinitionInterface
     /**
      * {@inheritdoc}
      */
-    public function resolve(ExecutionContext $context, string $question): EmailIdentity
+    public function resolve(ExecutionContext $context, string $question, array $fulfilledRequirements = []): EmailIdentity
     {
         $input = $context->getInput();
         $identityIdOrName = $input->getStringArgument('identity');

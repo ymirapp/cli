@@ -67,7 +67,7 @@ class CloudProviderDefinition implements ProvisionableResourceDefinitionInterfac
     /**
      * {@inheritdoc}
      */
-    public function resolve(ExecutionContext $context, string $question): CloudProvider
+    public function resolve(ExecutionContext $context, string $question, array $fulfilledRequirements = []): CloudProvider
     {
         $input = $context->getInput();
         $providerId = null;

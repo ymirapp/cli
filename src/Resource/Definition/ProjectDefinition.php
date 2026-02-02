@@ -69,7 +69,7 @@ class ProjectDefinition implements ProvisionableResourceDefinitionInterface, Res
     /**
      * {@inheritdoc}
      */
-    public function resolve(ExecutionContext $context, string $question): Project
+    public function resolve(ExecutionContext $context, string $question, array $fulfilledRequirements = []): Project
     {
         $input = $context->getInput();
         $project = $context->getProject();

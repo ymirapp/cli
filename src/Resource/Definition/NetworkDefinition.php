@@ -67,7 +67,7 @@ class NetworkDefinition implements ProvisionableResourceDefinitionInterface, Res
     /**
      * {@inheritdoc}
      */
-    public function resolve(ExecutionContext $context, string $question): Network
+    public function resolve(ExecutionContext $context, string $question, array $fulfilledRequirements = []): Network
     {
         $input = $context->getInput();
         $networkIdOrName = null;
@@ -79,6 +79,12 @@ class NetworkDefinition implements ProvisionableResourceDefinitionInterface, Res
         }
 
         $networks = $context->getApiClient()->getNetworks($context->getTeam());
+
+        if (!empty($fulfilledRequirements['region'])) {
+            $networks = $networks->filter(function (Network $network) use ($fulfilledRequirements) {
+                return $network->getRegion() === $fulfilledRequirements['region'];
+            });
+        }
 
         if ($networks->isEmpty()) {
             throw new NoResourcesFoundException(sprintf('The currently active team has no networks, but you can create one with the "%s" command', CreateNetworkCommand::NAME));

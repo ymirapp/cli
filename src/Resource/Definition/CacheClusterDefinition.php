@@ -71,10 +71,16 @@ class CacheClusterDefinition implements ProvisionableResourceDefinitionInterface
     /**
      * {@inheritdoc}
      */
-    public function resolve(ExecutionContext $context, string $question): CacheCluster
+    public function resolve(ExecutionContext $context, string $question, array $fulfilledRequirements = []): CacheCluster
     {
         $cacheIdOrName = $context->getInput()->getStringArgument('cache');
         $caches = $context->getApiClient()->getCaches($context->getTeam());
+
+        if (!empty($fulfilledRequirements['region'])) {
+            $caches = $caches->filter(function (CacheCluster $cacheCluster) use ($fulfilledRequirements) {
+                return $cacheCluster->getRegion() === $fulfilledRequirements['region'];
+            });
+        }
 
         if ($caches->isEmpty()) {
             throw new NoResourcesFoundException(sprintf('The currently active team has no cache clusters, but you can create one with the "%s" command', CreateCacheCommand::NAME));
