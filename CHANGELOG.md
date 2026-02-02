@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.0.4](https://github.com/ymirapp/cli/compare/v2.0.3...v2.0.4) (2026-02-02)
+
+
+### Bug Fixes
+
+* Use project region when performing cache and database project initialization steps ([16b13fd](https://github.com/ymirapp/cli/commit/16b13fd919dd29c144aaff61751ed1a04abc068c))
+
 ## [2.0.3](https://github.com/ymirapp/cli/compare/v2.0.2...v2.0.3) (2026-02-02)
 
 
