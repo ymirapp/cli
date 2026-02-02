@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.0.3](https://github.com/ymirapp/cli/compare/v2.0.2...v2.0.3) (2026-02-02)
+
+
+### Bug Fixes
+
+* Filter regional resources by region when `region` requirement is fullfilled ([f3d8d8c](https://github.com/ymirapp/cli/commit/f3d8d8cc1abbd5545b2d99501d5d6e9d7d731da5))
+
 ## [2.0.2](https://github.com/ymirapp/cli/compare/v2.0.1...v2.0.2) (2026-01-22)
 
 
