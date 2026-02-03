@@ -15,6 +15,7 @@ namespace Ymir\Cli\Tests\Unit\Project\Build;
 
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
+use Symfony\Component\Finder\SplFileInfo;
 use Ymir\Cli\Project\Build\CopyProjectFilesStep;
 use Ymir\Cli\Project\EnvironmentConfiguration;
 use Ymir\Cli\Project\ProjectConfiguration;
@@ -28,6 +29,45 @@ class CopyProjectFilesStepTest extends TestCase
         $step = new CopyProjectFilesStep('build', \Mockery::mock(Filesystem::class), 'project');
 
         $this->assertSame('Copying Project files', $step->getDescription());
+    }
+
+    public function testPerformCopiesEmptyFilesUsingTouch(): void
+    {
+        $environmentConfiguration = \Mockery::mock(EnvironmentConfiguration::class);
+        $filesystem = \Mockery::mock(Filesystem::class);
+        $projectConfiguration = \Mockery::mock(ProjectConfiguration::class);
+        $projectType = \Mockery::mock(ProjectTypeInterface::class);
+
+        $projectConfiguration->shouldReceive('getProjectType')->andReturn($projectType);
+        $environmentConfiguration->shouldReceive('getBuildIncludePaths')->andReturn([]);
+        $environmentConfiguration->shouldReceive('isImageDeploymentType')->andReturn(false);
+
+        $filesystem->shouldReceive('exists')->andReturn(false);
+        $filesystem->shouldReceive('mkdir')->with('build', 0755);
+
+        $emptyFile = \Mockery::mock(SplFileInfo::class);
+        $emptyFile->shouldReceive('isFile')->andReturn(true);
+        $emptyFile->shouldReceive('isDir')->andReturn(false);
+        $emptyFile->shouldReceive('getSize')->andReturn(0);
+        $emptyFile->shouldReceive('getRelativePathname')->andReturn('empty.txt');
+        $emptyFile->shouldReceive('getPathname')->andReturn('empty.txt');
+
+        $notEmptyFile = \Mockery::mock(SplFileInfo::class);
+        $notEmptyFile->shouldReceive('isFile')->andReturn(true);
+        $notEmptyFile->shouldReceive('isDir')->andReturn(false);
+        $notEmptyFile->shouldReceive('getSize')->andReturn(10);
+        $notEmptyFile->shouldReceive('getRelativePathname')->andReturn('not_empty.txt');
+        $notEmptyFile->shouldReceive('getPathname')->andReturn('not_empty.txt');
+        $notEmptyFile->shouldReceive('getRealPath')->andReturn('/path/to/not_empty.txt');
+
+        $projectType->shouldReceive('getProjectFiles')->andReturn(Finder::create()->append([$emptyFile, $notEmptyFile]));
+
+        $filesystem->shouldReceive('touch')->once()->with('build/empty.txt');
+        $filesystem->shouldReceive('copy')->once()->with('/path/to/not_empty.txt', 'build/not_empty.txt');
+
+        $step = new CopyProjectFilesStep('build', $filesystem, 'project');
+
+        $step->perform($environmentConfiguration, $projectConfiguration);
     }
 
     public function testPerformCopiesFiles(): void

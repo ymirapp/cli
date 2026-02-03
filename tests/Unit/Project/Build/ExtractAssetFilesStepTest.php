@@ -15,6 +15,7 @@ namespace Ymir\Cli\Tests\Unit\Project\Build;
 
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
+use Symfony\Component\Finder\SplFileInfo;
 use Ymir\Cli\Project\Build\ExtractAssetFilesStep;
 use Ymir\Cli\Project\EnvironmentConfiguration;
 use Ymir\Cli\Project\ProjectConfiguration;
@@ -47,6 +48,41 @@ class ExtractAssetFilesStepTest extends TestCase
                    ->with('assets');
         $filesystem->shouldReceive('mkdir')->once()
                    ->with('assets', 0755);
+
+        $step = new ExtractAssetFilesStep('assets', 'build', $filesystem);
+
+        $step->perform($environmentConfiguration, $projectConfiguration);
+    }
+
+    public function testPerformExtractsEmptyAssetFilesUsingTouch(): void
+    {
+        $environmentConfiguration = \Mockery::mock(EnvironmentConfiguration::class);
+        $filesystem = \Mockery::mock(Filesystem::class);
+        $projectConfiguration = \Mockery::mock(ProjectConfiguration::class);
+        $projectType = \Mockery::mock(ProjectTypeInterface::class);
+
+        $projectConfiguration->shouldReceive('getProjectType')->andReturn($projectType);
+
+        $emptyFile = \Mockery::mock(SplFileInfo::class);
+        $emptyFile->shouldReceive('isFile')->andReturn(true);
+        $emptyFile->shouldReceive('getSize')->andReturn(0);
+        $emptyFile->shouldReceive('getRelativePathname')->andReturn('empty.txt');
+        $emptyFile->shouldReceive('getPathname')->andReturn('empty.txt');
+
+        $notEmptyFile = \Mockery::mock(SplFileInfo::class);
+        $notEmptyFile->shouldReceive('isFile')->andReturn(true);
+        $notEmptyFile->shouldReceive('getSize')->andReturn(10);
+        $notEmptyFile->shouldReceive('getRelativePathname')->andReturn('not_empty.txt');
+        $notEmptyFile->shouldReceive('getPathname')->andReturn('not_empty.txt');
+        $notEmptyFile->shouldReceive('getRealPath')->andReturn('/path/to/not_empty.txt');
+
+        $projectType->shouldReceive('getAssetFiles')->andReturn(Finder::create()->append([$emptyFile, $notEmptyFile]));
+
+        $filesystem->shouldReceive('exists')->andReturn(false);
+        $filesystem->shouldReceive('mkdir')->with('assets', 0755);
+
+        $filesystem->shouldReceive('touch')->once()->with('assets/empty.txt');
+        $filesystem->shouldReceive('copy')->once()->with('/path/to/not_empty.txt', 'assets/not_empty.txt');
 
         $step = new ExtractAssetFilesStep('assets', 'build', $filesystem);
 

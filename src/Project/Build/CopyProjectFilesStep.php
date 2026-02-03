@@ -91,10 +91,14 @@ class CopyProjectFilesStep implements BuildStepInterface
      */
     private function copyFile(SplFileInfo $file): void
     {
+        $targetPath = $this->buildDirectory.'/'.$file->getRelativePathname();
+
         if ($file->isDir()) {
-            $this->filesystem->mkdir($this->buildDirectory.'/'.$file->getRelativePathname());
+            $this->filesystem->mkdir($targetPath);
+        } elseif ($file->isFile() && 0 === $file->getSize()) {
+            $this->filesystem->touch($targetPath);
         } elseif ($file->isFile() && is_string($file->getRealPath())) {
-            $this->filesystem->copy($file->getRealPath(), $this->buildDirectory.'/'.$file->getRelativePathname());
+            $this->filesystem->copy($file->getRealPath(), $targetPath);
         }
     }
 

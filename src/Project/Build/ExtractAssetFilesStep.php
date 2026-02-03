@@ -80,10 +80,16 @@ class ExtractAssetFilesStep implements BuildStepInterface
      */
     private function moveAssetFile(SplFileInfo $file): void
     {
-        if (!$file->isFile() || !is_string($file->getRealPath())) {
+        if (!$file->isFile()) {
             return;
         }
 
-        $this->filesystem->copy($file->getRealPath(), $this->toDirectory.'/'.$file->getRelativePathname());
+        $targetFile = $this->toDirectory.'/'.$file->getRelativePathname();
+
+        if (0 === $file->getSize()) {
+            $this->filesystem->touch($targetFile);
+        } elseif (is_string($file->getRealPath())) {
+            $this->filesystem->copy($file->getRealPath(), $targetFile);
+        }
     }
 }
