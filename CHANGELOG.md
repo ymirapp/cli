@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.0.5](https://github.com/ymirapp/cli/compare/v2.0.4...v2.0.5) (2026-02-03)
+
+
+### Bug Fixes
+
+* Use touch to copy empty files to prevent `stream_copy_to_stream` failures ([4341ee7](https://github.com/ymirapp/cli/commit/4341ee7ec6c49f831b914f1666af62c150f627ad))
+
 ## [2.0.4](https://github.com/ymirapp/cli/compare/v2.0.3...v2.0.4) (2026-02-02)
 
 
