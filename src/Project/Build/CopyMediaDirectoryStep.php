@@ -14,7 +14,6 @@ declare(strict_types=1);
 namespace Ymir\Cli\Project\Build;
 
 use Symfony\Component\Filesystem\Filesystem;
-use Symfony\Component\Finder\Finder;
 use Symfony\Component\Finder\SplFileInfo;
 use Ymir\Cli\Exception\Project\UnsupportedProjectException;
 use Ymir\Cli\Project\EnvironmentConfiguration;
@@ -73,7 +72,7 @@ class CopyMediaDirectoryStep implements BuildStepInterface
             throw new UnsupportedProjectException('You can only use this build step with projects that support media operations');
         }
 
-        $files = Finder::create()->files()->in($projectType->getMediaDirectoryPath($this->projectDirectory));
+        $files = $projectType->getMediaFiles($this->projectDirectory);
 
         foreach ($files as $file) {
             $this->copyFile($file);

@@ -71,6 +71,16 @@ abstract class AbstractWordPressProjectType extends AbstractProjectType implemen
     }
 
     /**
+     * {@inheritdoc}
+     */
+    public function getMediaFiles(string $projectDirectory): Finder
+    {
+        return Finder::create()
+            ->files()
+            ->in($this->getMediaDirectoryPath($projectDirectory));
+    }
+
+    /**
      * Get the path to the "mu-plugins" directory.
      *
      * If the project directory is given, it will return the absolute path to the "mu-plugins" directory. Otherwise, it

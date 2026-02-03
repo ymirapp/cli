@@ -13,6 +13,8 @@ declare(strict_types=1);
 
 namespace Ymir\Cli\Project\Type;
 
+use Symfony\Component\Finder\Finder;
+
 interface SupportsMediaInterface
 {
     /**
@@ -27,4 +29,9 @@ interface SupportsMediaInterface
      * be relative to the project root.
      */
     public function getMediaDirectoryPath(string $projectDirectory = ''): string;
+
+    /**
+     * Get the Finder object for finding all the media files in the given project directory.
+     */
+    public function getMediaFiles(string $projectDirectory): Finder;
 }
