@@ -28,7 +28,7 @@ class CopyMediaDirectoryStepTest extends TestCase
 {
     public function testGetDescription(): void
     {
-        $step = new CopyMediaDirectoryStep(\Mockery::mock(Filesystem::class), 'project', 'uploads');
+        $step = new CopyMediaDirectoryStep(\Mockery::mock(Filesystem::class), 'uploads', 'project');
 
         $this->assertSame('Copying media directory', $step->getDescription());
     }
