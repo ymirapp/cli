@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.0.7](https://github.com/ymirapp/cli/compare/v2.0.6...v2.0.7) (2026-02-05)
+
+
+### Bug Fixes
+
+* Need to prompt for the cache engine if none is given ([297dcd6](https://github.com/ymirapp/cli/commit/297dcd684dc4d1afd16fd6d09f8d76797667c04e))
+
 ## [2.0.6](https://github.com/ymirapp/cli/compare/v2.0.5...v2.0.6) (2026-02-05)
 
 
