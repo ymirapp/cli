@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.0.6](https://github.com/ymirapp/cli/compare/v2.0.5...v2.0.6) (2026-02-05)
+
+
+### Bug Fixes
+
+* Need to manually make directory when using `touch` ([a2ffd3d](https://github.com/ymirapp/cli/commit/a2ffd3d4be1a09307c3c0dcefa3deb1ac9a2b63a))
+
 ## [2.0.5](https://github.com/ymirapp/cli/compare/v2.0.4...v2.0.5) (2026-02-03)
 
 
