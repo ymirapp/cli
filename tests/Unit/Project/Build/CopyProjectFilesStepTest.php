@@ -31,6 +31,38 @@ class CopyProjectFilesStepTest extends TestCase
         $this->assertSame('Copying Project files', $step->getDescription());
     }
 
+    public function testPerformCopiesEmptyFileInSubdirectory(): void
+    {
+        $environmentConfiguration = \Mockery::mock(EnvironmentConfiguration::class);
+        $projectConfiguration = \Mockery::mock(ProjectConfiguration::class);
+        $projectType = \Mockery::mock(ProjectTypeInterface::class);
+        $filesystem = new Filesystem();
+        $tempDir = sys_get_temp_dir().'/ymir-test-'.uniqid();
+        $buildDir = $tempDir.'/build';
+
+        $projectConfiguration->shouldReceive('getProjectType')->andReturn($projectType);
+        $environmentConfiguration->shouldReceive('getBuildIncludePaths')->andReturn([]);
+        $environmentConfiguration->shouldReceive('isImageDeploymentType')->andReturn(false);
+
+        $emptyFile = \Mockery::mock(SplFileInfo::class);
+        $emptyFile->shouldReceive('isFile')->andReturn(true);
+        $emptyFile->shouldReceive('isDir')->andReturn(false);
+        $emptyFile->shouldReceive('getSize')->andReturn(0);
+        $emptyFile->shouldReceive('getRelativePathname')->andReturn('subdir/empty.txt');
+        $emptyFile->shouldReceive('getPathname')->andReturn('subdir/empty.txt');
+
+        $projectType->shouldReceive('getProjectFiles')->andReturn(Finder::create()->append([$emptyFile]));
+
+        $step = new CopyProjectFilesStep($buildDir, $filesystem, $tempDir.'/project');
+
+        try {
+            $step->perform($environmentConfiguration, $projectConfiguration);
+            $this->assertFileExists($buildDir.'/subdir/empty.txt');
+        } finally {
+            $filesystem->remove($tempDir);
+        }
+    }
+
     public function testPerformCopiesEmptyFilesUsingTouch(): void
     {
         $environmentConfiguration = \Mockery::mock(EnvironmentConfiguration::class);
@@ -44,6 +76,7 @@ class CopyProjectFilesStepTest extends TestCase
 
         $filesystem->shouldReceive('exists')->andReturn(false);
         $filesystem->shouldReceive('mkdir')->with('build', 0755);
+        $filesystem->shouldReceive('mkdir')->with('build');
 
         $emptyFile = \Mockery::mock(SplFileInfo::class);
         $emptyFile->shouldReceive('isFile')->andReturn(true);

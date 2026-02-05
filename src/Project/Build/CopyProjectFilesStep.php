@@ -96,6 +96,7 @@ class CopyProjectFilesStep implements BuildStepInterface
         if ($file->isDir()) {
             $this->filesystem->mkdir($targetPath);
         } elseif ($file->isFile() && 0 === $file->getSize()) {
+            $this->filesystem->mkdir(dirname($targetPath));
             $this->filesystem->touch($targetPath);
         } elseif ($file->isFile() && is_string($file->getRealPath())) {
             $this->filesystem->copy($file->getRealPath(), $targetPath);

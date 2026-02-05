@@ -87,6 +87,7 @@ class ExtractAssetFilesStep implements BuildStepInterface
         $targetFile = $this->toDirectory.'/'.$file->getRelativePathname();
 
         if (0 === $file->getSize()) {
+            $this->filesystem->mkdir(dirname($targetFile));
             $this->filesystem->touch($targetFile);
         } elseif (is_string($file->getRealPath())) {
             $this->filesystem->copy($file->getRealPath(), $targetFile);

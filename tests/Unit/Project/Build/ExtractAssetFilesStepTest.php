@@ -54,6 +54,35 @@ class ExtractAssetFilesStepTest extends TestCase
         $step->perform($environmentConfiguration, $projectConfiguration);
     }
 
+    public function testPerformExtractsEmptyAssetFileInSubdirectory(): void
+    {
+        $environmentConfiguration = \Mockery::mock(EnvironmentConfiguration::class);
+        $projectConfiguration = \Mockery::mock(ProjectConfiguration::class);
+        $projectType = \Mockery::mock(ProjectTypeInterface::class);
+        $filesystem = new Filesystem();
+        $tempDir = sys_get_temp_dir().'/ymir-test-'.uniqid();
+        $assetsDir = $tempDir.'/assets';
+
+        $projectConfiguration->shouldReceive('getProjectType')->andReturn($projectType);
+
+        $emptyFile = \Mockery::mock(SplFileInfo::class);
+        $emptyFile->shouldReceive('isFile')->andReturn(true);
+        $emptyFile->shouldReceive('getSize')->andReturn(0);
+        $emptyFile->shouldReceive('getRelativePathname')->andReturn('subdir/empty.txt');
+        $emptyFile->shouldReceive('getPathname')->andReturn('subdir/empty.txt');
+
+        $projectType->shouldReceive('getAssetFiles')->andReturn(Finder::create()->append([$emptyFile]));
+
+        $step = new ExtractAssetFilesStep($assetsDir, $tempDir.'/build', $filesystem);
+
+        try {
+            $step->perform($environmentConfiguration, $projectConfiguration);
+            $this->assertFileExists($assetsDir.'/subdir/empty.txt');
+        } finally {
+            $filesystem->remove($tempDir);
+        }
+    }
+
     public function testPerformExtractsEmptyAssetFilesUsingTouch(): void
     {
         $environmentConfiguration = \Mockery::mock(EnvironmentConfiguration::class);
@@ -80,6 +109,7 @@ class ExtractAssetFilesStepTest extends TestCase
 
         $filesystem->shouldReceive('exists')->andReturn(false);
         $filesystem->shouldReceive('mkdir')->with('assets', 0755);
+        $filesystem->shouldReceive('mkdir')->with('assets');
 
         $filesystem->shouldReceive('touch')->once()->with('assets/empty.txt');
         $filesystem->shouldReceive('copy')->once()->with('/path/to/not_empty.txt', 'assets/not_empty.txt');

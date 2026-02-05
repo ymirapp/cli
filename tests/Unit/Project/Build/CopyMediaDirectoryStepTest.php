@@ -13,8 +13,8 @@ declare(strict_types=1);
 
 namespace Ymir\Cli\Tests\Unit\Project\Build;
 
-use PhpCsFixer\Finder;
 use Symfony\Component\Filesystem\Filesystem;
+use Symfony\Component\Finder\Finder;
 use Symfony\Component\Finder\SplFileInfo;
 use Ymir\Cli\Exception\Project\UnsupportedProjectException;
 use Ymir\Cli\Project\Build\CopyMediaDirectoryStep;
@@ -31,6 +31,36 @@ class CopyMediaDirectoryStepTest extends TestCase
         $step = new CopyMediaDirectoryStep(\Mockery::mock(Filesystem::class), 'uploads', 'project');
 
         $this->assertSame('Copying media directory', $step->getDescription());
+    }
+
+    public function testPerformCopiesEmptyMediaFileInSubdirectory(): void
+    {
+        $environmentConfiguration = \Mockery::mock(EnvironmentConfiguration::class);
+        $projectConfiguration = \Mockery::mock(ProjectConfiguration::class);
+        $projectType = \Mockery::mock(ProjectTypeInterface::class.', '.SupportsMediaInterface::class);
+        $filesystem = new Filesystem();
+        $tempDir = sys_get_temp_dir().'/ymir-test-'.uniqid();
+        $uploadsDir = $tempDir.'/uploads';
+
+        $projectConfiguration->shouldReceive('getProjectType')->andReturn($projectType);
+
+        $emptyFile = \Mockery::mock(SplFileInfo::class);
+        $emptyFile->shouldReceive('isFile')->andReturn(true);
+        $emptyFile->shouldReceive('isDir')->andReturn(false);
+        $emptyFile->shouldReceive('getSize')->andReturn(0);
+        $emptyFile->shouldReceive('getRelativePathname')->andReturn('subdir/empty.txt');
+        $emptyFile->shouldReceive('getPathname')->andReturn('subdir/empty.txt');
+
+        $projectType->shouldReceive('getMediaFiles')->with($tempDir.'/project')->andReturn(Finder::create()->append([$emptyFile]));
+
+        $step = new CopyMediaDirectoryStep($filesystem, $uploadsDir, $tempDir.'/project');
+
+        try {
+            $step->perform($environmentConfiguration, $projectConfiguration);
+            $this->assertFileExists($uploadsDir.'/subdir/empty.txt');
+        } finally {
+            $filesystem->remove($tempDir);
+        }
     }
 
     public function testPerformCopiesEmptyMediaFilesUsingTouch(): void
@@ -59,6 +89,7 @@ class CopyMediaDirectoryStepTest extends TestCase
 
         $projectType->shouldReceive('getMediaFiles')->with('project')->andReturn(Finder::create()->append([$emptyFile, $notEmptyFile]));
 
+        $filesystem->shouldReceive('mkdir')->with('uploads');
         $filesystem->shouldReceive('touch')->once()->with('uploads/empty.txt');
         $filesystem->shouldReceive('copy')->once()->with('/path/to/not_empty.txt', 'uploads/not_empty.txt');
 
