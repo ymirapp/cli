@@ -47,7 +47,7 @@ class CacheClusterDefinition implements ProvisionableResourceDefinitionInterface
             'name' => new NameSlugRequirement('What is the name of the cache cluster being created?'),
             'network' => new ResolveOrProvisionNetworkRequirement('Which network should the cache cluster be created on?'),
             'nat_gateway' => new NatGatewayRequirement('A cache cluster will require Ymir to add a NAT gateway to your network (~$32/month). Would you like to proceed?'),
-            'engine' => new CacheClusterEngineRequirement(),
+            'engine' => new CacheClusterEngineRequirement('Which engine should the cache cluster use?'),
             'type' => new CacheClusterTypeRequirement('Which type should the cache cluster be?'),
         ];
     }

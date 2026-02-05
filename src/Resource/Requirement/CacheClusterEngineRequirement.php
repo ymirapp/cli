@@ -16,7 +16,7 @@ namespace Ymir\Cli\Resource\Requirement;
 use Ymir\Cli\Exception\InvalidInputException;
 use Ymir\Cli\ExecutionContext;
 
-class CacheClusterEngineRequirement implements RequirementInterface
+class CacheClusterEngineRequirement extends AbstractRequirement
 {
     /**
      * {@inheritdoc}
@@ -24,6 +24,10 @@ class CacheClusterEngineRequirement implements RequirementInterface
     public function fulfill(ExecutionContext $context, array $fulfilledRequirements = []): string
     {
         $engine = $context->getInput()->getStringOption('engine');
+
+        if (null === $engine && $context->getInput()->isInteractive()) {
+            $engine = $context->getOutput()->choice($this->question, ['redis' => 'Redis', 'valkey' => 'Valkey'], 'valkey');
+        }
 
         if (!in_array($engine, ['redis', 'valkey'])) {
             throw new InvalidInputException('The cache cluster engine must be either "redis" or "valkey"');

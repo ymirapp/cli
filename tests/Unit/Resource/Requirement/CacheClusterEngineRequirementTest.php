@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Ymir\Cli\Tests\Unit\Resource\Requirement;
 
 use Ymir\Cli\Console\Input;
+use Ymir\Cli\Console\Output;
 use Ymir\Cli\Exception\InvalidInputException;
 use Ymir\Cli\ExecutionContext;
 use Ymir\Cli\Resource\Requirement\CacheClusterEngineRequirement;
@@ -21,6 +22,23 @@ use Ymir\Cli\Tests\TestCase;
 
 class CacheClusterEngineRequirementTest extends TestCase
 {
+    public function testFulfillPromptsForEngineIfMissingFromInput(): void
+    {
+        $context = \Mockery::mock(ExecutionContext::class);
+        $input = \Mockery::mock(Input::class);
+        $output = \Mockery::mock(Output::class);
+
+        $context->shouldReceive('getInput')->andReturn($input);
+        $context->shouldReceive('getOutput')->andReturn($output);
+        $input->shouldReceive('getStringOption')->with('engine')->andReturn(null);
+        $input->shouldReceive('isInteractive')->andReturn(true);
+        $output->shouldReceive('choice')->with('Which engine should the cache cluster use?', ['redis' => 'Redis', 'valkey' => 'Valkey'], 'valkey')->andReturn('valkey');
+
+        $requirement = new CacheClusterEngineRequirement('Which engine should the cache cluster use?');
+
+        $this->assertSame('valkey', $requirement->fulfill($context));
+    }
+
     public function testFulfillReturnsRedisFromInput(): void
     {
         $context = \Mockery::mock(ExecutionContext::class);
@@ -29,7 +47,7 @@ class CacheClusterEngineRequirementTest extends TestCase
         $context->shouldReceive('getInput')->andReturn($input);
         $input->shouldReceive('getStringOption')->with('engine')->andReturn('redis');
 
-        $requirement = new CacheClusterEngineRequirement();
+        $requirement = new CacheClusterEngineRequirement('Which engine should the cache cluster use?');
 
         $this->assertSame('redis', $requirement->fulfill($context));
     }
@@ -42,7 +60,7 @@ class CacheClusterEngineRequirementTest extends TestCase
         $context->shouldReceive('getInput')->andReturn($input);
         $input->shouldReceive('getStringOption')->with('engine')->andReturn('valkey');
 
-        $requirement = new CacheClusterEngineRequirement();
+        $requirement = new CacheClusterEngineRequirement('Which engine should the cache cluster use?');
 
         $this->assertSame('valkey', $requirement->fulfill($context));
     }
@@ -58,7 +76,7 @@ class CacheClusterEngineRequirementTest extends TestCase
         $context->shouldReceive('getInput')->andReturn($input);
         $input->shouldReceive('getStringOption')->with('engine')->andReturn('invalid');
 
-        $requirement = new CacheClusterEngineRequirement();
+        $requirement = new CacheClusterEngineRequirement('Which engine should the cache cluster use?');
 
         $requirement->fulfill($context);
     }
