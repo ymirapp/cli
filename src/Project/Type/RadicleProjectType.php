@@ -63,10 +63,10 @@ class RadicleProjectType extends AbstractWordPressProjectType
     {
         return [
             Build\CopyProjectFilesStep::class,
-            Build\DownloadWpCliStep::class,
+            Build\WordPress\DownloadWpCliStep::class,
             Build\ExecuteBuildCommandsStep::class,
             Build\EnsureIntegrationIsInstalledStep::class,
-            Build\CopyMustUsePluginStep::class,
+            Build\WordPress\CopyMustUsePluginStep::class,
             Build\ExtractAssetFilesStep::class,
         ];
     }

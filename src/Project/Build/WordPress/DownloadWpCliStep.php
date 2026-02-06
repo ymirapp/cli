@@ -11,9 +11,10 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace Ymir\Cli\Project\Build;
+namespace Ymir\Cli\Project\Build\WordPress;
 
 use Symfony\Component\Filesystem\Filesystem;
+use Ymir\Cli\Project\Build\BuildStepInterface;
 use Ymir\Cli\Project\EnvironmentConfiguration;
 use Ymir\Cli\Project\ProjectConfiguration;
 

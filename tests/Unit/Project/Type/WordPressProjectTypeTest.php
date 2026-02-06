@@ -198,11 +198,11 @@ class WordPressProjectTypeTest extends TestCase
     {
         $this->assertSame([
             Build\CopyProjectFilesStep::class,
-            Build\DownloadWpCliStep::class,
+            Build\WordPress\DownloadWpCliStep::class,
             Build\ExecuteBuildCommandsStep::class,
             Build\EnsureIntegrationIsInstalledStep::class,
-            Build\CopyMustUsePluginStep::class,
-            Build\ModifyWordPressConfigurationStep::class,
+            Build\WordPress\CopyMustUsePluginStep::class,
+            Build\WordPress\ModifyWordPressConfigurationStep::class,
             Build\ExtractAssetFilesStep::class,
         ], (new WordPressProjectType(\Mockery::mock(Filesystem::class), \Mockery::mock(GitHubClient::class), \Mockery::mock(WpCliExecutable::class)))->getBuildSteps());
     }

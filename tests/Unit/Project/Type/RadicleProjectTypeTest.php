@@ -256,10 +256,10 @@ class RadicleProjectTypeTest extends TestCase
     {
         $this->assertSame([
             Build\CopyProjectFilesStep::class,
-            Build\DownloadWpCliStep::class,
+            Build\WordPress\DownloadWpCliStep::class,
             Build\ExecuteBuildCommandsStep::class,
             Build\EnsureIntegrationIsInstalledStep::class,
-            Build\CopyMustUsePluginStep::class,
+            Build\WordPress\CopyMustUsePluginStep::class,
             Build\ExtractAssetFilesStep::class,
         ], (new RadicleProjectType(\Mockery::mock(ComposerExecutable::class), \Mockery::mock(Filesystem::class)))->getBuildSteps());
     }

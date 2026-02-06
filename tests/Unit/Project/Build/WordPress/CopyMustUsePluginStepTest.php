@@ -11,41 +11,41 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace Ymir\Cli\Tests\Unit\Project\Build;
+namespace Unit\Project\Build\WordPress;
 
 use Symfony\Component\Filesystem\Filesystem;
-use Ymir\Cli\Exception\Project\BuildFailedException;
 use Ymir\Cli\Exception\Project\UnsupportedProjectException;
-use Ymir\Cli\Project\Build\ModifyWordPressConfigurationStep;
+use Ymir\Cli\Project\Build\WordPress\CopyMustUsePluginStep;
 use Ymir\Cli\Project\EnvironmentConfiguration;
 use Ymir\Cli\Project\ProjectConfiguration;
 use Ymir\Cli\Project\Type\AbstractWordPressProjectType;
 use Ymir\Cli\Project\Type\ProjectTypeInterface;
 use Ymir\Cli\Tests\TestCase;
 
-class ModifyWordPressConfigurationStepTest extends TestCase
+class CopyMustUsePluginStepTest extends TestCase
 {
     public function testGetDescription(): void
     {
-        $step = new ModifyWordPressConfigurationStep('build', \Mockery::mock(Filesystem::class), 'stub');
+        $step = new CopyMustUsePluginStep('build', \Mockery::mock(Filesystem::class), 'stub');
 
-        $this->assertSame('Modifying WordPress configuration', $step->getDescription());
+        $this->assertSame('Copying Ymir must-use plugin', $step->getDescription());
     }
 
-    public function testPerformThrowsExceptionIfNoWpConfigFileFound(): void
+    public function testPerformCopiesMustUsePlugin(): void
     {
-        $this->expectException(BuildFailedException::class);
-        $this->expectExceptionMessage('No wp-config.php or wp-config-sample.php found in the build directory');
-
         $environmentConfiguration = \Mockery::mock(EnvironmentConfiguration::class);
         $filesystem = \Mockery::mock(Filesystem::class);
         $projectConfiguration = \Mockery::mock(ProjectConfiguration::class);
         $projectType = \Mockery::mock(AbstractWordPressProjectType::class);
 
         $projectConfiguration->shouldReceive('getProjectType')->andReturn($projectType);
-        $filesystem->shouldReceive('exists')->andReturn(false);
+        $projectType->shouldReceive('getMustUsePluginsDirectoryPath')->andReturn('build/wp-content/mu-plugins');
 
-        $step = new ModifyWordPressConfigurationStep('build', $filesystem, 'stub');
+        $filesystem->shouldReceive('exists')->andReturn(true);
+        $filesystem->shouldReceive('copy')->once()
+                   ->with('stub/activate-ymir-plugin.php', 'build/wp-content/mu-plugins/activate-ymir-plugin.php');
+
+        $step = new CopyMustUsePluginStep('build', $filesystem, 'stub');
 
         $step->perform($environmentConfiguration, $projectConfiguration);
     }
@@ -61,7 +61,7 @@ class ModifyWordPressConfigurationStepTest extends TestCase
 
         $projectConfiguration->shouldReceive('getProjectType')->andReturn($projectType);
 
-        $step = new ModifyWordPressConfigurationStep('build', \Mockery::mock(Filesystem::class), 'stub');
+        $step = new CopyMustUsePluginStep('build', \Mockery::mock(Filesystem::class), 'stub');
 
         $step->perform($environmentConfiguration, $projectConfiguration);
     }

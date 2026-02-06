@@ -11,10 +11,10 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace Ymir\Cli\Tests\Unit\Project\Build;
+namespace Unit\Project\Build\WordPress;
 
 use Symfony\Component\Filesystem\Filesystem;
-use Ymir\Cli\Project\Build\DownloadWpCliStep;
+use Ymir\Cli\Project\Build\WordPress\DownloadWpCliStep;
 use Ymir\Cli\Project\EnvironmentConfiguration;
 use Ymir\Cli\Project\ProjectConfiguration;
 use Ymir\Cli\Tests\TestCase;
