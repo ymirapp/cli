@@ -35,7 +35,7 @@ class ModifyWordPressConfigurationStepTest extends TestCase
     public function testPerformThrowsExceptionIfNoWpConfigFileFound(): void
     {
         $this->expectException(BuildFailedException::class);
-        $this->expectExceptionMessage('No wp-config.php or wp-config-sample.php found in the build directory');
+        $this->expectExceptionMessage('No "wp-config.php" or "wp-config-sample.php" found in the build directory');
 
         $environmentConfiguration = \Mockery::mock(EnvironmentConfiguration::class);
         $filesystem = \Mockery::mock(Filesystem::class);

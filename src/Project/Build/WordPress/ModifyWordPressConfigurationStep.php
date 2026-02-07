@@ -77,13 +77,13 @@ class ModifyWordPressConfigurationStep implements BuildStepInterface
         if (!$this->filesystem->exists($wpConfigFile) && $this->filesystem->exists($sampleWpConfigFile)) {
             $this->filesystem->copy($sampleWpConfigFile, $wpConfigFile);
         } elseif (!$this->filesystem->exists($wpConfigFile) && !$this->filesystem->exists($sampleWpConfigFile)) {
-            throw new BuildFailedException('No wp-config.php or wp-config-sample.php found in the build directory');
+            throw new BuildFailedException('No "wp-config.php" or "wp-config-sample.php" found in the build directory');
         }
 
         $wpConfig = file($wpConfigFile, FILE_IGNORE_NEW_LINES);
 
         if (!is_array($wpConfig)) {
-            throw new BuildFailedException('Unable to read wp-config.php');
+            throw new BuildFailedException('Unable to read "wp-config.php"');
         }
 
         $constants = [
