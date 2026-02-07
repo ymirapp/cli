@@ -67,7 +67,9 @@ abstract class AbstractWordPressProjectType extends AbstractProjectType implemen
      */
     public function getMediaDirectoryPath(string $projectDirectory = ''): string
     {
-        return $this->getPath($this->getUploadsDirectory(), $projectDirectory);
+        $uploadsDirectory = $this->getUploadsDirectory();
+
+        return empty($projectDirectory) ? $uploadsDirectory : rtrim($projectDirectory, '/').$uploadsDirectory;
     }
 
     /**
@@ -88,7 +90,9 @@ abstract class AbstractWordPressProjectType extends AbstractProjectType implemen
      */
     public function getMustUsePluginsDirectoryPath(string $projectDirectory = ''): string
     {
-        return $this->getPath($this->getMustUsePluginsDirectory(), $projectDirectory);
+        $mustUsePluginsDirectory = $this->getMustUsePluginsDirectory();
+
+        return empty($projectDirectory) ? $mustUsePluginsDirectory : rtrim($projectDirectory, '/').$mustUsePluginsDirectory;
     }
 
     /**
@@ -99,7 +103,9 @@ abstract class AbstractWordPressProjectType extends AbstractProjectType implemen
      */
     public function getPluginsDirectoryPath(string $projectDirectory = ''): string
     {
-        return $this->getPath($this->getPluginsDirectory(), $projectDirectory);
+        $pluginsDirectory = $this->getPluginsDirectory();
+
+        return empty($projectDirectory) ? $pluginsDirectory : rtrim($projectDirectory, '/').$pluginsDirectory;
     }
 
     /**

@@ -303,7 +303,7 @@ class BedrockProjectTypeTest extends TestCase
     {
         $projectType = new BedrockProjectType(\Mockery::mock(ComposerExecutable::class), \Mockery::mock(Filesystem::class));
 
-        $this->assertSame('web/app/uploads', $projectType->getMediaDirectoryPath());
+        $this->assertSame('/web/app/uploads', $projectType->getMediaDirectoryPath());
     }
 
     public function testGetMustUsePluginsDirectoryPathWithBaseDirectoryEndingWithSlash(): void
@@ -326,7 +326,7 @@ class BedrockProjectTypeTest extends TestCase
     {
         $projectType = new BedrockProjectType(\Mockery::mock(ComposerExecutable::class), \Mockery::mock(Filesystem::class));
 
-        $this->assertSame('web/app/mu-plugins', $projectType->getMustUsePluginsDirectoryPath());
+        $this->assertSame('/web/app/mu-plugins', $projectType->getMustUsePluginsDirectoryPath());
     }
 
     public function testGetName(): void
@@ -354,7 +354,7 @@ class BedrockProjectTypeTest extends TestCase
     {
         $projectType = new BedrockProjectType(\Mockery::mock(ComposerExecutable::class), \Mockery::mock(Filesystem::class));
 
-        $this->assertSame('web/app/plugins', $projectType->getPluginsDirectoryPath());
+        $this->assertSame('/web/app/plugins', $projectType->getPluginsDirectoryPath());
     }
 
     public function testGetProjectFilesExcludesUploadsDirectory(): void

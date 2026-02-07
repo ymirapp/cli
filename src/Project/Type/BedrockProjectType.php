@@ -150,7 +150,7 @@ class BedrockProjectType extends AbstractWordPressProjectType implements Install
      */
     protected function getMustUsePluginsDirectory(): string
     {
-        return 'web/app/mu-plugins';
+        return '/web/app/mu-plugins';
     }
 
     /**
@@ -158,7 +158,7 @@ class BedrockProjectType extends AbstractWordPressProjectType implements Install
      */
     protected function getPluginsDirectory(): string
     {
-        return 'web/app/plugins';
+        return '/web/app/plugins';
     }
 
     /**
@@ -166,6 +166,6 @@ class BedrockProjectType extends AbstractWordPressProjectType implements Install
      */
     protected function getUploadsDirectory(): string
     {
-        return 'web/app/uploads';
+        return '/web/app/uploads';
     }
 }

@@ -183,7 +183,7 @@ class WordPressProjectType extends AbstractWordPressProjectType implements Insta
      */
     protected function getMustUsePluginsDirectory(): string
     {
-        return 'wp-content/mu-plugins';
+        return '/wp-content/mu-plugins';
     }
 
     /**
@@ -191,7 +191,7 @@ class WordPressProjectType extends AbstractWordPressProjectType implements Insta
      */
     protected function getPluginsDirectory(): string
     {
-        return 'wp-content/plugins';
+        return '/wp-content/plugins';
     }
 
     /**
@@ -199,6 +199,6 @@ class WordPressProjectType extends AbstractWordPressProjectType implements Insta
      */
     protected function getUploadsDirectory(): string
     {
-        return 'wp-content/uploads';
+        return '/wp-content/uploads';
     }
 }

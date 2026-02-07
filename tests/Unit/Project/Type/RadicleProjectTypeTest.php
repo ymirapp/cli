@@ -300,7 +300,7 @@ class RadicleProjectTypeTest extends TestCase
     {
         $projectType = new RadicleProjectType(\Mockery::mock(ComposerExecutable::class), \Mockery::mock(Filesystem::class));
 
-        $this->assertSame('public/content/uploads', $projectType->getMediaDirectoryPath());
+        $this->assertSame('/public/content/uploads', $projectType->getMediaDirectoryPath());
     }
 
     public function testGetMustUsePluginsDirectoryPathWithBaseDirectoryEndingWithSlash(): void
@@ -323,7 +323,7 @@ class RadicleProjectTypeTest extends TestCase
     {
         $projectType = new RadicleProjectType(\Mockery::mock(ComposerExecutable::class), \Mockery::mock(Filesystem::class));
 
-        $this->assertSame('public/content/mu-plugins', $projectType->getMustUsePluginsDirectoryPath());
+        $this->assertSame('/public/content/mu-plugins', $projectType->getMustUsePluginsDirectoryPath());
     }
 
     public function testGetName(): void
@@ -351,7 +351,7 @@ class RadicleProjectTypeTest extends TestCase
     {
         $projectType = new RadicleProjectType(\Mockery::mock(ComposerExecutable::class), \Mockery::mock(Filesystem::class));
 
-        $this->assertSame('public/content/plugins', $projectType->getPluginsDirectoryPath());
+        $this->assertSame('/public/content/plugins', $projectType->getPluginsDirectoryPath());
     }
 
     public function testGetProjectFilesExcludesUploadsDirectory(): void

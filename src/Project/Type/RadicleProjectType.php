@@ -129,7 +129,7 @@ class RadicleProjectType extends AbstractWordPressProjectType
      */
     protected function getMustUsePluginsDirectory(): string
     {
-        return 'public/content/mu-plugins';
+        return '/public/content/mu-plugins';
     }
 
     /**
@@ -137,7 +137,7 @@ class RadicleProjectType extends AbstractWordPressProjectType
      */
     protected function getPluginsDirectory(): string
     {
-        return 'public/content/plugins';
+        return '/public/content/plugins';
     }
 
     /**
@@ -145,6 +145,6 @@ class RadicleProjectType extends AbstractWordPressProjectType
      */
     protected function getUploadsDirectory(): string
     {
-        return 'public/content/uploads';
+        return '/public/content/uploads';
     }
 }

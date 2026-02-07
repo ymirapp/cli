@@ -248,7 +248,7 @@ class WordPressProjectTypeTest extends TestCase
     {
         $projectType = new WordPressProjectType(\Mockery::mock(Filesystem::class), \Mockery::mock(GitHubClient::class), \Mockery::mock(WpCliExecutable::class));
 
-        $this->assertSame('wp-content/uploads', $projectType->getMediaDirectoryPath());
+        $this->assertSame('/wp-content/uploads', $projectType->getMediaDirectoryPath());
     }
 
     public function testGetMustUsePluginsDirectoryPathWithBaseDirectoryEndingWithSlash(): void
@@ -271,7 +271,7 @@ class WordPressProjectTypeTest extends TestCase
     {
         $projectType = new WordPressProjectType(\Mockery::mock(Filesystem::class), \Mockery::mock(GitHubClient::class), \Mockery::mock(WpCliExecutable::class));
 
-        $this->assertSame('wp-content/mu-plugins', $projectType->getMustUsePluginsDirectoryPath());
+        $this->assertSame('/wp-content/mu-plugins', $projectType->getMustUsePluginsDirectoryPath());
     }
 
     public function testGetName(): void
@@ -299,7 +299,7 @@ class WordPressProjectTypeTest extends TestCase
     {
         $projectType = new WordPressProjectType(\Mockery::mock(Filesystem::class), \Mockery::mock(GitHubClient::class), \Mockery::mock(WpCliExecutable::class));
 
-        $this->assertSame('wp-content/plugins', $projectType->getPluginsDirectoryPath());
+        $this->assertSame('/wp-content/plugins', $projectType->getPluginsDirectoryPath());
     }
 
     public function testGetProjectFilesExcludesUploadsDirectory(): void
