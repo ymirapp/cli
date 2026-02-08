@@ -23,7 +23,7 @@ use Ymir\Cli\Dockerfile;
 use Ymir\Cli\Exception\Project\UnsupportedProjectException;
 use Ymir\Cli\FileUploader;
 use Ymir\Cli\Project\Build\BuildStepInterface;
-use Ymir\Cli\Project\Build\CompressBuildFilesStep;
+use Ymir\Cli\Project\Build\BuildZipArchiveStep;
 use Ymir\Cli\Project\Build\CopyMediaDirectoryStep;
 use Ymir\Cli\Resource\Definition\EnvironmentDefinition;
 use Ymir\Cli\Resource\Model\Environment;
@@ -82,7 +82,7 @@ class DeployProjectCommandTest extends TestCase
         $compressStep->shouldReceive('perform');
 
         $buildStepLocator = new ServiceLocator([
-            CompressBuildFilesStep::class => function () use ($compressStep) { return $compressStep; },
+            BuildZipArchiveStep::class => function () use ($compressStep) { return $compressStep; },
         ]);
 
         $contextFactory = $this->createExecutionContextFactoryWithEnvironment();
@@ -128,7 +128,7 @@ class DeployProjectCommandTest extends TestCase
 
         $buildStepLocator = new ServiceLocator([
             \Ymir\Cli\Project\Build\DebugBuildStep::class => function () use ($debugStep) { return $debugStep; },
-            CompressBuildFilesStep::class => function () use ($compressStep) { return $compressStep; },
+            BuildZipArchiveStep::class => function () use ($compressStep) { return $compressStep; },
         ]);
 
         $contextFactory = $this->createExecutionContextFactoryWithEnvironment();
@@ -182,7 +182,7 @@ class DeployProjectCommandTest extends TestCase
 
         $buildStepLocator = new ServiceLocator([
             CopyMediaDirectoryStep::class => function () use ($mediaStep) { return $mediaStep; },
-            CompressBuildFilesStep::class => function () use ($compressStep) { return $compressStep; },
+            BuildZipArchiveStep::class => function () use ($compressStep) { return $compressStep; },
         ]);
 
         $contextFactory = $this->createExecutionContextFactoryWithEnvironment();
@@ -224,7 +224,7 @@ class DeployProjectCommandTest extends TestCase
         $compressStep->shouldReceive('perform');
 
         $buildStepLocator = new ServiceLocator([
-            CompressBuildFilesStep::class => function () use ($compressStep) { return $compressStep; },
+            BuildZipArchiveStep::class => function () use ($compressStep) { return $compressStep; },
         ]);
 
         $step = \Mockery::mock(\Ymir\Cli\Project\Deployment\DeploymentStepInterface::class);
@@ -271,7 +271,7 @@ class DeployProjectCommandTest extends TestCase
         $compressStep->shouldReceive('perform');
 
         $buildStepLocator = new ServiceLocator([
-            CompressBuildFilesStep::class => function () use ($compressStep) { return $compressStep; },
+            BuildZipArchiveStep::class => function () use ($compressStep) { return $compressStep; },
         ]);
 
         $contextFactory = $this->createExecutionContextFactoryWithEnvironment();

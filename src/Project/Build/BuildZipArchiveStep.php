@@ -19,14 +19,14 @@ use Ymir\Cli\Exception\Project\BuildFailedException;
 use Ymir\Cli\Project\EnvironmentConfiguration;
 use Ymir\Cli\Project\ProjectConfiguration;
 
-class CompressBuildFilesStep implements BuildStepInterface
+class BuildZipArchiveStep implements BuildStepInterface
 {
     /**
-     * The path to the build artifact.
+     * The path to the build zip archive.
      *
      * @var string
      */
-    private $buildArtifactPath;
+    private $buildArchivePath;
 
     /**
      * The build directory where the project files are copied to.
@@ -38,9 +38,9 @@ class CompressBuildFilesStep implements BuildStepInterface
     /**
      * Constructor.
      */
-    public function __construct(string $buildArtifactPath, string $buildDirectory)
+    public function __construct(string $buildArchivePath, string $buildDirectory)
     {
-        $this->buildArtifactPath = $buildArtifactPath;
+        $this->buildArchivePath = $buildArchivePath;
         $this->buildDirectory = rtrim($buildDirectory, '/');
     }
 
@@ -49,7 +49,7 @@ class CompressBuildFilesStep implements BuildStepInterface
      */
     public function getDescription(): string
     {
-        return 'Compressing build files';
+        return 'Building zip archive';
     }
 
     /**
@@ -58,11 +58,11 @@ class CompressBuildFilesStep implements BuildStepInterface
     public function perform(EnvironmentConfiguration $environmentConfiguration, ProjectConfiguration $projectConfiguration): void
     {
         $archive = new \ZipArchive();
-        $archive->open($this->buildArtifactPath, \ZipArchive::CREATE | \ZipArchive::OVERWRITE);
+        $archive->open($this->buildArchivePath, \ZipArchive::CREATE | \ZipArchive::OVERWRITE);
         $files = $projectConfiguration->getProjectType()->getArchiveFiles($this->buildDirectory);
+        $includePaths = $environmentConfiguration->getBuildIncludePaths();
         $totalSize = 0;
 
-        $includePaths = $environmentConfiguration->getBuildIncludePaths();
         if (!empty($includePaths)) {
             $files->append($this->getIncludedFiles($includePaths));
         }

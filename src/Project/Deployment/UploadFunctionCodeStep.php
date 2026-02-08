@@ -28,11 +28,11 @@ use Ymir\Cli\Support\Arr;
 class UploadFunctionCodeStep implements DeploymentStepInterface
 {
     /**
-     * The path to the build artifact.
+     * The path to the build archive.
      *
      * @var string
      */
-    private $buildArtifactPath;
+    private $buildArchivePath;
 
     /**
      * The build directory where the project files are.
@@ -58,9 +58,9 @@ class UploadFunctionCodeStep implements DeploymentStepInterface
     /**
      * Constructor.
      */
-    public function __construct(string $buildArtifactPath, string $buildDirectory, DockerExecutable $dockerExecutable, FileUploader $uploader)
+    public function __construct(string $buildArchivePath, string $buildDirectory, DockerExecutable $dockerExecutable, FileUploader $uploader)
     {
-        $this->buildArtifactPath = $buildArtifactPath;
+        $this->buildArchivePath = $buildArchivePath;
         $this->buildDirectory = rtrim($buildDirectory, '/');
         $this->dockerExecutable = $dockerExecutable;
         $this->uploader = $uploader;
@@ -81,7 +81,7 @@ class UploadFunctionCodeStep implements DeploymentStepInterface
         if ('image' === $deploymentType) {
             $this->pushImage($context, $deployment, $environment->getName());
         } elseif ('zip' === $deploymentType) {
-            $this->uploadArtifact($context, $deployment);
+            $this->uploadArchive($context, $deployment);
         }
     }
 
@@ -119,9 +119,9 @@ class UploadFunctionCodeStep implements DeploymentStepInterface
     }
 
     /**
-     * Upload the build artifact to deploy.
+     * Upload the build archive to deploy.
      */
-    private function uploadArtifact(ExecutionContext $context, Deployment $deployment): void
+    private function uploadArchive(ExecutionContext $context, Deployment $deployment): void
     {
         $project = $context->getProject();
 
@@ -135,7 +135,7 @@ class UploadFunctionCodeStep implements DeploymentStepInterface
         $progressBar->setFormat('<info>%message%</info> (<comment>%percent%%</comment>)');
         $progressBar->setMessage(sprintf('Uploading <comment>%s</comment> build', $project->getName()));
 
-        $this->uploader->uploadFile($this->buildArtifactPath, $context->getApiClient()->getArtifactUploadUrl($deployment), [], $progressBar);
+        $this->uploader->uploadFile($this->buildArchivePath, $context->getApiClient()->getArtifactUploadUrl($deployment), [], $progressBar);
 
         $output->newLine();
     }

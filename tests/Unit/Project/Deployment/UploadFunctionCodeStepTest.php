@@ -67,7 +67,7 @@ class UploadFunctionCodeStepTest extends TestCase
         $dockerExecutable->shouldReceive('push')->once()
                          ->with('123.dkr.ecr.us-east-1.amazonaws.com/project:staging', 'build');
 
-        $step = new UploadFunctionCodeStep('artifact.zip', 'build', $dockerExecutable, $uploader);
+        $step = new UploadFunctionCodeStep('build.zip', 'build', $dockerExecutable, $uploader);
 
         $step->perform($context, $deployment, $environment);
     }
@@ -94,7 +94,7 @@ class UploadFunctionCodeStepTest extends TestCase
                   ->with($deployment)
                   ->andReturn(collect([]));
 
-        $step = new UploadFunctionCodeStep('artifact.zip', 'build', $dockerExecutable, $uploader);
+        $step = new UploadFunctionCodeStep('build.zip', 'build', $dockerExecutable, $uploader);
 
         $step->perform($context, $deployment, $environment);
     }
@@ -124,7 +124,7 @@ class UploadFunctionCodeStepTest extends TestCase
                       'image_uri' => '123.dkr.ecr.us-east-1.amazonaws.com/project:staging',
                   ]));
 
-        $step = new UploadFunctionCodeStep('artifact.zip', 'build', $dockerExecutable, $uploader);
+        $step = new UploadFunctionCodeStep('build.zip', 'build', $dockerExecutable, $uploader);
 
         $step->perform($context, $deployment, $environment);
     }
@@ -140,12 +140,12 @@ class UploadFunctionCodeStepTest extends TestCase
         $dockerExecutable = \Mockery::mock(DockerExecutable::class);
         $uploader = \Mockery::mock(FileUploader::class);
 
-        $step = new UploadFunctionCodeStep('artifact.zip', 'build', $dockerExecutable, $uploader);
+        $step = new UploadFunctionCodeStep('build.zip', 'build', $dockerExecutable, $uploader);
 
         $step->perform($context, $deployment, $environment);
     }
 
-    public function testPerformUploadsArtifactForZipDeployment(): void
+    public function testPerformUploadsArchiveForZipDeployment(): void
     {
         $apiClient = \Mockery::mock(ApiClient::class);
         $context = \Mockery::mock(ExecutionContext::class);
@@ -170,11 +170,11 @@ class UploadFunctionCodeStepTest extends TestCase
                   ->andReturn('https://example.com');
 
         $uploader->shouldReceive('uploadFile')->once()
-                 ->with('artifact.zip', 'https://example.com', \Mockery::any(), \Mockery::on(function ($progressBar) use ($project) {
+                 ->with('build.zip', 'https://example.com', \Mockery::any(), \Mockery::on(function ($progressBar) use ($project) {
                      return sprintf('Uploading <comment>%s</comment> build', $project->getName()) === $progressBar->getMessage();
                  }));
 
-        $step = new UploadFunctionCodeStep('artifact.zip', 'build', $dockerExecutable, $uploader);
+        $step = new UploadFunctionCodeStep('build.zip', 'build', $dockerExecutable, $uploader);
 
         $step->perform($context, $deployment, $environment);
     }

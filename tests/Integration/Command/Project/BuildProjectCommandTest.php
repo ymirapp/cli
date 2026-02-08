@@ -18,7 +18,7 @@ use Ymir\Cli\Command\Project\BuildProjectCommand;
 use Ymir\Cli\Exception\Project\UnsupportedProjectException;
 use Ymir\Cli\Project\Build\BuildContainerImageStep;
 use Ymir\Cli\Project\Build\BuildStepInterface;
-use Ymir\Cli\Project\Build\CompressBuildFilesStep;
+use Ymir\Cli\Project\Build\BuildZipArchiveStep;
 use Ymir\Cli\Project\Build\CopyMediaDirectoryStep;
 use Ymir\Cli\Project\Build\DebugBuildStep;
 use Ymir\Cli\Resource\Definition\EnvironmentDefinition;
@@ -48,7 +48,7 @@ class BuildProjectCommandTest extends TestCase
 
         $buildStepLocator = new ServiceLocator([
             'step1' => function () use ($step) { return $step; },
-            CompressBuildFilesStep::class => function () use ($compressStep) { return $compressStep; },
+            BuildZipArchiveStep::class => function () use ($compressStep) { return $compressStep; },
         ]);
 
         $this->projectTypeMock->shouldReceive('getBuildSteps')->andReturn(['step1']);
@@ -83,7 +83,7 @@ class BuildProjectCommandTest extends TestCase
 
         $buildStepLocator = new ServiceLocator([
             DebugBuildStep::class => function () use ($debugStep) { return $debugStep; },
-            CompressBuildFilesStep::class => function () use ($compressStep) { return $compressStep; },
+            BuildZipArchiveStep::class => function () use ($compressStep) { return $compressStep; },
         ]);
 
         $this->projectTypeMock->shouldReceive('getBuildSteps')->andReturn([]);
@@ -142,7 +142,7 @@ class BuildProjectCommandTest extends TestCase
 
         $buildStepLocator = new ServiceLocator([
             CopyMediaDirectoryStep::class => function () use ($mediaStep) { return $mediaStep; },
-            CompressBuildFilesStep::class => function () use ($compressStep) { return $compressStep; },
+            BuildZipArchiveStep::class => function () use ($compressStep) { return $compressStep; },
         ]);
 
         $this->projectTypeMock->shouldReceive('getBuildSteps')->andReturn([]);
@@ -172,7 +172,7 @@ class BuildProjectCommandTest extends TestCase
         $compressStep->shouldReceive('perform')->once();
 
         $buildStepLocator = new ServiceLocator([
-            CompressBuildFilesStep::class => function () use ($compressStep) { return $compressStep; },
+            BuildZipArchiveStep::class => function () use ($compressStep) { return $compressStep; },
         ]);
 
         $this->projectTypeMock->shouldReceive('getBuildSteps')->andReturn([]);

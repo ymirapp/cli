@@ -110,7 +110,7 @@ class BuildProjectCommand extends AbstractCommand implements LocalProjectCommand
 
                 break;
             default:
-                $this->performBuildStep($this->buildStepLocator->get(Build\CompressBuildFilesStep::class), $environmentConfiguration);
+                $this->performBuildStep($this->buildStepLocator->get(Build\BuildZipArchiveStep::class), $environmentConfiguration);
 
                 break;
         }

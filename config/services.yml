@@ -1,7 +1,7 @@
 parameters:
   assets_directory: '%hidden_directory%/assets'
+  build_archive_path: '%hidden_directory%/build.zip'
   build_directory: '%hidden_directory%/build'
-  build_artifact_path: '%hidden_directory%/build.zip'
   cli_configuration_filepath: '%home_directory%/.ymir/config.json'
   hidden_directory: '%working_directory%/.ymir'
   media_directory: '%hidden_directory%/media'
@@ -16,8 +16,8 @@ services:
       iterable $projectTypes: !tagged project_type
       string $assetsDirectory: '%assets_directory%'
       string $baseUrl: '%ymir_api_url%'
+      string $buildArchivePath: '%build_archive_path%'
       string $buildDirectory: '%build_directory%'
-      string $buildArtifactPath: '%build_artifact_path%'
       string $hiddenDirectory: '%hidden_directory%'
       string $homeDirectory: '%home_directory%'
       string $mediaDirectory: '%media_directory%'
