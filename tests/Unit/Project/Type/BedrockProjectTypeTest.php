@@ -225,7 +225,7 @@ class BedrockProjectTypeTest extends TestCase
 
         $projectType = new BedrockProjectType(\Mockery::mock(ComposerExecutable::class), \Mockery::mock(Filesystem::class));
 
-        $files = iterator_to_array($projectType->getAssetFiles($this->tempDirectory), false);
+        $files = iterator_to_array($projectType->getAssetFiles($this->tempDirectory)->files(), false);
 
         $this->assertCount(1, $files);
 
@@ -243,7 +243,7 @@ class BedrockProjectTypeTest extends TestCase
 
         $projectType = new BedrockProjectType(\Mockery::mock(ComposerExecutable::class), \Mockery::mock(Filesystem::class));
 
-        $files = iterator_to_array($projectType->getAssetFiles($this->tempDirectory), false);
+        $files = iterator_to_array($projectType->getAssetFiles($this->tempDirectory)->files(), false);
 
         $this->assertCount(1, $files);
 
@@ -258,6 +258,7 @@ class BedrockProjectTypeTest extends TestCase
             Build\ExecuteBuildCommandsStep::class,
             Build\EnsureIntegrationIsInstalledStep::class,
             Build\WordPress\CopyMustUsePluginStep::class,
+            Build\CleanupBuildStep::class,
             Build\ExtractAssetFilesStep::class,
         ], (new BedrockProjectType(\Mockery::mock(ComposerExecutable::class), \Mockery::mock(Filesystem::class)))->getBuildSteps());
     }
@@ -368,7 +369,7 @@ class BedrockProjectTypeTest extends TestCase
 
         $projectType = new BedrockProjectType(\Mockery::mock(ComposerExecutable::class), \Mockery::mock(Filesystem::class));
 
-        $files = iterator_to_array($projectType->getProjectFiles($this->tempDirectory), false);
+        $files = iterator_to_array($projectType->getProjectFiles($this->tempDirectory)->files(), false);
 
         $this->assertCount(1, $files);
 

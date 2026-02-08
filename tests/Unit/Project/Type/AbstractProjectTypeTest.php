@@ -68,7 +68,7 @@ class AbstractProjectTypeTest extends TestCase
 
         $projectType = \Mockery::mock(AbstractProjectType::class, [\Mockery::mock(Filesystem::class)])->makePartial();
 
-        $files = iterator_to_array($projectType->getProjectFiles($this->tempDirectory), false);
+        $files = iterator_to_array($projectType->getProjectFiles($this->tempDirectory)->files(), false);
 
         $this->assertCount(1, $files);
 
@@ -85,7 +85,7 @@ class AbstractProjectTypeTest extends TestCase
 
         $projectType = \Mockery::mock(AbstractProjectType::class, [\Mockery::mock(Filesystem::class)])->makePartial();
 
-        $files = iterator_to_array($projectType->getProjectFiles($this->tempDirectory), false);
+        $files = iterator_to_array($projectType->getProjectFiles($this->tempDirectory)->files(), false);
 
         $this->assertCount(1, $files);
 

@@ -67,6 +67,7 @@ class RadicleProjectType extends AbstractWordPressProjectType
             Build\ExecuteBuildCommandsStep::class,
             Build\EnsureIntegrationIsInstalledStep::class,
             Build\WordPress\CopyMustUsePluginStep::class,
+            Build\CleanupBuildStep::class,
             Build\ExtractAssetFilesStep::class,
         ];
     }
@@ -120,7 +121,7 @@ class RadicleProjectType extends AbstractWordPressProjectType
     {
         return Arr::add(parent::generateEnvironmentConfigurationArray($environment, $baseConfiguration), 'build', [
             'COMPOSER_MIRROR_PATH_REPOS=1 composer install'.('production' === $environment ? ' --no-dev' : ''),
-            'yarn install && yarn build && rm -rf node_modules',
+            'yarn install && yarn build',
         ]);
     }
 

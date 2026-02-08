@@ -65,11 +65,19 @@ class EnvironmentConfiguration
     }
 
     /**
+     * Get the build exclude paths for the environment.
+     */
+    public function getBuildExcludePaths(): array
+    {
+        return $this->getPaths('build.exclude');
+    }
+
+    /**
      * Get the build include paths for the environment.
      */
     public function getBuildIncludePaths(): array
     {
-        return (array) Arr::get($this->configuration, 'build.include', []);
+        return $this->getPaths('build.include');
     }
 
     /**
@@ -184,5 +192,17 @@ class EnvironmentConfiguration
     public function without(string ...$keys): self
     {
         return new self($this->name, array_diff_key($this->configuration, array_flip($keys)));
+    }
+
+    /**
+     * Get the paths for the given configuration key.
+     */
+    private function getPaths(string $key): array
+    {
+        return collect(Arr::get($this->configuration, $key, []))
+            ->map(function (string $path): string {
+                return ltrim($path, '/');
+            })
+            ->all();
     }
 }

@@ -67,6 +67,7 @@ class BedrockProjectType extends AbstractWordPressProjectType implements Install
             Build\ExecuteBuildCommandsStep::class,
             Build\EnsureIntegrationIsInstalledStep::class,
             Build\WordPress\CopyMustUsePluginStep::class,
+            Build\CleanupBuildStep::class,
             Build\ExtractAssetFilesStep::class,
         ];
     }

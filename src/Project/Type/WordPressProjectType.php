@@ -59,6 +59,7 @@ class WordPressProjectType extends AbstractWordPressProjectType implements Insta
             Build\EnsureIntegrationIsInstalledStep::class,
             Build\WordPress\CopyMustUsePluginStep::class,
             Build\WordPress\ModifyWordPressConfigurationStep::class,
+            Build\CleanupBuildStep::class,
             Build\ExtractAssetFilesStep::class,
         ];
     }

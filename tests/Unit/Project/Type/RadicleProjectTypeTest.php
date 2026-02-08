@@ -80,7 +80,7 @@ class RadicleProjectTypeTest extends TestCase
             'foo' => 'bar',
             'build' => [
                 'COMPOSER_MIRROR_PATH_REPOS=1 composer install --no-dev',
-                'yarn install && yarn build && rm -rf node_modules',
+                'yarn install && yarn build',
             ],
         ], $projectType->generateEnvironmentConfiguration('production', ['foo' => 'bar'])->toArray());
     }
@@ -97,7 +97,7 @@ class RadicleProjectTypeTest extends TestCase
             'warmup' => false,
             'build' => [
                 'COMPOSER_MIRROR_PATH_REPOS=1 composer install',
-                'yarn install && yarn build && rm -rf node_modules',
+                'yarn install && yarn build',
             ],
         ], $projectType->generateEnvironmentConfiguration('staging', ['foo' => 'bar'])->toArray());
     }
@@ -227,7 +227,7 @@ class RadicleProjectTypeTest extends TestCase
 
         $projectType = new RadicleProjectType(\Mockery::mock(ComposerExecutable::class), \Mockery::mock(Filesystem::class));
 
-        $files = iterator_to_array($projectType->getAssetFiles($this->tempDirectory), false);
+        $files = iterator_to_array($projectType->getAssetFiles($this->tempDirectory)->files(), false);
 
         $this->assertCount(1, $files);
 
@@ -245,7 +245,7 @@ class RadicleProjectTypeTest extends TestCase
 
         $projectType = new RadicleProjectType(\Mockery::mock(ComposerExecutable::class), \Mockery::mock(Filesystem::class));
 
-        $files = iterator_to_array($projectType->getAssetFiles($this->tempDirectory), false);
+        $files = iterator_to_array($projectType->getAssetFiles($this->tempDirectory)->files(), false);
 
         $this->assertCount(1, $files);
 
@@ -260,6 +260,7 @@ class RadicleProjectTypeTest extends TestCase
             Build\ExecuteBuildCommandsStep::class,
             Build\EnsureIntegrationIsInstalledStep::class,
             Build\WordPress\CopyMustUsePluginStep::class,
+            Build\CleanupBuildStep::class,
             Build\ExtractAssetFilesStep::class,
         ], (new RadicleProjectType(\Mockery::mock(ComposerExecutable::class), \Mockery::mock(Filesystem::class)))->getBuildSteps());
     }
@@ -365,7 +366,7 @@ class RadicleProjectTypeTest extends TestCase
 
         $projectType = new RadicleProjectType(\Mockery::mock(ComposerExecutable::class), \Mockery::mock(Filesystem::class));
 
-        $files = iterator_to_array($projectType->getProjectFiles($this->tempDirectory), false);
+        $files = iterator_to_array($projectType->getProjectFiles($this->tempDirectory)->files(), false);
 
         $this->assertCount(1, $files);
 

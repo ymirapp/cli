@@ -48,6 +48,30 @@ abstract class AbstractProjectType implements ProjectTypeInterface
     /**
      * {@inheritDoc}
      */
+    public function getExcludedFiles(string $directory): Finder
+    {
+        $baseFinder = $this->getBaseFinder($directory)
+            ->ignoreDotFiles(false)
+            ->ignoreVCS(false);
+
+        return Finder::create()
+            ->append((clone $baseFinder)->path(['.git', 'node_modules']))
+            ->append((clone $baseFinder)->name(['*.ts', '*.tsx', '*.scss']));
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getIncludedFiles(string $directory, array $paths): Finder
+    {
+        return $this->getBaseFinder($directory)
+            ->path($paths)
+            ->followLinks();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function getInitializationSteps(): array
     {
         return [
@@ -106,8 +130,7 @@ abstract class AbstractProjectType implements ProjectTypeInterface
     protected function getBaseFinder(string $directory): Finder
     {
         return Finder::create()
-            ->in($directory)
-            ->files();
+            ->in($directory);
     }
 
     /**

@@ -14,7 +14,6 @@ declare(strict_types=1);
 namespace Ymir\Cli\Project\Build;
 
 use Symfony\Component\Filesystem\Filesystem;
-use Symfony\Component\Finder\Finder;
 use Symfony\Component\Finder\SplFileInfo;
 use Ymir\Cli\Project\EnvironmentConfiguration;
 use Ymir\Cli\Project\ProjectConfiguration;
@@ -78,7 +77,7 @@ class CopyProjectFilesStep implements BuildStepInterface
         }
 
         if (!empty($includePaths)) {
-            $files->append($this->getIncludedFiles($includePaths));
+            $files->append($projectConfiguration->getProjectType()->getIncludedFiles($this->projectDirectory, $includePaths));
         }
 
         foreach ($files as $file) {
@@ -101,43 +100,6 @@ class CopyProjectFilesStep implements BuildStepInterface
         } elseif ($file->isFile() && is_string($file->getRealPath())) {
             $this->filesystem->copy($file->getRealPath(), $targetPath);
         }
-    }
-
-    /**
-     * Get base Finder object.
-     */
-    private function getBaseFinder(): Finder
-    {
-        return Finder::create()
-            ->in($this->projectDirectory)
-            ->files();
-    }
-
-    /**
-     * Get the Finder object for finding the all the files from "build.include" configuration node.
-     */
-    private function getIncludedFiles(array $patterns): Finder
-    {
-        $patterns = collect($patterns)->map(function (string $pattern) {
-            return '/'.ltrim($pattern, '/');
-        });
-
-        $files = $patterns->map(function (string $pattern): string {
-            return '/'.ltrim($pattern, '/');
-        })->filter(function (string $pattern): bool {
-            return is_file($this->projectDirectory.$pattern);
-        })->map(function (string $pattern): \SplFileInfo {
-            return $this->getSplFileInfo($pattern);
-        });
-
-        $paths = $patterns->filter(function (string $pattern): bool {
-            return !is_file($this->projectDirectory.$pattern);
-        });
-
-        return $this->getBaseFinder()
-            ->path($paths->all())
-            ->append($files->all())
-            ->followLinks();
     }
 
     /**

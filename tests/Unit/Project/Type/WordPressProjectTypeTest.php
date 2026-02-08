@@ -203,6 +203,7 @@ class WordPressProjectTypeTest extends TestCase
             Build\EnsureIntegrationIsInstalledStep::class,
             Build\WordPress\CopyMustUsePluginStep::class,
             Build\WordPress\ModifyWordPressConfigurationStep::class,
+            Build\CleanupBuildStep::class,
             Build\ExtractAssetFilesStep::class,
         ], (new WordPressProjectType(\Mockery::mock(Filesystem::class), \Mockery::mock(GitHubClient::class), \Mockery::mock(WpCliExecutable::class)))->getBuildSteps());
     }
@@ -313,7 +314,7 @@ class WordPressProjectTypeTest extends TestCase
 
         $projectType = new WordPressProjectType(new Filesystem(), \Mockery::mock(GitHubClient::class), \Mockery::mock(WpCliExecutable::class));
 
-        $files = iterator_to_array($projectType->getProjectFiles($this->tempDirectory), false);
+        $files = iterator_to_array($projectType->getProjectFiles($this->tempDirectory)->files(), false);
 
         $this->assertCount(1, $files);
 
@@ -329,7 +330,7 @@ class WordPressProjectTypeTest extends TestCase
 
         $projectType = new WordPressProjectType(new Filesystem(), \Mockery::mock(GitHubClient::class), \Mockery::mock(WpCliExecutable::class));
 
-        $files = iterator_to_array($projectType->getProjectFiles($this->tempDirectory), false);
+        $files = iterator_to_array($projectType->getProjectFiles($this->tempDirectory)->files(), false);
 
         $this->assertCount(1, $files);
 

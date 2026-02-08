@@ -39,6 +39,16 @@ interface ProjectTypeInterface
     public function getBuildSteps(): array;
 
     /**
+     * Get the Finder object for finding all the files that we want to exclude from the final build.
+     */
+    public function getExcludedFiles(string $directory): Finder;
+
+    /**
+     * Get the Finder object for finding all the files that we want to include in the final build.
+     */
+    public function getIncludedFiles(string $directory, array $paths): Finder;
+
+    /**
      * Get the initialization steps when initializing the project type.
      */
     public function getInitializationSteps(): array;

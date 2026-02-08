@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace Ymir\Cli\Project\Build;
 
-use Symfony\Component\Finder\Finder;
 use Symfony\Component\Finder\SplFileInfo;
 use Ymir\Cli\Exception\Project\BuildFailedException;
 use Ymir\Cli\Project\EnvironmentConfiguration;
@@ -64,7 +63,7 @@ class BuildZipArchiveStep implements BuildStepInterface
         $totalSize = 0;
 
         if (!empty($includePaths)) {
-            $files->append($this->getIncludedFiles($includePaths));
+            $files->append($projectConfiguration->getProjectType()->getIncludedFiles($this->buildDirectory, $includePaths));
         }
 
         foreach ($files as $file) {
@@ -91,16 +90,5 @@ class BuildZipArchiveStep implements BuildStepInterface
         $relativePathName = str_replace('\\', '/', $file->getRelativePathname());
         $archive->addFile($file->getRealPath(), $relativePathName);
         $archive->setExternalAttributesName($relativePathName, \ZipArchive::OPSYS_UNIX, (33060 & 0xFFFF) << 16);
-    }
-
-    /**
-     * Get files from "include" node.
-     */
-    private function getIncludedFiles(array $paths): Finder
-    {
-        return Finder::create()
-            ->in($this->buildDirectory)
-            ->files()
-            ->path($paths);
     }
 }

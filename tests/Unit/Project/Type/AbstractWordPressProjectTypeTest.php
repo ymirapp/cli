@@ -57,7 +57,7 @@ class AbstractWordPressProjectTypeTest extends TestCase
 
         $projectType = $this->getMockForAbstractClass(AbstractWordPressProjectType::class, [\Mockery::mock(Filesystem::class)]);
 
-        $files = iterator_to_array($projectType->getAssetFiles($this->tempDirectory), false);
+        $files = iterator_to_array($projectType->getAssetFiles($this->tempDirectory)->files(), false);
 
         $this->assertCount(1, $files);
 
@@ -73,7 +73,7 @@ class AbstractWordPressProjectTypeTest extends TestCase
 
         $projectType = $this->getMockForAbstractClass(AbstractWordPressProjectType::class, [\Mockery::mock(Filesystem::class)]);
 
-        $files = iterator_to_array($projectType->getAssetFiles($this->tempDirectory), false);
+        $files = iterator_to_array($projectType->getAssetFiles($this->tempDirectory)->files(), false);
 
         $this->assertCount(1, $files);
 
@@ -89,7 +89,7 @@ class AbstractWordPressProjectTypeTest extends TestCase
 
         $projectType = $this->getMockForAbstractClass(AbstractWordPressProjectType::class, [\Mockery::mock(Filesystem::class)]);
 
-        $files = iterator_to_array($projectType->getAssetFiles($this->tempDirectory), false);
+        $files = iterator_to_array($projectType->getAssetFiles($this->tempDirectory)->files(), false);
 
         $this->assertCount(1, $files);
 
