@@ -36,10 +36,8 @@ abstract class AbstractWordPressProjectType extends AbstractProjectType implemen
      */
     public function getAssetFiles(string $directory): Finder
     {
-        return $this->getBaseFinder($directory)
-            ->notName(['*.php', '*.mo', '*.po'])
-            ->followLinks()
-            ->ignoreDotFiles(true);
+        return parent::getAssetFiles($directory)
+            ->notName(['*.mo', '*.po']);
     }
 
     /**

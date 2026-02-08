@@ -46,6 +46,17 @@ abstract class AbstractProjectType implements ProjectTypeInterface
     }
 
     /**
+     * {@inheritdoc}
+     */
+    public function getAssetFiles(string $directory): Finder
+    {
+        return $this->getBaseFinder($directory)
+            ->notName(['*.php'])
+            ->followLinks()
+            ->ignoreDotFiles(true);
+    }
+
+    /**
      * {@inheritDoc}
      */
     public function getExcludedFiles(string $directory): Finder
