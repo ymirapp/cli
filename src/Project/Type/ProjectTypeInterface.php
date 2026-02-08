@@ -24,14 +24,14 @@ interface ProjectTypeInterface
     public function generateEnvironmentConfiguration(string $environment, array $baseConfiguration = []): EnvironmentConfiguration;
 
     /**
+     * Get the Finder object for finding all the files that should be included in the deployment archive.
+     */
+    public function getArchiveFiles(string $directory): Finder;
+
+    /**
      * Get the Finder object for finding all the asset files that we have to extract.
      */
     public function getAssetFiles(string $directory): Finder;
-
-    /**
-     * Get the Finder object for finding all the files necessary for the build.
-     */
-    public function getBuildFiles(string $directory): Finder;
 
     /**
      * Get the build steps for the project type.

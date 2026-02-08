@@ -98,7 +98,7 @@ class WordPressProjectTypeTest extends TestCase
     /**
      * @dataProvider provideRequiredFileTypes
      */
-    public function testGetBuildFilesIncludesRequiredFileTypes(string $filename): void
+    public function testGetArchiveFilesIncludesRequiredFileTypes(string $filename): void
     {
         $requiredFile = $this->tempDirectory.'/'.$filename;
 
@@ -107,14 +107,14 @@ class WordPressProjectTypeTest extends TestCase
 
         $projectType = new WordPressProjectType(\Mockery::mock(Filesystem::class), \Mockery::mock(GitHubClient::class), \Mockery::mock(WpCliExecutable::class));
 
-        $files = iterator_to_array($projectType->getBuildFiles($this->tempDirectory), false);
+        $files = iterator_to_array($projectType->getArchiveFiles($this->tempDirectory), false);
 
         $this->assertCount(1, $files);
 
         $this->assertSame($requiredFile, $files[0]->getPathname());
     }
 
-    public function testGetBuildFilesIncludesRequiredPluginFiles(): void
+    public function testGetArchiveFilesIncludesRequiredPluginFiles(): void
     {
         mkdir($this->tempDirectory.'/wp-content/plugins/foo', 0777, true);
 
@@ -125,7 +125,7 @@ class WordPressProjectTypeTest extends TestCase
 
         $projectType = new WordPressProjectType(\Mockery::mock(Filesystem::class), \Mockery::mock(GitHubClient::class), \Mockery::mock(WpCliExecutable::class));
 
-        $files = iterator_to_array($projectType->getBuildFiles($this->tempDirectory), false);
+        $files = iterator_to_array($projectType->getArchiveFiles($this->tempDirectory), false);
 
         $this->assertCount(1, $files);
 
@@ -135,7 +135,7 @@ class WordPressProjectTypeTest extends TestCase
     /**
      * @dataProvider provideRequiredThemeFiles
      */
-    public function testGetBuildFilesIncludesRequiredThemeFiles(string $filename): void
+    public function testGetArchiveFilesIncludesRequiredThemeFiles(string $filename): void
     {
         $themeDirectory = $this->tempDirectory.'/wp-content/themes/foo';
 
@@ -148,7 +148,7 @@ class WordPressProjectTypeTest extends TestCase
 
         $projectType = new WordPressProjectType(\Mockery::mock(Filesystem::class), \Mockery::mock(GitHubClient::class), \Mockery::mock(WpCliExecutable::class));
 
-        $files = iterator_to_array($projectType->getBuildFiles($this->tempDirectory), false);
+        $files = iterator_to_array($projectType->getArchiveFiles($this->tempDirectory), false);
 
         $this->assertCount(1, $files);
 
@@ -158,7 +158,7 @@ class WordPressProjectTypeTest extends TestCase
     /**
      * @dataProvider provideRequiredWordPressCoreFiles
      */
-    public function testGetBuildFilesIncludesRequiredWordPressCoreFiles(string $filename): void
+    public function testGetArchiveFilesIncludesRequiredWordPressCoreFiles(string $filename): void
     {
         $requiredFile = $this->tempDirectory.'/'.$filename;
 
@@ -171,14 +171,14 @@ class WordPressProjectTypeTest extends TestCase
 
         $projectType = new WordPressProjectType(\Mockery::mock(Filesystem::class), \Mockery::mock(GitHubClient::class), \Mockery::mock(WpCliExecutable::class));
 
-        $files = iterator_to_array($projectType->getBuildFiles($this->tempDirectory), false);
+        $files = iterator_to_array($projectType->getArchiveFiles($this->tempDirectory), false);
 
         $this->assertCount(1, $files);
 
         $this->assertSame($requiredFile, $files[0]->getPathname());
     }
 
-    public function testGetBuildFilesIncludesWpCliYml(): void
+    public function testGetArchiveFilesIncludesWpCliYml(): void
     {
         $wpCliYmlPath = $this->tempDirectory.'/wp-cli.yml';
 
@@ -187,7 +187,7 @@ class WordPressProjectTypeTest extends TestCase
 
         $projectType = new WordPressProjectType(\Mockery::mock(Filesystem::class), \Mockery::mock(GitHubClient::class), \Mockery::mock(WpCliExecutable::class));
 
-        $files = iterator_to_array($projectType->getBuildFiles($this->tempDirectory), false);
+        $files = iterator_to_array($projectType->getArchiveFiles($this->tempDirectory), false);
 
         $this->assertCount(1, $files);
 

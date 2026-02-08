@@ -100,6 +100,120 @@ class BedrockProjectTypeTest extends TestCase
         ], $projectType->generateEnvironmentConfiguration('staging', ['foo' => 'bar'])->toArray());
     }
 
+    public function testGetArchiveFilesExcludesWpContent(): void
+    {
+        $wpContentDirectory = $this->tempDirectory.'/web/wp/wp-content';
+
+        mkdir($wpContentDirectory, 0777, true);
+
+        touch($wpContentDirectory.'/excluded.txt');
+
+        $projectType = new BedrockProjectType(\Mockery::mock(ComposerExecutable::class), \Mockery::mock(Filesystem::class));
+
+        $files = iterator_to_array($projectType->getArchiveFiles($this->tempDirectory), false);
+
+        $this->assertEmpty($files);
+    }
+
+    /**
+     * @dataProvider provideRequiredFileTypes
+     */
+    public function testGetArchiveFilesIncludesRequiredFileTypes(string $filename): void
+    {
+        $requiredFile = $this->tempDirectory.'/'.$filename;
+
+        touch($this->tempDirectory.'/excluded.txt');
+        touch($requiredFile);
+
+        $projectType = new BedrockProjectType(\Mockery::mock(ComposerExecutable::class), \Mockery::mock(Filesystem::class));
+
+        $files = iterator_to_array($projectType->getArchiveFiles($this->tempDirectory), false);
+
+        $this->assertCount(1, $files);
+
+        $this->assertSame($requiredFile, $files[0]->getPathname());
+    }
+
+    public function testGetArchiveFilesIncludesRequiredPluginFiles(): void
+    {
+        mkdir($this->tempDirectory.'/web/app/plugins/foo', 0777, true);
+
+        $blockJsonPath = $this->tempDirectory.'/web/app/plugins/foo/block.json';
+
+        touch($this->tempDirectory.'/excluded.txt');
+        touch($blockJsonPath);
+
+        $projectType = new BedrockProjectType(\Mockery::mock(ComposerExecutable::class), \Mockery::mock(Filesystem::class));
+
+        $files = iterator_to_array($projectType->getArchiveFiles($this->tempDirectory), false);
+
+        $this->assertCount(1, $files);
+
+        $this->assertSame($blockJsonPath, $files[0]->getPathname());
+    }
+
+    /**
+     * @dataProvider provideRequiredThemeFiles
+     */
+    public function testGetArchiveFilesIncludesRequiredThemeFiles(string $filename): void
+    {
+        $themeDirectory = $this->tempDirectory.'/web/app/themes/foo';
+
+        mkdir($themeDirectory, 0777, true);
+
+        $requiredThemeFile = $themeDirectory.'/'.$filename;
+
+        touch($themeDirectory.'/excluded.txt');
+        touch($requiredThemeFile);
+
+        $projectType = new BedrockProjectType(\Mockery::mock(ComposerExecutable::class), \Mockery::mock(Filesystem::class));
+
+        $files = iterator_to_array($projectType->getArchiveFiles($this->tempDirectory), false);
+
+        $this->assertCount(1, $files);
+
+        $this->assertSame($requiredThemeFile, $files[0]->getPathname());
+    }
+
+    /**
+     * @dataProvider provideRequiredWordPressCoreFiles
+     */
+    public function testGetArchiveFilesIncludesRequiredWordPressCoreFiles(string $filename): void
+    {
+        $requiredFile = $this->tempDirectory.'/'.$filename;
+
+        if (!is_dir(dirname($requiredFile))) {
+            mkdir(dirname($requiredFile), 0777, true);
+        }
+
+        touch($this->tempDirectory.'/excluded.txt');
+        touch($requiredFile);
+
+        $projectType = new BedrockProjectType(\Mockery::mock(ComposerExecutable::class), \Mockery::mock(Filesystem::class));
+
+        $files = iterator_to_array($projectType->getArchiveFiles($this->tempDirectory), false);
+
+        $this->assertCount(1, $files);
+
+        $this->assertSame($requiredFile, $files[0]->getPathname());
+    }
+
+    public function testGetArchiveFilesIncludesWpCliYml(): void
+    {
+        $wpCliYmlPath = $this->tempDirectory.'/wp-cli.yml';
+
+        touch($this->tempDirectory.'/excluded.txt');
+        touch($wpCliYmlPath);
+
+        $projectType = new BedrockProjectType(\Mockery::mock(ComposerExecutable::class), \Mockery::mock(Filesystem::class));
+
+        $files = iterator_to_array($projectType->getArchiveFiles($this->tempDirectory), false);
+
+        $this->assertCount(1, $files);
+
+        $this->assertSame($wpCliYmlPath, $files[0]->getPathname());
+    }
+
     public function testGetAssetFilesExcludesFilesBelowWebDirectory(): void
     {
         mkdir($this->tempDirectory.'/web', 0777, true);
@@ -134,120 +248,6 @@ class BedrockProjectTypeTest extends TestCase
         $this->assertCount(1, $files);
 
         $this->assertSame($keepFilePath, $files[0]->getPathname());
-    }
-
-    public function testGetBuildFilesExcludesWpContent(): void
-    {
-        $wpContentDirectory = $this->tempDirectory.'/web/wp/wp-content';
-
-        mkdir($wpContentDirectory, 0777, true);
-
-        touch($wpContentDirectory.'/excluded.txt');
-
-        $projectType = new BedrockProjectType(\Mockery::mock(ComposerExecutable::class), \Mockery::mock(Filesystem::class));
-
-        $files = iterator_to_array($projectType->getBuildFiles($this->tempDirectory), false);
-
-        $this->assertEmpty($files);
-    }
-
-    /**
-     * @dataProvider provideRequiredFileTypes
-     */
-    public function testGetBuildFilesIncludesRequiredFileTypes(string $filename): void
-    {
-        $requiredFile = $this->tempDirectory.'/'.$filename;
-
-        touch($this->tempDirectory.'/excluded.txt');
-        touch($requiredFile);
-
-        $projectType = new BedrockProjectType(\Mockery::mock(ComposerExecutable::class), \Mockery::mock(Filesystem::class));
-
-        $files = iterator_to_array($projectType->getBuildFiles($this->tempDirectory), false);
-
-        $this->assertCount(1, $files);
-
-        $this->assertSame($requiredFile, $files[0]->getPathname());
-    }
-
-    public function testGetBuildFilesIncludesRequiredPluginFiles(): void
-    {
-        mkdir($this->tempDirectory.'/web/app/plugins/foo', 0777, true);
-
-        $blockJsonPath = $this->tempDirectory.'/web/app/plugins/foo/block.json';
-
-        touch($this->tempDirectory.'/excluded.txt');
-        touch($blockJsonPath);
-
-        $projectType = new BedrockProjectType(\Mockery::mock(ComposerExecutable::class), \Mockery::mock(Filesystem::class));
-
-        $files = iterator_to_array($projectType->getBuildFiles($this->tempDirectory), false);
-
-        $this->assertCount(1, $files);
-
-        $this->assertSame($blockJsonPath, $files[0]->getPathname());
-    }
-
-    /**
-     * @dataProvider provideRequiredThemeFiles
-     */
-    public function testGetBuildFilesIncludesRequiredThemeFiles(string $filename): void
-    {
-        $themeDirectory = $this->tempDirectory.'/web/app/themes/foo';
-
-        mkdir($themeDirectory, 0777, true);
-
-        $requiredThemeFile = $themeDirectory.'/'.$filename;
-
-        touch($themeDirectory.'/excluded.txt');
-        touch($requiredThemeFile);
-
-        $projectType = new BedrockProjectType(\Mockery::mock(ComposerExecutable::class), \Mockery::mock(Filesystem::class));
-
-        $files = iterator_to_array($projectType->getBuildFiles($this->tempDirectory), false);
-
-        $this->assertCount(1, $files);
-
-        $this->assertSame($requiredThemeFile, $files[0]->getPathname());
-    }
-
-    /**
-     * @dataProvider provideRequiredWordPressCoreFiles
-     */
-    public function testGetBuildFilesIncludesRequiredWordPressCoreFiles(string $filename): void
-    {
-        $requiredFile = $this->tempDirectory.'/'.$filename;
-
-        if (!is_dir(dirname($requiredFile))) {
-            mkdir(dirname($requiredFile), 0777, true);
-        }
-
-        touch($this->tempDirectory.'/excluded.txt');
-        touch($requiredFile);
-
-        $projectType = new BedrockProjectType(\Mockery::mock(ComposerExecutable::class), \Mockery::mock(Filesystem::class));
-
-        $files = iterator_to_array($projectType->getBuildFiles($this->tempDirectory), false);
-
-        $this->assertCount(1, $files);
-
-        $this->assertSame($requiredFile, $files[0]->getPathname());
-    }
-
-    public function testGetBuildFilesIncludesWpCliYml(): void
-    {
-        $wpCliYmlPath = $this->tempDirectory.'/wp-cli.yml';
-
-        touch($this->tempDirectory.'/excluded.txt');
-        touch($wpCliYmlPath);
-
-        $projectType = new BedrockProjectType(\Mockery::mock(ComposerExecutable::class), \Mockery::mock(Filesystem::class));
-
-        $files = iterator_to_array($projectType->getBuildFiles($this->tempDirectory), false);
-
-        $this->assertCount(1, $files);
-
-        $this->assertSame($wpCliYmlPath, $files[0]->getPathname());
     }
 
     public function testGetBuildSteps(): void

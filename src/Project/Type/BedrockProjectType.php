@@ -41,19 +41,19 @@ class BedrockProjectType extends AbstractWordPressProjectType implements Install
     /**
      * {@inheritdoc}
      */
-    public function getAssetFiles(string $directory): Finder
+    public function getArchiveFiles(string $directory): Finder
     {
-        return parent::getAssetFiles(sprintf('%s/web', $directory))
-            ->exclude(['wp/wp-content']);
+        return parent::getArchiveFiles($directory)
+            ->exclude(['web/wp/wp-content']);
     }
 
     /**
      * {@inheritdoc}
      */
-    public function getBuildFiles(string $directory): Finder
+    public function getAssetFiles(string $directory): Finder
     {
-        return parent::getBuildFiles($directory)
-            ->exclude(['web/wp/wp-content']);
+        return parent::getAssetFiles(sprintf('%s/web', $directory))
+            ->exclude(['wp/wp-content']);
     }
 
     /**

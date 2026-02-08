@@ -59,7 +59,7 @@ class CompressBuildFilesStep implements BuildStepInterface
     {
         $archive = new \ZipArchive();
         $archive->open($this->buildArtifactPath, \ZipArchive::CREATE | \ZipArchive::OVERWRITE);
-        $files = $projectConfiguration->getProjectType()->getBuildFiles($this->buildDirectory);
+        $files = $projectConfiguration->getProjectType()->getArchiveFiles($this->buildDirectory);
         $totalSize = 0;
 
         $includePaths = $environmentConfiguration->getBuildIncludePaths();

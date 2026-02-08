@@ -41,19 +41,19 @@ class RadicleProjectType extends AbstractWordPressProjectType
     /**
      * {@inheritdoc}
      */
-    public function getAssetFiles(string $directory): Finder
+    public function getArchiveFiles(string $directory): Finder
     {
-        return parent::getAssetFiles(sprintf('%s/public', $directory))
-            ->exclude(['wp/wp-content']);
+        return parent::getArchiveFiles($directory)
+            ->exclude(['public/wp/wp-content']);
     }
 
     /**
      * {@inheritdoc}
      */
-    public function getBuildFiles(string $directory): Finder
+    public function getAssetFiles(string $directory): Finder
     {
-        return parent::getBuildFiles($directory)
-            ->exclude(['public/wp/wp-content']);
+        return parent::getAssetFiles(sprintf('%s/public', $directory))
+            ->exclude(['wp/wp-content']);
     }
 
     /**
