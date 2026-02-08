@@ -41,18 +41,18 @@ class RadicleProjectType extends AbstractWordPressProjectType
     /**
      * {@inheritdoc}
      */
-    public function getAssetFiles(string $projectDirectory): Finder
+    public function getAssetFiles(string $directory): Finder
     {
-        return parent::getAssetFiles(sprintf('%s/public', $projectDirectory))
+        return parent::getAssetFiles(sprintf('%s/public', $directory))
             ->exclude(['wp/wp-content']);
     }
 
     /**
      * {@inheritdoc}
      */
-    public function getBuildFiles(string $projectDirectory): Finder
+    public function getBuildFiles(string $directory): Finder
     {
-        return parent::getBuildFiles($projectDirectory)
+        return parent::getBuildFiles($directory)
             ->exclude(['public/wp/wp-content']);
     }
 
@@ -82,27 +82,27 @@ class RadicleProjectType extends AbstractWordPressProjectType
     /**
      * {@inheritdoc}
      */
-    public function installIntegration(string $projectDirectory): void
+    public function installIntegration(string $directory): void
     {
-        $this->composerExecutable->require('ymirapp/wordpress-plugin', $projectDirectory);
-        $this->composerExecutable->require('ymirapp/laravel-bridge', $projectDirectory);
+        $this->composerExecutable->require('ymirapp/wordpress-plugin', $directory);
+        $this->composerExecutable->require('ymirapp/laravel-bridge', $directory);
     }
 
     /**
      * {@inheritdoc}
      */
-    public function isIntegrationInstalled(string $projectDirectory): bool
+    public function isIntegrationInstalled(string $directory): bool
     {
-        return $this->composerExecutable->isPackageInstalled('ymirapp/laravel-bridge', $projectDirectory)
-            && $this->composerExecutable->isPackageInstalled('ymirapp/wordpress-plugin', $projectDirectory);
+        return $this->composerExecutable->isPackageInstalled('ymirapp/laravel-bridge', $directory)
+            && $this->composerExecutable->isPackageInstalled('ymirapp/wordpress-plugin', $directory);
     }
 
     /**
      * {@inheritdoc}
      */
-    public function matchesProject(string $projectDirectory): bool
+    public function matchesProject(string $directory): bool
     {
-        return $this->pathsExist($projectDirectory, ['/public/content/', '/public/wp-config.php', '/bedrock/application.php']);
+        return $this->pathsExist($directory, ['/public/content/', '/public/wp-config.php', '/bedrock/application.php']);
     }
 
     /**

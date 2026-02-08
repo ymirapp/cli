@@ -61,13 +61,13 @@ abstract class AbstractProjectType implements ProjectTypeInterface
     /**
      * {@inheritdoc}
      */
-    public function getProjectFiles(string $projectDirectory): Finder
+    public function getProjectFiles(string $directory): Finder
     {
-        $finder = $this->getBaseFinder($projectDirectory)
+        $finder = $this->getBaseFinder($directory)
             ->notName(['ymir.yml'])
             ->followLinks();
 
-        if (is_readable($projectDirectory.'/.gitignore')) {
+        if (is_readable($directory.'/.gitignore')) {
             $finder->ignoreVCSIgnored(true);
         }
 
@@ -103,10 +103,10 @@ abstract class AbstractProjectType implements ProjectTypeInterface
     /**
      * Get a base Finder object for searching files in the given project directory.
      */
-    protected function getBaseFinder(string $projectDirectory): Finder
+    protected function getBaseFinder(string $directory): Finder
     {
         return Finder::create()
-            ->in($projectDirectory)
+            ->in($directory)
             ->files();
     }
 
@@ -121,10 +121,10 @@ abstract class AbstractProjectType implements ProjectTypeInterface
     /**
      * Check if the given paths exist relative to the given project directory.
      */
-    protected function pathsExist(string $projectDirectory, array $paths): bool
+    protected function pathsExist(string $directory, array $paths): bool
     {
-        return $this->filesystem->exists(array_map(function (string $path) use ($projectDirectory) {
-            return $projectDirectory.$path;
+        return $this->filesystem->exists(array_map(function (string $path) use ($directory) {
+            return $directory.$path;
         }, $paths));
     }
 }

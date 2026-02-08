@@ -21,9 +21,9 @@ abstract class AbstractWordPressProjectType extends AbstractProjectType implemen
     /**
      * {@inheritdoc}
      */
-    public function getAssetFiles(string $projectDirectory): Finder
+    public function getAssetFiles(string $directory): Finder
     {
-        return $this->getBaseFinder($projectDirectory)
+        return $this->getBaseFinder($directory)
             ->notName(['*.php', '*.mo', '*.po'])
             ->followLinks()
             ->ignoreDotFiles(true);
@@ -32,14 +32,14 @@ abstract class AbstractWordPressProjectType extends AbstractProjectType implemen
     /**
      * {@inheritdoc}
      */
-    public function getBuildFiles(string $projectDirectory): Finder
+    public function getBuildFiles(string $directory): Finder
     {
         return Finder::create()
-            ->append($this->getRequiredFiles($projectDirectory))
-            ->append($this->getRequiredPluginFiles($projectDirectory))
-            ->append($this->getRequiredThemeFiles($projectDirectory))
-            ->append($this->getRequiredFileTypes($projectDirectory))
-            ->append($this->getWordPressCoreFiles($projectDirectory));
+            ->append($this->getRequiredFiles($directory))
+            ->append($this->getRequiredPluginFiles($directory))
+            ->append($this->getRequiredThemeFiles($directory))
+            ->append($this->getRequiredFileTypes($directory))
+            ->append($this->getWordPressCoreFiles($directory));
     }
 
     /**
@@ -65,21 +65,21 @@ abstract class AbstractWordPressProjectType extends AbstractProjectType implemen
     /**
      * {@inheritdoc}
      */
-    public function getMediaDirectoryPath(string $projectDirectory = ''): string
+    public function getMediaDirectoryPath(string $directory = ''): string
     {
         $uploadsDirectory = $this->getUploadsDirectory();
 
-        return empty($projectDirectory) ? $uploadsDirectory : rtrim($projectDirectory, '/').$uploadsDirectory;
+        return empty($directory) ? $uploadsDirectory : rtrim($directory, '/').$uploadsDirectory;
     }
 
     /**
      * {@inheritdoc}
      */
-    public function getMediaFiles(string $projectDirectory): Finder
+    public function getMediaFiles(string $directory): Finder
     {
         return Finder::create()
             ->files()
-            ->in($this->getMediaDirectoryPath($projectDirectory));
+            ->in($this->getMediaDirectoryPath($directory));
     }
 
     /**
@@ -88,11 +88,11 @@ abstract class AbstractWordPressProjectType extends AbstractProjectType implemen
      * If the project directory is given, it will return the absolute path to the "mu-plugins" directory. Otherwise, it
      * will return the relative path.
      */
-    public function getMustUsePluginsDirectoryPath(string $projectDirectory = ''): string
+    public function getMustUsePluginsDirectoryPath(string $directory = ''): string
     {
         $mustUsePluginsDirectory = $this->getMustUsePluginsDirectory();
 
-        return empty($projectDirectory) ? $mustUsePluginsDirectory : rtrim($projectDirectory, '/').$mustUsePluginsDirectory;
+        return empty($directory) ? $mustUsePluginsDirectory : rtrim($directory, '/').$mustUsePluginsDirectory;
     }
 
     /**
@@ -101,28 +101,28 @@ abstract class AbstractWordPressProjectType extends AbstractProjectType implemen
      * If the project directory is given, it will return the absolute path to the "plugins" directory. Otherwise, it
      * will return the relative path.
      */
-    public function getPluginsDirectoryPath(string $projectDirectory = ''): string
+    public function getPluginsDirectoryPath(string $directory = ''): string
     {
         $pluginsDirectory = $this->getPluginsDirectory();
 
-        return empty($projectDirectory) ? $pluginsDirectory : rtrim($projectDirectory, '/').$pluginsDirectory;
+        return empty($directory) ? $pluginsDirectory : rtrim($directory, '/').$pluginsDirectory;
     }
 
     /**
      * {@inheritdoc}
      */
-    public function getProjectFiles(string $projectDirectory): Finder
+    public function getProjectFiles(string $directory): Finder
     {
-        return parent::getProjectFiles($projectDirectory)
+        return parent::getProjectFiles($directory)
             ->exclude(ltrim($this->getMediaDirectoryPath(), '/'));
     }
 
     /**
      * Get the Finder object for finding all the required files in the given project directory.
      */
-    protected function getRequiredFiles(string $projectDirectory): Finder
+    protected function getRequiredFiles(string $directory): Finder
     {
-        return $this->getBaseFinder($projectDirectory)
+        return $this->getBaseFinder($directory)
             ->path([
                 '/^wp-cli\.yml/',
             ]);
@@ -131,18 +131,18 @@ abstract class AbstractWordPressProjectType extends AbstractProjectType implemen
     /**
      * Get the Finder object for finding all the required file types in the given project directory.
      */
-    protected function getRequiredFileTypes(string $projectDirectory): Finder
+    protected function getRequiredFileTypes(string $directory): Finder
     {
-        return $this->getBaseFinder($projectDirectory)
+        return $this->getBaseFinder($directory)
             ->name(['*.mo', '*.php']);
     }
 
     /**
      * Get the Finder object for finding all the required plugin files in the given project directory.
      */
-    protected function getRequiredPluginFiles(string $projectDirectory): Finder
+    protected function getRequiredPluginFiles(string $directory): Finder
     {
-        return $this->getBaseFinder($projectDirectory)
+        return $this->getBaseFinder($directory)
             ->path([
                 '/plugins\/[^\/]*\/block\.json$/',
             ]);
@@ -151,9 +151,9 @@ abstract class AbstractWordPressProjectType extends AbstractProjectType implemen
     /**
      * Get the Finder object for finding all the required theme files in the given project directory.
      */
-    protected function getRequiredThemeFiles(string $projectDirectory): Finder
+    protected function getRequiredThemeFiles(string $directory): Finder
     {
-        return $this->getBaseFinder($projectDirectory)
+        return $this->getBaseFinder($directory)
             ->path([
                 '/themes\/[^\/]*\/screenshot\.(gif|jpe?g|png)$/',
                 '/themes\/[^\/]*\/style\.css$/',
@@ -167,9 +167,9 @@ abstract class AbstractWordPressProjectType extends AbstractProjectType implemen
     /**
      * Get the Finder object for finding all the WordPress core files in the given project directory.
      */
-    protected function getWordPressCoreFiles(string $projectDirectory): Finder
+    protected function getWordPressCoreFiles(string $directory): Finder
     {
-        return $this->getBaseFinder($projectDirectory)
+        return $this->getBaseFinder($directory)
             ->path(collect(['wp-includes\/', 'wp-admin\/'])->map(function (string $path) {
                 return $this->buildWordPressCorePathPattern($path);
             })->add('/^bin\//')->all());

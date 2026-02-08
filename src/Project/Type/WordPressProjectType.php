@@ -82,13 +82,13 @@ class WordPressProjectType extends AbstractWordPressProjectType implements Insta
     /**
      * {@inheritdoc}
      */
-    public function getProjectFiles(string $projectDirectory): Finder
+    public function getProjectFiles(string $directory): Finder
     {
-        $projectFiles = parent::getProjectFiles($projectDirectory);
+        $projectFiles = parent::getProjectFiles($directory);
 
         // wp-config.php is often in .gitignore, so we force it back if the file exists
-        if ($this->filesystem->exists($projectDirectory.'/wp-config.php')) {
-            $projectFiles->append([$this->getSplFileInfo($projectDirectory, '/wp-config.php')]);
+        if ($this->filesystem->exists($directory.'/wp-config.php')) {
+            $projectFiles->append([$this->getSplFileInfo($directory, '/wp-config.php')]);
         }
 
         return $projectFiles;
@@ -97,9 +97,9 @@ class WordPressProjectType extends AbstractWordPressProjectType implements Insta
     /**
      * {@inheritdoc}
      */
-    public function installIntegration(string $projectDirectory): void
+    public function installIntegration(string $directory): void
     {
-        $pluginsDirectory = $projectDirectory.'/wp-content/plugins';
+        $pluginsDirectory = $directory.'/wp-content/plugins';
 
         $this->gitHubClient->downloadLatestVersion('ymirapp/wordpress-plugin')->extractTo($pluginsDirectory);
 
@@ -139,11 +139,11 @@ class WordPressProjectType extends AbstractWordPressProjectType implements Insta
     /**
      * {@inheritdoc}
      */
-    public function isIntegrationInstalled(string $projectDirectory): bool
+    public function isIntegrationInstalled(string $directory): bool
     {
         $pluginsPaths = [
-            $projectDirectory.'/wp-content/mu-plugins',
-            $projectDirectory.'/wp-content/plugins',
+            $directory.'/wp-content/mu-plugins',
+            $directory.'/wp-content/plugins',
         ];
 
         $pluginsPaths = array_filter($pluginsPaths, 'is_dir');
@@ -165,9 +165,9 @@ class WordPressProjectType extends AbstractWordPressProjectType implements Insta
     /**
      * {@inheritdoc}
      */
-    public function matchesProject(string $projectDirectory): bool
+    public function matchesProject(string $directory): bool
     {
-        return $this->pathsExist($projectDirectory, ['/wp-admin/', '/wp-content/', '/wp-config-sample.php']);
+        return $this->pathsExist($directory, ['/wp-admin/', '/wp-content/', '/wp-config-sample.php']);
     }
 
     /**

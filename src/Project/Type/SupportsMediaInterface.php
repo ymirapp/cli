@@ -25,13 +25,13 @@ interface SupportsMediaInterface
     /**
      * Get the relative or absolute path to the media directory.
      *
-     * If $projectDirectory is provided, an absolute path should be returned. Otherwise, the path should
+     * If $directory is provided, an absolute path should be returned. Otherwise, the path should
      * be relative to the project root.
      */
-    public function getMediaDirectoryPath(string $projectDirectory = ''): string;
+    public function getMediaDirectoryPath(string $directory = ''): string;
 
     /**
-     * Get the Finder object for finding all the media files in the given project directory.
+     * Get the Finder object for finding all the project media files.
      */
-    public function getMediaFiles(string $projectDirectory): Finder;
+    public function getMediaFiles(string $directory): Finder;
 }

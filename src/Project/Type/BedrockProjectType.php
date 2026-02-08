@@ -41,18 +41,18 @@ class BedrockProjectType extends AbstractWordPressProjectType implements Install
     /**
      * {@inheritdoc}
      */
-    public function getAssetFiles(string $projectDirectory): Finder
+    public function getAssetFiles(string $directory): Finder
     {
-        return parent::getAssetFiles(sprintf('%s/web', $projectDirectory))
+        return parent::getAssetFiles(sprintf('%s/web', $directory))
             ->exclude(['wp/wp-content']);
     }
 
     /**
      * {@inheritdoc}
      */
-    public function getBuildFiles(string $projectDirectory): Finder
+    public function getBuildFiles(string $directory): Finder
     {
-        return parent::getBuildFiles($projectDirectory)
+        return parent::getBuildFiles($directory)
             ->exclude(['web/wp/wp-content']);
     }
 
@@ -90,9 +90,9 @@ class BedrockProjectType extends AbstractWordPressProjectType implements Install
     /**
      * {@inheritdoc}
      */
-    public function installIntegration(string $projectDirectory): void
+    public function installIntegration(string $directory): void
     {
-        $this->composerExecutable->require('ymirapp/wordpress-plugin', $projectDirectory);
+        $this->composerExecutable->require('ymirapp/wordpress-plugin', $directory);
     }
 
     /**
@@ -114,17 +114,17 @@ class BedrockProjectType extends AbstractWordPressProjectType implements Install
     /**
      * {@inheritdoc}
      */
-    public function isIntegrationInstalled(string $projectDirectory): bool
+    public function isIntegrationInstalled(string $directory): bool
     {
-        return $this->composerExecutable->isPackageInstalled('ymirapp/wordpress-plugin', $projectDirectory);
+        return $this->composerExecutable->isPackageInstalled('ymirapp/wordpress-plugin', $directory);
     }
 
     /**
      * {@inheritdoc}
      */
-    public function matchesProject(string $projectDirectory): bool
+    public function matchesProject(string $directory): bool
     {
-        return $this->pathsExist($projectDirectory, ['/web/app/', '/web/wp-config.php', '/config/application.php']);
+        return $this->pathsExist($directory, ['/web/app/', '/web/wp-config.php', '/config/application.php']);
     }
 
     /**

@@ -24,14 +24,14 @@ interface ProjectTypeInterface
     public function generateEnvironmentConfiguration(string $environment, array $baseConfiguration = []): EnvironmentConfiguration;
 
     /**
-     * Get the Finder object for finding all the asset files that we have to extract in the given project directory.
+     * Get the Finder object for finding all the asset files that we have to extract.
      */
-    public function getAssetFiles(string $projectDirectory): Finder;
+    public function getAssetFiles(string $directory): Finder;
 
     /**
-     * Get the Finder object for finding all the files necessary for a build in the given project directory.
+     * Get the Finder object for finding all the files necessary for the build.
      */
-    public function getBuildFiles(string $projectDirectory): Finder;
+    public function getBuildFiles(string $directory): Finder;
 
     /**
      * Get the build steps for the project type.
@@ -49,9 +49,9 @@ interface ProjectTypeInterface
     public function getName(): string;
 
     /**
-     * Get the Finder object for finding all the files in the given project directory.
+     * Get the Finder object for finding all the project files.
      */
-    public function getProjectFiles(string $projectDirectory): Finder;
+    public function getProjectFiles(string $directory): Finder;
 
     /**
      * Get the project type slug.
@@ -59,17 +59,17 @@ interface ProjectTypeInterface
     public function getSlug(): string;
 
     /**
-     * Install the Ymir integration in the given project directory.
+     * Install the Ymir integration.
      */
-    public function installIntegration(string $projectDirectory): void;
+    public function installIntegration(string $directory): void;
 
     /**
-     * Check if the Ymir integration is installed in the given project directory.
+     * Check if the Ymir integration is installed.
      */
-    public function isIntegrationInstalled(string $projectDirectory): bool;
+    public function isIntegrationInstalled(string $directory): bool;
 
     /**
-     * Determine whether the project at the given project directory matches this project type.
+     * Determine whether the project in the given directory matches this project type.
      */
-    public function matchesProject(string $projectDirectory): bool;
+    public function matchesProject(string $directory): bool;
 }
