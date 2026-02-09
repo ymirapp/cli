@@ -27,6 +27,61 @@ use Ymir\Cli\Tests\TestCase;
 
 class ProcessAssetsStepTest extends TestCase
 {
+    public function testPerformDoesNotSkipIfAssetsHashMatchButStatusIsNotFinished(): void
+    {
+        $assetsDirectory = sys_get_temp_dir().'/ymir-assets-test-'.uniqid();
+        mkdir($assetsDirectory);
+        file_put_contents($assetsDirectory.'/test.txt', 'test content');
+
+        $apiClient = \Mockery::mock(ApiClient::class);
+        $context = \Mockery::mock(ExecutionContext::class);
+        $deployment = DeploymentFactory::create(['assets_hash' => 'hash']);
+        $environment = EnvironmentFactory::create();
+        $input = \Mockery::mock(Input::class);
+        $output = \Mockery::mock(Output::class)->shouldIgnoreMissing();
+        $project = ProjectFactory::create();
+        $uploader = \Mockery::mock(FileUploader::class);
+
+        $context->shouldReceive('getProject')->once()
+                ->andReturn($project);
+
+        $context->shouldReceive('getApiClient')->once()
+                ->andReturn($apiClient);
+
+        $context->shouldReceive('getOutput')->once()
+                ->andReturn($output);
+
+        $context->shouldReceive('getInput')->once()
+                ->andReturn($input);
+
+        $input->shouldReceive('getBooleanOption')->once()
+              ->with('force-assets')
+              ->andReturn(false);
+
+        $apiClient->shouldReceive('getDeployments')->once()
+                  ->with($project, $environment)
+                  ->andReturn(new ResourceCollection([
+                      DeploymentFactory::create(['status' => 'failed', 'assets_hash' => 'hash']),
+                  ]));
+
+        $output->shouldReceive('info')->once()
+               ->with(sprintf('Processing <comment>%s</comment> assets', $project->getName()));
+
+        $apiClient->shouldReceive('getSignedAssetRequests')->once()
+                  ->andReturn(collect([
+                      'test.txt' => ['command' => 'store', 'path' => 'test.txt', 'url' => 'https://example.com'],
+                  ]));
+
+        $uploader->shouldReceive('batch')->once();
+
+        $step = new ProcessAssetsStep($assetsDirectory, $uploader);
+
+        $step->perform($context, $deployment, $environment);
+
+        unlink($assetsDirectory.'/test.txt');
+        rmdir($assetsDirectory);
+    }
+
     public function testPerformForcesAssetsProcessing(): void
     {
         $assetsDirectory = sys_get_temp_dir().'/ymir-assets-test-'.uniqid();
@@ -161,7 +216,7 @@ class ProcessAssetsStepTest extends TestCase
         $apiClient->shouldReceive('getDeployments')->once()
                   ->with($project, $environment)
                   ->andReturn(new ResourceCollection([
-                      ['id' => 1, 'uuid' => 'uuid', 'status' => 'finished', 'created_at' => 'now', 'configuration' => [], 'unmanaged_domains' => [], 'type' => 'zip', 'assets_hash' => 'hash'],
+                      DeploymentFactory::create(['status' => 'finished', 'assets_hash' => 'hash']),
                   ]));
 
         $output->shouldReceive('infoWithWarning')->once()

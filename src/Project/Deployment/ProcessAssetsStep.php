@@ -67,8 +67,12 @@ class ProcessAssetsStep implements DeploymentStepInterface
 
         if (!$context->getInput()->getBooleanOption('force-assets')) {
             $deploymentWithAssetsHash = $apiClient->getDeployments($project, $environment)
-                ->where('status', 'finished')
-                ->firstWhere('assets_hash', $deployment->getAssetsHash());
+                ->filter(function (Deployment $deployment): bool {
+                    return 'finished' === $deployment->getStatus();
+                })
+                ->first(function (Deployment $previousDeployment) use ($deployment): bool {
+                    return $previousDeployment->getAssetsHash() === $deployment->getAssetsHash();
+                });
         }
 
         if (null !== $deploymentWithAssetsHash) {
