@@ -38,39 +38,41 @@ class ProjectTeamGuardSubscriberTest extends TestCase
 
     public function testOnConsoleCommandReturnsEarlyWhenCommandIsIgnored(): void
     {
-        $projectLocator = \Mockery::mock(ProjectLocator::class)->shouldIgnoreMissing();
-        $teamLocator = \Mockery::mock(TeamLocator::class)->shouldIgnoreMissing();
+        $projectLocator = \Mockery::mock(ProjectLocator::class);
+        $teamLocator = \Mockery::mock(TeamLocator::class);
         $command = \Mockery::mock(Command::class);
-        $team = Team::fromArray(['id' => 42, 'name' => 'team', 'owner' => ['id' => 1, 'name' => 'owner', 'email' => 'foo@bar.com']]);
 
-        $projectLocator->shouldReceive('getProject')->once()
-                       ->andReturn($this->getProject());
+        $projectLocator->shouldNotReceive('getProject');
+        $teamLocator->shouldNotReceive('getTeam');
 
         $command->shouldReceive('getName')->once()
                 ->andReturn('help');
-
-        $teamLocator->shouldReceive('getTeam')->once()
-                    ->andReturn($team);
 
         (new ProjectTeamGuardSubscriber($projectLocator, $teamLocator))->onConsoleCommand($this->getConsoleCommandEvent($command));
     }
 
     public function testOnConsoleCommandReturnsEarlyWhenCommandIsNotInstance(): void
     {
-        $projectLocator = \Mockery::mock(ProjectLocator::class)->shouldIgnoreMissing();
-        $teamLocator = \Mockery::mock(TeamLocator::class)->shouldIgnoreMissing();
+        $projectLocator = \Mockery::mock(ProjectLocator::class);
+        $teamLocator = \Mockery::mock(TeamLocator::class);
 
-        $projectLocator->shouldReceive('getProject')->once()
-                       ->andReturn($this->getProject());
+        $projectLocator->shouldNotReceive('getProject');
+        $teamLocator->shouldNotReceive('getTeam');
 
         (new ProjectTeamGuardSubscriber($projectLocator, $teamLocator))->onConsoleCommand($this->getConsoleCommandEvent());
     }
 
     public function testOnConsoleCommandReturnsEarlyWhenNoActiveTeam(): void
     {
-        $projectLocator = \Mockery::mock(ProjectLocator::class)->shouldIgnoreMissing();
-        $teamLocator = \Mockery::mock(TeamLocator::class)->shouldIgnoreMissing();
+        $projectLocator = \Mockery::mock(ProjectLocator::class);
+        $teamLocator = \Mockery::mock(TeamLocator::class);
         $command = \Mockery::mock(Command::class);
+
+        $command->shouldReceive('getName')->once()
+                ->andReturn('some-command');
+
+        $teamLocator->shouldReceive('getTeam')->once()
+                    ->andReturn(null);
 
         $projectLocator->shouldReceive('getProject')->once()
                        ->andReturn($this->getProject());
@@ -80,9 +82,16 @@ class ProjectTeamGuardSubscriberTest extends TestCase
 
     public function testOnConsoleCommandReturnsEarlyWhenProjectConfigurationDoesNotExist(): void
     {
-        $projectLocator = \Mockery::mock(ProjectLocator::class)->shouldIgnoreMissing();
-        $teamLocator = \Mockery::mock(TeamLocator::class)->shouldIgnoreMissing();
+        $projectLocator = \Mockery::mock(ProjectLocator::class);
+        $teamLocator = \Mockery::mock(TeamLocator::class);
         $command = \Mockery::mock(Command::class);
+        $team = Team::fromArray(['id' => 42, 'name' => 'team', 'owner' => ['id' => 1, 'name' => 'owner', 'email' => 'foo@bar.com']]);
+
+        $command->shouldReceive('getName')->once()
+                ->andReturn('some-command');
+
+        $teamLocator->shouldReceive('getTeam')->once()
+                    ->andReturn($team);
 
         $projectLocator->shouldReceive('getProject')->once()
                        ->andReturn(null);

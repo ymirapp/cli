@@ -79,10 +79,16 @@ class ProjectTeamGuardSubscriber implements EventSubscriberInterface
      */
     public function onConsoleCommand(ConsoleCommandEvent $event): void
     {
+        $command = $event->getCommand();
+
+        if (!$command instanceof Command || in_array($command->getName(), self::IGNORED_COMMANDS)) {
+            return;
+        }
+
         $activeTeam = $this->teamLocator->getTeam();
         $project = $this->projectLocator->getProject();
 
-        if (!$project instanceof Project || !$activeTeam instanceof Team || !$event->getCommand() instanceof Command || in_array($event->getCommand()->getName(), self::IGNORED_COMMANDS)) {
+        if (!$project instanceof Project || !$activeTeam instanceof Team) {
             return;
         }
 
