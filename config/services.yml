@@ -6,7 +6,7 @@ parameters:
   hidden_directory: '%working_directory%/.ymir'
   media_directory: '%hidden_directory%/media'
   stub_directory: '%application_directory%/stubs'
-  version: '2.0.7'
+  version: '2.0.8'
 
 services:
   _defaults:

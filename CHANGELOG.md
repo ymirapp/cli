@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.0.8](https://github.com/ymirapp/cli/compare/v2.0.7...v2.0.8) (2026-02-12)
+
+
+### Bug Fixes
+
+* Prevent `ProjectTeamGuardSubscriber` from making api calls when unauthenticated ([525a6c9](https://github.com/ymirapp/cli/commit/525a6c99b5b2863f6d8aaee662531ea64f6cf5ea))
+
 ## [2.0.7](https://github.com/ymirapp/cli/compare/v2.0.6...v2.0.7) (2026-02-05)
 
 
