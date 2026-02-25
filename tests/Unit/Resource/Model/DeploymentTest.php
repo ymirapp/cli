@@ -180,6 +180,55 @@ class DeploymentTest extends TestCase
         $this->assertSame('uuid', $deployment->getUuid());
     }
 
+    public function testHasFailedReturnsFalseWhenStatusAndStepsDidNotFail(): void
+    {
+        $deployment = new Deployment(1, 'uuid', 'running', 'created_at', [], 'type', [], [['id' => 1, 'status' => 'running']]);
+
+        $this->assertFalse($deployment->hasFailed());
+    }
+
+    public function testHasFailedWhenADeploymentStepFailed(): void
+    {
+        $deployment = new Deployment(1, 'uuid', 'running', 'created_at', [], 'type', [], [['id' => 1, 'status' => 'failed']]);
+
+        $this->assertTrue($deployment->hasFailed());
+    }
+
+    public function testHasFailedWhenStatusFailed(): void
+    {
+        $deployment = new Deployment(1, 'uuid', 'failed', 'created_at', [], 'type', []);
+
+        $this->assertTrue($deployment->hasFailed());
+    }
+
+    public function testHasTerminatedReturnsFalseWhenStatusNotTerminal(): void
+    {
+        $deployment = new Deployment(1, 'uuid', 'running', 'created_at', [], 'type', []);
+
+        $this->assertFalse($deployment->hasTerminated());
+    }
+
+    public function testHasTerminatedWhenCancelled(): void
+    {
+        $deployment = new Deployment(1, 'uuid', 'cancelled', 'created_at', [], 'type', []);
+
+        $this->assertTrue($deployment->hasTerminated());
+    }
+
+    public function testHasTerminatedWhenFailed(): void
+    {
+        $deployment = new Deployment(1, 'uuid', 'failed', 'created_at', [], 'type', []);
+
+        $this->assertTrue($deployment->hasTerminated());
+    }
+
+    public function testHasTerminatedWhenFinished(): void
+    {
+        $deployment = new Deployment(1, 'uuid', 'finished', 'created_at', [], 'type', []);
+
+        $this->assertTrue($deployment->hasTerminated());
+    }
+
     private function createDeploymentModel(): Deployment
     {
         return new Deployment(1, 'uuid', 'status', 'created_at', ['config'], 'type', ['domain'], ['steps'], new User(2, 'initiator'), 'failed', 'hash');

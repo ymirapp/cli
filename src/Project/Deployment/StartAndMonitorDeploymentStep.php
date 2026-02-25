@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace Ymir\Cli\Project\Deployment;
 
-use Illuminate\Support\Collection;
 use Ymir\Cli\ApiClient;
 use Ymir\Cli\Exception\LogicException;
 use Ymir\Cli\Exception\Project\DeploymentFailedException;
@@ -53,20 +52,22 @@ class StartAndMonitorDeploymentStep implements DeploymentStepInterface
 
         $apiClient->startDeployment($deployment);
 
-        $this->waitForDeploymentStatusChange($context, $deployment, 'pending');
+        $printedStepIds = [];
 
-        $this->getDeploymentSteps($apiClient, $deployment)->each(function (array $step) use ($apiClient, $deployment, $output): void {
-            $output->writeStep($this->getFormattedDeploymentStepName($step['task']));
-            $this->waitForDeploymentStepToFinish($apiClient, $deployment, $step['id']);
+        $this->waitForDeploymentToTerminate($apiClient, $deployment, function (Deployment $deployment) use ($apiClient, $output, &$printedStepIds): void {
+            if ($deployment->hasFailed()) {
+                throw new DeploymentFailedException($this->getFailedDeploymentMessage($apiClient, $deployment));
+            }
+
+            collect($deployment->getSteps())
+                ->filter(function (array $step) use ($printedStepIds): bool {
+                    return isset($step['id'], $step['task']) && !in_array($step['id'], $printedStepIds, true);
+                })
+                ->each(function (array $step) use ($output, &$printedStepIds): void {
+                    $output->writeStep($this->getFormattedDeploymentStepName($step['task']));
+                    $printedStepIds[] = $step['id'];
+                });
         });
-    }
-
-    /**
-     * Get the deployment steps for the given deployment from the Ymir API.
-     */
-    private function getDeploymentSteps(ApiClient $apiClient, Deployment $deployment): Collection
-    {
-        return collect($apiClient->getDeployment($deployment->getId())->getSteps())->keyBy('id');
     }
 
     /**
@@ -126,7 +127,8 @@ class StartAndMonitorDeploymentStep implements DeploymentStepInterface
             $output->comment(sprintf('Attempting to cancel the %s', $deployment->getType()));
 
             $context->getApiClient()->cancelDeployment($deployment);
-            $this->waitForDeploymentStatusChange($context, $deployment, 'cancelling');
+
+            $deployment = $this->waitForDeploymentToTerminate($context->getApiClient(), $deployment);
 
             $output->info(sprintf('%s cancelled', ucfirst($deployment->getType())));
 
@@ -135,47 +137,28 @@ class StartAndMonitorDeploymentStep implements DeploymentStepInterface
     }
 
     /**
-     * Blocking method that constantly queries the Ymir API to see if the deployment status
-     * changed from the given status.
+     * Wait for the deployment to reach a terminal status.
      */
-    private function waitForDeploymentStatusChange(ExecutionContext $context, Deployment $deployment, string $status, int $timeout = 60): void
+    private function waitForDeploymentToTerminate(ApiClient $apiClient, Deployment $deployment, ?callable $onPoll = null, int $sleep = 2, ?int $timeout = 600): Deployment
     {
-        $elapsed = 0;
+        $startTime = time();
 
-        do {
-            if ($elapsed > $timeout) {
-                throw new DeploymentFailedException('Timeout waiting for deployment status to change');
+        while (!$deployment->hasTerminated()) {
+            if (null !== $timeout && time() - $startTime > $timeout) {
+                throw new DeploymentFailedException('Timeout waiting for deployment to terminate');
             }
 
-            $deployment = $context->getApiClient()->getDeployment($deployment->getId());
+            $deployment = $apiClient->getDeployment($deployment->getId());
 
-            ++$elapsed;
-            sleep(1);
-        } while ($status === $deployment->getStatus());
-    }
-
-    /**
-     * Blocking method that constantly queries the Ymir API to see if the deployment step finished.
-     */
-    private function waitForDeploymentStepToFinish(ApiClient $apiClient, Deployment $deployment, int $deploymentStepId, int $timeout = 600): void
-    {
-        $elapsed = 0;
-
-        do {
-            if ($elapsed > $timeout) {
-                throw new DeploymentFailedException('Timeout waiting for deployment step to finish');
+            if (is_callable($onPoll)) {
+                $onPoll($deployment);
             }
 
-            $step = $this->getDeploymentSteps($apiClient, $deployment)->get($deploymentStepId);
-
-            if (empty($step['status'])) {
-                throw new DeploymentFailedException('Unable to get deployment status from Ymir API');
-            } elseif ('failed' === $step['status']) {
-                throw new DeploymentFailedException($this->getFailedDeploymentMessage($apiClient, $deployment));
+            if (!$deployment->hasTerminated()) {
+                sleep($sleep);
             }
+        }
 
-            ++$elapsed;
-            sleep(1);
-        } while ('finished' !== $step['status']);
+        return $deployment;
     }
 }

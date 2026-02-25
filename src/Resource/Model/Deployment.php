@@ -204,4 +204,20 @@ final class Deployment extends AbstractResourceModel
     {
         return $this->getName();
     }
+
+    /**
+     * Check if the deployment has failed.
+     */
+    public function hasFailed(): bool
+    {
+        return 'failed' === $this->status || collect($this->steps)->contains('status', 'failed');
+    }
+
+    /**
+     * Check if the deployment is in a terminated state.
+     */
+    public function hasTerminated(): bool
+    {
+        return in_array($this->status, ['finished', 'failed', 'cancelled']);
+    }
 }
