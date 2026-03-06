@@ -22,8 +22,6 @@ use Ymir\Cli\Dockerfile;
 use Ymir\Cli\Exception\InvalidInputException;
 use Ymir\Cli\ExecutionContextFactory;
 use Ymir\Cli\Project\Configuration\ImageDeploymentConfigurationChange;
-use Ymir\Cli\Resource\Model\Environment;
-use Ymir\Cli\Resource\Model\Project;
 
 class CreateDockerfileCommand extends AbstractCommand implements LocalProjectCommandInterface
 {
@@ -72,8 +70,6 @@ class CreateDockerfileCommand extends AbstractCommand implements LocalProjectCom
 
         if (!empty($environment) && !$this->getProjectConfiguration()->hasEnvironment($environment)) {
             throw new InvalidInputException(sprintf('Environment "%s" not found in ymir.yml file', $environment));
-        } elseif (empty($environment) && $this->output->confirm('Would you like to create a Dockerfile for a specific environment?', false)) {
-            $environment = $this->resolve(Environment::class, 'Which <comment>%s</comment> environment would you like to create a Dockerfile for?')->getName();
         }
 
         $message = 'Dockerfile created';

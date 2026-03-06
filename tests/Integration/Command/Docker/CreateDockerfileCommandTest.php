@@ -45,7 +45,7 @@ class CreateDockerfileCommandTest extends TestCase
 
         $this->bootApplication([new CreateDockerfileCommand($this->apiClient, $this->createExecutionContextFactory(), $this->dockerfile)]);
 
-        $tester = $this->executeCommand(CreateDockerfileCommand::NAME, [], ['no']); // No specific environment, no configure project
+        $tester = $this->executeCommand(CreateDockerfileCommand::NAME, [], ['no']); // no configure project
 
         $this->assertStringContainsString('Dockerfile created', $tester->getDisplay());
         $this->assertFileExists($this->tempDir.'/Dockerfile');
@@ -58,7 +58,7 @@ class CreateDockerfileCommandTest extends TestCase
 
         $this->bootApplication([new CreateDockerfileCommand($this->apiClient, $this->createExecutionContextFactory(), $this->dockerfile)]);
 
-        $tester = $this->executeCommand(CreateDockerfileCommand::NAME, ['--configure-project' => true], ['no']); // No specific environment
+        $tester = $this->executeCommand(CreateDockerfileCommand::NAME, ['--configure-project' => true], []);
 
         $this->assertStringContainsString('Dockerfile created', $tester->getDisplay());
         $this->assertFileExists($this->tempDir.'/Dockerfile');
@@ -94,7 +94,7 @@ class CreateDockerfileCommandTest extends TestCase
 
         $this->bootApplication([new CreateDockerfileCommand($this->apiClient, $this->createExecutionContextFactory(), $this->dockerfile)]);
 
-        $tester = $this->executeCommand(CreateDockerfileCommand::NAME, [], ['no', 'no', 'no']); // No specific environment, overwrite no, no configure project
+        $tester = $this->executeCommand(CreateDockerfileCommand::NAME, [], ['no', 'no']); // overwrite no, no configure project
 
         $this->assertStringNotContainsString('Dockerfile created', $tester->getDisplay());
         $this->assertStringEqualsFile($this->tempDir.'/Dockerfile', 'old content');
@@ -109,7 +109,7 @@ class CreateDockerfileCommandTest extends TestCase
 
         $this->bootApplication([new CreateDockerfileCommand($this->apiClient, $this->createExecutionContextFactory(), $this->dockerfile)]);
 
-        $tester = $this->executeCommand(CreateDockerfileCommand::NAME, [], ['no', 'yes', 'no']); // No specific environment, overwrite yes, no configure project
+        $tester = $this->executeCommand(CreateDockerfileCommand::NAME, [], ['yes', 'no']); // overwrite yes, no configure project
 
         $this->assertStringContainsString('Dockerfile created', $tester->getDisplay());
         $this->assertStringNotEqualsFile($this->tempDir.'/Dockerfile', 'old content');
