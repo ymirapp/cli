@@ -68,6 +68,10 @@ class DatabaseInitializationStepTest extends TestCase
         $this->apiClient->shouldReceive('getDatabaseServers')->once()->andReturn(new ResourceCollection([]));
         $this->output->shouldReceive('confirm')->with(\Mockery::pattern('/Your team doesn\'t have any configured database servers/'))->once()->andReturn(true);
         $this->context->shouldReceive('provision')->with(DatabaseServer::class, ['region' => 'us-east-1'])->once()->andReturn($databaseServer);
+        $this->output->shouldReceive('important')->once()->with(\Mockery::pattern('/Please write down the password shown below/'));
+        $this->output->shouldReceive('newLine')->once();
+        $this->output->shouldReceive('horizontalTable')->once();
+        $this->output->shouldReceive('formatBoolean')->once()->with(false)->andReturn('no');
         $this->output->shouldReceive('askSlug')->once()->andReturn('prefix_');
         $this->output->shouldReceive('warning')->once();
 

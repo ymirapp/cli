@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Ymir\Cli\Project\Initialization;
 
 use Illuminate\Support\Collection;
+use Symfony\Component\Console\Helper\TableSeparator;
 use Ymir\Cli\ExecutionContext;
 use Ymir\Cli\Project\Configuration\ConfigurationChangeInterface;
 use Ymir\Cli\Project\Configuration\DatabaseConfigurationChange;
@@ -85,6 +86,16 @@ class DatabaseInitializationStep implements InitializationStepInterface
             || ($databaseServers->isEmpty() && $output->confirm(sprintf('Your team doesn\'t have any configured database servers in the "<comment>%s</comment>" region. Would you like to create one for this team first?', $region)))
         ) {
             $databaseServer = $context->provision(DatabaseServer::class, ['region' => $region]);
+
+            if ($databaseServer instanceof DatabaseServer) {
+                $output->important('Please write down the password shown below as it won\'t be displayed again. Ymir will inject it automatically whenever you assign this database server to a project. If you lose the password, use the "<comment>database:server:rotate-password</comment>" command to generate a new one.');
+                $output->newLine();
+
+                $output->horizontalTable(
+                    ['Database Sever', new TableSeparator(), 'Username', 'Password', new TableSeparator(), 'Type', 'Public', 'Storage (in GB)'],
+                    [[$databaseServer->getName(), new TableSeparator(), $databaseServer->getUsername(), $databaseServer->getPassword(), new TableSeparator(), $databaseServer->getType(), $output->formatBoolean($databaseServer->isPublic()), $databaseServer->getStorage() ?? 'N/A']]
+                );
+            }
         }
 
         return $databaseServer instanceof DatabaseServer ? $databaseServer : null;
