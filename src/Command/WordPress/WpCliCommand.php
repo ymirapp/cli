@@ -26,6 +26,7 @@ use Ymir\Cli\Resource\Model\Environment;
 class WpCliCommand extends AbstractCommand implements LocalProjectCommandInterface
 {
     use HandlesWpCliInvocationTrait;
+
     /**
      * The name of the command.
      *
@@ -43,7 +44,7 @@ class WpCliCommand extends AbstractCommand implements LocalProjectCommandInterfa
             ->setDescription('Execute a WP-CLI command')
             ->addArgument('wp-command', InputArgument::IS_ARRAY, 'The WP-CLI command to execute')
             ->addOption('environment', null, InputOption::VALUE_REQUIRED, 'The environment name')
-            ->addOption('async', null, InputOption::VALUE_NONE, 'Execute WP-CLI command asynchronously')
+            ->addOption('async', null, InputOption::VALUE_NONE, 'Execute the command asynchronously')
             ->addHiddenOption('yolo', null, InputOption::VALUE_NONE);
     }
 
