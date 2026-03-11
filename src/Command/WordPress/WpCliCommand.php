@@ -83,7 +83,7 @@ class WpCliCommand extends AbstractCommand implements LocalProjectCommandInterfa
 
         $this->output->info(sprintf('Running "<comment>wp %s</comment>" %s "<comment>%s</comment>" environment', $command, $async ? 'asynchronously on' : 'on', $environment->getName()));
 
-        $result = $this->invokeWpCliCommand($this->getProject(), $command, $environment, $async ? 0 : null);
+        $result = $this->invokeWpCliCommand($this->getProject(), $this->appendCommandOptionIfMissing($command, '--no-color', ['--color', '--no-color']), $environment, $async ? 0 : null);
 
         if (!$async) {
             $this->output->newLine();

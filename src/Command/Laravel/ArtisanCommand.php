@@ -94,7 +94,7 @@ class ArtisanCommand extends AbstractCommand implements LocalProjectCommandInter
 
         $this->output->info(sprintf('Running "<comment>php artisan %s</comment>" %s "<comment>%s</comment>" environment', $command, $async ? 'asynchronously on' : 'on', $environment->getName()));
 
-        $result = $this->invokeArtisanCommand($this->getProject(), $command, $environment, $async ? 0 : null);
+        $result = $this->invokeArtisanCommand($this->getProject(), $this->appendCommandOptionIfMissing($command, '--no-ansi', ['--ansi', '--no-ansi']), $environment, $async ? 0 : null);
 
         if (!$async) {
             $this->output->newLine();

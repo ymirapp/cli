@@ -26,6 +26,31 @@ use Ymir\Cli\Tests\Integration\Command\TestCase;
 
 class WpCliCommandTest extends TestCase
 {
+    public function testPerformDoesNotAddNoColorOptionWhenColorOptionIsPresent(): void
+    {
+        $this->setupActiveTeam();
+        $project = $this->setupValidProject(1, 'project', ['production' => []], 'wordpress', WordPressProjectType::class);
+        $environment = EnvironmentFactory::create(['name' => 'production']);
+
+        $this->apiClient->shouldReceive('getEnvironments')->with(\Mockery::type(Project::class))->andReturn(new ResourceCollection([$environment]));
+        $this->apiClient->shouldReceive('createInvocation')->with(\Mockery::type(Project::class), $environment, ['php' => 'bin/wp plugin list --color'])->andReturn(collect(['id' => 123]));
+        $this->apiClient->shouldReceive('getInvocation')->with(123)->andReturn(collect([
+            'status' => 'completed',
+            'result' => [
+                'exitCode' => 0,
+                'output' => 'plugin list output',
+            ],
+        ]));
+
+        $this->bootApplication([new WpCliCommand($this->apiClient, $this->createExecutionContextFactory([
+            Environment::class => function () { return new EnvironmentDefinition(); },
+        ]))]);
+
+        $tester = $this->executeCommand(WpCliCommand::NAME, ['wp-command' => ['plugin', 'list', '--color'], '--environment' => 'production']);
+
+        $this->assertStringContainsString('Running "wp plugin list --color" on "production" environment', $tester->getDisplay());
+    }
+
     public function testPerformExecutesWpCliCommand(): void
     {
         $this->setupActiveTeam();
@@ -33,7 +58,7 @@ class WpCliCommandTest extends TestCase
         $environment = EnvironmentFactory::create(['name' => 'production']);
 
         $this->apiClient->shouldReceive('getEnvironments')->with(\Mockery::type(Project::class))->andReturn(new ResourceCollection([$environment]));
-        $this->apiClient->shouldReceive('createInvocation')->with(\Mockery::type(Project::class), $environment, ['php' => 'bin/wp plugin list'])->andReturn(collect(['id' => 123]));
+        $this->apiClient->shouldReceive('createInvocation')->with(\Mockery::type(Project::class), $environment, ['php' => 'bin/wp plugin list --no-color'])->andReturn(collect(['id' => 123]));
         $this->apiClient->shouldReceive('getInvocation')->with(123)->andReturn(collect([
             'status' => 'completed',
             'result' => [
@@ -59,7 +84,7 @@ class WpCliCommandTest extends TestCase
         $environment = EnvironmentFactory::create(['name' => 'production']);
 
         $this->apiClient->shouldReceive('getEnvironments')->with(\Mockery::type(Project::class))->andReturn(new ResourceCollection([$environment]));
-        $this->apiClient->shouldReceive('createInvocation')->with(\Mockery::type(Project::class), $environment, ['php' => 'bin/wp cache flush'])->andReturn(collect(['id' => 123]));
+        $this->apiClient->shouldReceive('createInvocation')->with(\Mockery::type(Project::class), $environment, ['php' => 'bin/wp cache flush --no-color'])->andReturn(collect(['id' => 123]));
 
         $this->bootApplication([new WpCliCommand($this->apiClient, $this->createExecutionContextFactory([
             Environment::class => function () { return new EnvironmentDefinition(); },
@@ -77,7 +102,7 @@ class WpCliCommandTest extends TestCase
         $environment = EnvironmentFactory::create(['name' => 'production']);
 
         $this->apiClient->shouldReceive('getEnvironments')->with(\Mockery::type(Project::class))->andReturn(new ResourceCollection([$environment]));
-        $this->apiClient->shouldReceive('createInvocation')->with(\Mockery::type(Project::class), $environment, ['php' => 'bin/wp post list'])->andReturn(collect(['id' => 123]));
+        $this->apiClient->shouldReceive('createInvocation')->with(\Mockery::type(Project::class), $environment, ['php' => 'bin/wp post list --no-color'])->andReturn(collect(['id' => 123]));
         $this->apiClient->shouldReceive('getInvocation')->with(123)->andReturn(collect([
             'status' => 'completed',
             'result' => [
@@ -103,7 +128,7 @@ class WpCliCommandTest extends TestCase
         $environment = EnvironmentFactory::create(['name' => 'production']);
 
         $this->apiClient->shouldReceive('getEnvironments')->with(\Mockery::type(Project::class))->andReturn(new ResourceCollection([$environment]));
-        $this->apiClient->shouldReceive('createInvocation')->with(\Mockery::type(Project::class), $environment, ['php' => 'bin/wp plugin list'])->andReturn(collect(['id' => 123]));
+        $this->apiClient->shouldReceive('createInvocation')->with(\Mockery::type(Project::class), $environment, ['php' => 'bin/wp plugin list --no-color'])->andReturn(collect(['id' => 123]));
         $this->apiClient->shouldReceive('getInvocation')->with(123)->andReturn(collect([
             'status' => 'completed',
             'result' => [

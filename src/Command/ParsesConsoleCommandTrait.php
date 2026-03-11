@@ -16,6 +16,20 @@ namespace Ymir\Cli\Command;
 trait ParsesConsoleCommandTrait
 {
     /**
+     * Appends a command option if no matching option is present.
+     */
+    protected function appendCommandOptionIfMissing(string $command, string $option, array $matchingOptions): string
+    {
+        $hasMatchingOption = collect($this->parseCommand($command))->contains(function (string $commandPart) use ($matchingOptions): bool {
+            return collect($matchingOptions)->contains(function (string $matchingOption) use ($commandPart): bool {
+                return $matchingOption === $commandPart;
+            });
+        });
+
+        return $hasMatchingOption ? $command : sprintf('%s %s', $command, $option);
+    }
+
+    /**
      * Parses a command string into command parts.
      */
     protected function parseCommand(string $command): array

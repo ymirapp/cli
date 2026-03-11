@@ -26,6 +26,31 @@ use Ymir\Cli\Tests\Integration\Command\TestCase;
 
 class ArtisanCommandTest extends TestCase
 {
+    public function testPerformDoesNotAddNoAnsiOptionWhenAnsiOptionIsPresent(): void
+    {
+        $this->setupActiveTeam();
+        $project = $this->setupValidProject(1, 'project', ['production' => []], 'laravel', LaravelProjectType::class);
+        $environment = EnvironmentFactory::create(['name' => 'production']);
+
+        $this->apiClient->shouldReceive('getEnvironments')->with(\Mockery::type(Project::class))->andReturn(new ResourceCollection([$environment]));
+        $this->apiClient->shouldReceive('createInvocation')->with(\Mockery::type(Project::class), $environment, ['php' => 'artisan migrate --ansi'])->andReturn(collect(['id' => 123]));
+        $this->apiClient->shouldReceive('getInvocation')->with(123)->andReturn(collect([
+            'status' => 'completed',
+            'result' => [
+                'exitCode' => 0,
+                'output' => 'migrate output',
+            ],
+        ]));
+
+        $this->bootApplication([new ArtisanCommand($this->apiClient, $this->createExecutionContextFactory([
+            Environment::class => function () { return new EnvironmentDefinition(); },
+        ]))]);
+
+        $tester = $this->executeCommand(ArtisanCommand::NAME, ['artisan-command' => ['migrate', '--ansi'], '--environment' => 'production']);
+
+        $this->assertStringContainsString('Running "php artisan migrate --ansi" on "production" environment', $tester->getDisplay());
+    }
+
     public function testPerformExecutesArtisanCommand(): void
     {
         $this->setupActiveTeam();
@@ -33,7 +58,7 @@ class ArtisanCommandTest extends TestCase
         $environment = EnvironmentFactory::create(['name' => 'production']);
 
         $this->apiClient->shouldReceive('getEnvironments')->with(\Mockery::type(Project::class))->andReturn(new ResourceCollection([$environment]));
-        $this->apiClient->shouldReceive('createInvocation')->with(\Mockery::type(Project::class), $environment, ['php' => 'artisan migrate:status'])->andReturn(collect(['id' => 123]));
+        $this->apiClient->shouldReceive('createInvocation')->with(\Mockery::type(Project::class), $environment, ['php' => 'artisan migrate:status --no-ansi'])->andReturn(collect(['id' => 123]));
         $this->apiClient->shouldReceive('getInvocation')->with(123)->andReturn(collect([
             'status' => 'completed',
             'result' => [
@@ -59,7 +84,7 @@ class ArtisanCommandTest extends TestCase
         $environment = EnvironmentFactory::create(['name' => 'production']);
 
         $this->apiClient->shouldReceive('getEnvironments')->with(\Mockery::type(Project::class))->andReturn(new ResourceCollection([$environment]));
-        $this->apiClient->shouldReceive('createInvocation')->with(\Mockery::type(Project::class), $environment, ['php' => 'artisan cache:clear'])->andReturn(collect(['id' => 123]));
+        $this->apiClient->shouldReceive('createInvocation')->with(\Mockery::type(Project::class), $environment, ['php' => 'artisan cache:clear --no-ansi'])->andReturn(collect(['id' => 123]));
 
         $this->bootApplication([new ArtisanCommand($this->apiClient, $this->createExecutionContextFactory([
             Environment::class => function () { return new EnvironmentDefinition(); },
@@ -77,7 +102,7 @@ class ArtisanCommandTest extends TestCase
         $environment = EnvironmentFactory::create(['name' => 'production']);
 
         $this->apiClient->shouldReceive('getEnvironments')->with(\Mockery::type(Project::class))->andReturn(new ResourceCollection([$environment]));
-        $this->apiClient->shouldReceive('createInvocation')->with(\Mockery::type(Project::class), $environment, ['php' => 'artisan route:list'])->andReturn(collect(['id' => 123]));
+        $this->apiClient->shouldReceive('createInvocation')->with(\Mockery::type(Project::class), $environment, ['php' => 'artisan route:list --no-ansi'])->andReturn(collect(['id' => 123]));
         $this->apiClient->shouldReceive('getInvocation')->with(123)->andReturn(collect([
             'status' => 'completed',
             'result' => [
@@ -103,7 +128,7 @@ class ArtisanCommandTest extends TestCase
         $environment = EnvironmentFactory::create(['name' => 'production']);
 
         $this->apiClient->shouldReceive('getEnvironments')->with(\Mockery::type(Project::class))->andReturn(new ResourceCollection([$environment]));
-        $this->apiClient->shouldReceive('createInvocation')->with(\Mockery::type(Project::class), $environment, ['php' => 'artisan migrate'])->andReturn(collect(['id' => 123]));
+        $this->apiClient->shouldReceive('createInvocation')->with(\Mockery::type(Project::class), $environment, ['php' => 'artisan migrate --no-ansi'])->andReturn(collect(['id' => 123]));
         $this->apiClient->shouldReceive('getInvocation')->with(123)->andReturn(collect([
             'status' => 'completed',
             'result' => [
