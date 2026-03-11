@@ -18,6 +18,7 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
 use Ymir\Cli\Command\AbstractCommand;
 use Ymir\Cli\Command\LocalProjectCommandInterface;
+use Ymir\Cli\Command\ParsesConsoleCommandTrait;
 use Ymir\Cli\Exception\InvalidInputException;
 use Ymir\Cli\Exception\Project\UnsupportedProjectException;
 use Ymir\Cli\Project\Type\AbstractWordPressProjectType;
@@ -26,6 +27,7 @@ use Ymir\Cli\Resource\Model\Environment;
 class WpCliCommand extends AbstractCommand implements LocalProjectCommandInterface
 {
     use HandlesWpCliInvocationTrait;
+    use ParsesConsoleCommandTrait;
 
     /**
      * The name of the command.
@@ -67,14 +69,16 @@ class WpCliCommand extends AbstractCommand implements LocalProjectCommandInterfa
             $command = $this->output->ask('What WP-CLI command would you like to run?');
         }
 
-        if (str_starts_with($command, 'wp ')) {
-            $command = substr($command, 3);
-        }
+        $command = $this->stripCommandPrefix($command, 'wp');
 
-        if (in_array($command, ['shell'])) {
+        $commandParts = $this->parseCommand($command);
+        $commandName = $commandParts[0] ?? '';
+        $subCommandName = $commandParts[1] ?? '';
+
+        if ('shell' === $commandName) {
             throw new InvalidInputException(sprintf('The "wp %s" command isn\'t available remotely', $command));
-        } elseif (in_array($command, ['db import', 'db export'])) {
-            throw new InvalidInputException(sprintf('Please use the "ymir database:%s" command instead of the "wp %s" command', substr($command, 3), $command));
+        } elseif ('db' === $commandName && in_array($subCommandName, ['import', 'export'], true)) {
+            throw new InvalidInputException(sprintf('Please use the "ymir database:%s" command instead of the "wp %s" command', $subCommandName, $command));
         }
 
         $this->output->info(sprintf('Running "<comment>wp %s</comment>" %s "<comment>%s</comment>" environment', $command, $async ? 'asynchronously on' : 'on', $environment->getName()));

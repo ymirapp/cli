@@ -139,6 +139,24 @@ class WpCliCommandTest extends TestCase
         $this->executeCommand(WpCliCommand::NAME, ['wp-command' => ['db', 'import'], '--environment' => 'production']);
     }
 
+    public function testPerformThrowsExceptionIfCommandIsDbImportWithArguments(): void
+    {
+        $this->expectException(InvalidInputException::class);
+        $this->expectExceptionMessage('Please use the "ymir database:import" command instead of the "wp db import ./dump.sql" command');
+
+        $this->setupActiveTeam();
+        $project = $this->setupValidProject(1, 'project', [], 'wordpress', WordPressProjectType::class);
+        $environment = EnvironmentFactory::create(['name' => 'production']);
+
+        $this->apiClient->shouldReceive('getEnvironments')->with(\Mockery::type(Project::class))->andReturn(new ResourceCollection([$environment]));
+
+        $this->bootApplication([new WpCliCommand($this->apiClient, $this->createExecutionContextFactory([
+            Environment::class => function () { return new EnvironmentDefinition(); },
+        ]))]);
+
+        $this->executeCommand(WpCliCommand::NAME, ['wp-command' => ['db', 'import', './dump.sql'], '--environment' => 'production']);
+    }
+
     public function testPerformThrowsExceptionIfCommandIsShell(): void
     {
         $this->expectException(InvalidInputException::class);
@@ -155,6 +173,24 @@ class WpCliCommandTest extends TestCase
         ]))]);
 
         $this->executeCommand(WpCliCommand::NAME, ['wp-command' => ['shell'], '--environment' => 'production']);
+    }
+
+    public function testPerformThrowsExceptionIfCommandIsShellWithArguments(): void
+    {
+        $this->expectException(InvalidInputException::class);
+        $this->expectExceptionMessage('The "wp shell --prompt=ymir" command isn\'t available remotely');
+
+        $this->setupActiveTeam();
+        $project = $this->setupValidProject(1, 'project', [], 'wordpress', WordPressProjectType::class);
+        $environment = EnvironmentFactory::create(['name' => 'production']);
+
+        $this->apiClient->shouldReceive('getEnvironments')->with(\Mockery::type(Project::class))->andReturn(new ResourceCollection([$environment]));
+
+        $this->bootApplication([new WpCliCommand($this->apiClient, $this->createExecutionContextFactory([
+            Environment::class => function () { return new EnvironmentDefinition(); },
+        ]))]);
+
+        $this->executeCommand(WpCliCommand::NAME, ['wp-command' => ['shell', '--prompt=ymir'], '--environment' => 'production']);
     }
 
     public function testPerformThrowsExceptionIfProjectIsNotWordPress(): void
