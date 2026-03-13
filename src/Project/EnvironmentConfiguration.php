@@ -129,6 +129,14 @@ class EnvironmentConfiguration
     }
 
     /**
+     * Get the PHP version for the environment.
+     */
+    public function getPhpVersion(): string
+    {
+        return Arr::get($this->configuration, 'php', '');
+    }
+
+    /**
      * Check if the environment has build configuration.
      */
     public function hasBuildConfiguration(): bool

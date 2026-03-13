@@ -108,6 +108,16 @@ class EnvironmentConfigurationTest extends TestCase
         $this->assertSame('prod', (new EnvironmentConfiguration('prod', []))->getName());
     }
 
+    public function testGetPhpVersionReturnsEmptyStringIfMissing(): void
+    {
+        $this->assertSame('', (new EnvironmentConfiguration('prod', []))->getPhpVersion());
+    }
+
+    public function testGetPhpVersionReturnsPhpVersionIfPresent(): void
+    {
+        $this->assertSame('8.3', (new EnvironmentConfiguration('prod', ['php' => '8.3']))->getPhpVersion());
+    }
+
     public function testIsImageDeploymentTypeReturnsFalseIfDifferent(): void
     {
         $this->assertFalse((new EnvironmentConfiguration('prod', ['deployment' => 'function']))->isImageDeploymentType());

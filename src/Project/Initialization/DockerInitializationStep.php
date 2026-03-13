@@ -56,7 +56,7 @@ class DockerInitializationStep implements InitializationStepInterface
         }
 
         if (!$this->dockerfile->exists() || $output->confirm('A <comment>Dockerfile</comment> already exists in the project directory. Do you want to overwrite it?', false)) {
-            $this->dockerfile->create();
+            $this->dockerfile->create('arm64', 'php-74');
         }
 
         if (!$this->dockerExecutable->isInstalled()) {

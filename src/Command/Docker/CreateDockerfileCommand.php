@@ -33,6 +33,16 @@ class CreateDockerfileCommand extends AbstractCommand implements LocalProjectCom
     public const NAME = 'docker:create';
 
     /**
+     * Default architecture used when none is configured.
+     */
+    private const DEFAULT_ARCHITECTURE = 'arm64';
+
+    /**
+     * Default PHP runtime tag used when none is configured.
+     */
+    private const DEFAULT_PHP_TAG = 'php-74';
+
+    /**
      * The project Dockerfile.
      *
      * @var Dockerfile
@@ -58,6 +68,8 @@ class CreateDockerfileCommand extends AbstractCommand implements LocalProjectCom
             ->setName(self::NAME)
             ->setDescription('Create a new Dockerfile')
             ->addArgument('environment', InputArgument::OPTIONAL, 'The name of the environment to create the Dockerfile for')
+            ->addOption('architecture', null, InputOption::VALUE_REQUIRED, 'Docker architecture (arm64 or x86_64)')
+            ->addOption('php', null, InputOption::VALUE_REQUIRED, 'PHP version tag or version (for example: php-83 or 8.3)')
             ->addOption('configure-project', null, InputOption::VALUE_NONE, 'Configure project\'s ymir.yml file');
     }
 
@@ -72,16 +84,13 @@ class CreateDockerfileCommand extends AbstractCommand implements LocalProjectCom
             throw new InvalidInputException(sprintf('Environment "%s" not found in ymir.yml file', $environment));
         }
 
-        $message = 'Dockerfile created';
-
-        if (!empty($environment)) {
-            $message .= sprintf(' for "<comment>%s</comment>" environment', $environment);
-        }
-
         if (!$this->dockerfile->exists($environment) || $this->output->confirm('Dockerfile already exists. Do you want to overwrite it?', false)) {
-            $this->dockerfile->create($environment);
+            $architecture = $this->resolveArchitecture($environment);
+            $phpVersion = $this->resolvePhpVersion($environment);
 
-            $this->output->info($message);
+            $this->dockerfile->create($architecture, $phpVersion, $environment);
+
+            $this->output->info($this->generateDockerfileCreatedMessage($architecture, $environment, $phpVersion));
         }
 
         if (!$this->input->getBooleanOption('configure-project') && !$this->output->confirm('Would you also like to configure your project for container image deployment?')) {
@@ -97,5 +106,47 @@ class CreateDockerfileCommand extends AbstractCommand implements LocalProjectCom
         }
 
         $this->getProjectConfiguration()->applyChangesToEnvironment($environment, $configurationChange);
+    }
+
+    /**
+     * Generate the success message after creating the Dockerfile.
+     */
+    private function generateDockerfileCreatedMessage(string $architecture, string $environment, string $phpVersion): string
+    {
+        return sprintf('Created <comment>%s</comment> for PHP <comment>%s</comment> and <comment>%s</comment> architecture', Dockerfile::getFileName($environment), $phpVersion, $architecture);
+    }
+
+    /**
+     * Resolve the architecture used to generate the Dockerfile.
+     */
+    private function resolveArchitecture(string $environment): string
+    {
+        $architecture = (string) $this->input->getStringOption('architecture');
+
+        if (empty($architecture) && !empty($environment)) {
+            $architecture = $this->getProjectConfiguration()->getEnvironmentConfiguration($environment)->getArchitecture();
+        } elseif (empty($architecture)) {
+            $architecture = self::DEFAULT_ARCHITECTURE;
+        }
+
+        if (!in_array($architecture, ['arm64', 'x86_64'], true)) {
+            throw new InvalidInputException(sprintf('Invalid architecture "%s". Supported values are: arm64, x86_64', $architecture));
+        }
+
+        return $architecture;
+    }
+
+    /**
+     * Resolve the PHP version used to generate the Dockerfile.
+     */
+    private function resolvePhpVersion(string $environment): string
+    {
+        $phpVersion = (string) $this->input->getStringOption('php');
+
+        if (empty($phpVersion) && !empty($environment)) {
+            $phpVersion = $this->getProjectConfiguration()->getEnvironmentConfiguration($environment)->getPhpVersion();
+        }
+
+        return empty($phpVersion) ? self::DEFAULT_PHP_TAG : $phpVersion;
     }
 }

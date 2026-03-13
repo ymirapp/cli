@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Ymir\Cli;
 
 use Symfony\Component\Filesystem\Filesystem;
+use Ymir\Cli\Exception\InvalidArgumentException;
 use Ymir\Cli\Exception\SystemException;
 
 class Dockerfile
@@ -54,11 +55,21 @@ class Dockerfile
     }
 
     /**
+     * Get the Dockerfile name for the given environment.
+     */
+    public static function getFileName(string $environment = ''): string
+    {
+        return empty($environment) ? 'Dockerfile' : sprintf('%s.Dockerfile', $environment);
+    }
+
+    /**
      * Create a new Dockerfile.
      */
-    public function create(string $environment = ''): void
+    public function create(string $architecture, string $phpVersion, string $environment = ''): void
     {
-        $this->filesystem->copy($this->dockerfileStubPath, $this->generateDockerfilePath($environment), true);
+        $this->filesystem->dumpFile(
+            $this->generateDockerfilePath($environment), $this->generateDockerfileContent($this->resolvePlatform($architecture), $this->resolveRuntimeImage($architecture), $this->normalizePhpTag($phpVersion))
+        );
     }
 
     /**
@@ -99,17 +110,29 @@ class Dockerfile
     }
 
     /**
+     * Generate Dockerfile content from the Dockerfile stub.
+     */
+    private function generateDockerfileContent(string $platform, string $runtimeImage, string $phpTag): string
+    {
+        $content = file_get_contents($this->dockerfileStubPath);
+
+        if (false === $content) {
+            throw new SystemException('Unable to read "Dockerfile" stub file');
+        }
+
+        return strtr($content, [
+            '__YMIR_DOCKER_PLATFORM__' => $platform,
+            '__YMIR_DOCKER_RUNTIME_IMAGE__' => $runtimeImage,
+            '__YMIR_DOCKER_PHP_TAG__' => $phpTag,
+        ]);
+    }
+
+    /**
      * Generate the path to the Dockerfile.
      */
     private function generateDockerfilePath(string $environment = ''): string
     {
-        $dockerfileName = 'Dockerfile';
-
-        if (!empty($environment)) {
-            $dockerfileName = $environment.'.'.$dockerfileName;
-        }
-
-        return $this->projectDirectory.'/'.$dockerfileName;
+        return sprintf('%s/%s', $this->projectDirectory, self::getFileName($environment));
     }
 
     /**
@@ -124,5 +147,49 @@ class Dockerfile
         }
 
         return $dockerfilePath;
+    }
+
+    /**
+     * Normalize a PHP version into a Docker tag.
+     */
+    private function normalizePhpTag(string $phpVersion): string
+    {
+        if (empty($phpVersion)) {
+            throw new InvalidArgumentException('Unable to generate Dockerfile because no PHP version was provided');
+        }
+
+        $version = '';
+
+        if (1 === preg_match('/^php-(\d+)\.(\d+)$/', $phpVersion, $matches)) {
+            $version = $matches[1].$matches[2];
+        } elseif (1 === preg_match('/^php-(\d{2})$/', $phpVersion, $matches)) {
+            $version = $matches[1];
+        } elseif (1 === preg_match('/^(\d+)\.(\d+)$/', $phpVersion, $matches)) {
+            $version = $matches[1].$matches[2];
+        } elseif (1 === preg_match('/^(\d{2})$/', $phpVersion, $matches)) {
+            $version = $matches[1];
+        }
+
+        if (empty($version)) {
+            throw new InvalidArgumentException(sprintf('Unable to generate Dockerfile because "%s" is not a valid PHP version', $phpVersion));
+        }
+
+        return sprintf('php-%s', $version);
+    }
+
+    /**
+     * Resolve the Docker platform from architecture.
+     */
+    private function resolvePlatform(string $architecture): string
+    {
+        return 'arm64' === $architecture ? 'linux/arm64' : 'linux/amd64';
+    }
+
+    /**
+     * Resolve the Docker runtime image from architecture.
+     */
+    private function resolveRuntimeImage(string $architecture): string
+    {
+        return 'arm64' === $architecture ? 'ymirapp/arm-php-runtime' : 'ymirapp/php-runtime';
     }
 }

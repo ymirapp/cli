@@ -62,7 +62,7 @@ class DockerInitializationStepTest extends TestCase
         $this->output->shouldReceive('confirm')->with('Do you want to deploy this project using a container image?')->once()->andReturn(true);
         $this->dockerfile->shouldReceive('exists')->once()->andReturn(true);
         $this->output->shouldReceive('confirm')->with('A <comment>Dockerfile</comment> already exists in the project directory. Do you want to overwrite it?', false)->once()->andReturn(true);
-        $this->dockerfile->shouldReceive('create')->once();
+        $this->dockerfile->shouldReceive('create')->once()->with('arm64', 'php-74');
         $this->dockerExecutable->shouldReceive('isInstalled')->once()->andReturn(true);
 
         $step = new DockerInitializationStep($this->dockerExecutable, $this->dockerfile);
@@ -76,7 +76,7 @@ class DockerInitializationStepTest extends TestCase
     {
         $this->output->shouldReceive('confirm')->with('Do you want to deploy this project using a container image?')->once()->andReturn(true);
         $this->dockerfile->shouldReceive('exists')->once()->andReturn(false);
-        $this->dockerfile->shouldReceive('create')->once();
+        $this->dockerfile->shouldReceive('create')->once()->with('arm64', 'php-74');
         $this->dockerExecutable->shouldReceive('isInstalled')->once()->andReturn(true);
 
         $step = new DockerInitializationStep($this->dockerExecutable, $this->dockerfile);
@@ -114,7 +114,7 @@ class DockerInitializationStepTest extends TestCase
     {
         $this->output->shouldReceive('confirm')->with('Do you want to deploy this project using a container image?')->once()->andReturn(true);
         $this->dockerfile->shouldReceive('exists')->once()->andReturn(false);
-        $this->dockerfile->shouldReceive('create')->once();
+        $this->dockerfile->shouldReceive('create')->once()->with('arm64', 'php-74');
         $this->dockerExecutable->shouldReceive('isInstalled')->once()->andReturn(false);
         $this->output->shouldReceive('warning')->with("<comment>Docker</comment> wasn't detected and is required to deploy the project locally")->once();
 

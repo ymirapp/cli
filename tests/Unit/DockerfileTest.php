@@ -30,7 +30,17 @@ class DockerfileTest extends TestCase
 
         $this->filesystem = \Mockery::mock(Filesystem::class);
         $this->projectDir = sys_get_temp_dir().'/ymir-project';
-        $this->stubDir = sys_get_temp_dir().'/ymir-stubs';
+        $this->stubDir = sys_get_temp_dir().'/ymir-stubs-'.uniqid();
+
+        mkdir($this->stubDir);
+        file_put_contents($this->stubDir.'/Dockerfile', "FROM --platform=__YMIR_DOCKER_PLATFORM__ __YMIR_DOCKER_RUNTIME_IMAGE__:__YMIR_DOCKER_PHP_TAG__\n\nENTRYPOINT []\n\nCMD [\"/bin/sh\", \"-c\", \"/opt/bootstrap\"]\n\nCOPY . /var/task\n");
+    }
+
+    protected function tearDown(): void
+    {
+        (new Filesystem())->remove($this->stubDir);
+
+        parent::tearDown();
     }
 
     public function testConstructorThrowsExceptionIfStubNotFound(): void
@@ -43,22 +53,40 @@ class DockerfileTest extends TestCase
         new Dockerfile($this->filesystem, $this->projectDir, $this->stubDir);
     }
 
-    public function testCreateCopiesStubToFile(): void
+    public function testCreateGeneratesDockerfileContent(): void
     {
         $this->filesystem->shouldReceive('exists')->once()->with($this->stubDir.'/Dockerfile')->andReturn(true);
-        $this->filesystem->shouldReceive('copy')->once()->with($this->stubDir.'/Dockerfile', $this->projectDir.'/Dockerfile', true);
+        $this->filesystem->shouldReceive('dumpFile')->once()->with(
+            $this->projectDir.'/Dockerfile',
+            "FROM --platform=linux/arm64 ymirapp/arm-php-runtime:php-74\n\nENTRYPOINT []\n\nCMD [\"/bin/sh\", \"-c\", \"/opt/bootstrap\"]\n\nCOPY . /var/task\n"
+        );
 
         $dockerfile = new Dockerfile($this->filesystem, $this->projectDir, $this->stubDir);
-        $dockerfile->create();
+        $dockerfile->create('arm64', 'php-74');
     }
 
-    public function testCreateWithEnvironmentCopiesStubToFile(): void
+    public function testCreateUsesX86ImageAndPhpVersion(): void
     {
         $this->filesystem->shouldReceive('exists')->once()->with($this->stubDir.'/Dockerfile')->andReturn(true);
-        $this->filesystem->shouldReceive('copy')->once()->with($this->stubDir.'/Dockerfile', $this->projectDir.'/staging.Dockerfile', true);
+        $this->filesystem->shouldReceive('dumpFile')->once()->with(
+            $this->projectDir.'/Dockerfile',
+            "FROM --platform=linux/amd64 ymirapp/php-runtime:php-83\n\nENTRYPOINT []\n\nCMD [\"/bin/sh\", \"-c\", \"/opt/bootstrap\"]\n\nCOPY . /var/task\n"
+        );
 
         $dockerfile = new Dockerfile($this->filesystem, $this->projectDir, $this->stubDir);
-        $dockerfile->create('staging');
+        $dockerfile->create('x86_64', '8.3');
+    }
+
+    public function testCreateWithEnvironmentGeneratesDockerfileContent(): void
+    {
+        $this->filesystem->shouldReceive('exists')->once()->with($this->stubDir.'/Dockerfile')->andReturn(true);
+        $this->filesystem->shouldReceive('dumpFile')->once()->with(
+            $this->projectDir.'/staging.Dockerfile',
+            "FROM --platform=linux/arm64 ymirapp/arm-php-runtime:php-74\n\nENTRYPOINT []\n\nCMD [\"/bin/sh\", \"-c\", \"/opt/bootstrap\"]\n\nCOPY . /var/task\n"
+        );
+
+        $dockerfile = new Dockerfile($this->filesystem, $this->projectDir, $this->stubDir);
+        $dockerfile->create('arm64', 'php-74', 'staging');
     }
 
     public function testExistsReturnsTrueIfDefaultExists(): void
@@ -175,9 +203,10 @@ class DockerfileTest extends TestCase
         $this->expectException(SystemException::class);
         $this->expectExceptionMessage('Unable to find a "Dockerfile" in the project directory');
 
-        $this->filesystem->shouldReceive('exists')->with($this->stubDir.'/Dockerfile')->andReturn(true);
         $this->filesystem->shouldReceive('exists')->with($this->projectDir.'/Dockerfile')->andReturn(false);
         $this->filesystem->shouldReceive('exists')->with($this->projectDir.'/staging.Dockerfile')->andReturn(false);
+
+        $this->filesystem->shouldReceive('exists')->with($this->stubDir.'/Dockerfile')->andReturn(true);
 
         $dockerfile = new Dockerfile($this->filesystem, $this->projectDir, $this->stubDir);
         $dockerfile->validate('staging');

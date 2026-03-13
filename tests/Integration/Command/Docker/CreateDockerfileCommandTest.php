@@ -41,14 +41,15 @@ class CreateDockerfileCommandTest extends TestCase
     public function testCreateDockerfile(): void
     {
         $this->setupActiveTeam();
-        $this->setupValidProject();
+        $this->setupValidProject(1, 'project', ['production' => ['architecture' => 'x86_64', 'php' => '8.3']]);
 
         $this->bootApplication([new CreateDockerfileCommand($this->apiClient, $this->createExecutionContextFactory(), $this->dockerfile)]);
 
         $tester = $this->executeCommand(CreateDockerfileCommand::NAME, [], ['no']); // no configure project
 
-        $this->assertStringContainsString('Dockerfile created', $tester->getDisplay());
+        $this->assertStringContainsString('Created Dockerfile for PHP 8.2 and arm64 architecture', $tester->getDisplay());
         $this->assertFileExists($this->tempDir.'/Dockerfile');
+        $this->assertStringContainsString('FROM --platform=linux/arm64 ymirapp/arm-php-runtime:php-74', (string) file_get_contents($this->tempDir.'/Dockerfile'));
     }
 
     public function testCreateDockerfileAndConfigureProjectWithOption(): void
@@ -60,7 +61,7 @@ class CreateDockerfileCommandTest extends TestCase
 
         $tester = $this->executeCommand(CreateDockerfileCommand::NAME, ['--configure-project' => true], []);
 
-        $this->assertStringContainsString('Dockerfile created', $tester->getDisplay());
+        $this->assertStringContainsString('Created Dockerfile for PHP 8.2 and arm64 architecture', $tester->getDisplay());
         $this->assertFileExists($this->tempDir.'/Dockerfile');
 
         $config = $this->projectConfiguration->getEnvironmentConfiguration('staging');
@@ -70,7 +71,7 @@ class CreateDockerfileCommandTest extends TestCase
     public function testCreateDockerfileForEnvironment(): void
     {
         $this->setupActiveTeam();
-        $project = $this->setupValidProject(1, 'project', ['staging' => []]);
+        $project = $this->setupValidProject(1, 'project', ['staging' => ['architecture' => 'x86_64', 'php' => '8.1']]);
         $environment = EnvironmentFactory::create(['name' => 'staging', 'project' => $project]);
 
         $this->apiClient->shouldReceive('getEnvironments')->with($project)->andReturn(new ResourceCollection([$environment]));
@@ -81,8 +82,37 @@ class CreateDockerfileCommandTest extends TestCase
 
         $tester = $this->executeCommand(CreateDockerfileCommand::NAME, ['environment' => 'staging'], ['no']); // no configure project
 
-        $this->assertStringContainsString('Dockerfile created for "staging" environment', $tester->getDisplay());
+        $this->assertStringContainsString('Created staging.Dockerfile for PHP 8.1 and x86_64 architecture', $tester->getDisplay());
         $this->assertFileExists($this->tempDir.'/staging.Dockerfile');
+        $this->assertStringContainsString('FROM --platform=linux/amd64 ymirapp/php-runtime:php-81', (string) file_get_contents($this->tempDir.'/staging.Dockerfile'));
+    }
+
+    public function testCreateDockerfileWithArchitectureOption(): void
+    {
+        $this->setupActiveTeam();
+        $this->setupValidProject();
+
+        $this->bootApplication([new CreateDockerfileCommand($this->apiClient, $this->createExecutionContextFactory(), $this->dockerfile)]);
+
+        $tester = $this->executeCommand(CreateDockerfileCommand::NAME, ['--architecture' => 'x86_64'], ['no']);
+
+        $this->assertStringContainsString('Created Dockerfile for PHP 8.2 and x86_64 architecture', $tester->getDisplay());
+        $this->assertFileExists($this->tempDir.'/Dockerfile');
+        $this->assertStringContainsString('FROM --platform=linux/amd64 ymirapp/php-runtime:php-74', (string) file_get_contents($this->tempDir.'/Dockerfile'));
+    }
+
+    public function testCreateDockerfileWithPhpOption(): void
+    {
+        $this->setupActiveTeam();
+        $this->setupValidProject();
+
+        $this->bootApplication([new CreateDockerfileCommand($this->apiClient, $this->createExecutionContextFactory(), $this->dockerfile)]);
+
+        $tester = $this->executeCommand(CreateDockerfileCommand::NAME, ['--php' => '8.3'], ['no']);
+
+        $this->assertStringContainsString('Created Dockerfile for PHP 8.3 and arm64 architecture', $tester->getDisplay());
+        $this->assertFileExists($this->tempDir.'/Dockerfile');
+        $this->assertStringContainsString('FROM --platform=linux/arm64 ymirapp/arm-php-runtime:php-83', (string) file_get_contents($this->tempDir.'/Dockerfile'));
     }
 
     public function testDoNotOverwriteExistingDockerfile(): void
@@ -111,7 +141,7 @@ class CreateDockerfileCommandTest extends TestCase
 
         $tester = $this->executeCommand(CreateDockerfileCommand::NAME, [], ['yes', 'no']); // overwrite yes, no configure project
 
-        $this->assertStringContainsString('Dockerfile created', $tester->getDisplay());
+        $this->assertStringContainsString('Created Dockerfile for PHP 8.2 and arm64 architecture', $tester->getDisplay());
         $this->assertStringNotEqualsFile($this->tempDir.'/Dockerfile', 'old content');
     }
 }
