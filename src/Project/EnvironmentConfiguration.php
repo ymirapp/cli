@@ -109,7 +109,7 @@ class EnvironmentConfiguration
             $deployment = $deployment['type'];
         }
 
-        return $deployment;
+        return is_string($deployment) ? $deployment : null;
     }
 
     /**

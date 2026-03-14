@@ -78,6 +78,11 @@ class EnvironmentConfigurationTest extends TestCase
         $this->assertNull((new EnvironmentConfiguration('prod', []))->getDatabaseServerName());
     }
 
+    public function testGetDeploymentTypeReturnsNullIfArrayWithoutType(): void
+    {
+        $this->assertNull((new EnvironmentConfiguration('prod', ['deployment' => ['commands' => ['php artisan migrate --force']]]))->getDeploymentType());
+    }
+
     public function testGetDeploymentTypeReturnsNullIfMissing(): void
     {
         $this->assertNull((new EnvironmentConfiguration('prod', []))->getDeploymentType());
