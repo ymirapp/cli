@@ -42,9 +42,9 @@ class CreateDockerfileCommandTest extends TestCase
     {
         return [
             ['laravel', 'php-83'],
-            ['wordpress', 'php-74'],
-            ['bedrock', 'php-74'],
-            ['radicle', 'php-74'],
+            ['wordpress', 'php-82'],
+            ['bedrock', 'php-82'],
+            ['radicle', 'php-82'],
         ];
     }
 
@@ -59,7 +59,7 @@ class CreateDockerfileCommandTest extends TestCase
 
         $this->assertStringContainsString('Created Dockerfile for PHP 8.2 and arm64 architecture', $tester->getDisplay());
         $this->assertFileExists($this->tempDir.'/Dockerfile');
-        $this->assertStringContainsString('FROM --platform=linux/arm64 ymirapp/arm-php-runtime:php-74', (string) file_get_contents($this->tempDir.'/Dockerfile'));
+        $this->assertStringContainsString('FROM --platform=linux/arm64 ymirapp/arm-php-runtime:php-82', (string) file_get_contents($this->tempDir.'/Dockerfile'));
     }
 
     public function testCreateDockerfileAndConfigureProjectWithOption(): void
@@ -124,7 +124,7 @@ class CreateDockerfileCommandTest extends TestCase
 
         $this->assertStringContainsString('Created Dockerfile for PHP 8.2 and x86_64 architecture', $tester->getDisplay());
         $this->assertFileExists($this->tempDir.'/Dockerfile');
-        $this->assertStringContainsString('FROM --platform=linux/amd64 ymirapp/php-runtime:php-74', (string) file_get_contents($this->tempDir.'/Dockerfile'));
+        $this->assertStringContainsString('FROM --platform=linux/amd64 ymirapp/php-runtime:php-82', (string) file_get_contents($this->tempDir.'/Dockerfile'));
     }
 
     public function testCreateDockerfileWithPhpOption(): void

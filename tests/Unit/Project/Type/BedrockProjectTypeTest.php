@@ -77,7 +77,7 @@ class BedrockProjectTypeTest extends TestCase
         $this->assertSame([
             'architecture' => 'arm64',
             'gateway' => false,
-            'php' => '7.4',
+            'php' => '8.2',
             'foo' => 'bar',
             'build' => [
                 'COMPOSER_MIRROR_PATH_REPOS=1 composer install --no-dev',
@@ -92,7 +92,7 @@ class BedrockProjectTypeTest extends TestCase
         $this->assertSame([
             'architecture' => 'arm64',
             'gateway' => false,
-            'php' => '7.4',
+            'php' => '8.2',
             'foo' => 'bar',
             'cron' => false,
             'warmup' => false,

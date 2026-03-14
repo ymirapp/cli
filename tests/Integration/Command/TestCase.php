@@ -207,7 +207,7 @@ abstract class TestCase extends BaseTestCase
             case 'wordpress':
             case 'bedrock':
             case 'radicle':
-                return '7.4';
+                return '8.2';
             default:
                 throw new \InvalidArgumentException(sprintf('Unsupported project type slug "%s" for resolving default PHP version', $projectTypeSlug));
         }
