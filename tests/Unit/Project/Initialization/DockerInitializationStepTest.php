@@ -19,6 +19,7 @@ use Ymir\Cli\Executable\DockerExecutable;
 use Ymir\Cli\ExecutionContext;
 use Ymir\Cli\Project\Configuration\ImageDeploymentConfigurationChange;
 use Ymir\Cli\Project\Initialization\DockerInitializationStep;
+use Ymir\Cli\Project\Type\ProjectTypeInterface;
 use Ymir\Cli\Tests\TestCase;
 
 class DockerInitializationStepTest extends TestCase
@@ -59,35 +60,43 @@ class DockerInitializationStepTest extends TestCase
 
     public function testPerformAsksToOverwriteExistingDockerfile(): void
     {
+        $projectType = \Mockery::mock(ProjectTypeInterface::class);
+        $projectType->shouldReceive('getDefaultPhpVersion')->once()->andReturn('php-version');
+
         $this->output->shouldReceive('confirm')->with('Do you want to deploy this project using a container image?')->once()->andReturn(true);
         $this->dockerfile->shouldReceive('exists')->once()->andReturn(true);
         $this->output->shouldReceive('confirm')->with('A <comment>Dockerfile</comment> already exists in the project directory. Do you want to overwrite it?', false)->once()->andReturn(true);
-        $this->dockerfile->shouldReceive('create')->once()->with('arm64', 'php-74');
+        $this->dockerfile->shouldReceive('create')->once()->with('arm64', 'php-version');
         $this->dockerExecutable->shouldReceive('isInstalled')->once()->andReturn(true);
 
         $step = new DockerInitializationStep($this->dockerExecutable, $this->dockerfile);
 
-        $result = $step->perform($this->context, []);
+        $result = $step->perform($this->context, ['type' => $projectType]);
 
         $this->assertInstanceOf(ImageDeploymentConfigurationChange::class, $result);
     }
 
     public function testPerformCreatesDockerfileAndReturnsImageDeploymentConfigurationChange(): void
     {
+        $projectType = \Mockery::mock(ProjectTypeInterface::class);
+        $projectType->shouldReceive('getDefaultPhpVersion')->once()->andReturn('php-version');
+
         $this->output->shouldReceive('confirm')->with('Do you want to deploy this project using a container image?')->once()->andReturn(true);
         $this->dockerfile->shouldReceive('exists')->once()->andReturn(false);
-        $this->dockerfile->shouldReceive('create')->once()->with('arm64', 'php-74');
+        $this->dockerfile->shouldReceive('create')->once()->with('arm64', 'php-version');
         $this->dockerExecutable->shouldReceive('isInstalled')->once()->andReturn(true);
 
         $step = new DockerInitializationStep($this->dockerExecutable, $this->dockerfile);
 
-        $result = $step->perform($this->context, []);
+        $result = $step->perform($this->context, ['type' => $projectType]);
 
         $this->assertInstanceOf(ImageDeploymentConfigurationChange::class, $result);
     }
 
     public function testPerformDoesNotOverwriteExistingDockerfileIfUserDeclines(): void
     {
+        $projectType = \Mockery::mock(ProjectTypeInterface::class);
+
         $this->output->shouldReceive('confirm')->with('Do you want to deploy this project using a container image?')->once()->andReturn(true);
         $this->dockerfile->shouldReceive('exists')->once()->andReturn(true);
         $this->output->shouldReceive('confirm')->with('A <comment>Dockerfile</comment> already exists in the project directory. Do you want to overwrite it?', false)->once()->andReturn(false);
@@ -96,14 +105,25 @@ class DockerInitializationStepTest extends TestCase
 
         $step = new DockerInitializationStep($this->dockerExecutable, $this->dockerfile);
 
-        $result = $step->perform($this->context, []);
+        $result = $step->perform($this->context, ['type' => $projectType]);
 
         $this->assertInstanceOf(ImageDeploymentConfigurationChange::class, $result);
     }
 
     public function testPerformReturnsNullIfUserDeclinesImageDeployment(): void
     {
+        $projectType = \Mockery::mock(ProjectTypeInterface::class);
+
         $this->output->shouldReceive('confirm')->with('Do you want to deploy this project using a container image?')->once()->andReturn(false);
+
+        $step = new DockerInitializationStep($this->dockerExecutable, $this->dockerfile);
+
+        $this->assertNull($step->perform($this->context, ['type' => $projectType]));
+    }
+
+    public function testPerformReturnsNullWithoutProjectType(): void
+    {
+        $this->output->shouldNotReceive('confirm');
 
         $step = new DockerInitializationStep($this->dockerExecutable, $this->dockerfile);
 
@@ -112,15 +132,35 @@ class DockerInitializationStepTest extends TestCase
 
     public function testPerformShowsWarningIfDockerIsNotInstalled(): void
     {
+        $projectType = \Mockery::mock(ProjectTypeInterface::class);
+        $projectType->shouldReceive('getDefaultPhpVersion')->once()->andReturn('php-version');
+
         $this->output->shouldReceive('confirm')->with('Do you want to deploy this project using a container image?')->once()->andReturn(true);
         $this->dockerfile->shouldReceive('exists')->once()->andReturn(false);
-        $this->dockerfile->shouldReceive('create')->once()->with('arm64', 'php-74');
+        $this->dockerfile->shouldReceive('create')->once()->with('arm64', 'php-version');
         $this->dockerExecutable->shouldReceive('isInstalled')->once()->andReturn(false);
         $this->output->shouldReceive('warning')->with("<comment>Docker</comment> wasn't detected and is required to deploy the project locally")->once();
 
         $step = new DockerInitializationStep($this->dockerExecutable, $this->dockerfile);
 
-        $result = $step->perform($this->context, []);
+        $result = $step->perform($this->context, ['type' => $projectType]);
+
+        $this->assertInstanceOf(ImageDeploymentConfigurationChange::class, $result);
+    }
+
+    public function testPerformUsesProjectTypeDefaultPhpVersion(): void
+    {
+        $projectType = \Mockery::mock(ProjectTypeInterface::class);
+        $projectType->shouldReceive('getDefaultPhpVersion')->once()->andReturn('php-version');
+
+        $this->output->shouldReceive('confirm')->with('Do you want to deploy this project using a container image?')->once()->andReturn(true);
+        $this->dockerfile->shouldReceive('exists')->once()->andReturn(false);
+        $this->dockerfile->shouldReceive('create')->once()->with('arm64', 'php-version');
+        $this->dockerExecutable->shouldReceive('isInstalled')->once()->andReturn(true);
+
+        $step = new DockerInitializationStep($this->dockerExecutable, $this->dockerfile);
+
+        $result = $step->perform($this->context, ['type' => $projectType]);
 
         $this->assertInstanceOf(ImageDeploymentConfigurationChange::class, $result);
     }

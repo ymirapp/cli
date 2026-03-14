@@ -42,6 +42,7 @@ class AbstractWordPressProjectTypeTest extends TestCase
         $this->assertSame([
             'architecture' => 'arm64',
             'gateway' => false,
+            'php' => '7.4',
             'foo' => 'bar',
             'cron' => false,
             'warmup' => false,

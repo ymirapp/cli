@@ -47,6 +47,7 @@ class LaravelProjectTypeTest extends TestCase
         $this->assertSame([
             'architecture' => 'arm64',
             'gateway' => false,
+            'php' => '8.3',
             'foo' => 'bar',
             'build' => [
                 'COMPOSER_MIRROR_PATH_REPOS=1 composer install --no-dev',
@@ -74,6 +75,7 @@ class LaravelProjectTypeTest extends TestCase
         $this->assertSame([
             'architecture' => 'arm64',
             'gateway' => false,
+            'php' => '8.3',
             'foo' => 'bar',
             'cron' => false,
             'warmup' => false,

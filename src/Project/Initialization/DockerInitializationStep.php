@@ -18,6 +18,7 @@ use Ymir\Cli\Executable\DockerExecutable;
 use Ymir\Cli\ExecutionContext;
 use Ymir\Cli\Project\Configuration\ConfigurationChangeInterface;
 use Ymir\Cli\Project\Configuration\ImageDeploymentConfigurationChange;
+use Ymir\Cli\Project\Type\ProjectTypeInterface;
 
 class DockerInitializationStep implements InitializationStepInterface
 {
@@ -49,6 +50,10 @@ class DockerInitializationStep implements InitializationStepInterface
      */
     public function perform(ExecutionContext $context, array $projectRequirements): ?ConfigurationChangeInterface
     {
+        if (empty($projectRequirements['type']) || !$projectRequirements['type'] instanceof ProjectTypeInterface) {
+            return null;
+        }
+
         $output = $context->getOutput();
 
         if (!$output->confirm('Do you want to deploy this project using a container image?')) {
@@ -56,7 +61,7 @@ class DockerInitializationStep implements InitializationStepInterface
         }
 
         if (!$this->dockerfile->exists() || $output->confirm('A <comment>Dockerfile</comment> already exists in the project directory. Do you want to overwrite it?', false)) {
-            $this->dockerfile->create('arm64', 'php-74');
+            $this->dockerfile->create('arm64', $projectRequirements['type']->getDefaultPhpVersion());
         }
 
         if (!$this->dockerExecutable->isInstalled()) {

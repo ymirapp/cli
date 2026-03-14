@@ -89,6 +89,14 @@ class LaravelProjectType extends AbstractProjectType implements InstallableProje
     }
 
     /**
+     * {@inheritdoc}
+     */
+    public function getDefaultPhpVersion(): string
+    {
+        return '8.3';
+    }
+
+    /**
      * {@inheritDoc}
      */
     public function getExcludedFiles(string $directory): Finder

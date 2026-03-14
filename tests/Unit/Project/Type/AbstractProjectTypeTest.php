@@ -38,10 +38,12 @@ class AbstractProjectTypeTest extends TestCase
     public function testGenerateEnvironmentConfigurationForProduction(): void
     {
         $projectType = \Mockery::mock(AbstractProjectType::class, [\Mockery::mock(Filesystem::class)])->makePartial();
+        $projectType->shouldReceive('getDefaultPhpVersion')->once()->andReturn('7.4');
 
         $this->assertSame([
             'architecture' => 'arm64',
             'gateway' => false,
+            'php' => '7.4',
             'foo' => 'bar',
         ], $projectType->generateEnvironmentConfiguration('production', ['foo' => 'bar'])->toArray());
     }
@@ -49,10 +51,12 @@ class AbstractProjectTypeTest extends TestCase
     public function testGenerateEnvironmentConfigurationForStaging(): void
     {
         $projectType = \Mockery::mock(AbstractProjectType::class, [\Mockery::mock(Filesystem::class)])->makePartial();
+        $projectType->shouldReceive('getDefaultPhpVersion')->once()->andReturn('7.4');
 
         $this->assertSame([
             'architecture' => 'arm64',
             'gateway' => false,
+            'php' => '7.4',
             'foo' => 'bar',
             'cron' => false,
             'warmup' => false,

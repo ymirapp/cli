@@ -184,6 +184,7 @@ abstract class TestCase extends BaseTestCase
 
         $this->projectTypeMock = \Mockery::mock($projectTypeClass);
         $this->projectTypeMock->shouldReceive('getSlug')->andReturn($projectTypeSlug);
+        $this->projectTypeMock->shouldReceive('getDefaultPhpVersion')->andReturn($this->resolveDefaultPhpVersion($projectTypeSlug));
 
         $this->projectConfiguration = new ProjectConfiguration($this->filesystem, [$this->projectTypeMock], $this->tempDir.'/ymir.yml');
         $this->projectConfiguration->createNew($project, collect(), $this->projectTypeMock);
@@ -193,5 +194,22 @@ abstract class TestCase extends BaseTestCase
         }
 
         return $project;
+    }
+
+    /**
+     * Resolve the default PHP version for a project type slug.
+     */
+    private function resolveDefaultPhpVersion(string $projectTypeSlug): string
+    {
+        switch ($projectTypeSlug) {
+            case 'laravel':
+                return '8.3';
+            case 'wordpress':
+            case 'bedrock':
+            case 'radicle':
+                return '7.4';
+            default:
+                throw new \InvalidArgumentException(sprintf('Unsupported project type slug "%s" for resolving default PHP version', $projectTypeSlug));
+        }
     }
 }

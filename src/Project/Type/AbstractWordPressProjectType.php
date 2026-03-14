@@ -41,6 +41,14 @@ abstract class AbstractWordPressProjectType extends AbstractProjectType implemen
     }
 
     /**
+     * {@inheritdoc}
+     */
+    public function getDefaultPhpVersion(): string
+    {
+        return '7.4';
+    }
+
+    /**
      * {@inheritDoc}
      */
     public function getInitializationSteps(): array

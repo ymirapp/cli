@@ -39,6 +39,11 @@ interface ProjectTypeInterface
     public function getBuildSteps(): array;
 
     /**
+     * Get the default PHP version for the project type.
+     */
+    public function getDefaultPhpVersion(): string;
+
+    /**
      * Get the Finder object for finding all the files that we want to exclude from the final build.
      */
     public function getExcludedFiles(string $directory): Finder;

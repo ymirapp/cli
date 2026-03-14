@@ -125,6 +125,7 @@ abstract class AbstractProjectType implements ProjectTypeInterface
         $configuration = array_merge([
             'architecture' => 'arm64',
             'gateway' => false,
+            'php' => $this->getDefaultPhpVersion(),
         ], $baseConfiguration);
 
         if ('staging' === $environment) {

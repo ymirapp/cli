@@ -38,6 +38,16 @@ class CreateDockerfileCommandTest extends TestCase
         $this->dockerfile = new Dockerfile($this->filesystem, $this->tempDir, realpath(__DIR__.'/../../../../stubs'));
     }
 
+    public static function provideProjectTypeDefaultPhpVersions(): array
+    {
+        return [
+            ['laravel', 'php-83'],
+            ['wordpress', 'php-74'],
+            ['bedrock', 'php-74'],
+            ['radicle', 'php-74'],
+        ];
+    }
+
     public function testCreateDockerfile(): void
     {
         $this->setupActiveTeam();
@@ -85,6 +95,22 @@ class CreateDockerfileCommandTest extends TestCase
         $this->assertStringContainsString('Created staging.Dockerfile for PHP 8.1 and x86_64 architecture', $tester->getDisplay());
         $this->assertFileExists($this->tempDir.'/staging.Dockerfile');
         $this->assertStringContainsString('FROM --platform=linux/amd64 ymirapp/php-runtime:php-81', (string) file_get_contents($this->tempDir.'/staging.Dockerfile'));
+    }
+
+    /**
+     * @dataProvider provideProjectTypeDefaultPhpVersions
+     */
+    public function testCreateDockerfileUsesProjectTypeDefaultPhpVersion(string $projectType, string $phpTag): void
+    {
+        $this->setupActiveTeam();
+        $this->setupValidProject(1, 'project', ['production' => []], $projectType);
+
+        $this->bootApplication([new CreateDockerfileCommand($this->apiClient, $this->createExecutionContextFactory(), $this->dockerfile)]);
+
+        $this->executeCommand(CreateDockerfileCommand::NAME, [], ['no']);
+
+        $this->assertFileExists($this->tempDir.'/Dockerfile');
+        $this->assertStringContainsString(sprintf('FROM --platform=linux/arm64 ymirapp/arm-php-runtime:%s', $phpTag), (string) file_get_contents($this->tempDir.'/Dockerfile'));
     }
 
     public function testCreateDockerfileWithArchitectureOption(): void

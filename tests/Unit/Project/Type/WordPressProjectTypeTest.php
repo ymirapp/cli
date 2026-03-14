@@ -78,6 +78,7 @@ class WordPressProjectTypeTest extends TestCase
         $this->assertSame([
             'architecture' => 'arm64',
             'gateway' => false,
+            'php' => '7.4',
             'foo' => 'bar',
         ], $projectType->generateEnvironmentConfiguration('production', ['foo' => 'bar'])->toArray());
     }
@@ -89,6 +90,7 @@ class WordPressProjectTypeTest extends TestCase
         $this->assertSame([
             'architecture' => 'arm64',
             'gateway' => false,
+            'php' => '7.4',
             'foo' => 'bar',
             'cron' => false,
             'warmup' => false,

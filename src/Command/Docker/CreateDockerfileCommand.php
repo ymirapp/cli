@@ -38,11 +38,6 @@ class CreateDockerfileCommand extends AbstractCommand implements LocalProjectCom
     private const DEFAULT_ARCHITECTURE = 'arm64';
 
     /**
-     * Default PHP runtime tag used when none is configured.
-     */
-    private const DEFAULT_PHP_TAG = 'php-74';
-
-    /**
      * The project Dockerfile.
      *
      * @var Dockerfile
@@ -145,8 +140,10 @@ class CreateDockerfileCommand extends AbstractCommand implements LocalProjectCom
 
         if (empty($phpVersion) && !empty($environment)) {
             $phpVersion = $this->getProjectConfiguration()->getEnvironmentConfiguration($environment)->getPhpVersion();
+        } elseif (empty($phpVersion)) {
+            $phpVersion = $this->getProjectConfiguration()->getProjectType()->getDefaultPhpVersion();
         }
 
-        return empty($phpVersion) ? self::DEFAULT_PHP_TAG : $phpVersion;
+        return $phpVersion;
     }
 }
