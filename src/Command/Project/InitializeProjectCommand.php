@@ -134,24 +134,13 @@ class InitializeProjectCommand extends AbstractCommand
             'name' => $name,
             'provider' => $provider,
             'region' => $region,
-            'environments' => $environments->keys()->all(),
         ];
 
-        $initializationConfigurationChanges = collect($projectType->getInitializationSteps())
-            ->map(function (string $stepClass) use ($projectRequirements): ?ConfigurationChangeInterface {
-                return $this->initializationStepLocator->get($stepClass)->perform($this->getContext(), $projectRequirements);
-            })
-            ->filter();
+        $environments = $this->performInitializationSteps($projectType, $projectRequirements, $environments);
 
-        $environments = $environments->map(function (EnvironmentConfiguration $configuration) use ($initializationConfigurationChanges, $projectType): EnvironmentConfiguration {
-            foreach ($initializationConfigurationChanges as $initializationConfigurationChange) {
-                $configuration = $initializationConfigurationChange->apply($configuration, $projectType);
-            }
-
-            return $configuration;
-        });
-
-        $project = $this->provision(Project::class, $projectRequirements);
+        $project = $this->provision(Project::class, array_merge($projectRequirements, [
+            'environments' => $environments->keys()->all(),
+        ]));
 
         if (!$project instanceof Project) {
             throw new RuntimeException(sprintf('Unable to provision the "<comment>%s</comment>" project', $name));
@@ -173,6 +162,20 @@ class InitializeProjectCommand extends AbstractCommand
     }
 
     /**
+     * Apply an initialization configuration change to all environments.
+     */
+    private function applyInitializationConfigurationChange(?ConfigurationChangeInterface $configurationChange, Collection $environments, ProjectTypeInterface $projectType): Collection
+    {
+        if (null === $configurationChange) {
+            return $environments;
+        }
+
+        return $environments->map(function (EnvironmentConfiguration $configuration) use ($configurationChange, $projectType): EnvironmentConfiguration {
+            return $configurationChange->apply($configuration, $projectType);
+        });
+    }
+
+    /**
      * Get the base environments configuration for the project.
      */
     private function getBaseEnvironmentsConfiguration(ProjectTypeInterface $projectType): Collection
@@ -180,5 +183,32 @@ class InitializeProjectCommand extends AbstractCommand
         return collect(Project::DEFAULT_ENVIRONMENTS)->mapWithKeys(function (string $environment) use ($projectType): array {
             return [$environment => $projectType->generateEnvironmentConfiguration($environment)];
         });
+    }
+
+    /**
+     * Perform a single initialization step.
+     */
+    private function performInitializationStep(string $stepClass, array $baseProjectRequirements, Collection $environments): ?ConfigurationChangeInterface
+    {
+        $projectRequirements = array_merge($baseProjectRequirements, [
+            'environments' => $environments->keys()->all(),
+            'environment_configurations' => $environments,
+        ]);
+
+        return $this->initializationStepLocator->get($stepClass)->perform($this->getContext(), $projectRequirements);
+    }
+
+    /**
+     * Perform all initialization steps for the given project type.
+     */
+    private function performInitializationSteps(ProjectTypeInterface $projectType, array $baseProjectRequirements, Collection $environments): Collection
+    {
+        foreach ($projectType->getInitializationSteps() as $stepClass) {
+            $configurationChange = $this->performInitializationStep($stepClass, $baseProjectRequirements, $environments);
+
+            $environments = $this->applyInitializationConfigurationChange($configurationChange, $environments, $projectType);
+        }
+
+        return $environments;
     }
 }

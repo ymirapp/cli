@@ -16,6 +16,7 @@ namespace Ymir\Cli\Tests\Unit\Project\Type;
 use Symfony\Component\Filesystem\Filesystem;
 use Ymir\Cli\Executable\ComposerExecutable;
 use Ymir\Cli\Project\Build;
+use Ymir\Cli\Project\Initialization;
 use Ymir\Cli\Project\Type\LaravelProjectType;
 use Ymir\Cli\Tests\TestCase;
 
@@ -141,6 +142,17 @@ class LaravelProjectTypeTest extends TestCase
 
         $this->assertContains('.env', $paths);
         $this->assertNotContains('.env.encrypted', $paths);
+    }
+
+    public function testGetInitializationSteps(): void
+    {
+        $this->assertSame([
+            Initialization\DatabaseInitializationStep::class,
+            Initialization\CacheInitializationStep::class,
+            Initialization\DockerInitializationStep::class,
+            Initialization\IntegrationInitializationStep::class,
+            Initialization\VaporConfigurationInitializationStep::class,
+        ], (new LaravelProjectType(\Mockery::mock(ComposerExecutable::class), \Mockery::mock(Filesystem::class)))->getInitializationSteps());
     }
 
     public function testGetInstallationMessage(): void

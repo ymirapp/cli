@@ -17,6 +17,7 @@ use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
 use Ymir\Cli\Executable\ComposerExecutable;
 use Ymir\Cli\Project\Build;
+use Ymir\Cli\Project\Initialization\VaporConfigurationInitializationStep;
 use Ymir\Cli\Support\Arr;
 
 class LaravelProjectType extends AbstractProjectType implements InstallableProjectTypeInterface
@@ -103,6 +104,18 @@ class LaravelProjectType extends AbstractProjectType implements InstallableProje
     {
         return parent::getExcludedFiles($directory)
             ->append($this->getExcludedPaths($directory));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getInitializationSteps(): array
+    {
+        $steps = parent::getInitializationSteps();
+
+        $steps[] = VaporConfigurationInitializationStep::class;
+
+        return $steps;
     }
 
     /**

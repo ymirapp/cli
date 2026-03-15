@@ -15,10 +15,12 @@ namespace Ymir\Cli\Tests\Integration\Command\Laravel;
 
 use Ymir\Cli\Command\Laravel\MigrateVaporCommand;
 use Ymir\Cli\Dockerfile;
-use Ymir\Cli\Exception\InvalidInputException;
 use Ymir\Cli\Exception\Project\UnsupportedProjectException;
+use Ymir\Cli\Exception\RuntimeException;
+use Ymir\Cli\Laravel\VaporDockerfileMigrator;
 use Ymir\Cli\Project\Type\LaravelProjectType;
 use Ymir\Cli\Tests\Integration\Command\TestCase;
+use Ymir\Cli\YamlParser;
 
 class MigrateVaporCommandTest extends TestCase
 {
@@ -53,7 +55,7 @@ YAML
         $this->filesystem->dumpFile($this->tempDir.'/staging.Dockerfile', "FROM laravelphp/vapor:php83\n\nCOPY . /var/task\n");
         $this->filesystem->dumpFile($this->tempDir.'/production.Dockerfile', "FROM laravelphp/vapor:php84\n\nCOPY . /var/task\n");
 
-        $this->bootApplication([new MigrateVaporCommand($this->apiClient, $this->createExecutionContextFactory(), $this->dockerfile, $this->filesystem)]);
+        $this->bootMigrateVaporCommand();
 
         $tester = $this->executeCommand(MigrateVaporCommand::NAME, [], ['no']);
 
@@ -78,7 +80,7 @@ environments:
 YAML
         );
 
-        $this->bootApplication([new MigrateVaporCommand($this->apiClient, $this->createExecutionContextFactory(), $this->dockerfile, $this->filesystem)]);
+        $this->bootMigrateVaporCommand();
 
         $tester = $this->executeCommand(MigrateVaporCommand::NAME, [], ['no']);
 
@@ -106,12 +108,11 @@ YAML
         $this->filesystem->dumpFile($this->tempDir.'/staging.Dockerfile', "FROM laravelphp/vapor:php83\n\nCOPY . /var/task\n");
         $this->filesystem->dumpFile($this->tempDir.'/production.Dockerfile', "FROM laravelphp/vapor:php84\n\nCOPY . /var/task\n");
 
-        $this->bootApplication([new MigrateVaporCommand($this->apiClient, $this->createExecutionContextFactory(), $this->dockerfile, $this->filesystem)]);
+        $this->bootMigrateVaporCommand();
 
         $tester = $this->executeCommand(MigrateVaporCommand::NAME, [], ['yes']);
 
         $this->assertStringContainsString('Created Dockerfile for PHP 8.4 and x86_64 architecture', $tester->getDisplay());
-        $this->assertStringContainsString('Using production environment configuration', $tester->getDisplay());
         $this->assertFileExists($this->tempDir.'/Dockerfile.bak');
         $this->assertFileExists($this->tempDir.'/staging.Dockerfile.bak');
         $this->assertFileExists($this->tempDir.'/production.Dockerfile.bak');
@@ -132,7 +133,7 @@ YAML
         );
         $this->filesystem->dumpFile($this->tempDir.'/staging.Dockerfile', "FROM laravelphp/vapor:php84\n\nCOPY . /var/task\n");
 
-        $this->bootApplication([new MigrateVaporCommand($this->apiClient, $this->createExecutionContextFactory(), $this->dockerfile, $this->filesystem)]);
+        $this->bootMigrateVaporCommand();
 
         $tester = $this->executeCommand(MigrateVaporCommand::NAME, [], ['no']);
 
@@ -158,7 +159,7 @@ environments:
 YAML
         );
 
-        $this->bootApplication([new MigrateVaporCommand($this->apiClient, $this->createExecutionContextFactory(), $this->dockerfile, $this->filesystem)]);
+        $this->bootMigrateVaporCommand();
 
         $tester = $this->executeCommand(MigrateVaporCommand::NAME);
 
@@ -181,7 +182,7 @@ environments:
 YAML
         );
 
-        $this->bootApplication([new MigrateVaporCommand($this->apiClient, $this->createExecutionContextFactory(), $this->dockerfile, $this->filesystem)]);
+        $this->bootMigrateVaporCommand();
 
         $tester = $this->executeCommand(MigrateVaporCommand::NAME);
 
@@ -196,20 +197,27 @@ YAML
 
         $this->setupValidProject(1, 'project', ['staging' => []], 'wordpress');
 
-        $this->bootApplication([new MigrateVaporCommand($this->apiClient, $this->createExecutionContextFactory(), $this->dockerfile, $this->filesystem)]);
+        $this->bootMigrateVaporCommand();
 
         $this->executeCommand(MigrateVaporCommand::NAME);
     }
 
     public function testPerformThrowsExceptionIfVaporConfigurationFileIsMissing(): void
     {
-        $this->expectException(InvalidInputException::class);
-        $this->expectExceptionMessage('No vapor configuration file found at');
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('Unable to migrate Vapor configuration because "vapor.yml" is missing from the project directory');
 
         $this->setupValidProject(1, 'project', ['staging' => []], 'laravel', LaravelProjectType::class);
 
-        $this->bootApplication([new MigrateVaporCommand($this->apiClient, $this->createExecutionContextFactory(), $this->dockerfile, $this->filesystem)]);
+        $this->bootMigrateVaporCommand();
 
         $this->executeCommand(MigrateVaporCommand::NAME);
+    }
+
+    private function bootMigrateVaporCommand(): void
+    {
+        $this->bootApplication([
+            new MigrateVaporCommand($this->apiClient, $this->createExecutionContextFactory(), new VaporDockerfileMigrator($this->dockerfile, $this->filesystem), new YamlParser()),
+        ]);
     }
 }

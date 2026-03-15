@@ -14,19 +14,18 @@ declare(strict_types=1);
 namespace Ymir\Cli\Command\Laravel;
 
 use Illuminate\Support\Collection;
-use Symfony\Component\Filesystem\Filesystem;
-use Symfony\Component\Yaml\Yaml;
 use Ymir\Cli\ApiClient;
 use Ymir\Cli\Command\AbstractCommand;
 use Ymir\Cli\Command\LocalProjectCommandInterface;
-use Ymir\Cli\Dockerfile;
-use Ymir\Cli\Exception\InvalidInputException;
 use Ymir\Cli\Exception\Project\UnsupportedProjectException;
+use Ymir\Cli\Exception\RuntimeException;
 use Ymir\Cli\ExecutionContextFactory;
+use Ymir\Cli\Laravel\VaporDockerfileMigrator;
 use Ymir\Cli\Project\Configuration\Laravel\VaporConfigurationChange;
 use Ymir\Cli\Project\EnvironmentConfiguration;
 use Ymir\Cli\Project\Type\LaravelProjectType;
 use Ymir\Cli\Support\Arr;
+use Ymir\Cli\YamlParser;
 
 class MigrateVaporCommand extends AbstractCommand implements LocalProjectCommandInterface
 {
@@ -38,28 +37,28 @@ class MigrateVaporCommand extends AbstractCommand implements LocalProjectCommand
     public const NAME = 'laravel:vapor:migrate';
 
     /**
-     * The project Dockerfile service.
+     * The Dockerfile migrator service.
      *
-     * @var Dockerfile
+     * @var VaporDockerfileMigrator
      */
-    private $dockerfile;
+    private $vaporDockerfileMigrator;
 
     /**
-     * The file system.
+     * The vapor configuration parser.
      *
-     * @var Filesystem
+     * @var YamlParser
      */
-    private $filesystem;
+    private $yamlParser;
 
     /**
      * Constructor.
      */
-    public function __construct(ApiClient $apiClient, ExecutionContextFactory $contextFactory, Dockerfile $dockerfile, Filesystem $filesystem)
+    public function __construct(ApiClient $apiClient, ExecutionContextFactory $contextFactory, VaporDockerfileMigrator $vaporDockerfileMigrator, YamlParser $yamlParser)
     {
         parent::__construct($apiClient, $contextFactory);
 
-        $this->dockerfile = $dockerfile;
-        $this->filesystem = $filesystem;
+        $this->vaporDockerfileMigrator = $vaporDockerfileMigrator;
+        $this->yamlParser = $yamlParser;
     }
 
     /**
@@ -85,7 +84,7 @@ class MigrateVaporCommand extends AbstractCommand implements LocalProjectCommand
         $vaporEnvironments = Arr::get($vaporConfiguration, 'environments');
 
         if (!is_array($vaporEnvironments)) {
-            throw new InvalidInputException('No valid "environments" key found in vapor.yml file');
+            throw new RuntimeException('No valid "environments" key found in vapor.yml file');
         }
 
         $matchedEnvironments = $this->getProjectConfiguration()->getEnvironments()->keys()->intersect(collect($vaporEnvironments)->keys())->values();
@@ -100,8 +99,12 @@ class MigrateVaporCommand extends AbstractCommand implements LocalProjectCommand
 
         $imageDeploymentEnvironmentConfigurations = $this->getImageDeploymentEnvironmentConfigurations($matchedEnvironments);
 
-        if (!$imageDeploymentEnvironmentConfigurations->isEmpty()) {
-            $this->migrateDockerfiles($imageDeploymentEnvironmentConfigurations);
+        if ($imageDeploymentEnvironmentConfigurations->isNotEmpty()) {
+            $migrationResult = $this->migrateDockerfiles($imageDeploymentEnvironmentConfigurations);
+
+            collect($migrationResult['created_dockerfiles'])->each(function (array $createdDockerfile): void {
+                $this->output->info($this->generateDockerfileCreatedMessage($createdDockerfile));
+            });
         }
 
         $this->output->info('Vapor configuration migrated into <comment>ymir.yml</comment> file for the following environment(s):');
@@ -109,66 +112,11 @@ class MigrateVaporCommand extends AbstractCommand implements LocalProjectCommand
     }
 
     /**
-     * Back up all relevant Dockerfiles before migration.
-     */
-    private function backupDockerfiles(Collection $environmentConfigurations, bool $backupGlobalDockerfile): void
-    {
-        $dockerfilePaths = $environmentConfigurations
-            ->map(function (EnvironmentConfiguration $environmentConfiguration): string {
-                return $this->generateDockerfilePath($environmentConfiguration->getName());
-            })
-            ->unique();
-
-        if ($backupGlobalDockerfile) {
-            $dockerfilePaths->push($this->generateDockerfilePath());
-        }
-
-        $dockerfilePaths->filter(function (string $dockerfilePath): bool {
-            return $this->filesystem->exists($dockerfilePath);
-        })->each(function (string $dockerfilePath): void {
-            $this->filesystem->rename($dockerfilePath, $dockerfilePath.'.bak', true);
-        });
-    }
-
-    /**
-     * Create a Dockerfile.
-     */
-    private function createDockerfile(EnvironmentConfiguration $environmentConfiguration, string $phpVersion, bool $globalDockerfile): void
-    {
-        $architecture = $environmentConfiguration->getArchitecture() ?: 'x86_64';
-        $environment = $globalDockerfile ? '' : $environmentConfiguration->getName();
-
-        $this->dockerfile->create($architecture, $phpVersion, $environment);
-
-        $this->output->info($this->generateDockerfileCreatedMessage($architecture, $environment, $phpVersion));
-
-        if ($globalDockerfile) {
-            $this->output->comment(sprintf('Using <comment>%s</comment> environment configuration', $environmentConfiguration->getName()));
-        }
-    }
-
-    /**
      * Generate the success message after creating the Dockerfile.
      */
-    private function generateDockerfileCreatedMessage(string $architecture, string $environment, string $phpVersion): string
+    private function generateDockerfileCreatedMessage(array $createdDockerfile): string
     {
-        return sprintf('Created <comment>%s</comment> for PHP <comment>%s</comment> and <comment>%s</comment> architecture', Dockerfile::getFileName($environment), $phpVersion, $architecture);
-    }
-
-    /**
-     * Generate the full Dockerfile path.
-     */
-    private function generateDockerfilePath(string $environment = ''): string
-    {
-        return sprintf('%s/%s', $this->getProjectDirectory(), Dockerfile::getFileName($environment));
-    }
-
-    /**
-     * Get the fallback PHP version from environment or project type.
-     */
-    private function getFallbackPhpVersion(EnvironmentConfiguration $environmentConfiguration): string
-    {
-        return empty($environmentConfiguration->getPhpVersion()) ? $this->getProjectConfiguration()->getProjectType()->getDefaultPhpVersion() : $environmentConfiguration->getPhpVersion();
+        return sprintf('Created <comment>%s</comment> for PHP <comment>%s</comment> and <comment>%s</comment> architecture', $createdDockerfile['name'], $createdDockerfile['php_version'], $createdDockerfile['architecture']);
     }
 
     /**
@@ -191,77 +139,22 @@ class MigrateVaporCommand extends AbstractCommand implements LocalProjectCommand
      */
     private function getVaporConfiguration(): array
     {
-        $vaporConfigurationFilePath = $this->getProjectDirectory().'/vapor.yml';
+        $vaporConfiguration = $this->yamlParser->parse($this->getProjectDirectory().'/vapor.yml');
 
-        if (!$this->filesystem->exists($vaporConfigurationFilePath)) {
-            throw new InvalidInputException(sprintf('No vapor configuration file found at "%s"', $vaporConfigurationFilePath));
-        }
-
-        try {
-            $vaporConfiguration = Yaml::parse((string) file_get_contents($vaporConfigurationFilePath));
-        } catch (\Throwable $exception) {
-            throw new InvalidInputException(sprintf('Error parsing Vapor configuration file: %s', $exception->getMessage()));
-        }
-
-        if (!is_array($vaporConfiguration)) {
-            throw new InvalidInputException('Error parsing Vapor configuration file');
+        if (null === $vaporConfiguration) {
+            throw new RuntimeException('Unable to migrate Vapor configuration because "vapor.yml" is missing from the project directory');
         }
 
         return $vaporConfiguration;
     }
 
     /**
-     * Migrate Dockerfiles for image deployment environments.
+     * Migrate the Dockerfiles for image deployment environments.
      */
-    private function migrateDockerfiles(Collection $environmentConfigurations): void
+    private function migrateDockerfiles(Collection $imageDeploymentEnvironmentConfigurations): array
     {
-        $phpVersions = $environmentConfigurations->mapWithKeys(function (EnvironmentConfiguration $environmentConfiguration): array {
-            return [$environmentConfiguration->getName() => $this->resolvePhpVersion($environmentConfiguration, $this->generateDockerfilePath($environmentConfiguration->getName()))];
-        });
-        $createGlobalDockerfile = $this->output->confirm('Do you want to create one global <comment>Dockerfile</comment> for all image deployment environments?', false);
-        $sourceEnvironmentConfiguration = $this->selectDockerfileSourceEnvironmentConfiguration($environmentConfigurations);
-        $dockerfileConfigurations = $createGlobalDockerfile ? collect([$sourceEnvironmentConfiguration]) : $environmentConfigurations;
-
-        $this->backupDockerfiles($environmentConfigurations, $createGlobalDockerfile);
-
-        $dockerfileConfigurations->each(function (EnvironmentConfiguration $environmentConfiguration) use ($createGlobalDockerfile, $phpVersions): void {
-            $this->createDockerfile($environmentConfiguration, (string) $phpVersions->get($environmentConfiguration->getName()), $createGlobalDockerfile);
-        });
-    }
-
-    /**
-     * Resolve the PHP version from the existing Dockerfile content.
-     */
-    private function resolvePhpVersion(EnvironmentConfiguration $environmentConfiguration, string $dockerfilePath): string
-    {
-        if (!$this->filesystem->exists($dockerfilePath)) {
-            return $this->getFallbackPhpVersion($environmentConfiguration);
-        }
-
-        $dockerfileContent = (string) file_get_contents($dockerfilePath);
-
-        if (1 !== preg_match('/:php-?(?:(\d+)\.(\d+)|(\d{2,3}))/i', $dockerfileContent, $matches)) {
-            return $this->getFallbackPhpVersion($environmentConfiguration);
-        } elseif (!empty($matches[1]) && !empty($matches[2])) {
-            return sprintf('%s.%s', $matches[1], $matches[2]);
-        } elseif (empty($matches[3])) {
-            return $this->getFallbackPhpVersion($environmentConfiguration);
-        }
-
-        $version = $matches[3];
-
-        return 2 === strlen($version) ? sprintf('%s.%s', $version[0], $version[1]) : sprintf('%s.%s', $version[0], substr($version, 1));
-    }
-
-    /**
-     * Select the source environment for Dockerfile generation.
-     */
-    private function selectDockerfileSourceEnvironmentConfiguration(Collection $environmentConfigurations): EnvironmentConfiguration
-    {
-        $productionEnvironmentConfiguration = $environmentConfigurations->first(function (EnvironmentConfiguration $environmentConfiguration): bool {
-            return 'production' === $environmentConfiguration->getName();
-        });
-
-        return $productionEnvironmentConfiguration instanceof EnvironmentConfiguration ? $productionEnvironmentConfiguration : $environmentConfigurations->first();
+        return $this->output->confirm('Do you want to create one global <comment>Dockerfile</comment> for all image deployment environments?', false)
+            ? $this->vaporDockerfileMigrator->migrateGlobalDockerfile($imageDeploymentEnvironmentConfigurations, $this->getProjectDirectory(), $this->getProjectConfiguration()->getProjectType())
+            : $this->vaporDockerfileMigrator->migrateEnvironmentDockerfiles($imageDeploymentEnvironmentConfigurations, $this->getProjectDirectory(), $this->getProjectConfiguration()->getProjectType());
     }
 }
