@@ -21,10 +21,12 @@ use Ymir\Cli\Command\Project\InitializeProjectCommand;
 use Ymir\Cli\Exception\ConfigurationException;
 use Ymir\Cli\Exception\InvalidArgumentException;
 use Ymir\Cli\Exception\Project\UnsupportedProjectException;
+use Ymir\Cli\Exception\YamlParseException;
 use Ymir\Cli\Project\Configuration\ConfigurationChangeInterface;
 use Ymir\Cli\Project\Type\ProjectTypeInterface;
 use Ymir\Cli\Resource\Model\Project;
 use Ymir\Cli\Support\Arr;
+use Ymir\Cli\YamlParser;
 
 class ProjectConfiguration implements Arrayable
 {
@@ -57,11 +59,19 @@ class ProjectConfiguration implements Arrayable
     private $projectTypes;
 
     /**
+     * The YAML parser.
+     *
+     * @var YamlParser
+     */
+    private $yamlParser;
+
+    /**
      * Constructor.
      */
-    public function __construct(Filesystem $filesystem, iterable $projectTypes, string $configurationFilePath = '')
+    public function __construct(Filesystem $filesystem, iterable $projectTypes, YamlParser $yamlParser, string $configurationFilePath = '')
     {
         $this->filesystem = $filesystem;
+        $this->yamlParser = $yamlParser;
 
         $this->loadConfiguration($configurationFilePath);
 
@@ -228,18 +238,10 @@ class ProjectConfiguration implements Arrayable
      */
     public function loadConfiguration(string $configurationFilePath): void
     {
-        $configuration = [];
-
-        if ($this->filesystem->exists($configurationFilePath)) {
-            try {
-                $configuration = Yaml::parse((string) file_get_contents($configurationFilePath));
-            } catch (\Throwable $exception) {
-                throw new ConfigurationException(sprintf('Error parsing Ymir project configuration file: %s', $exception->getMessage()));
-            }
-        }
-
-        if (!empty($configuration) && !is_array($configuration)) {
-            throw new ConfigurationException('Error parsing Ymir project configuration file');
+        try {
+            $configuration = $this->yamlParser->parse($configurationFilePath) ?? [];
+        } catch (YamlParseException $exception) {
+            throw new ConfigurationException(sprintf('Error parsing Ymir project configuration file: %s', $exception->getMessage()));
         }
 
         $this->configuration = $configuration;

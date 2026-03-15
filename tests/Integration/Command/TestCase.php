@@ -36,6 +36,7 @@ use Ymir\Cli\Team\TeamLocator;
 use Ymir\Cli\Tests\Factory\ProjectFactory;
 use Ymir\Cli\Tests\Factory\TeamFactory;
 use Ymir\Cli\Tests\TestCase as BaseTestCase;
+use Ymir\Cli\YamlParser;
 
 abstract class TestCase extends BaseTestCase
 {
@@ -90,7 +91,7 @@ abstract class TestCase extends BaseTestCase
 
         $this->apiClient = \Mockery::mock(ApiClient::class);
         $this->cliConfiguration = new CliConfiguration($this->homeDir.'/.ymir/config.json', $this->filesystem);
-        $this->projectConfiguration = new ProjectConfiguration($this->filesystem, [], $this->tempDir.'/ymir.yml');
+        $this->projectConfiguration = new ProjectConfiguration($this->filesystem, [], new YamlParser(), $this->tempDir.'/ymir.yml');
     }
 
     /**
@@ -186,7 +187,7 @@ abstract class TestCase extends BaseTestCase
         $this->projectTypeMock->shouldReceive('getSlug')->andReturn($projectTypeSlug);
         $this->projectTypeMock->shouldReceive('getDefaultPhpVersion')->andReturn($this->resolveDefaultPhpVersion($projectTypeSlug));
 
-        $this->projectConfiguration = new ProjectConfiguration($this->filesystem, [$this->projectTypeMock], $this->tempDir.'/ymir.yml');
+        $this->projectConfiguration = new ProjectConfiguration($this->filesystem, [$this->projectTypeMock], new YamlParser(), $this->tempDir.'/ymir.yml');
         $this->projectConfiguration->createNew($project, collect(), $this->projectTypeMock);
 
         foreach ($environments as $name => $config) {

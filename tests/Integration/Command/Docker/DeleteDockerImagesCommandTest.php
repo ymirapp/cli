@@ -22,6 +22,7 @@ use Ymir\Cli\Resource\Model\Project;
 use Ymir\Cli\Resource\ResourceCollection;
 use Ymir\Cli\Tests\Factory\ProjectFactory;
 use Ymir\Cli\Tests\Integration\Command\TestCase;
+use Ymir\Cli\YamlParser;
 
 class DeleteDockerImagesCommandTest extends TestCase
 {
@@ -97,7 +98,7 @@ class DeleteDockerImagesCommandTest extends TestCase
         $this->projectTypeMock = \Mockery::mock(ProjectTypeInterface::class);
         $this->projectTypeMock->shouldReceive('getSlug')->andReturn('wordpress');
 
-        $this->projectConfiguration = new ProjectConfiguration($this->filesystem, [$this->projectTypeMock], $this->tempDir.'/ymir.yml');
+        $this->projectConfiguration = new ProjectConfiguration($this->filesystem, [$this->projectTypeMock], new YamlParser(), $this->tempDir.'/ymir.yml');
         $this->projectConfiguration->createNew($project, collect(), $this->projectTypeMock);
 
         $this->dockerExecutable->shouldReceive('removeImagesMatchingPattern')->with('dkr.ecr')->once();
@@ -158,7 +159,7 @@ class DeleteDockerImagesCommandTest extends TestCase
         $this->projectTypeMock = \Mockery::mock(ProjectTypeInterface::class);
         $this->projectTypeMock->shouldReceive('getSlug')->andReturn('wordpress');
 
-        $this->projectConfiguration = new ProjectConfiguration($this->filesystem, [$this->projectTypeMock], $this->tempDir.'/ymir.yml');
+        $this->projectConfiguration = new ProjectConfiguration($this->filesystem, [$this->projectTypeMock], new YamlParser(), $this->tempDir.'/ymir.yml');
         $this->projectConfiguration->createNew($project, collect(), $this->projectTypeMock);
 
         $this->dockerExecutable->shouldReceive('removeImagesMatchingPattern')->with($project->getRepositoryUri())->once();

@@ -19,6 +19,7 @@ use Ymir\Cli\Exception\InvalidArgumentException;
 use Ymir\Cli\Project\EnvironmentConfiguration;
 use Ymir\Cli\Project\ProjectConfiguration;
 use Ymir\Cli\Tests\TestCase;
+use Ymir\Cli\YamlParser;
 
 class ProjectConfigurationTest extends TestCase
 {
@@ -41,19 +42,19 @@ class ProjectConfigurationTest extends TestCase
 
     public function testExistsReturnsFalseIfFileDoesNotExist(): void
     {
-        $this->assertFalse((new ProjectConfiguration(new Filesystem(), [], 'non-existent-file'))->exists());
+        $this->assertFalse($this->createProjectConfiguration('non-existent-file')->exists());
     }
 
     public function testExistsReturnsTrueIfFileExists(): void
     {
-        $this->assertTrue((new ProjectConfiguration(new Filesystem(), [], $this->tempFile))->exists());
+        $this->assertTrue($this->createProjectConfiguration($this->tempFile)->exists());
     }
 
     public function testGetEnvironmentConfigurationReturnsConfiguration(): void
     {
         file_put_contents($this->tempFile, "environments:\n  prod:\n    foo: bar");
 
-        $configuration = (new ProjectConfiguration(new Filesystem(), [], $this->tempFile))->getEnvironmentConfiguration('prod');
+        $configuration = $this->createProjectConfiguration($this->tempFile)->getEnvironmentConfiguration('prod');
 
         $this->assertInstanceOf(EnvironmentConfiguration::class, $configuration);
         $this->assertSame('prod', $configuration->getName());
@@ -67,14 +68,14 @@ class ProjectConfigurationTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Environment "staging" not found in Ymir project configuration file');
 
-        (new ProjectConfiguration(new Filesystem(), [], $this->tempFile))->getEnvironmentConfiguration('staging');
+        $this->createProjectConfiguration($this->tempFile)->getEnvironmentConfiguration('staging');
     }
 
     public function testGetProjectIdReturnsId(): void
     {
         file_put_contents($this->tempFile, 'id: 123');
 
-        $this->assertSame(123, (new ProjectConfiguration(new Filesystem(), [], $this->tempFile))->getProjectId());
+        $this->assertSame(123, $this->createProjectConfiguration($this->tempFile)->getProjectId());
     }
 
     public function testGetProjectIdThrowsExceptionIfIdIsMissing(): void
@@ -84,14 +85,14 @@ class ProjectConfigurationTest extends TestCase
         $this->expectException(ConfigurationException::class);
         $this->expectExceptionMessage('No "id" found in Ymir project configuration file');
 
-        (new ProjectConfiguration(new Filesystem(), [], $this->tempFile))->getProjectId();
+        $this->createProjectConfiguration($this->tempFile)->getProjectId();
     }
 
     public function testGetProjectNameReturnsName(): void
     {
         file_put_contents($this->tempFile, 'name: foo');
 
-        $this->assertSame('foo', (new ProjectConfiguration(new Filesystem(), [], $this->tempFile))->getProjectName());
+        $this->assertSame('foo', $this->createProjectConfiguration($this->tempFile)->getProjectName());
     }
 
     public function testGetProjectNameThrowsExceptionIfNameIsMissing(): void
@@ -101,7 +102,7 @@ class ProjectConfigurationTest extends TestCase
         $this->expectException(ConfigurationException::class);
         $this->expectExceptionMessage('No "name" found in Ymir project configuration file');
 
-        (new ProjectConfiguration(new Filesystem(), [], $this->tempFile))->getProjectName();
+        $this->createProjectConfiguration($this->tempFile)->getProjectName();
     }
 
     public function testGetProjectTypeThrowsExceptionIfTypeIsMissing(): void
@@ -111,7 +112,7 @@ class ProjectConfigurationTest extends TestCase
         $this->expectException(ConfigurationException::class);
         $this->expectExceptionMessage('No "type" found in Ymir project configuration file');
 
-        (new ProjectConfiguration(new Filesystem(), [], $this->tempFile))->getProjectType();
+        $this->createProjectConfiguration($this->tempFile)->getProjectType();
     }
 
     public function testLoadConfigurationThrowsExceptionIfParsingFails(): void
@@ -121,6 +122,11 @@ class ProjectConfigurationTest extends TestCase
         $this->expectException(ConfigurationException::class);
         $this->expectExceptionMessage('Error parsing Ymir project configuration file');
 
-        new ProjectConfiguration(new Filesystem(), [], $this->tempFile);
+        $this->createProjectConfiguration($this->tempFile);
+    }
+
+    private function createProjectConfiguration(string $configurationFilePath): ProjectConfiguration
+    {
+        return new ProjectConfiguration(new Filesystem(), [], new YamlParser(), $configurationFilePath);
     }
 }
