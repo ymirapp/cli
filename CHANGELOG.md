@@ -1,5 +1,27 @@
 # Changelog
 
+## [2.1.0](https://github.com/ymirapp/cli/compare/v2.0.8...v2.1.0) (2026-03-15)
+
+
+### Features
+
+* Add `artisan` command ([37c9ae2](https://github.com/ymirapp/cli/commit/37c9ae2a1b4f2e3964f4a24fdeeeab33b1a2d298))
+* Add `laravel:vapor:migrate` command ([5767f53](https://github.com/ymirapp/cli/commit/5767f53437338c65ac008ff5956ac93e639c5aef))
+* Add a new build step to clean up the build directory ([a38b552](https://github.com/ymirapp/cli/commit/a38b55263d77ba26ff41b3e53190186c0ef2b78a)), closes [#16](https://github.com/ymirapp/cli/issues/16)
+* Add default output flags to `artisan` and `wp` commands ([d6cf27a](https://github.com/ymirapp/cli/commit/d6cf27a3619735d09218c68df2abe0d9843a9ab0))
+* Add default php version to project types ([a4d8497](https://github.com/ymirapp/cli/commit/a4d84974c04dbf6987a6bbf71aa073d10319b972))
+* Add initialization step for migrating vapor configuration ([b4f00b2](https://github.com/ymirapp/cli/commit/b4f00b291ce7231d08bc87a6873115a6db3a1b36))
+* Add support for laravel projects ([813a137](https://github.com/ymirapp/cli/commit/813a1371b41af2baae5bd5d9abe4d2b1bcc144bc))
+* Switch to using placeholders in `Dockerfile` and add runtime options to `docker:create` ([6093d0d](https://github.com/ymirapp/cli/commit/6093d0d44f7fd9a11a623c8bba6f1b1b04439c4a))
+* Update wordpress project types default php version to 8.2 ([eb136e2](https://github.com/ymirapp/cli/commit/eb136e239e80e2217c8096e7d7d46bfa328a9293))
+
+
+### Bug Fixes
+
+* Deployment collection filtering in `ProcessAssetsStep` ([9790be0](https://github.com/ymirapp/cli/commit/9790be05500fa38d558c63946bcc6cc79261170d))
+* Display new database server credentials after provisioning during project initialization ([28ef423](https://github.com/ymirapp/cli/commit/28ef42338c4ee54b88979701192651d7715158b7))
+* Remove interactive environment prompt from `docker:create` and default to shared `Dockerfile` ([7225d4d](https://github.com/ymirapp/cli/commit/7225d4d26244e16eae4c0ea2cd76ccfb81875af5))
+
 ## [2.0.8](https://github.com/ymirapp/cli/compare/v2.0.7...v2.0.8) (2026-02-12)
 
 
