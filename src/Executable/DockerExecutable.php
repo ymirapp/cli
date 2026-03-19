@@ -28,7 +28,13 @@ class DockerExecutable extends AbstractExecutable
             $platform = 'linux/arm64';
         }
 
-        $this->run(sprintf('build --pull --file=%s --platform=%s --tag=%s .', $file, $platform, $tag), $cwd, null);
+        $command = sprintf('build --pull --file=%s --platform=%s --tag=%s', $file, $platform, $tag);
+
+        if ('docker' === $this->getExecutable()) {
+            $command .= ' --provenance=false';
+        }
+
+        $this->run(sprintf('%s .', $command), $cwd, null);
     }
 
     /**
