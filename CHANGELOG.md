@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.1.1](https://github.com/ymirapp/cli/compare/v2.1.0...v2.1.1) (2026-03-19)
+
+
+### Bug Fixes
+
+* Disable provenance for docker image builds ([cfd8a10](https://github.com/ymirapp/cli/commit/cfd8a109499e14de938847f0b595f0fae2ae758d))
+
 ## [2.1.0](https://github.com/ymirapp/cli/compare/v2.0.8...v2.1.0) (2026-03-15)
 
 
