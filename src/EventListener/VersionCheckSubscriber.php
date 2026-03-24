@@ -55,7 +55,7 @@ class VersionCheckSubscriber implements EventSubscriberInterface
     /**
      * {@inheritdoc}
      */
-    public static function getSubscribedEvents()
+    public static function getSubscribedEvents(): array
     {
         return [
             ConsoleEvents::COMMAND => 'onConsoleCommand',
