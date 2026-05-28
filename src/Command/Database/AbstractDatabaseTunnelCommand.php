@@ -69,14 +69,16 @@ abstract class AbstractDatabaseTunnelCommand extends AbstractCommand
     /**
      * Open a SSH tunnel to a private database server.
      */
-    protected function openSshTunnel(DatabaseServer $databaseServer, int $localPort = 3305): Process
+    protected function openSshTunnel(DatabaseServer $databaseServer, ?int $localPort = null): Process
     {
+        $localPort = $localPort ?? $databaseServer->getDefaultLocalPort();
+
         if ('available' !== $databaseServer->getStatus() || empty($databaseServer->getEndpoint())) {
             throw new InvalidInputException(sprintf('The "%s" database server isn\'t available', $databaseServer->getName()));
         } elseif ($databaseServer->isPublic()) {
             throw new InvalidInputException(sprintf('The "%s" database server is publicly accessible and isn\'t on a private subnet', $databaseServer->getName()));
-        } elseif (3306 === $localPort) {
-            throw new InvalidInputException('Cannot use port 3306 as the local port for the SSH tunnel to the database server');
+        } elseif ($databaseServer->getDefaultPort() === $localPort) {
+            throw new InvalidInputException(sprintf('Cannot use port %s as the local port for the SSH tunnel to the database server', $databaseServer->getDefaultPort()));
         }
 
         $this->output->info(sprintf('Opening SSH tunnel to the "<comment>%s</comment>" database server...', $databaseServer->getName()));
@@ -87,6 +89,6 @@ abstract class AbstractDatabaseTunnelCommand extends AbstractCommand
             throw new ResourceStateException(sprintf('The "%s" network doesn\'t have a bastion host to connect to, but you can add one to the network with the "%s" command', $databaseServer->getNetwork()->getName(), AddBastionHostCommand::NAME));
         }
 
-        return $this->sshExecutable->openTunnelToBastionHost($bastionHost, $localPort, $databaseServer->getEndpoint(), 3306);
+        return $this->sshExecutable->openTunnelToBastionHost($bastionHost, $localPort, $databaseServer->getEndpoint(), $databaseServer->getDefaultPort());
     }
 }

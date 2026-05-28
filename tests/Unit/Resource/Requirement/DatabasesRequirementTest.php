@@ -30,7 +30,7 @@ class DatabasesRequirementTest extends TestCase
     {
         $context = \Mockery::mock(ExecutionContext::class);
         $input = \Mockery::mock(Input::class);
-        $server = DatabaseServerFactory::create();
+        $server = DatabaseServerFactory::createMysql();
 
         $context->shouldReceive('getInput')->andReturn($input);
 
@@ -45,7 +45,7 @@ class DatabasesRequirementTest extends TestCase
     {
         $context = \Mockery::mock(ExecutionContext::class);
         $input = \Mockery::mock(Input::class);
-        $server = DatabaseServerFactory::create(['publicly_accessible' => false]);
+        $server = DatabaseServerFactory::createMysql(['publicly_accessible' => false]);
 
         $context->shouldReceive('getInput')->andReturn($input);
 
@@ -61,7 +61,7 @@ class DatabasesRequirementTest extends TestCase
         $context = \Mockery::mock(ExecutionContext::class);
         $input = \Mockery::mock(Input::class);
         $output = \Mockery::mock(Output::class);
-        $server = DatabaseServerFactory::create(['publicly_accessible' => true]);
+        $server = DatabaseServerFactory::createMysql(['publicly_accessible' => true]);
 
         $context->shouldReceive('getInput')->andReturn($input);
         $context->shouldReceive('getOutput')->andReturn($output);
@@ -81,8 +81,8 @@ class DatabasesRequirementTest extends TestCase
         $context = \Mockery::mock(ExecutionContext::class);
         $input = \Mockery::mock(Input::class);
         $output = \Mockery::mock(Output::class);
-        $database = DatabaseFactory::create(['name' => 'db1']);
-        $server = DatabaseServerFactory::create(['publicly_accessible' => true]);
+        $database = DatabaseFactory::createMysql(['name' => 'db1']);
+        $server = DatabaseServerFactory::createMysql(['publicly_accessible' => true]);
 
         $context->shouldReceive('getApiClient')->andReturn($apiClient);
         $context->shouldReceive('getInput')->andReturn($input);

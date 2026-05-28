@@ -17,9 +17,8 @@ use Ymir\Cli\Exception\InvalidArgumentException;
 use Ymir\Cli\Exception\Resource\RequirementDependencyException;
 use Ymir\Cli\Exception\Resource\RequirementValidationException;
 use Ymir\Cli\ExecutionContext;
-use Ymir\Cli\Resource\Model\DatabaseServer;
 
-class DatabaseServerStorageRequirement extends AbstractRequirement
+class DatabaseServerStorageRequirement extends AbstractDatabaseServerRequirement
 {
     /**
      * The default storage value.
@@ -47,9 +46,9 @@ class DatabaseServerStorageRequirement extends AbstractRequirement
      */
     public function fulfill(ExecutionContext $context, array $fulfilledRequirements = []): ?int
     {
-        if (empty($fulfilledRequirements['type'])) {
+        if (empty($fulfilledRequirements['type']) || !is_string($fulfilledRequirements['type'])) {
             throw new RequirementDependencyException('"type" must be fulfilled before fulfilling the database server storage requirement');
-        } elseif (DatabaseServer::AURORA_DATABASE_TYPE === $fulfilledRequirements['type']) {
+        } elseif ($this->isAuroraDatabaseType($fulfilledRequirements['type'])) {
             return null;
         }
 

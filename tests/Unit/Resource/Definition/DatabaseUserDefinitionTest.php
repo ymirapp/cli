@@ -83,8 +83,8 @@ class DatabaseUserDefinitionTest extends TestCase
 
     public function testProvision(): void
     {
-        $databaseServer = DatabaseServerFactory::create();
-        $databaseUser = DatabaseUserFactory::create();
+        $databaseServer = DatabaseServerFactory::createMysql();
+        $databaseUser = DatabaseUserFactory::createMysql();
 
         $this->apiClient->shouldReceive('createDatabaseUser')->once()
                   ->with($databaseServer, 'user', ['db1'])
@@ -101,10 +101,10 @@ class DatabaseUserDefinitionTest extends TestCase
 
     public function testResolveThrowsExceptionIfDatabaseUserNotFound(): void
     {
-        $databaseServer = DatabaseServerFactory::create();
+        $databaseServer = DatabaseServerFactory::createMysql();
         $this->context->shouldReceive('getParentResource')->andReturn($databaseServer);
         $this->input->shouldReceive('getStringArgument')->with('user')->andReturn('non-existent');
-        $this->apiClient->shouldReceive('getDatabaseUsers')->andReturn(new ResourceCollection([DatabaseUserFactory::create(['username' => 'other'])]));
+        $this->apiClient->shouldReceive('getDatabaseUsers')->andReturn(new ResourceCollection([DatabaseUserFactory::createMysql(['username' => 'other'])]));
 
         $this->expectException(ResourceNotFoundException::class);
         $this->expectExceptionMessage('Unable to find a database user with "non-existent" as the ID or name');
@@ -126,7 +126,7 @@ class DatabaseUserDefinitionTest extends TestCase
 
     public function testResolveThrowsExceptionIfNoDatabaseUsersFound(): void
     {
-        $databaseServer = DatabaseServerFactory::create();
+        $databaseServer = DatabaseServerFactory::createMysql();
         $this->context->shouldReceive('getParentResource')->andReturn($databaseServer);
         $this->apiClient->shouldReceive('getDatabaseUsers')->andReturn(new ResourceCollection([]));
 
@@ -139,9 +139,9 @@ class DatabaseUserDefinitionTest extends TestCase
 
     public function testResolveThrowsExceptionIfUsernameIsEmptyAfterChoice(): void
     {
-        $databaseServer = DatabaseServerFactory::create();
+        $databaseServer = DatabaseServerFactory::createMysql();
         $this->context->shouldReceive('getParentResource')->andReturn($databaseServer);
-        $this->apiClient->shouldReceive('getDatabaseUsers')->andReturn(new ResourceCollection([DatabaseUserFactory::create()]));
+        $this->apiClient->shouldReceive('getDatabaseUsers')->andReturn(new ResourceCollection([DatabaseUserFactory::createMysql()]));
         $this->input->shouldReceive('getStringArgument')->with('user')->andReturn('');
         $this->output->shouldReceive('choice')->with('question', \Mockery::type(Enumerable::class))->andReturn('');
 
@@ -154,8 +154,8 @@ class DatabaseUserDefinitionTest extends TestCase
 
     public function testResolveWithArgument(): void
     {
-        $databaseServer = DatabaseServerFactory::create();
-        $databaseUser = DatabaseUserFactory::create(['username' => 'my-user']);
+        $databaseServer = DatabaseServerFactory::createMysql();
+        $databaseUser = DatabaseUserFactory::createMysql(['username' => 'my-user']);
         $this->context->shouldReceive('getParentResource')->andReturn($databaseServer);
         $this->input->shouldReceive('getStringArgument')->with('user')->andReturn('my-user');
         $this->apiClient->shouldReceive('getDatabaseUsers')->andReturn(new ResourceCollection([$databaseUser]));
@@ -167,8 +167,8 @@ class DatabaseUserDefinitionTest extends TestCase
 
     public function testResolveWithChoice(): void
     {
-        $databaseServer = DatabaseServerFactory::create();
-        $databaseUser = DatabaseUserFactory::create(['username' => 'choice-user']);
+        $databaseServer = DatabaseServerFactory::createMysql();
+        $databaseUser = DatabaseUserFactory::createMysql(['username' => 'choice-user']);
         $this->context->shouldReceive('getParentResource')->andReturn($databaseServer);
         $this->input->shouldReceive('getStringArgument')->with('user')->andReturn('');
         $this->apiClient->shouldReceive('getDatabaseUsers')->andReturn(new ResourceCollection([$databaseUser]));

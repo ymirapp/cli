@@ -27,7 +27,7 @@ class ModifyDatabaseServerCommandTest extends TestCase
     {
         $team = $this->setupActiveTeam();
 
-        $server = DatabaseServerFactory::create([
+        $server = DatabaseServerFactory::createMysql([
             'id' => 1,
             'name' => 'my-server',
             'type' => 'db.t3.micro',
@@ -61,7 +61,7 @@ class ModifyDatabaseServerCommandTest extends TestCase
     {
         $team = $this->setupActiveTeam();
 
-        $server = DatabaseServerFactory::create([
+        $server = DatabaseServerFactory::createMysql([
             'id' => 1,
             'name' => 'my-server',
             'type' => 'db.t3.micro',
@@ -94,6 +94,72 @@ class ModifyDatabaseServerCommandTest extends TestCase
         $this->assertStringContainsString('Database server modified', $display);
     }
 
+    public function testModifyMysqlDatabaseServerRejectsAuroraType(): void
+    {
+        $this->expectException(InvalidInputException::class);
+        $this->expectExceptionMessage(sprintf('The type "%s" isn\'t a valid database type', DatabaseServer::AURORA_MYSQL_DATABASE_TYPE));
+
+        $team = $this->setupActiveTeam();
+
+        $server = DatabaseServerFactory::createMysql([
+            'id' => 1,
+            'name' => 'my-server',
+            'type' => 'db.t3.micro',
+            'storage' => 20,
+        ]);
+
+        $this->apiClient->shouldReceive('getTeam')->with(1)->andReturn($team);
+        $this->apiClient->shouldReceive('getDatabaseServers')->with($team)->andReturn(new ResourceCollection([$server]));
+        $this->apiClient->shouldReceive('getDatabaseServerTypes')->andReturn(collect([
+            'db.t3.micro' => 'db.t3.micro',
+            DatabaseServer::AURORA_MYSQL_DATABASE_TYPE => DatabaseServer::AURORA_MYSQL_DATABASE_TYPE,
+            DatabaseServer::AURORA_POSTGRESQL_DATABASE_TYPE => DatabaseServer::AURORA_POSTGRESQL_DATABASE_TYPE,
+        ]));
+
+        $this->bootApplication([new ModifyDatabaseServerCommand($this->apiClient, $this->createExecutionContextFactory([
+            DatabaseServer::class => function () { return new DatabaseServerDefinition(); },
+        ]))]);
+
+        $this->executeCommand(ModifyDatabaseServerCommand::NAME, [
+            'server' => '1',
+            '--storage' => '20',
+            '--type' => DatabaseServer::AURORA_MYSQL_DATABASE_TYPE,
+        ]);
+    }
+
+    public function testModifyPostgresqlDatabaseServerRejectsAuroraType(): void
+    {
+        $this->expectException(InvalidInputException::class);
+        $this->expectExceptionMessage(sprintf('The type "%s" isn\'t a valid database type', DatabaseServer::AURORA_POSTGRESQL_DATABASE_TYPE));
+
+        $team = $this->setupActiveTeam();
+
+        $server = DatabaseServerFactory::createPostgresql([
+            'id' => 1,
+            'name' => 'my-server',
+            'type' => 'db.t3.micro',
+            'storage' => 20,
+        ]);
+
+        $this->apiClient->shouldReceive('getTeam')->with(1)->andReturn($team);
+        $this->apiClient->shouldReceive('getDatabaseServers')->with($team)->andReturn(new ResourceCollection([$server]));
+        $this->apiClient->shouldReceive('getDatabaseServerTypes')->andReturn(collect([
+            'db.t3.micro' => 'db.t3.micro',
+            DatabaseServer::AURORA_MYSQL_DATABASE_TYPE => DatabaseServer::AURORA_MYSQL_DATABASE_TYPE,
+            DatabaseServer::AURORA_POSTGRESQL_DATABASE_TYPE => DatabaseServer::AURORA_POSTGRESQL_DATABASE_TYPE,
+        ]));
+
+        $this->bootApplication([new ModifyDatabaseServerCommand($this->apiClient, $this->createExecutionContextFactory([
+            DatabaseServer::class => function () { return new DatabaseServerDefinition(); },
+        ]))]);
+
+        $this->executeCommand(ModifyDatabaseServerCommand::NAME, [
+            'server' => '1',
+            '--storage' => '20',
+            '--type' => DatabaseServer::AURORA_POSTGRESQL_DATABASE_TYPE,
+        ]);
+    }
+
     public function testThrowsExceptionIfReducingStorage(): void
     {
         $this->expectException(InvalidInputException::class);
@@ -101,7 +167,7 @@ class ModifyDatabaseServerCommandTest extends TestCase
 
         $team = $this->setupActiveTeam();
 
-        $server = DatabaseServerFactory::create(['id' => 1, 'name' => 'my-server', 'storage' => 40]);
+        $server = DatabaseServerFactory::createMysql(['id' => 1, 'name' => 'my-server', 'storage' => 40]);
 
         $this->apiClient->shouldReceive('getTeam')->with(1)->andReturn($team);
         $this->apiClient->shouldReceive('getDatabaseServers')->with($team)->andReturn(new ResourceCollection([$server]));

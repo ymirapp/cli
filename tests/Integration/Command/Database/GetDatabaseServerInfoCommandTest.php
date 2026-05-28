@@ -26,7 +26,7 @@ class GetDatabaseServerInfoCommandTest extends TestCase
     {
         $team = $this->setupActiveTeam();
 
-        $server = DatabaseServerFactory::create([
+        $server = DatabaseServerFactory::createMysql([
             'id' => 1,
             'name' => 'my-server',
         ]);
@@ -50,7 +50,7 @@ class GetDatabaseServerInfoCommandTest extends TestCase
     {
         $team = $this->setupActiveTeam();
 
-        $server = DatabaseServerFactory::create([
+        $server = DatabaseServerFactory::createMysql([
             'id' => 1,
             'name' => 'my-server',
             'region' => 'us-east-1',

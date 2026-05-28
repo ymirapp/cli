@@ -30,13 +30,13 @@ class CreateDatabaseUserCommandTest extends TestCase
     {
         $team = $this->setupActiveTeam();
 
-        $server = DatabaseServerFactory::create(['id' => 1, 'name' => 'my-server', 'publicly_accessible' => true]);
-        $db1 = DatabaseFactory::create(['name' => 'db1']);
+        $server = DatabaseServerFactory::createMysql(['id' => 1, 'name' => 'my-server', 'publicly_accessible' => true]);
+        $db1 = DatabaseFactory::createMysql(['name' => 'db1']);
 
         $this->apiClient->shouldReceive('getTeam')->with(1)->andReturn($team);
         $this->apiClient->shouldReceive('getDatabaseServers')->with($team)->andReturn(new ResourceCollection([$server]));
         $this->apiClient->shouldReceive('getDatabases')->with($server)->andReturn(new ResourceCollection([$db1]));
-        $this->apiClient->shouldReceive('createDatabaseUser')->once()->andReturn(DatabaseUserFactory::create());
+        $this->apiClient->shouldReceive('createDatabaseUser')->once()->andReturn(DatabaseUserFactory::createMysql());
 
         $this->bootApplication([new CreateDatabaseUserCommand($this->apiClient, $this->createExecutionContextFactory([
             DatabaseServer::class => function () { return new DatabaseServerDefinition(); },
@@ -58,7 +58,7 @@ class CreateDatabaseUserCommandTest extends TestCase
     {
         $team = $this->setupActiveTeam();
 
-        $server = DatabaseServerFactory::create([
+        $server = DatabaseServerFactory::createMysql([
             'id' => 1,
             'name' => 'my-server',
             'publicly_accessible' => true,
@@ -71,7 +71,7 @@ class CreateDatabaseUserCommandTest extends TestCase
             ->with(\Mockery::on(function ($arg) use ($server) {
                 return $arg instanceof DatabaseServer && $arg->getId() === $server->getId();
             }), 'new_user', ['db1', 'db2'])
-            ->andReturn(DatabaseUserFactory::create(['username' => 'new_user', 'password' => 'secret123']));
+            ->andReturn(DatabaseUserFactory::createMysql(['username' => 'new_user', 'password' => 'secret123']));
 
         $this->bootApplication([new CreateDatabaseUserCommand($this->apiClient, $this->createExecutionContextFactory([
             DatabaseServer::class => function () { return new DatabaseServerDefinition(); },
@@ -91,11 +91,11 @@ class CreateDatabaseUserCommandTest extends TestCase
         $this->assertStringContainsString('secret123', $display);
     }
 
-    public function testShowsManualQueriesForPrivateServer(): void
+    public function testShowsManualQueriesForPrivateMysqlServer(): void
     {
         $team = $this->setupActiveTeam();
 
-        $server = DatabaseServerFactory::create([
+        $server = DatabaseServerFactory::createMysql([
             'id' => 1,
             'name' => 'private-server',
             'publicly_accessible' => false,
@@ -105,48 +105,14 @@ class CreateDatabaseUserCommandTest extends TestCase
         $this->apiClient->shouldReceive('getDatabaseServers')->with($team)->andReturn(new ResourceCollection([$server]));
         $this->apiClient->shouldReceive('createDatabaseUser')
             ->once()
-            ->andReturn(DatabaseUserFactory::create([
+            ->andReturn(DatabaseUserFactory::createMysql([
                 'username' => 'private_user',
                 'password' => 'pass123',
                 'database_server' => [
                     'id' => 1,
                     'name' => 'private-server',
-                    'region' => 'us-east-1',
-                    'status' => 'available',
                     'publicly_accessible' => false,
                     'endpoint' => 'db.internal',
-                    'locked' => false,
-                    'type' => 'mysql',
-                    'network' => [
-                        'id' => 1,
-                        'name' => 'network',
-                        'region' => 'us-east-1',
-                        'status' => 'active',
-                        'provider' => [
-                            'id' => 1,
-                            'name' => 'provider',
-                            'team' => [
-                                'id' => 1,
-                                'name' => 'team',
-                                'owner' => [
-                                    'id' => 1,
-                                    'name' => 'owner',
-                                ],
-                            ],
-                        ],
-                    ],
-                    'provider' => [
-                        'id' => 1,
-                        'name' => 'provider',
-                        'team' => [
-                            'id' => 1,
-                            'name' => 'team',
-                            'owner' => [
-                                'id' => 1,
-                                'name' => 'owner',
-                            ],
-                        ],
-                    ],
                 ],
             ]));
 
@@ -165,5 +131,49 @@ class CreateDatabaseUserCommandTest extends TestCase
 
         $this->assertStringContainsString('needs to be manually created on the "private-server" database server', $display);
         $this->assertStringContainsString('CREATE USER private_user@\'%\' IDENTIFIED BY \'pass123\'', $display);
+    }
+
+    public function testShowsManualQueriesForPrivatePostgresqlServer(): void
+    {
+        $team = $this->setupActiveTeam();
+
+        $server = DatabaseServerFactory::createPostgresql([
+            'id' => 1,
+            'name' => 'private-server',
+            'publicly_accessible' => false,
+        ]);
+
+        $this->apiClient->shouldReceive('getTeam')->with(1)->andReturn($team);
+        $this->apiClient->shouldReceive('getDatabaseServers')->with($team)->andReturn(new ResourceCollection([$server]));
+        $this->apiClient->shouldReceive('createDatabaseUser')
+            ->once()
+            ->andReturn(DatabaseUserFactory::createPostgresql([
+                'username' => 'private_user',
+                'password' => 'pass123',
+                'database_server' => [
+                    'id' => 1,
+                    'name' => 'private-server',
+                    'publicly_accessible' => false,
+                    'endpoint' => 'db.internal',
+                ],
+            ]));
+
+        $this->bootApplication([new CreateDatabaseUserCommand($this->apiClient, $this->createExecutionContextFactory([
+            DatabaseServer::class => function () { return new DatabaseServerDefinition(); },
+            DatabaseUser::class => function () { return new DatabaseUserDefinition(); },
+        ]))]);
+
+        $tester = $this->executeCommand(CreateDatabaseUserCommand::NAME, [
+            'user' => 'private_user',
+            'databases' => ['db1'],
+            '--server' => '1',
+        ]);
+
+        $display = $tester->getDisplay();
+
+        $this->assertStringContainsString('needs to be manually created on the "private-server" database server', $display);
+        $this->assertStringContainsString('CREATE USER "private_user" WITH PASSWORD \'pass123\'', $display);
+        $this->assertStringContainsString('GRANT "private_user" TO CURRENT_USER', $display);
+        $this->assertStringContainsString('GRANT ALL PRIVILEGES ON DATABASE "<database>" TO "private_user"', $display);
     }
 }

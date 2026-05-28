@@ -98,7 +98,7 @@ class PrivateDatabaseServerRequirementTest extends TestCase
 
         $requirement = new PrivateDatabaseServerRequirement();
 
-        $this->assertTrue($requirement->fulfill($context, ['network' => $network, 'type' => DatabaseServer::AURORA_DATABASE_TYPE]));
+        $this->assertTrue($requirement->fulfill($context, ['network' => $network, 'type' => DatabaseServer::AURORA_MYSQL_DATABASE_TYPE]));
     }
 
     public function testFulfillReturnsTrueIfUserWantsPrivateServerAndAcceptsNatGateway(): void
@@ -141,7 +141,7 @@ class PrivateDatabaseServerRequirementTest extends TestCase
 
         $requirement = new PrivateDatabaseServerRequirement();
 
-        $requirement->fulfill($context, ['network' => $network, 'type' => DatabaseServer::AURORA_DATABASE_TYPE]);
+        $requirement->fulfill($context, ['network' => $network, 'type' => DatabaseServer::AURORA_MYSQL_DATABASE_TYPE]);
     }
 
     public function testFulfillThrowsExceptionIfNetworkRequirementMissing(): void
@@ -171,7 +171,7 @@ class PrivateDatabaseServerRequirementTest extends TestCase
 
         $requirement = new PrivateDatabaseServerRequirement();
 
-        $requirement->fulfill($context, ['network' => $network, 'type' => DatabaseServer::AURORA_DATABASE_TYPE]);
+        $requirement->fulfill($context, ['network' => $network, 'type' => DatabaseServer::AURORA_MYSQL_DATABASE_TYPE]);
     }
 
     public function testFulfillThrowsExceptionIfTypeRequirementMissing(): void

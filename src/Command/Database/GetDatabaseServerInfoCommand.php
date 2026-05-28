@@ -46,7 +46,7 @@ class GetDatabaseServerInfoCommand extends AbstractCommand
         $databaseServer = $this->resolve(DatabaseServer::class, 'Which database server would you like to get information about?');
 
         $this->output->horizontalTable(
-            ['Id', 'Name', 'Status', 'Locked', 'Public', new TableSeparator(), 'Provider', 'Network', 'Region', 'Type', 'Storage', 'Endpoint'],
+            ['Id', 'Name', 'Status', 'Locked', 'Public', new TableSeparator(), 'Provider', 'Network', 'Region', 'Database', 'Type', 'Storage', 'Endpoint'],
             [[
                 $databaseServer->getId(),
                 $databaseServer->getName(),
@@ -57,6 +57,7 @@ class GetDatabaseServerInfoCommand extends AbstractCommand
                 $databaseServer->getNetwork()->getProvider()->getName(),
                 $databaseServer->getNetwork()->getName(),
                 $databaseServer->getRegion(),
+                $databaseServer->getEngineLabel(),
                 $databaseServer->getType(),
                 $databaseServer->getStorage() ? $databaseServer->getStorage().'GB' : 'N/A',
                 $databaseServer->getEndpoint() ?? 'pending',

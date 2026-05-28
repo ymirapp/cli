@@ -24,13 +24,13 @@ class ListDatabaseServersCommandTest extends TestCase
     {
         $team = $this->setupActiveTeam();
 
-        $server1 = DatabaseServerFactory::create([
+        $server1 = DatabaseServerFactory::createMysql([
             'id' => 1,
             'name' => 'server1',
             'region' => 'us-east-1',
             'status' => 'available',
         ]);
-        $server2 = DatabaseServerFactory::create([
+        $server2 = DatabaseServerFactory::createPostgresql([
             'id' => 2,
             'name' => 'server2',
             'region' => 'eu-west-1',
@@ -53,6 +53,7 @@ class ListDatabaseServersCommandTest extends TestCase
 
         $this->assertStringContainsString('2', $display);
         $this->assertStringContainsString('server2', $display);
+        $this->assertStringContainsString('PostgreSQL', $display);
         $this->assertStringContainsString('eu-west-1', $display);
         $this->assertStringContainsString('creating', $display);
     }

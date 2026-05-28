@@ -20,11 +20,15 @@ use Symfony\Component\Filesystem\Filesystem;
 use Ymir\Cli\ApiClient;
 use Ymir\Cli\Database\Connection;
 use Ymir\Cli\Database\PDO;
+use Ymir\Cli\Exception\Executable\ExecutableNotDetectedException;
 use Ymir\Cli\Exception\InvalidInputException;
 use Ymir\Cli\Exception\SystemException;
+use Ymir\Cli\Exception\UnsupportedDatabaseServerEngineException;
+use Ymir\Cli\Executable\PsqlExecutable;
 use Ymir\Cli\Executable\SshExecutable;
 use Ymir\Cli\ExecutionContextFactory;
 use Ymir\Cli\Process\Process;
+use Ymir\Cli\Resource\Model\DatabaseServer;
 
 class ImportDatabaseCommand extends AbstractDatabaseTunnelCommand
 {
@@ -43,13 +47,21 @@ class ImportDatabaseCommand extends AbstractDatabaseTunnelCommand
     private $filesystem;
 
     /**
+     * The psql executable.
+     *
+     * @var PsqlExecutable
+     */
+    private $psqlExecutable;
+
+    /**
      * Constructor.
      */
-    public function __construct(ApiClient $apiClient, ExecutionContextFactory $contextFactory, Filesystem $filesystem, SshExecutable $sshExecutable)
+    public function __construct(ApiClient $apiClient, ExecutionContextFactory $contextFactory, Filesystem $filesystem, PsqlExecutable $psqlExecutable, SshExecutable $sshExecutable)
     {
         parent::__construct($apiClient, $contextFactory, $sshExecutable);
 
         $this->filesystem = $filesystem;
+        $this->psqlExecutable = $psqlExecutable;
     }
 
     /**
@@ -82,10 +94,12 @@ class ImportDatabaseCommand extends AbstractDatabaseTunnelCommand
 
         $this->output->infoWithDelayWarning(sprintf('Importing "<comment>%s</comment>" to the "<comment>%s</comment>" database', $filename, $connection->getDatabase()));
 
-        $this->importBackup($connection, $filename);
-
-        if ($tunnel instanceof Process) {
-            $tunnel->stop();
+        try {
+            $this->importBackup($connection, $filename);
+        } finally {
+            if ($tunnel instanceof Process) {
+                $tunnel->stop();
+            }
         }
 
         $this->output->info('Database imported successfully');
@@ -113,19 +127,46 @@ class ImportDatabaseCommand extends AbstractDatabaseTunnelCommand
     private function importBackup(Connection $connection, string $filename): void
     {
         try {
-            $isCompressed = str_ends_with($filename, '.gz');
+            $engine = $connection->getDatabaseServer()->getEngine();
 
-            $fclose = $isCompressed ? 'gzclose' : 'fclose';
-            $feof = $isCompressed ? 'gzeof' : 'feof';
-            $fgets = $isCompressed ? 'gzgets' : 'fgets';
-            $fopen = $isCompressed ? 'gzopen' : 'fopen';
+            switch ($engine) {
+                case DatabaseServer::ENGINE_MYSQL:
+                    $this->importMysqlBackup($connection, $filename);
 
-            $file = $fopen($filename, 'r');
+                    break;
+                case DatabaseServer::ENGINE_POSTGRESQL:
+                    $this->importPostgresqlBackup($connection, $filename);
 
-            if (!is_resource($file)) {
-                throw new SystemException(sprintf('Failed to open file: %s', $filename));
+                    break;
+                default:
+                    throw new UnsupportedDatabaseServerEngineException($engine);
             }
+        } catch (SystemException|ExecutableNotDetectedException|UnsupportedDatabaseServerEngineException $exception) {
+            throw $exception;
+        } catch (\PDOException $exception) {
+            throw new SystemException(sprintf('Failed to import database: %s', $exception->getMessage()));
+        } catch (\Throwable $exception) {
+            throw new SystemException($exception->getMessage());
+        }
+    }
 
+    /**
+     * Imports the given SQL backup file using the given MySQL connection.
+     */
+    private function importMysqlBackup(Connection $connection, string $filename): void
+    {
+        $isCompressed = str_ends_with($filename, '.gz');
+        $fclose = $isCompressed ? 'gzclose' : 'fclose';
+        $feof = $isCompressed ? 'gzeof' : 'feof';
+        $fgets = $isCompressed ? 'gzgets' : 'fgets';
+        $fopen = $isCompressed ? 'gzopen' : 'fopen';
+        $file = $fopen($filename, 'r');
+
+        if (!is_resource($file)) {
+            throw new SystemException(sprintf('Failed to open file: %s', $filename));
+        }
+
+        try {
             $lines = LazyCollection::make(function () use (&$file, $feof, $fgets) {
                 while (!$feof($file)) {
                     yield $fgets($file);
@@ -152,20 +193,30 @@ class ImportDatabaseCommand extends AbstractDatabaseTunnelCommand
                     $query = '';
                 }
             });
-        } catch (\Throwable $exception) {
-            if ($exception instanceof SystemException) {
-                throw $exception;
-            }
-
-            $message = $exception->getMessage();
-
-            if ($exception instanceof \PDOException) {
-                $message = sprintf('Failed to import database: %s', $message);
-            }
-
-            throw new SystemException($message);
         } finally {
-            if (isset($file, $fclose) && is_resource($file)) {
+            if (is_resource($file)) {
+                $fclose($file);
+            }
+        }
+    }
+
+    /**
+     * Imports the given SQL backup file using the given PostgreSQL connection.
+     */
+    private function importPostgresqlBackup(Connection $connection, string $filename): void
+    {
+        $fclose = str_ends_with($filename, '.gz') ? 'gzclose' : 'fclose';
+        $fopen = str_ends_with($filename, '.gz') ? 'gzopen' : 'fopen';
+        $file = $fopen($filename, 'r');
+
+        if (!is_resource($file)) {
+            throw new SystemException(sprintf('Failed to open file: %s', $filename));
+        }
+
+        try {
+            $this->psqlExecutable->import($connection, $file);
+        } finally {
+            if (is_resource($file)) {
                 $fclose($file);
             }
         }

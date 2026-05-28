@@ -29,8 +29,8 @@ class DeleteDatabaseUserCommandTest extends TestCase
     {
         $team = $this->setupActiveTeam();
 
-        $server = DatabaseServerFactory::create(['id' => 1, 'name' => 'my-server', 'publicly_accessible' => true]);
-        $user = DatabaseUserFactory::create(['id' => 1, 'username' => 'old_user']);
+        $server = DatabaseServerFactory::createMysql(['id' => 1, 'name' => 'my-server', 'publicly_accessible' => true]);
+        $user = DatabaseUserFactory::createMysql(['id' => 1, 'username' => 'old_user']);
 
         $this->apiClient->shouldReceive('getTeam')->with(1)->andReturn($team);
         $this->apiClient->shouldReceive('getDatabaseServers')->with($team)->andReturn(new ResourceCollection([$server]));
@@ -50,47 +50,19 @@ class DeleteDatabaseUserCommandTest extends TestCase
         $this->assertStringContainsString('Database user deleted', $tester->getDisplay());
     }
 
-    public function testShowsManualQueryForPrivateServer(): void
+    public function testShowsManualQueryForPrivateMysqlServer(): void
     {
         $team = $this->setupActiveTeam();
 
-        $server = DatabaseServerFactory::create(['id' => 1, 'name' => 'private-server', 'publicly_accessible' => false]);
-        $user = DatabaseUserFactory::create([
+        $server = DatabaseServerFactory::createMysql(['id' => 1, 'name' => 'private-server', 'publicly_accessible' => false]);
+        $user = DatabaseUserFactory::createMysql([
             'id' => 1,
             'username' => 'private_user',
             'database_server' => [
                 'id' => 1,
                 'name' => 'private-server',
                 'publicly_accessible' => false,
-                'region' => 'us-east-1',
-                'status' => 'available',
                 'endpoint' => 'db.internal',
-                'locked' => false,
-                'type' => 'mysql',
-                'network' => [
-                    'id' => 1,
-                    'name' => 'network',
-                    'region' => 'us-east-1',
-                    'status' => 'active',
-                    'provider' => [
-                        'id' => 1,
-                        'name' => 'provider',
-                        'team' => [
-                            'id' => 1,
-                            'name' => 'team',
-                            'owner' => ['id' => 1, 'name' => 'owner'],
-                        ],
-                    ],
-                ],
-                'provider' => [
-                    'id' => 1,
-                    'name' => 'provider',
-                    'team' => [
-                        'id' => 1,
-                        'name' => 'team',
-                        'owner' => ['id' => 1, 'name' => 'owner'],
-                    ],
-                ],
             ],
         ]);
 
@@ -113,5 +85,46 @@ class DeleteDatabaseUserCommandTest extends TestCase
 
         $this->assertStringContainsString('needs to be manually deleted on the database server', $display);
         $this->assertStringContainsString('DROP USER IF EXISTS private_user@\'%\'', $display);
+    }
+
+    public function testShowsManualQueryForPrivatePostgresqlServer(): void
+    {
+        $team = $this->setupActiveTeam();
+
+        $server = DatabaseServerFactory::createPostgresql([
+            'id' => 1,
+            'name' => 'private-server',
+            'publicly_accessible' => false,
+        ]);
+        $user = DatabaseUserFactory::createPostgresql([
+            'id' => 1,
+            'username' => 'private_user',
+            'database_server' => [
+                'id' => 1,
+                'name' => 'private-server',
+                'publicly_accessible' => false,
+                'endpoint' => 'db.internal',
+            ],
+        ]);
+
+        $this->apiClient->shouldReceive('getTeam')->with(1)->andReturn($team);
+        $this->apiClient->shouldReceive('getDatabaseServers')->with($team)->andReturn(new ResourceCollection([$server]));
+        $this->apiClient->shouldReceive('getDatabaseUsers')->with($server)->andReturn(new ResourceCollection([$user]));
+        $this->apiClient->shouldReceive('deleteDatabaseUser')->once();
+
+        $this->bootApplication([new DeleteDatabaseUserCommand($this->apiClient, $this->createExecutionContextFactory([
+            DatabaseServer::class => function () { return new DatabaseServerDefinition(); },
+            DatabaseUser::class => function () { return new DatabaseUserDefinition(); },
+        ]))]);
+
+        $tester = $this->executeCommand(DeleteDatabaseUserCommand::NAME, [
+            'user' => 'private_user',
+            '--server' => '1',
+        ], ['y']);
+
+        $display = $tester->getDisplay();
+
+        $this->assertStringContainsString('needs to be manually deleted on the database server', $display);
+        $this->assertStringContainsString('DROP USER IF EXISTS "private_user"', $display);
     }
 }

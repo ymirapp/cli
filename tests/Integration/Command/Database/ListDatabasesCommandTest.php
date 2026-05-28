@@ -28,13 +28,13 @@ class ListDatabasesCommandTest extends TestCase
     {
         $team = $this->setupActiveTeam();
 
-        $server = DatabaseServerFactory::create([
+        $server = DatabaseServerFactory::createMysql([
             'id' => 1,
             'name' => 'my-server',
             'publicly_accessible' => true,
         ]);
 
-        $db1 = DatabaseFactory::create(['name' => 'db1']);
+        $db1 = DatabaseFactory::createMysql(['name' => 'db1']);
 
         $this->apiClient->shouldReceive('getDatabaseServers')->with($team)->andReturn(new ResourceCollection([$server]));
         $this->apiClient->shouldReceive('getDatabases')->with(\Mockery::on(function ($arg) use ($server) {
@@ -57,14 +57,14 @@ class ListDatabasesCommandTest extends TestCase
     {
         $team = $this->setupActiveTeam();
 
-        $server = DatabaseServerFactory::create([
+        $server = DatabaseServerFactory::createMysql([
             'id' => 1,
             'name' => 'my-server',
             'publicly_accessible' => true,
         ]);
 
-        $db1 = DatabaseFactory::create(['name' => 'db1']);
-        $db2 = DatabaseFactory::create(['name' => 'db2']);
+        $db1 = DatabaseFactory::createMysql(['name' => 'db1']);
+        $db2 = DatabaseFactory::createMysql(['name' => 'db2']);
 
         $this->apiClient->shouldReceive('getDatabaseServers')->with($team)->andReturn(new ResourceCollection([$server]));
         $this->apiClient->shouldReceive('getDatabases')->with(\Mockery::on(function ($arg) use ($server) {
@@ -90,7 +90,7 @@ class ListDatabasesCommandTest extends TestCase
 
         $team = $this->setupActiveTeam();
 
-        $server = DatabaseServerFactory::create([
+        $server = DatabaseServerFactory::createMysql([
             'id' => 1,
             'name' => 'private-server',
             'publicly_accessible' => false,

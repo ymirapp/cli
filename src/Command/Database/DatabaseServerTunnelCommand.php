@@ -36,7 +36,7 @@ class DatabaseServerTunnelCommand extends AbstractDatabaseTunnelCommand
             ->setName(self::NAME)
             ->setDescription('Create a SSH tunnel to a database server')
             ->addArgument('server', InputArgument::OPTIONAL, 'The ID or name of the database server to create a SSH tunnel to')
-            ->addOption('port', null, InputOption::VALUE_REQUIRED, 'The local port to use to connect to the database server', '3305');
+            ->addOption('port', null, InputOption::VALUE_REQUIRED, 'The local port to use to connect to the database server');
     }
 
     /**
@@ -45,7 +45,7 @@ class DatabaseServerTunnelCommand extends AbstractDatabaseTunnelCommand
     protected function perform()
     {
         $databaseServer = $this->resolve(DatabaseServer::class, 'Which database server would you like to connect to?');
-        $localPort = (int) $this->input->getNumericOption('port');
+        $localPort = $this->input->getNumericOption('port') ?? $databaseServer->getDefaultLocalPort();
 
         if (empty($localPort)) {
             throw new InvalidInputException('You must provide a valid "port" option');

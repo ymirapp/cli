@@ -29,7 +29,7 @@ class DatabaseServerTunnelCommandTest extends TestCase
     {
         $team = $this->setupActiveTeam();
 
-        $server = DatabaseServerFactory::create([
+        $server = DatabaseServerFactory::createMysql([
             'id' => 1,
             'name' => 'my-private-server',
             'publicly_accessible' => false,
@@ -89,7 +89,7 @@ class DatabaseServerTunnelCommandTest extends TestCase
     {
         $team = $this->setupActiveTeam();
 
-        $server = DatabaseServerFactory::create([
+        $server = DatabaseServerFactory::createMysql([
             'id' => 1,
             'name' => 'my-private-server',
             'publicly_accessible' => false,
@@ -146,6 +146,67 @@ class DatabaseServerTunnelCommandTest extends TestCase
         $this->assertStringContainsString('127.0.0.1:3305', $display);
     }
 
+    public function testDatabaseServerTunnelWithPostgresqlServer(): void
+    {
+        $team = $this->setupActiveTeam();
+
+        $server = DatabaseServerFactory::createPostgresql([
+            'id' => 1,
+            'name' => 'my-private-server',
+            'publicly_accessible' => false,
+            'status' => 'available',
+            'endpoint' => 'db.internal',
+            'network' => [
+                'id' => 1,
+                'name' => 'my-network',
+                'region' => 'us-east-1',
+                'status' => 'active',
+                'provider' => [
+                    'id' => 1,
+                    'name' => 'provider',
+                    'team' => [
+                        'id' => 1,
+                        'name' => 'team',
+                        'owner' => [
+                            'id' => 1,
+                            'name' => 'owner',
+                        ],
+                    ],
+                ],
+                'bastion_host' => [
+                    'id' => 1,
+                    'key_name' => 'bastion',
+                    'endpoint' => 'bastion.example.com',
+                    'private_key' => 'secret',
+                    'status' => 'active',
+                ],
+            ],
+        ]);
+
+        $this->apiClient->shouldReceive('getTeam')->with(1)->andReturn($team);
+        $this->apiClient->shouldReceive('getDatabaseServers')->with($team)->andReturn(new ResourceCollection([$server]));
+
+        $process = \Mockery::mock(Process::class);
+        $process->shouldReceive('wait')->once();
+
+        $sshExecutable = \Mockery::mock(SshExecutable::class);
+        $sshExecutable->shouldReceive('openTunnelToBastionHost')
+            ->once()
+            ->with(\Mockery::any(), 5433, 'db.internal', 5432)
+            ->andReturn($process);
+
+        $this->bootApplication([new DatabaseServerTunnelCommand($this->apiClient, $this->createExecutionContextFactory([
+            DatabaseServer::class => function () { return new DatabaseServerDefinition(); },
+        ]), $sshExecutable)]);
+
+        $tester = $this->executeCommand(DatabaseServerTunnelCommand::NAME, ['server' => '1']);
+
+        $display = $tester->getDisplay();
+
+        $this->assertStringContainsString('SSH tunnel to the "my-private-server" database server opened', $display);
+        $this->assertStringContainsString('127.0.0.1:5433', $display);
+    }
+
     public function testThrowsExceptionIfServerIsPublic(): void
     {
         $this->expectException(InvalidInputException::class);
@@ -153,7 +214,7 @@ class DatabaseServerTunnelCommandTest extends TestCase
 
         $team = $this->setupActiveTeam();
 
-        $server = DatabaseServerFactory::create([
+        $server = DatabaseServerFactory::createMysql([
             'id' => 1,
             'name' => 'public-server',
             'publicly_accessible' => true,

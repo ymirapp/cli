@@ -82,7 +82,7 @@ class DatabaseDefinitionTest extends TestCase
 
     public function testProvision(): void
     {
-        $databaseServer = DatabaseServerFactory::create();
+        $databaseServer = DatabaseServerFactory::createMysql();
         $database = new Database('database', $databaseServer);
 
         $this->apiClient->shouldReceive('createDatabase')->once()
@@ -97,17 +97,46 @@ class DatabaseDefinitionTest extends TestCase
         ]));
     }
 
-    public function testResolveFiltersSystemDatabases(): void
+    public function testResolveFiltersMysqlSystemDatabases(): void
     {
-        $databaseServer = DatabaseServerFactory::create(['publicly_accessible' => true]);
+        $databaseServer = DatabaseServerFactory::createMysql(['publicly_accessible' => true]);
         $this->context->shouldReceive('getParentResource')->andReturn($databaseServer);
         $this->input->shouldReceive('getStringArgument')->with('database')->andReturn('');
         $this->apiClient->shouldReceive('getDatabases')->andReturn(new ResourceCollection([
             new Database('information_schema', $databaseServer),
+            new Database('innodb', $databaseServer),
             new Database('mysql', $databaseServer),
             new Database('my_db', $databaseServer),
+            new Database('performance_schema', $databaseServer),
+            new Database('sys', $databaseServer),
         ]));
-        $this->output->shouldReceive('choice')->with('question', \Mockery::type(Enumerable::class))->andReturn('my_db');
+        $this->output->shouldReceive('choice')->with('question', \Mockery::on(function (Enumerable $choices): bool {
+            return ['my_db'] === $choices->all();
+        }))->andReturn('my_db');
+
+        $definition = new DatabaseDefinition();
+        $database = $definition->resolve($this->context, 'question');
+
+        $this->assertSame('my_db', $database->getName());
+    }
+
+    public function testResolveFiltersPostgresqlSystemDatabases(): void
+    {
+        $databaseServer = DatabaseServerFactory::createPostgresql([
+            'publicly_accessible' => true,
+        ]);
+        $this->context->shouldReceive('getParentResource')->andReturn($databaseServer);
+        $this->input->shouldReceive('getStringArgument')->with('database')->andReturn('');
+        $this->apiClient->shouldReceive('getDatabases')->andReturn(new ResourceCollection([
+            new Database('postgres', $databaseServer),
+            new Database('rdsadmin', $databaseServer),
+            new Database('template0', $databaseServer),
+            new Database('template1', $databaseServer),
+            new Database('my_db', $databaseServer),
+        ]));
+        $this->output->shouldReceive('choice')->with('question', \Mockery::on(function (Enumerable $choices): bool {
+            return ['my_db'] === $choices->all();
+        }))->andReturn('my_db');
 
         $definition = new DatabaseDefinition();
         $database = $definition->resolve($this->context, 'question');
@@ -117,7 +146,7 @@ class DatabaseDefinitionTest extends TestCase
 
     public function testResolveReturnsDatabaseIfPrivateServerAndNameProvided(): void
     {
-        $databaseServer = DatabaseServerFactory::create(['publicly_accessible' => false]);
+        $databaseServer = DatabaseServerFactory::createMysql(['publicly_accessible' => false]);
         $this->context->shouldReceive('getParentResource')->andReturn($databaseServer);
         $this->input->shouldReceive('getStringArgument')->with('database')->andReturn('my_db');
 
@@ -131,7 +160,7 @@ class DatabaseDefinitionTest extends TestCase
 
     public function testResolveThrowsExceptionIfDatabaseNameIsEmptyAfterChoice(): void
     {
-        $databaseServer = DatabaseServerFactory::create(['publicly_accessible' => true]);
+        $databaseServer = DatabaseServerFactory::createMysql(['publicly_accessible' => true]);
         $this->context->shouldReceive('getParentResource')->andReturn($databaseServer);
         $this->input->shouldReceive('getStringArgument')->with('database')->andReturn('');
         $this->apiClient->shouldReceive('getDatabases')->andReturn(new ResourceCollection([new Database('my_db', $databaseServer)]));
@@ -146,7 +175,7 @@ class DatabaseDefinitionTest extends TestCase
 
     public function testResolveThrowsExceptionIfDatabaseNotFound(): void
     {
-        $databaseServer = DatabaseServerFactory::create(['publicly_accessible' => true]);
+        $databaseServer = DatabaseServerFactory::createMysql(['publicly_accessible' => true]);
         $this->context->shouldReceive('getParentResource')->andReturn($databaseServer);
         $this->input->shouldReceive('getStringArgument')->with('database')->andReturn('non-existent');
         $this->apiClient->shouldReceive('getDatabases')->andReturn(new ResourceCollection([new Database('other', $databaseServer)]));
@@ -171,7 +200,7 @@ class DatabaseDefinitionTest extends TestCase
 
     public function testResolveThrowsExceptionIfNoDatabasesFoundOnPublicServer(): void
     {
-        $databaseServer = DatabaseServerFactory::create(['publicly_accessible' => true]);
+        $databaseServer = DatabaseServerFactory::createMysql(['publicly_accessible' => true]);
         $this->context->shouldReceive('getParentResource')->andReturn($databaseServer);
         $this->input->shouldReceive('getStringArgument')->with('database')->andReturn('');
         $this->apiClient->shouldReceive('getDatabases')->andReturn(new ResourceCollection([]));
@@ -185,7 +214,7 @@ class DatabaseDefinitionTest extends TestCase
 
     public function testResolveThrowsExceptionIfPrivateServerAndNoDatabaseNameProvided(): void
     {
-        $databaseServer = DatabaseServerFactory::create(['publicly_accessible' => false]);
+        $databaseServer = DatabaseServerFactory::createMysql(['publicly_accessible' => false]);
         $this->context->shouldReceive('getParentResource')->andReturn($databaseServer);
         $this->input->shouldReceive('getStringArgument')->with('database')->andReturn('');
 
@@ -198,7 +227,7 @@ class DatabaseDefinitionTest extends TestCase
 
     public function testResolveWithArgumentOnPublicServer(): void
     {
-        $databaseServer = DatabaseServerFactory::create(['publicly_accessible' => true]);
+        $databaseServer = DatabaseServerFactory::createMysql(['publicly_accessible' => true]);
         $database = new Database('my_db', $databaseServer);
         $this->context->shouldReceive('getParentResource')->andReturn($databaseServer);
         $this->input->shouldReceive('getStringArgument')->with('database')->andReturn('my_db');
@@ -211,7 +240,7 @@ class DatabaseDefinitionTest extends TestCase
 
     public function testResolveWithChoiceOnPublicServer(): void
     {
-        $databaseServer = DatabaseServerFactory::create(['publicly_accessible' => true]);
+        $databaseServer = DatabaseServerFactory::createMysql(['publicly_accessible' => true]);
         $database = new Database('choice_db', $databaseServer);
         $this->context->shouldReceive('getParentResource')->andReturn($databaseServer);
         $this->input->shouldReceive('getStringArgument')->with('database')->andReturn('');

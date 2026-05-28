@@ -17,6 +17,7 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
 use Ymir\Cli\Command\AbstractCommand;
 use Ymir\Cli\Exception\Resource\ProvisioningFailedException;
+use Ymir\Cli\Exception\UnsupportedDatabaseServerEngineException;
 use Ymir\Cli\Resource\Model\DatabaseServer;
 use Ymir\Cli\Resource\Model\DatabaseUser;
 
@@ -54,6 +55,8 @@ class CreateDatabaseUserCommand extends AbstractCommand
             throw new ProvisioningFailedException('Failed to provision database user');
         }
 
+        $databaseServer = $databaseUser->getDatabaseServer();
+
         $this->output->horizontalTable(
             ['Username', 'Password'],
             [[$databaseUser->getName(), $databaseUser->getPassword()]]
@@ -63,11 +66,27 @@ class CreateDatabaseUserCommand extends AbstractCommand
         $this->output->newLine();
         $this->output->info('Database user created successfully');
 
-        if (!$databaseUser->getDatabaseServer()->isPublic()) {
-            $this->output->newLine();
-            $this->output->important(sprintf('The "<comment>%s</comment>" database user needs to be manually created on the "<comment>%s</comment>" database server because it isn\'t publicly accessible. You can use the following queries to create it and grant it access to the server:', $databaseUser->getName(), $databaseUser->getDatabaseServer()->getName()));
-            $this->output->writeln(sprintf('CREATE USER %s@\'%%\' IDENTIFIED BY \'%s\'', $databaseUser->getName(), $databaseUser->getPassword()));
-            $this->output->writeln(sprintf('GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, DROP, INDEX, ALTER, CREATE TEMPORARY TABLES ON *.* TO %s@\'%%\'', $databaseUser->getName()));
+        if ($databaseServer->isPublic()) {
+            return;
+        }
+
+        $this->output->newLine();
+        $this->output->important(sprintf('The "<comment>%s</comment>" database user needs to be manually created on the "<comment>%s</comment>" database server because it isn\'t publicly accessible. You can use the following queries to create it and grant it access to the server:', $databaseUser->getName(), $databaseServer->getName()));
+
+        switch ($databaseServer->getEngine()) {
+            case DatabaseServer::ENGINE_MYSQL:
+                $this->output->writeln(sprintf('CREATE USER %s@\'%%\' IDENTIFIED BY \'%s\'', $databaseUser->getName(), $databaseUser->getPassword()));
+                $this->output->writeln(sprintf('GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, DROP, INDEX, ALTER, CREATE TEMPORARY TABLES ON *.* TO %s@\'%%\'', $databaseUser->getName()));
+
+                break;
+            case DatabaseServer::ENGINE_POSTGRESQL:
+                $this->output->writeln(sprintf('CREATE USER "%s" WITH PASSWORD \'%s\'', $databaseUser->getName(), $databaseUser->getPassword()));
+                $this->output->writeln(sprintf('GRANT "%s" TO CURRENT_USER', $databaseUser->getName()));
+                $this->output->writeln(sprintf('GRANT ALL PRIVILEGES ON DATABASE "<database>" TO "%s"', $databaseUser->getName()));
+
+                break;
+            default:
+                throw new UnsupportedDatabaseServerEngineException($databaseServer->getEngine());
         }
     }
 }

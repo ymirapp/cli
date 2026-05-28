@@ -39,7 +39,7 @@ class DatabaseServerStorageRequirementTest extends TestCase
 
         $requirement = new DatabaseServerStorageRequirement('Question?');
 
-        $this->assertNull($requirement->fulfill($context, ['type' => DatabaseServer::AURORA_DATABASE_TYPE]));
+        $this->assertNull($requirement->fulfill($context, ['type' => DatabaseServer::AURORA_MYSQL_DATABASE_TYPE]));
     }
 
     public function testFulfillReturnsStorageFromAskIfOptionNotProvided(): void

@@ -17,10 +17,9 @@ use Ymir\Cli\Exception\CommandCancelledException;
 use Ymir\Cli\Exception\InvalidInputException;
 use Ymir\Cli\Exception\Resource\RequirementDependencyException;
 use Ymir\Cli\ExecutionContext;
-use Ymir\Cli\Resource\Model\DatabaseServer;
 use Ymir\Cli\Resource\Model\Network;
 
-class PrivateDatabaseServerRequirement implements RequirementInterface
+class PrivateDatabaseServerRequirement extends AbstractDatabaseServerRequirement
 {
     /**
      * {@inheritdoc}
@@ -29,13 +28,13 @@ class PrivateDatabaseServerRequirement implements RequirementInterface
     {
         if (empty($fulfilledRequirements['network']) || !$fulfilledRequirements['network'] instanceof Network) {
             throw new RequirementDependencyException('"network" must be fulfilled before fulfilling the private database server requirement');
-        } elseif (empty($fulfilledRequirements['type'])) {
+        } elseif (empty($fulfilledRequirements['type']) || !is_string($fulfilledRequirements['type'])) {
             throw new RequirementDependencyException('"type" must be fulfilled before fulfilling the private database server requirement');
         }
 
         $hasNatGateway = $fulfilledRequirements['network']->hasNatGateway();
         $input = $context->getInput();
-        $serverless = DatabaseServer::AURORA_DATABASE_TYPE === $fulfilledRequirements['type'];
+        $serverless = $this->isAuroraDatabaseType($fulfilledRequirements['type']);
 
         if ($input->getBooleanOption('public') && $serverless) {
             throw new InvalidInputException('You cannot use the "--public" option when creating a serverless database server');

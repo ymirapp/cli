@@ -32,4 +32,19 @@ class Process extends SymfonyProcess
 
         return $process;
     }
+
+    /**
+     * Run a command with the given arguments without a shell wrapper.
+     */
+    public static function runWithArguments(string $command, array $arguments = [], ?string $cwd = null, ?array $env = null, $input = null, ?float $timeout = 60): self
+    {
+        $process = new self(array_merge([$command], $arguments), $cwd, $env, $input, $timeout);
+        $process->run();
+
+        if (!$process->isSuccessful()) {
+            throw new ExecutableException($process->getErrorOutput() ?: $process->getOutput());
+        }
+
+        return $process;
+    }
 }

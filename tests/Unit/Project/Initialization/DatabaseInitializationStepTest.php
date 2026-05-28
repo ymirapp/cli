@@ -60,7 +60,7 @@ class DatabaseInitializationStepTest extends TestCase
 
     public function testPerformProvisionsNewServerIfRequested(): void
     {
-        $databaseServer = DatabaseServerFactory::create([
+        $databaseServer = DatabaseServerFactory::createMysql([
             'name' => 'new-db-server',
             'publicly_accessible' => false,
         ]);
@@ -88,7 +88,7 @@ class DatabaseInitializationStepTest extends TestCase
 
     public function testPerformReturnsDatabaseConfigurationChangeIfServerSelected(): void
     {
-        $databaseServer = DatabaseServerFactory::create([
+        $databaseServer = DatabaseServerFactory::createMysql([
             'name' => 'db-server',
             'region' => 'us-east-1',
             'status' => 'available',
@@ -100,7 +100,7 @@ class DatabaseInitializationStepTest extends TestCase
         $this->output->shouldReceive('choiceWithResourceDetails')->once()->andReturn('db-server');
         $this->output->shouldReceive('askSlug')->once()->andReturn('prefix_');
         $this->output->shouldReceive('confirm')->with(\Mockery::pattern('/Would you like to create the/'))->once()->andReturn(true);
-        $this->apiClient->shouldReceive('createDatabase')->once()->with($databaseServer, 'prefix_staging')->andReturn(DatabaseFactory::create());
+        $this->apiClient->shouldReceive('createDatabase')->once()->with($databaseServer, 'prefix_staging')->andReturn(DatabaseFactory::createMysql());
 
         $step = new DatabaseInitializationStep();
 

@@ -32,7 +32,7 @@ class ResolveOrProvisionPublicDatabaseServerRequirementTest extends TestCase
         $input = \Mockery::mock(Input::class);
         $provisioner = \Mockery::mock(ResourceProvisioner::class);
         $team = TeamFactory::create();
-        $server = DatabaseServerFactory::create(['publicly_accessible' => true]);
+        $server = DatabaseServerFactory::createMysql(['publicly_accessible' => true]);
 
         $context->shouldReceive('getApiClient')->andReturn($apiClient);
         $context->shouldReceive('getInput')->andReturn($input);
@@ -59,7 +59,7 @@ class ResolveOrProvisionPublicDatabaseServerRequirementTest extends TestCase
         $context = \Mockery::mock(ExecutionContext::class);
         $input = \Mockery::mock(Input::class);
         $team = TeamFactory::create();
-        $server = DatabaseServerFactory::create(['name' => 'server-name']);
+        $server = DatabaseServerFactory::createMysql(['name' => 'server-name']);
 
         $context->shouldReceive('getApiClient')->andReturn($apiClient);
         $context->shouldReceive('getInput')->andReturn($input);

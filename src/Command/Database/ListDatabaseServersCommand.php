@@ -41,7 +41,7 @@ class ListDatabaseServersCommand extends AbstractCommand
     protected function perform()
     {
         $this->output->table(
-            ['Id', 'Name', 'Provider', 'Network', 'Region', 'Status', 'Locked', 'Public', 'Type', 'Storage'],
+            ['Id', 'Name', 'Provider', 'Network', 'Region', 'Status', 'Locked', 'Public', 'Database', 'Type', 'Storage'],
             $this->apiClient->getDatabaseServers($this->getTeam())->map(function (DatabaseServer $databaseServer) {
                 return [
                     $databaseServer->getId(),
@@ -52,6 +52,7 @@ class ListDatabaseServersCommand extends AbstractCommand
                     $this->output->formatStatus($databaseServer->getStatus()),
                     $this->output->formatBoolean($databaseServer->isLocked()),
                     $this->output->formatBoolean($databaseServer->isPublic()),
+                    $databaseServer->getEngineLabel(),
                     $databaseServer->getType(),
                     $databaseServer->getStorage() ? $databaseServer->getStorage().'GB' : 'N/A',
                 ];

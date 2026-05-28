@@ -29,8 +29,8 @@ class DeleteDatabaseCommandTest extends TestCase
     {
         $team = $this->setupActiveTeam();
 
-        $server = DatabaseServerFactory::create(['id' => 1, 'name' => 'my-server', 'publicly_accessible' => true]);
-        $db = DatabaseFactory::create(['name' => 'old_db']);
+        $server = DatabaseServerFactory::createMysql(['id' => 1, 'name' => 'my-server', 'publicly_accessible' => true]);
+        $db = DatabaseFactory::createMysql(['name' => 'old_db']);
 
         $this->apiClient->shouldReceive('getTeam')->with(1)->andReturn($team);
         $this->apiClient->shouldReceive('getDatabaseServers')->with($team)->andReturn(new ResourceCollection([$server]));
@@ -51,13 +51,13 @@ class DeleteDatabaseCommandTest extends TestCase
     {
         $team = $this->setupActiveTeam();
 
-        $server = DatabaseServerFactory::create([
+        $server = DatabaseServerFactory::createMysql([
             'id' => 1,
             'name' => 'my-server',
             'publicly_accessible' => true,
         ]);
 
-        $db = DatabaseFactory::create(['name' => 'interactive_db']);
+        $db = DatabaseFactory::createMysql(['name' => 'interactive_db']);
 
         $this->apiClient->shouldReceive('getTeam')->with(1)->andReturn($team);
         $this->apiClient->shouldReceive('getDatabaseServers')->with($team)->andReturn(new ResourceCollection([$server]));
@@ -91,13 +91,13 @@ class DeleteDatabaseCommandTest extends TestCase
     {
         $team = $this->setupActiveTeam();
 
-        $server = DatabaseServerFactory::create([
+        $server = DatabaseServerFactory::createMysql([
             'id' => 1,
             'name' => 'my-server',
             'publicly_accessible' => true,
         ]);
 
-        $db = DatabaseFactory::create(['name' => 'old_db']);
+        $db = DatabaseFactory::createMysql(['name' => 'old_db']);
 
         $this->apiClient->shouldReceive('getTeam')->with(1)->andReturn($team);
         $this->apiClient->shouldReceive('getDatabaseServers')->with($team)->andReturn(new ResourceCollection([$server]));

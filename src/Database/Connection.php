@@ -13,10 +13,21 @@ declare(strict_types=1);
 
 namespace Ymir\Cli\Database;
 
+use Ymir\Cli\Exception\UnsupportedDatabaseServerEngineException;
 use Ymir\Cli\Resource\Model\DatabaseServer;
 
 class Connection
 {
+    /**
+     * The DSN formats for database server engines.
+     *
+     * @var array
+     */
+    private const DSN_FORMATS = [
+        DatabaseServer::ENGINE_MYSQL => 'mysql:host=%s;port=%s;dbname=%s;charset=utf8mb4',
+        DatabaseServer::ENGINE_POSTGRESQL => 'pgsql:host=%s;port=%s;dbname=%s',
+    ];
+
     /**
      * The database the connection is for.
      *
@@ -68,7 +79,13 @@ class Connection
 
     public function getDsn(): string
     {
-        return sprintf('mysql:host=%s;port=%s;dbname=%s;charset=utf8mb4', $this->getHost(), $this->getPort(), $this->getDatabase());
+        $engine = $this->databaseServer->getEngine();
+
+        if (!isset(self::DSN_FORMATS[$engine])) {
+            throw new UnsupportedDatabaseServerEngineException($engine);
+        }
+
+        return sprintf(self::DSN_FORMATS[$engine], $this->getHost(), $this->getPort(), $this->getDatabase());
     }
 
     public function getHost(): string
@@ -83,7 +100,7 @@ class Connection
 
     public function getPort(): string
     {
-        return $this->databaseServer->isPublic() ? '3306' : '3305';
+        return (string) ($this->databaseServer->isPublic() ? $this->databaseServer->getDefaultPort() : $this->databaseServer->getDefaultLocalPort());
     }
 
     public function getUser(): string

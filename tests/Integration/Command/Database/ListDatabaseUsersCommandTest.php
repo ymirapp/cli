@@ -27,13 +27,13 @@ class ListDatabaseUsersCommandTest extends TestCase
     {
         $team = $this->setupActiveTeam();
 
-        $server = DatabaseServerFactory::create([
+        $server = DatabaseServerFactory::createMysql([
             'id' => 1,
             'name' => 'my-server',
         ]);
 
-        $user1 = DatabaseUserFactory::create(['id' => 1, 'username' => 'user1']);
-        $user2 = DatabaseUserFactory::create(['id' => 2, 'username' => 'user2']);
+        $user1 = DatabaseUserFactory::createMysql(['id' => 1, 'username' => 'user1']);
+        $user2 = DatabaseUserFactory::createMysql(['id' => 2, 'username' => 'user2']);
 
         $this->apiClient->shouldReceive('getTeam')->with(1)->andReturn($team);
         $this->apiClient->shouldReceive('getDatabaseServers')->with($team)->andReturn(new ResourceCollection([$server]));

@@ -35,7 +35,7 @@ class DatabaseServerRequirementTest extends TestCase
         $context = \Mockery::mock(ExecutionContext::class);
         $input = \Mockery::mock(Input::class);
         $team = TeamFactory::create();
-        $server = DatabaseServerFactory::create(['name' => 'server-name']);
+        $server = DatabaseServerFactory::createMysql(['name' => 'server-name']);
 
         $context->shouldReceive('getApiClient')->andReturn($apiClient);
         $context->shouldReceive('getInput')->andReturn($input);
@@ -58,7 +58,7 @@ class DatabaseServerRequirementTest extends TestCase
         $input = \Mockery::mock(Input::class);
         $output = \Mockery::mock(Output::class);
         $team = TeamFactory::create();
-        $server = DatabaseServerFactory::create(['id' => 123]);
+        $server = DatabaseServerFactory::createMysql(['id' => 123]);
 
         $context->shouldReceive('getApiClient')->andReturn($apiClient);
         $context->shouldReceive('getInput')->andReturn($input);
@@ -83,7 +83,7 @@ class DatabaseServerRequirementTest extends TestCase
         $context = \Mockery::mock(ExecutionContext::class);
         $input = \Mockery::mock(Input::class);
         $team = TeamFactory::create();
-        $server = DatabaseServerFactory::create(['name' => 'server-name']);
+        $server = DatabaseServerFactory::createMysql(['name' => 'server-name']);
 
         $context->shouldReceive('getApiClient')->andReturn($apiClient);
         $context->shouldReceive('getInput')->andReturn($input);
@@ -107,7 +107,7 @@ class DatabaseServerRequirementTest extends TestCase
         $input = \Mockery::mock(Input::class);
         $output = \Mockery::mock(Output::class);
         $team = TeamFactory::create();
-        $server = DatabaseServerFactory::create();
+        $server = DatabaseServerFactory::createMysql();
 
         $this->expectException(InvalidInputException::class);
         $this->expectExceptionMessage('You must provide a valid database server ID or name');
@@ -134,8 +134,8 @@ class DatabaseServerRequirementTest extends TestCase
         $context = \Mockery::mock(ExecutionContext::class);
         $input = \Mockery::mock(Input::class);
         $team = TeamFactory::create();
-        $server1 = DatabaseServerFactory::create(['id' => 1, 'name' => 'server']);
-        $server2 = DatabaseServerFactory::create(['id' => 2, 'name' => 'server']);
+        $server1 = DatabaseServerFactory::createMysql(['id' => 1, 'name' => 'server']);
+        $server2 = DatabaseServerFactory::createMysql(['id' => 2, 'name' => 'server']);
 
         $this->expectException(ResourceResolutionException::class);
         $this->expectExceptionMessage('Unable to select a database server because more than one database server has the name "server"');
@@ -182,7 +182,7 @@ class DatabaseServerRequirementTest extends TestCase
         $context = \Mockery::mock(ExecutionContext::class);
         $input = \Mockery::mock(Input::class);
         $team = TeamFactory::create();
-        $server = DatabaseServerFactory::create(['id' => 1]);
+        $server = DatabaseServerFactory::createMysql(['id' => 1]);
 
         $this->expectException(ResourceNotFoundException::class);
         $this->expectExceptionMessage('Unable to find a database server with "2" as the ID or name');

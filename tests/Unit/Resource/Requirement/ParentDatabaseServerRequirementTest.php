@@ -24,7 +24,7 @@ class ParentDatabaseServerRequirementTest extends TestCase
     public function testFulfillReturnsDatabaseServerFromContext(): void
     {
         $context = \Mockery::mock(ExecutionContext::class);
-        $databaseServer = DatabaseServerFactory::create();
+        $databaseServer = DatabaseServerFactory::createMysql();
 
         $context->shouldReceive('getParentResource')->andReturn($databaseServer);
 

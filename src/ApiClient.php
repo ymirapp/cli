@@ -143,9 +143,9 @@ class ApiClient
     /**
      * Create a new database on the given network.
      */
-    public function createDatabaseServer(Model\Network $network, string $name, string $type, ?int $storage = 50, bool $public = false): Model\DatabaseServer
+    public function createDatabaseServer(Model\Network $network, string $engine, string $name, string $type, ?bool $public = null, ?int $storage = null): Model\DatabaseServer
     {
-        return Model\DatabaseServer::fromArray($this->client->createDatabaseServer($network->getId(), $name, $type, $storage, $public)->all());
+        return Model\DatabaseServer::fromArray($this->client->createDatabaseServer($network->getId(), $engine, $name, $type, $public, $storage)->all());
     }
 
     /**

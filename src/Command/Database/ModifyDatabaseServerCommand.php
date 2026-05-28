@@ -51,7 +51,7 @@ class ModifyDatabaseServerCommand extends AbstractCommand
     {
         $databaseServer = $this->resolve(DatabaseServer::class, 'Which database server would you like to modify?');
 
-        if (DatabaseServer::AURORA_DATABASE_TYPE === $databaseServer->getType()) {
+        if ($databaseServer->isAurora()) {
             throw new ResourceStateException('You cannot modify an Aurora database server');
         }
 
@@ -65,7 +65,7 @@ class ModifyDatabaseServerCommand extends AbstractCommand
             return;
         }
 
-        $newType = $this->fulfill(new DatabaseServerTypeRequirement(sprintf('What should the database server type be changed to? <fg=default>(Currently: <comment>%s</comment>)</>', $databaseServer->getType()), $databaseServer->getType()), ['network' => $databaseServer->getNetwork()]);
+        $newType = $this->fulfill(new DatabaseServerTypeRequirement(sprintf('What should the database server type be changed to? <fg=default>(Currently: <comment>%s</comment>)</>', $databaseServer->getType()), $databaseServer->getType()), ['engine' => $databaseServer->getEngine(), 'network' => $databaseServer->getNetwork()]);
 
         if ($newType !== $databaseServer->getType() && !$this->output->warningConfirmation('Modifying the database server type will cause your database to become unavailable for a few minutes')) {
             return;

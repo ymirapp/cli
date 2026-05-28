@@ -17,9 +17,33 @@ use Ymir\Cli\Resource\Model\DatabaseServer;
 
 class DatabaseServerFactory
 {
-    public static function create(array $data = []): DatabaseServer
+    public static function createMysql(array $data = []): DatabaseServer
     {
-        return DatabaseServer::fromArray(array_merge([
+        return self::create(array_replace_recursive([
+            'engine' => DatabaseServer::ENGINE_MYSQL,
+            'type' => 'mysql',
+        ], $data));
+    }
+
+    public static function createPostgresql(array $data = []): DatabaseServer
+    {
+        return self::create(array_replace_recursive([
+            'engine' => DatabaseServer::ENGINE_POSTGRESQL,
+            'type' => 'postgresql',
+        ], $data));
+    }
+
+    public static function createUnsupportedEngine(array $data = []): DatabaseServer
+    {
+        return self::create(array_replace_recursive([
+            'engine' => 'unsupported',
+            'type' => 'type',
+        ], $data));
+    }
+
+    private static function create(array $data): DatabaseServer
+    {
+        return DatabaseServer::fromArray(array_replace_recursive([
             'id' => 1,
             'name' => 'db-server',
             'region' => 'us-east-1',
@@ -27,7 +51,6 @@ class DatabaseServerFactory
             'publicly_accessible' => true,
             'endpoint' => 'db.example.com',
             'locked' => false,
-            'type' => 'mysql',
             'storage' => 10,
             'network' => [
                 'id' => 1,

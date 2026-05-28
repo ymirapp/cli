@@ -16,6 +16,7 @@ namespace Ymir\Cli\Command\Database;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
 use Ymir\Cli\Command\AbstractCommand;
+use Ymir\Cli\Exception\UnsupportedDatabaseServerEngineException;
 use Ymir\Cli\Resource\Model\DatabaseServer;
 use Ymir\Cli\Resource\Model\DatabaseUser;
 
@@ -56,10 +57,24 @@ class DeleteDatabaseUserCommand extends AbstractCommand
 
         $this->output->info('Database user deleted');
 
-        if (!$databaseServer->isPublic()) {
-            $this->output->newLine();
-            $this->output->important('The database user needs to be manually deleted on the database server because it isn\'t publicly accessible. You can use the following query to delete it:');
-            $this->output->writeln(sprintf('DROP USER IF EXISTS %s@\'%%\'', $databaseUser->getName()));
+        if ($databaseServer->isPublic()) {
+            return;
+        }
+
+        $this->output->newLine();
+        $this->output->important('The database user needs to be manually deleted on the database server because it isn\'t publicly accessible. You can use the following query to delete it:');
+
+        switch ($databaseServer->getEngine()) {
+            case DatabaseServer::ENGINE_MYSQL:
+                $this->output->writeln(sprintf('DROP USER IF EXISTS %s@\'%%\'', $databaseUser->getName()));
+
+                break;
+            case DatabaseServer::ENGINE_POSTGRESQL:
+                $this->output->writeln(sprintf('DROP USER IF EXISTS "%s"', $databaseUser->getName()));
+
+                break;
+            default:
+                throw new UnsupportedDatabaseServerEngineException($databaseServer->getEngine());
         }
     }
 }

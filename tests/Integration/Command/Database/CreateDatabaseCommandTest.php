@@ -29,7 +29,7 @@ class CreateDatabaseCommandTest extends TestCase
     {
         $team = $this->setupActiveTeam();
 
-        $server = DatabaseServerFactory::create([
+        $server = DatabaseServerFactory::createMysql([
             'id' => 1,
             'name' => 'my-server',
             'publicly_accessible' => true,
@@ -39,7 +39,7 @@ class CreateDatabaseCommandTest extends TestCase
         $this->apiClient->shouldReceive('getDatabaseServers')->with($team)->andReturn(new ResourceCollection([$server]));
         $this->apiClient->shouldReceive('createDatabase')->with(\Mockery::on(function ($arg) use ($server) {
             return $arg instanceof DatabaseServer && $arg->getId() === $server->getId();
-        }), 'interactive_db')->andReturn(DatabaseFactory::create(['name' => 'interactive_db']));
+        }), 'interactive_db')->andReturn(DatabaseFactory::createMysql(['name' => 'interactive_db']));
 
         $this->bootApplication([new CreateDatabaseCommand($this->apiClient, $this->createExecutionContextFactory([
             Database::class => function () { return new DatabaseDefinition(); },
@@ -62,7 +62,7 @@ class CreateDatabaseCommandTest extends TestCase
     {
         $team = $this->setupActiveTeam();
 
-        $server = DatabaseServerFactory::create([
+        $server = DatabaseServerFactory::createMysql([
             'id' => 1,
             'name' => 'my-server',
             'publicly_accessible' => true,
@@ -72,7 +72,7 @@ class CreateDatabaseCommandTest extends TestCase
         $this->apiClient->shouldReceive('getDatabaseServers')->with($team)->andReturn(new ResourceCollection([$server]));
         $this->apiClient->shouldReceive('createDatabase')->with(\Mockery::on(function ($arg) use ($server) {
             return $arg instanceof DatabaseServer && $arg->getId() === $server->getId();
-        }), 'new_db')->andReturn(DatabaseFactory::create(['name' => 'new_db']));
+        }), 'new_db')->andReturn(DatabaseFactory::createMysql(['name' => 'new_db']));
 
         $this->bootApplication([new CreateDatabaseCommand($this->apiClient, $this->createExecutionContextFactory([
             Database::class => function () { return new DatabaseDefinition(); },

@@ -22,6 +22,8 @@ use Ymir\Cli\Exception\Resource\ResourceNotFoundException;
 use Ymir\Cli\Exception\Resource\ResourceResolutionException;
 use Ymir\Cli\ExecutionContext;
 use Ymir\Cli\Resource\Definition\DatabaseServerDefinition;
+use Ymir\Cli\Resource\Model\DatabaseServer;
+use Ymir\Cli\Resource\Requirement\DatabaseServerEngineRequirement;
 use Ymir\Cli\Resource\Requirement\DatabaseServerStorageRequirement;
 use Ymir\Cli\Resource\Requirement\DatabaseServerTypeRequirement;
 use Ymir\Cli\Resource\Requirement\NameSlugRequirement;
@@ -78,9 +80,10 @@ class DatabaseServerDefinitionTest extends TestCase
         $definition = new DatabaseServerDefinition();
         $requirements = $definition->getRequirements();
 
-        $this->assertCount(5, $requirements);
+        $this->assertCount(6, $requirements);
         $this->assertInstanceOf(NameSlugRequirement::class, $requirements['name']);
         $this->assertInstanceOf(ResolveOrProvisionNetworkRequirement::class, $requirements['network']);
+        $this->assertInstanceOf(DatabaseServerEngineRequirement::class, $requirements['engine']);
         $this->assertInstanceOf(DatabaseServerTypeRequirement::class, $requirements['type']);
         $this->assertInstanceOf(DatabaseServerStorageRequirement::class, $requirements['storage']);
         $this->assertInstanceOf(PrivateDatabaseServerRequirement::class, $requirements['private']);
@@ -88,17 +91,18 @@ class DatabaseServerDefinitionTest extends TestCase
 
     public function testProvision(): void
     {
-        $databaseServer = DatabaseServerFactory::create();
+        $databaseServer = DatabaseServerFactory::createMysql();
         $network = NetworkFactory::create();
 
         $this->apiClient->shouldReceive('createDatabaseServer')->once()
-                  ->with($network, 'name', 'type', 50, true)
+                  ->with($network, DatabaseServer::ENGINE_MYSQL, 'name', 'type', true, 50)
                   ->andReturn($databaseServer);
 
         $definition = new DatabaseServerDefinition();
 
         $this->assertSame($databaseServer, $definition->provision($this->apiClient, [
             'network' => $network,
+            'engine' => DatabaseServer::ENGINE_MYSQL,
             'name' => 'name',
             'type' => 'type',
             'storage' => 50,
@@ -106,10 +110,34 @@ class DatabaseServerDefinitionTest extends TestCase
         ]));
     }
 
+    public function testProvisionCreatesAuroraDatabaseServerWithoutPublicAccessValue(): void
+    {
+        $databaseServer = DatabaseServerFactory::createPostgresql([
+            'storage' => null,
+            'type' => DatabaseServer::AURORA_POSTGRESQL_DATABASE_TYPE,
+        ]);
+        $network = NetworkFactory::create();
+
+        $this->apiClient->shouldReceive('createDatabaseServer')->once()
+                  ->with($network, DatabaseServer::ENGINE_POSTGRESQL, 'name', DatabaseServer::AURORA_POSTGRESQL_DATABASE_TYPE, null, null)
+                  ->andReturn($databaseServer);
+
+        $definition = new DatabaseServerDefinition();
+
+        $this->assertSame($databaseServer, $definition->provision($this->apiClient, [
+            'network' => $network,
+            'engine' => DatabaseServer::ENGINE_POSTGRESQL,
+            'name' => 'name',
+            'type' => DatabaseServer::AURORA_POSTGRESQL_DATABASE_TYPE,
+            'storage' => null,
+            'private' => true,
+        ]));
+    }
+
     public function testResolveFiltersByRegion(): void
     {
-        $serverUsEast1 = DatabaseServerFactory::create(['id' => 1, 'name' => 'east-server', 'region' => 'us-east-1']);
-        $serverUsWest2 = DatabaseServerFactory::create(['id' => 2, 'name' => 'west-server', 'region' => 'us-west-2']);
+        $serverUsEast1 = DatabaseServerFactory::createMysql(['id' => 1, 'name' => 'east-server', 'region' => 'us-east-1']);
+        $serverUsWest2 = DatabaseServerFactory::createMysql(['id' => 2, 'name' => 'west-server', 'region' => 'us-west-2']);
 
         $this->input->shouldReceive('hasArgument')->with('server')->andReturn(false);
         $this->input->shouldReceive('hasOption')->with('server')->andReturn(false);
@@ -128,7 +156,7 @@ class DatabaseServerDefinitionTest extends TestCase
     {
         $this->input->shouldReceive('hasArgument')->with('server')->andReturn(true);
         $this->input->shouldReceive('getStringArgument')->with('server')->andReturn('non-existent');
-        $this->apiClient->shouldReceive('getDatabaseServers')->andReturn(new ResourceCollection([DatabaseServerFactory::create(['name' => 'other'])]));
+        $this->apiClient->shouldReceive('getDatabaseServers')->andReturn(new ResourceCollection([DatabaseServerFactory::createMysql(['name' => 'other'])]));
 
         $this->expectException(ResourceNotFoundException::class);
         $this->expectExceptionMessage('Unable to find a database server with "non-existent" as the ID or name');
@@ -139,8 +167,8 @@ class DatabaseServerDefinitionTest extends TestCase
 
     public function testResolveThrowsExceptionIfNameCollision(): void
     {
-        $server1 = DatabaseServerFactory::create(['id' => 1, 'name' => 'duplicate']);
-        $server2 = DatabaseServerFactory::create(['id' => 2, 'name' => 'duplicate']);
+        $server1 = DatabaseServerFactory::createMysql(['id' => 1, 'name' => 'duplicate']);
+        $server2 = DatabaseServerFactory::createMysql(['id' => 2, 'name' => 'duplicate']);
 
         $this->input->shouldReceive('hasArgument')->with('server')->andReturn(true);
         $this->input->shouldReceive('getStringArgument')->with('server')->andReturn('duplicate');
@@ -170,7 +198,7 @@ class DatabaseServerDefinitionTest extends TestCase
     {
         $this->input->shouldReceive('hasArgument')->with('server')->andReturn(false);
         $this->input->shouldReceive('hasOption')->with('server')->andReturn(false);
-        $this->apiClient->shouldReceive('getDatabaseServers')->andReturn(new ResourceCollection([DatabaseServerFactory::create()]));
+        $this->apiClient->shouldReceive('getDatabaseServers')->andReturn(new ResourceCollection([DatabaseServerFactory::createMysql()]));
         $this->output->shouldReceive('choiceWithResourceDetails')->andReturn('');
 
         $this->expectException(InvalidInputException::class);
@@ -182,7 +210,7 @@ class DatabaseServerDefinitionTest extends TestCase
 
     public function testResolveWithArgument(): void
     {
-        $databaseServer = DatabaseServerFactory::create(['name' => 'my-server']);
+        $databaseServer = DatabaseServerFactory::createMysql(['name' => 'my-server']);
 
         $this->input->shouldReceive('hasArgument')->with('server')->andReturn(true);
         $this->input->shouldReceive('getStringArgument')->with('server')->andReturn('my-server');
@@ -195,7 +223,7 @@ class DatabaseServerDefinitionTest extends TestCase
 
     public function testResolveWithChoice(): void
     {
-        $databaseServer = DatabaseServerFactory::create(['name' => 'choice-server']);
+        $databaseServer = DatabaseServerFactory::createMysql(['name' => 'choice-server']);
 
         $this->input->shouldReceive('hasArgument')->with('server')->andReturn(false);
         $this->input->shouldReceive('hasOption')->with('server')->andReturn(false);
@@ -209,7 +237,7 @@ class DatabaseServerDefinitionTest extends TestCase
 
     public function testResolveWithOption(): void
     {
-        $databaseServer = DatabaseServerFactory::create(['id' => 123]);
+        $databaseServer = DatabaseServerFactory::createMysql(['id' => 123]);
 
         $this->input->shouldReceive('hasArgument')->with('server')->andReturn(false);
         $this->input->shouldReceive('hasOption')->with('server')->andReturn(true);

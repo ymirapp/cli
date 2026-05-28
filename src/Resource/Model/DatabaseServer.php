@@ -14,16 +14,88 @@ declare(strict_types=1);
 namespace Ymir\Cli\Resource\Model;
 
 use Ymir\Cli\Exception\InvalidArgumentException;
+use Ymir\Cli\Exception\UnsupportedDatabaseServerEngineException;
 use Ymir\Cli\Support\Arr;
 
 final class DatabaseServer extends AbstractRegionalResourceModel
 {
     /**
-     * The name of the Aurora database type.
+     * The name of the Aurora MySQL database type.
      *
      * @var string
      */
-    public const AURORA_DATABASE_TYPE = 'aurora-mysql';
+    public const AURORA_MYSQL_DATABASE_TYPE = 'aurora-mysql';
+
+    /**
+     * The name of the Aurora PostgreSQL database type.
+     *
+     * @var string
+     */
+    public const AURORA_POSTGRESQL_DATABASE_TYPE = 'aurora-postgresql';
+
+    /**
+     * The MySQL database server engine.
+     *
+     * @var string
+     */
+    public const ENGINE_MYSQL = 'mysql';
+
+    /**
+     * The PostgreSQL database server engine.
+     *
+     * @var string
+     */
+    public const ENGINE_POSTGRESQL = 'postgresql';
+
+    /**
+     * The Aurora database types.
+     *
+     * @var array
+     */
+    private const AURORA_DATABASE_TYPES = [
+        self::AURORA_MYSQL_DATABASE_TYPE,
+        self::AURORA_POSTGRESQL_DATABASE_TYPE,
+    ];
+
+    /**
+     * The display labels for database server engines.
+     *
+     * @var array
+     */
+    private const ENGINE_LABELS = [
+        self::ENGINE_MYSQL => 'MySQL',
+        self::ENGINE_POSTGRESQL => 'PostgreSQL',
+    ];
+
+    /**
+     * The default local SSH tunnel ports for database server engines.
+     *
+     * @var array
+     */
+    private const ENGINE_LOCAL_PORTS = [
+        self::ENGINE_MYSQL => 3305,
+        self::ENGINE_POSTGRESQL => 5433,
+    ];
+
+    /**
+     * The default ports for database server engines.
+     *
+     * @var array
+     */
+    private const ENGINE_PORTS = [
+        self::ENGINE_MYSQL => 3306,
+        self::ENGINE_POSTGRESQL => 5432,
+    ];
+
+    /**
+     * The database server engines.
+     *
+     * @var array
+     */
+    private const ENGINES = [
+        self::ENGINE_MYSQL,
+        self::ENGINE_POSTGRESQL,
+    ];
 
     /**
      * The endpoint used to access the database server.
@@ -31,6 +103,13 @@ final class DatabaseServer extends AbstractRegionalResourceModel
      * @var string|null
      */
     private $endpoint;
+
+    /**
+     * The database server engine.
+     *
+     * @var string
+     */
+    private $engine;
 
     /**
      * Flag whether the database server is locked or not.
@@ -98,11 +177,12 @@ final class DatabaseServer extends AbstractRegionalResourceModel
     /**
      * Constructor.
      */
-    public function __construct(int $id, string $name, string $region, ?string $endpoint, bool $locked, Network $network, CloudProvider $provider, bool $public, string $status, ?int $storage, string $type, ?string $username = null, ?string $password = null)
+    public function __construct(int $id, string $name, string $region, ?string $endpoint, string $engine, bool $locked, Network $network, CloudProvider $provider, bool $public, string $status, ?int $storage, string $type, ?string $username = null, ?string $password = null)
     {
         parent::__construct($id, $name, $region);
 
         $this->endpoint = $endpoint;
+        $this->engine = $engine;
         $this->locked = $locked;
         $this->network = $network;
         $this->password = $password;
@@ -119,7 +199,7 @@ final class DatabaseServer extends AbstractRegionalResourceModel
      */
     public static function fromArray(array $data): self
     {
-        if (!Arr::has($data, ['id', 'name', 'endpoint', 'locked', 'network', 'provider', 'publicly_accessible', 'region', 'status', 'type'])) {
+        if (!Arr::has($data, ['id', 'name', 'endpoint', 'engine', 'locked', 'network', 'provider', 'publicly_accessible', 'region', 'status', 'type'])) {
             throw new InvalidArgumentException('Unable to create a database server using the given array data');
         }
 
@@ -128,6 +208,7 @@ final class DatabaseServer extends AbstractRegionalResourceModel
             (string) $data['name'],
             (string) $data['region'],
             isset($data['endpoint']) ? (string) $data['endpoint'] : null,
+            (string) $data['engine'],
             (bool) $data['locked'],
             Network::fromArray((array) $data['network']),
             CloudProvider::fromArray((array) $data['provider']),
@@ -141,11 +222,87 @@ final class DatabaseServer extends AbstractRegionalResourceModel
     }
 
     /**
+     * Get the display labels for database server engines.
+     */
+    public static function getEngineLabels(): array
+    {
+        return self::ENGINE_LABELS;
+    }
+
+    /**
+     * Check if the database server type is an Aurora database type.
+     */
+    public static function isAuroraType(string $type): bool
+    {
+        return in_array($type, self::AURORA_DATABASE_TYPES, true);
+    }
+
+    /**
+     * Check if the database server engine is valid.
+     */
+    public static function isEngine(string $engine): bool
+    {
+        return in_array($engine, self::ENGINES, true);
+    }
+
+    /**
+     * Get the display label for the given database server engine.
+     */
+    private static function getEngineLabelForEngine(string $engine): string
+    {
+        if (!isset(self::ENGINE_LABELS[$engine])) {
+            throw new UnsupportedDatabaseServerEngineException($engine);
+        }
+
+        return self::ENGINE_LABELS[$engine];
+    }
+
+    /**
+     * Get the default local SSH tunnel port.
+     */
+    public function getDefaultLocalPort(): int
+    {
+        if (!isset(self::ENGINE_LOCAL_PORTS[$this->engine])) {
+            throw new UnsupportedDatabaseServerEngineException($this->engine);
+        }
+
+        return self::ENGINE_LOCAL_PORTS[$this->engine];
+    }
+
+    /**
+     * Get the default database server port.
+     */
+    public function getDefaultPort(): int
+    {
+        if (!isset(self::ENGINE_PORTS[$this->engine])) {
+            throw new UnsupportedDatabaseServerEngineException($this->engine);
+        }
+
+        return self::ENGINE_PORTS[$this->engine];
+    }
+
+    /**
      * Get the endpoint used to access the database server.
      */
     public function getEndpoint(): ?string
     {
         return $this->endpoint;
+    }
+
+    /**
+     * Get the database server engine.
+     */
+    public function getEngine(): string
+    {
+        return $this->engine;
+    }
+
+    /**
+     * Get the database server engine label.
+     */
+    public function getEngineLabel(): string
+    {
+        return self::getEngineLabelForEngine($this->engine);
     }
 
     /**
@@ -202,6 +359,14 @@ final class DatabaseServer extends AbstractRegionalResourceModel
     public function getUsername(): ?string
     {
         return $this->username;
+    }
+
+    /**
+     * Check if the database server is an Aurora database server.
+     */
+    public function isAurora(): bool
+    {
+        return self::isAuroraType($this->type);
     }
 
     /**

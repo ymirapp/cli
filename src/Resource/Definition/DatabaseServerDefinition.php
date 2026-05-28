@@ -22,6 +22,7 @@ use Ymir\Cli\Exception\Resource\ResourceResolutionException;
 use Ymir\Cli\ExecutionContext;
 use Ymir\Cli\Resource\Model\DatabaseServer;
 use Ymir\Cli\Resource\Model\ResourceModelInterface;
+use Ymir\Cli\Resource\Requirement\DatabaseServerEngineRequirement;
 use Ymir\Cli\Resource\Requirement\DatabaseServerStorageRequirement;
 use Ymir\Cli\Resource\Requirement\DatabaseServerTypeRequirement;
 use Ymir\Cli\Resource\Requirement\NameSlugRequirement;
@@ -46,6 +47,7 @@ class DatabaseServerDefinition implements ProvisionableResourceDefinitionInterfa
         return [
             'name' => new NameSlugRequirement('What is the name of the database server being created?'),
             'network' => new ResolveOrProvisionNetworkRequirement('Which network should the database server be created on?'),
+            'engine' => new DatabaseServerEngineRequirement('Which database do you want to create?'),
             'type' => new DatabaseServerTypeRequirement('Which type should the database server be?'),
             'storage' => new DatabaseServerStorageRequirement('How much storage should the database server have?', '50'),
             'private' => new PrivateDatabaseServerRequirement(),
@@ -65,7 +67,7 @@ class DatabaseServerDefinition implements ProvisionableResourceDefinitionInterfa
      */
     public function provision(ApiClient $apiClient, array $fulfilledRequirements): ?ResourceModelInterface
     {
-        return $apiClient->createDatabaseServer($fulfilledRequirements['network'], $fulfilledRequirements['name'], $fulfilledRequirements['type'], $fulfilledRequirements['storage'], !$fulfilledRequirements['private']);
+        return $apiClient->createDatabaseServer($fulfilledRequirements['network'], $fulfilledRequirements['engine'], $fulfilledRequirements['name'], $fulfilledRequirements['type'], DatabaseServer::isAuroraType($fulfilledRequirements['type']) ? null : !$fulfilledRequirements['private'], $fulfilledRequirements['storage']);
     }
 
     /**

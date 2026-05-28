@@ -19,6 +19,7 @@ use Ymir\Cli\Exception\LogicException;
 use Ymir\Cli\Exception\Resource\NoResourcesFoundException;
 use Ymir\Cli\Exception\Resource\ResourceNotFoundException;
 use Ymir\Cli\Exception\Resource\ResourceStateException;
+use Ymir\Cli\Exception\UnsupportedDatabaseServerEngineException;
 use Ymir\Cli\ExecutionContext;
 use Ymir\Cli\Resource\Model\Database;
 use Ymir\Cli\Resource\Model\DatabaseServer;
@@ -28,6 +29,16 @@ use Ymir\Cli\Resource\Requirement\StringArgumentRequirement;
 
 class DatabaseDefinition implements ProvisionableResourceDefinitionInterface, ResolvableResourceDefinitionInterface
 {
+    /**
+     * The system database names for each database server engine.
+     *
+     * @var array
+     */
+    private const SYSTEM_DATABASES = [
+        DatabaseServer::ENGINE_MYSQL => ['information_schema', 'innodb', 'mysql', 'performance_schema', 'sys'],
+        DatabaseServer::ENGINE_POSTGRESQL => ['postgres', 'rdsadmin', 'template0', 'template1'],
+    ];
+
     /**
      * {@inheritdoc}
      */
@@ -82,8 +93,8 @@ class DatabaseDefinition implements ProvisionableResourceDefinitionInterface, Re
             return new Database($databaseName, $databaseServer);
         }
 
-        $databases = $context->getApiClient()->getDatabases($databaseServer)->filter(function (Database $database): bool {
-            return !in_array($database->getName(), ['information_schema', 'innodb', 'mysql', 'performance_schema', 'sys']);
+        $databases = $context->getApiClient()->getDatabases($databaseServer)->filter(function (Database $database) use ($databaseServer): bool {
+            return !$this->isSystemDatabase($databaseServer, $database);
         })->values();
 
         if ($databases->isEmpty()) {
@@ -107,5 +118,19 @@ class DatabaseDefinition implements ProvisionableResourceDefinitionInterface, Re
         }
 
         return $resolvedDatabase;
+    }
+
+    /**
+     * Check if the database is a system database.
+     */
+    private function isSystemDatabase(DatabaseServer $databaseServer, Database $database): bool
+    {
+        $engine = $databaseServer->getEngine();
+
+        if (!isset(self::SYSTEM_DATABASES[$engine])) {
+            throw new UnsupportedDatabaseServerEngineException($engine);
+        }
+
+        return in_array($database->getName(), self::SYSTEM_DATABASES[$engine], true);
     }
 }

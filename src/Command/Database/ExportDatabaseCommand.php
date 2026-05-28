@@ -18,12 +18,17 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Filesystem\Filesystem;
 use Ymir\Cli\ApiClient;
+use Ymir\Cli\Database\Connection;
 use Ymir\Cli\Database\Mysqldump;
+use Ymir\Cli\Exception\Executable\ExecutableNotDetectedException;
 use Ymir\Cli\Exception\InvalidInputException;
 use Ymir\Cli\Exception\SystemException;
+use Ymir\Cli\Exception\UnsupportedDatabaseServerEngineException;
+use Ymir\Cli\Executable\PgDumpExecutable;
 use Ymir\Cli\Executable\SshExecutable;
 use Ymir\Cli\ExecutionContextFactory;
 use Ymir\Cli\Process\Process;
+use Ymir\Cli\Resource\Model\DatabaseServer;
 
 class ExportDatabaseCommand extends AbstractDatabaseTunnelCommand
 {
@@ -42,13 +47,21 @@ class ExportDatabaseCommand extends AbstractDatabaseTunnelCommand
     private $filesystem;
 
     /**
+     * The pg_dump executable.
+     *
+     * @var PgDumpExecutable
+     */
+    private $pgDumpExecutable;
+
+    /**
      * Constructor.
      */
-    public function __construct(ApiClient $apiClient, ExecutionContextFactory $contextFactory, Filesystem $filesystem, SshExecutable $sshExecutable)
+    public function __construct(ApiClient $apiClient, ExecutionContextFactory $contextFactory, Filesystem $filesystem, PgDumpExecutable $pgDumpExecutable, SshExecutable $sshExecutable)
     {
         parent::__construct($apiClient, $contextFactory, $sshExecutable);
 
         $this->filesystem = $filesystem;
+        $this->pgDumpExecutable = $pgDumpExecutable;
     }
 
     /**
@@ -93,7 +106,9 @@ class ExportDatabaseCommand extends AbstractDatabaseTunnelCommand
         $this->output->infoWithDelayWarning(sprintf('Exporting "<comment>%s</comment>" database', $connection->getDatabase()));
 
         try {
-            Mysqldump::fromConnection($connection, ['compress' => $compression])->start($filename);
+            $this->exportDatabase($connection, $filename, $compression);
+        } catch (ExecutableNotDetectedException|UnsupportedDatabaseServerEngineException $exception) {
+            throw $exception;
         } catch (\Throwable $exception) {
             throw new SystemException(sprintf('Failed to export database: %s', $exception->getMessage()));
         } finally {
@@ -103,5 +118,26 @@ class ExportDatabaseCommand extends AbstractDatabaseTunnelCommand
         }
 
         $this->output->infoWithValue('Database exported successfully to', $filename);
+    }
+
+    /**
+     * Export the database for the given connection.
+     */
+    private function exportDatabase(Connection $connection, string $filename, string $compression): void
+    {
+        $engine = $connection->getDatabaseServer()->getEngine();
+
+        switch ($engine) {
+            case DatabaseServer::ENGINE_MYSQL:
+                Mysqldump::fromConnection($connection, ['compress' => $compression])->start($filename);
+
+                break;
+            case DatabaseServer::ENGINE_POSTGRESQL:
+                $this->pgDumpExecutable->dump($connection, $filename, $compression);
+
+                break;
+            default:
+                throw new UnsupportedDatabaseServerEngineException($engine);
+        }
     }
 }

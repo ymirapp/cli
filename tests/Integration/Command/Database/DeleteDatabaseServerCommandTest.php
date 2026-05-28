@@ -26,7 +26,7 @@ class DeleteDatabaseServerCommandTest extends TestCase
     {
         $team = $this->setupActiveTeam();
 
-        $server = DatabaseServerFactory::create([
+        $server = DatabaseServerFactory::createMysql([
             'id' => 1,
             'name' => 'my-server',
             'publicly_accessible' => true,
@@ -52,7 +52,7 @@ class DeleteDatabaseServerCommandTest extends TestCase
     {
         $team = $this->setupActiveTeam();
 
-        $server = DatabaseServerFactory::create([
+        $server = DatabaseServerFactory::createMysql([
             'id' => 1,
             'name' => 'my-server',
             'publicly_accessible' => true,
@@ -80,7 +80,7 @@ class DeleteDatabaseServerCommandTest extends TestCase
     {
         $team = $this->setupActiveTeam();
 
-        $server = DatabaseServerFactory::create([
+        $server = DatabaseServerFactory::createMysql([
             'id' => 1,
             'name' => 'private-server',
             'publicly_accessible' => false,

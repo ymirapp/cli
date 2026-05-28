@@ -31,7 +31,7 @@ class PublicDatabaseServerRequirementTest extends TestCase
         $context = \Mockery::mock(ExecutionContext::class);
         $input = \Mockery::mock(Input::class);
         $team = TeamFactory::create();
-        $server = DatabaseServerFactory::create(['name' => 'server', 'publicly_accessible' => true]);
+        $server = DatabaseServerFactory::createMysql(['name' => 'server', 'publicly_accessible' => true]);
 
         $context->shouldReceive('getApiClient')->andReturn($apiClient);
         $context->shouldReceive('getInput')->andReturn($input);
@@ -53,7 +53,7 @@ class PublicDatabaseServerRequirementTest extends TestCase
         $context = \Mockery::mock(ExecutionContext::class);
         $input = \Mockery::mock(Input::class);
         $team = TeamFactory::create();
-        $server = DatabaseServerFactory::create(['name' => 'server', 'publicly_accessible' => false]);
+        $server = DatabaseServerFactory::createMysql(['name' => 'server', 'publicly_accessible' => false]);
 
         $this->expectException(InvalidInputException::class);
         $this->expectExceptionMessage('Please select a public database server');

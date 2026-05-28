@@ -38,10 +38,11 @@ class CreateDatabaseServerCommand extends AbstractCommand
             ->setName(self::NAME)
             ->setDescription('Create a new database server')
             ->addArgument('name', InputArgument::OPTIONAL, 'The name of the database server')
+            ->addOption('engine', null, InputOption::VALUE_REQUIRED, 'The database to create (mysql or postgresql)')
             ->addOption('network', null, InputOption::VALUE_REQUIRED, 'The ID or name of the network on which the database will be created')
             ->addOption('private', null, InputOption::VALUE_NONE, 'The created database server won\'t be publicly accessible')
             ->addOption('public', null, InputOption::VALUE_NONE, 'The created database server will be publicly accessible')
-            ->addOption('serverless', null, InputOption::VALUE_NONE, 'Create an Aurora serverless database cluster (overrides all other options)')
+            ->addOption('serverless', null, InputOption::VALUE_NONE, 'Create an Aurora serverless database cluster for the selected engine')
             ->addOption('storage', null, InputOption::VALUE_REQUIRED, 'The maximum amount of storage (in GB) allocated to the database server')
             ->addOption('type', null, InputOption::VALUE_REQUIRED, 'The database server type to create on the cloud provider');
     }
@@ -61,8 +62,8 @@ class CreateDatabaseServerCommand extends AbstractCommand
         $this->output->newLine();
 
         $this->output->horizontalTable(
-            ['Database Sever', new TableSeparator(), 'Username', 'Password', new TableSeparator(), 'Type', 'Public', 'Storage (in GB)'],
-            [[$databaseServer->getName(), new TableSeparator(), $databaseServer->getUsername(), $databaseServer->getPassword(), new TableSeparator(), $databaseServer->getType(), $this->output->formatBoolean($databaseServer->isPublic()), $databaseServer->getStorage() ?? 'N/A']]
+            ['Database Sever', new TableSeparator(), 'Username', 'Password', new TableSeparator(), 'Database', 'Type', 'Public', 'Storage (in GB)'],
+            [[$databaseServer->getName(), new TableSeparator(), $databaseServer->getUsername(), $databaseServer->getPassword(), new TableSeparator(), $databaseServer->getEngineLabel(), $databaseServer->getType(), $this->output->formatBoolean($databaseServer->isPublic()), $databaseServer->getStorage() ?? 'N/A']]
         );
 
         $this->output->infoWithDelayWarning('Database server created');

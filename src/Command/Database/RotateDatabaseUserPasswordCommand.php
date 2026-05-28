@@ -20,6 +20,7 @@ use Ymir\Cli\Command\AbstractCommand;
 use Ymir\Cli\Command\Project\DeployProjectCommand;
 use Ymir\Cli\Command\Project\RedeployProjectCommand;
 use Ymir\Cli\Exception\ApiRuntimeException;
+use Ymir\Cli\Exception\UnsupportedDatabaseServerEngineException;
 use Ymir\Cli\Resource\Model\DatabaseServer;
 use Ymir\Cli\Resource\Model\DatabaseUser;
 
@@ -69,13 +70,27 @@ class RotateDatabaseUserPasswordCommand extends AbstractCommand
 
         $this->output->info('Database user password rotated successfully');
 
+        $redeployMessage = sprintf('You need to redeploy all projects using this database user using either the "<comment>%s</comment>" or "<comment>%s</comment>" commands for the change to take effect.', DeployProjectCommand::ALIAS, RedeployProjectCommand::ALIAS);
+
         if (!$databaseServer->isPublic()) {
             $this->output->newLine();
             $this->output->important(sprintf('The password of the "<comment>%s</comment>" database user needs to be manually changed on the "<comment>%s</comment>" database server because it isn\'t publicly accessible. You can use the following query to change it:', $newCredentials['username'], $databaseServer->getName()));
-            $this->output->writeln(sprintf('ALTER USER %s@\'%%\' IDENTIFIED BY %s', $newCredentials['username'], $newCredentials['password']));
+
+            switch ($databaseServer->getEngine()) {
+                case DatabaseServer::ENGINE_MYSQL:
+                    $this->output->writeln(sprintf('ALTER USER %s@\'%%\' IDENTIFIED BY %s', $newCredentials['username'], $newCredentials['password']));
+
+                    break;
+                case DatabaseServer::ENGINE_POSTGRESQL:
+                    $this->output->writeln(sprintf('ALTER USER "%s" WITH PASSWORD \'%s\'', $newCredentials['username'], $newCredentials['password']));
+
+                    break;
+                default:
+                    throw new UnsupportedDatabaseServerEngineException($databaseServer->getEngine());
+            }
         }
 
         $this->output->newLine();
-        $this->output->important(sprintf('You need to redeploy all projects using this database user using either the "<comment>%s</comment>" or "<comment>%s</comment>" commands for the change to take effect.', DeployProjectCommand::ALIAS, RedeployProjectCommand::ALIAS));
+        $this->output->important($redeployMessage);
     }
 }

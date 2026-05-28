@@ -29,8 +29,8 @@ class RotateDatabaseUserPasswordCommandTest extends TestCase
     {
         $team = $this->setupActiveTeam();
 
-        $server = DatabaseServerFactory::create(['id' => 1, 'name' => 'my-server', 'publicly_accessible' => true]);
-        $user = DatabaseUserFactory::create(['id' => 1, 'username' => 'old_user']);
+        $server = DatabaseServerFactory::createMysql(['id' => 1, 'name' => 'my-server', 'publicly_accessible' => true]);
+        $user = DatabaseUserFactory::createMysql(['id' => 1, 'username' => 'old_user']);
 
         $this->apiClient->shouldReceive('getTeam')->with(1)->andReturn($team);
         $this->apiClient->shouldReceive('getDatabaseServers')->with($team)->andReturn(new ResourceCollection([$server]));
@@ -53,5 +53,48 @@ class RotateDatabaseUserPasswordCommandTest extends TestCase
 
         $this->assertStringContainsString('Database user password rotated successfully', $display);
         $this->assertStringContainsString('new-secret-123', $display);
+    }
+
+    public function testShowsManualQueryForPrivatePostgresqlServer(): void
+    {
+        $team = $this->setupActiveTeam();
+
+        $server = DatabaseServerFactory::createPostgresql([
+            'id' => 1,
+            'name' => 'private-server',
+            'publicly_accessible' => false,
+        ]);
+        $user = DatabaseUserFactory::createPostgresql([
+            'id' => 1,
+            'username' => 'old_user',
+            'database_server' => [
+                'id' => 1,
+                'name' => 'private-server',
+                'publicly_accessible' => false,
+            ],
+        ]);
+
+        $this->apiClient->shouldReceive('getTeam')->with(1)->andReturn($team);
+        $this->apiClient->shouldReceive('getDatabaseServers')->with($team)->andReturn(new ResourceCollection([$server]));
+        $this->apiClient->shouldReceive('getDatabaseUsers')->with($server)->andReturn(new ResourceCollection([$user]));
+        $this->apiClient->shouldReceive('rotateDatabaseUserPassword')
+            ->once()
+            ->andReturn(collect(['username' => 'old_user', 'password' => 'new-secret-123']));
+
+        $this->bootApplication([new RotateDatabaseUserPasswordCommand($this->apiClient, $this->createExecutionContextFactory([
+            DatabaseServer::class => function () { return new DatabaseServerDefinition(); },
+            DatabaseUser::class => function () { return new DatabaseUserDefinition(); },
+        ]))]);
+
+        $tester = $this->executeCommand(RotateDatabaseUserPasswordCommand::NAME, [
+            'user' => 'old_user',
+            '--server' => '1',
+        ], ['y']);
+
+        $display = $tester->getDisplay();
+
+        $this->assertStringContainsString('needs to be manually changed on the "private-server" database server', $display);
+        $this->assertStringContainsString('ALTER USER "old_user" WITH PASSWORD \'new-secret-123\'', $display);
+        $this->assertStringContainsString('You need to redeploy all projects using this database user', $display);
     }
 }

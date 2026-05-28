@@ -92,8 +92,8 @@ class DatabaseInitializationStep implements InitializationStepInterface
                 $output->newLine();
 
                 $output->horizontalTable(
-                    ['Database Sever', new TableSeparator(), 'Username', 'Password', new TableSeparator(), 'Type', 'Public', 'Storage (in GB)'],
-                    [[$databaseServer->getName(), new TableSeparator(), $databaseServer->getUsername(), $databaseServer->getPassword(), new TableSeparator(), $databaseServer->getType(), $output->formatBoolean($databaseServer->isPublic()), $databaseServer->getStorage() ?? 'N/A']]
+                    ['Database Sever', new TableSeparator(), 'Username', 'Password', new TableSeparator(), 'Database', 'Type', 'Public', 'Storage (in GB)'],
+                    [[$databaseServer->getName(), new TableSeparator(), $databaseServer->getUsername(), $databaseServer->getPassword(), new TableSeparator(), $databaseServer->getEngineLabel(), $databaseServer->getType(), $output->formatBoolean($databaseServer->isPublic()), $databaseServer->getStorage() ?? 'N/A']]
                 );
             }
         }
