@@ -50,7 +50,7 @@ jobs:
         with:
           php-version: ${{ matrix.php }}
       - name: Remove code quality dependencies
-        run: composer remove --dev phpstan/phpstan rector/rector
+        run: composer remove --dev friendsofphp/php-cs-fixer phpstan/phpstan rector/rector
       - name: Install dependencies
         run: composer update ${{ matrix.dependency-version }} --no-ansi --no-interaction --no-scripts --no-suggest --prefer-dist
       - name: Run unit tests
