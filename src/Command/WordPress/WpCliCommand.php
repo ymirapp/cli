@@ -39,7 +39,7 @@ class WpCliCommand extends AbstractCommand implements LocalProjectCommandInterfa
     /**
      * {@inheritdoc}
      */
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setName(self::NAME)

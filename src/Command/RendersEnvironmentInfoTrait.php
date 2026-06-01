@@ -32,7 +32,7 @@ trait RendersEnvironmentInfoTrait
     /**
      * Display the table with the environment information.
      */
-    protected function displayEnvironmentTable(Environment $environment)
+    protected function displayEnvironmentTable(Environment $environment): void
     {
         $databaseServer = $this->getEnvironmentDatabaseServer($environment->getName());
 

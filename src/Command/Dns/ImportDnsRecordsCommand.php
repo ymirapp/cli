@@ -29,7 +29,7 @@ class ImportDnsRecordsCommand extends AbstractCommand
     /**
      * {@inheritdoc}
      */
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setName(self::NAME)
@@ -41,7 +41,7 @@ class ImportDnsRecordsCommand extends AbstractCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform()
+    protected function perform(): void
     {
         $zone = $this->resolve(DnsZone::class, 'Which DNS zone would you like to import DNS records to?');
         $subdomains = $this->input->getArrayArgument('subdomain', false);

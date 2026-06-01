@@ -33,7 +33,7 @@ class PhpVersionCommand extends AbstractCommand implements LocalProjectCommandIn
     /**
      * {@inheritdoc}
      */
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setName(self::NAME)

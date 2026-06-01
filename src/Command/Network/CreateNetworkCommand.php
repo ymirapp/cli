@@ -30,7 +30,7 @@ class CreateNetworkCommand extends AbstractCommand
     /**
      * {@inheritdoc}
      */
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setName(self::NAME)
@@ -43,7 +43,7 @@ class CreateNetworkCommand extends AbstractCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform()
+    protected function perform(): void
     {
         $this->provision(Network::class);
 

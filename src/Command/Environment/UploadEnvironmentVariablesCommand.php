@@ -51,7 +51,7 @@ class UploadEnvironmentVariablesCommand extends AbstractCommand implements Local
     /**
      * {@inheritdoc}
      */
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setName(self::NAME)
@@ -62,7 +62,7 @@ class UploadEnvironmentVariablesCommand extends AbstractCommand implements Local
     /**
      * {@inheritdoc}
      */
-    protected function perform()
+    protected function perform(): void
     {
         $environment = $this->resolve(Environment::class, 'Which <comment>%s</comment> environment would you like to upload environment variables to?');
 

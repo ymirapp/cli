@@ -28,7 +28,7 @@ class ListDatabaseServersCommand extends AbstractCommand
     /**
      * {@inheritdoc}
      */
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setName(self::NAME)
@@ -38,7 +38,7 @@ class ListDatabaseServersCommand extends AbstractCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform()
+    protected function perform(): void
     {
         $this->output->table(
             ['Id', 'Name', 'Provider', 'Network', 'Region', 'Status', 'Locked', 'Public', 'Database', 'Type', 'Storage'],

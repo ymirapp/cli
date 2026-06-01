@@ -32,7 +32,7 @@ class ModifyCacheCommand extends AbstractCommand
     /**
      * {@inheritdoc}
      */
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setName(self::NAME)
@@ -44,7 +44,7 @@ class ModifyCacheCommand extends AbstractCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform()
+    protected function perform(): void
     {
         $cacheCluster = $this->resolve(CacheCluster::class, 'Which cache cluster would you like to modify?');
         $newType = $this->fulfill(new CacheClusterTypeRequirement(sprintf('What should the cache cluster type be changed to? <fg=default>(Currently: <comment>%s</comment>)</>', $cacheCluster->getType())), [

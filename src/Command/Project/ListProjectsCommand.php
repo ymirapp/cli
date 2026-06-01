@@ -28,7 +28,7 @@ class ListProjectsCommand extends AbstractCommand
     /**
      * {@inheritdoc}
      */
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setName(self::NAME)
@@ -38,7 +38,7 @@ class ListProjectsCommand extends AbstractCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform()
+    protected function perform(): void
     {
         $projects = $this->apiClient->getProjects($this->getTeam());
 

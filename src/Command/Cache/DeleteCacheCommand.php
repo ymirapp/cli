@@ -30,7 +30,7 @@ class DeleteCacheCommand extends AbstractCommand
     /**
      * {@inheritdoc}
      */
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setName(self::NAME)
@@ -41,7 +41,7 @@ class DeleteCacheCommand extends AbstractCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform()
+    protected function perform(): void
     {
         $cacheCluster = $this->resolve(CacheCluster::class, 'Which cache cluster would you like to delete?');
 

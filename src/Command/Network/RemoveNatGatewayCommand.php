@@ -30,7 +30,7 @@ class RemoveNatGatewayCommand extends AbstractCommand
     /**
      * {@inheritdoc}
      */
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setName(self::NAME)
@@ -41,7 +41,7 @@ class RemoveNatGatewayCommand extends AbstractCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform()
+    protected function perform(): void
     {
         $network = $this->resolve(Network::class, 'Which network would you like to remove the NAT gateway from?');
 

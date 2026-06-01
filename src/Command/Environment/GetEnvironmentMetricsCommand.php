@@ -33,7 +33,7 @@ class GetEnvironmentMetricsCommand extends AbstractCommand implements LocalProje
     /**
      * {@inheritdoc}
      */
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setName(self::NAME)
@@ -45,7 +45,7 @@ class GetEnvironmentMetricsCommand extends AbstractCommand implements LocalProje
     /**
      * {@inheritdoc}
      */
-    protected function perform()
+    protected function perform(): void
     {
         $period = strtolower((string) $this->input->getStringOption('period'));
 

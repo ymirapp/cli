@@ -30,7 +30,7 @@ class AddNatGatewayCommand extends AbstractCommand
     /**
      * {@inheritdoc}
      */
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setName(self::NAME)
@@ -41,7 +41,7 @@ class AddNatGatewayCommand extends AbstractCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform()
+    protected function perform(): void
     {
         $network = $this->resolve(Network::class, 'Which network would you like to add a NAT gateway to?');
 

@@ -47,7 +47,7 @@ class LoginCommand extends AbstractCommand
     /**
      * {@inheritdoc}
      */
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setName(self::NAME)
@@ -57,7 +57,7 @@ class LoginCommand extends AbstractCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform()
+    protected function perform(): void
     {
         if ($this->apiClient->isAuthenticated() && !$this->output->confirm('You are already logged in. Do you want to log in again?', false)) {
             return;

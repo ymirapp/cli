@@ -40,7 +40,7 @@ class GetProjectInfoCommand extends AbstractCommand
     /**
      * {@inheritdoc}
      */
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setName(self::NAME)
@@ -52,7 +52,7 @@ class GetProjectInfoCommand extends AbstractCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform()
+    protected function perform(): void
     {
         $project = $this->resolve(Project::class, 'Which project would you like to get information about?');
 

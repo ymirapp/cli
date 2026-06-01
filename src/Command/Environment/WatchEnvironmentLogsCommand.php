@@ -35,7 +35,7 @@ class WatchEnvironmentLogsCommand extends AbstractCommand implements LocalProjec
     /**
      * {@inheritdoc}
      */
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setName(self::NAME)
@@ -49,7 +49,7 @@ class WatchEnvironmentLogsCommand extends AbstractCommand implements LocalProjec
     /**
      * {@inheritdoc}
      */
-    protected function perform()
+    protected function perform(): void
     {
         $environment = $this->resolve(Environment::class, 'Which <comment>%s</comment> environment would you like to watch logs for?');
 

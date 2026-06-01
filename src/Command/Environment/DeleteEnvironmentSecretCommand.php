@@ -33,7 +33,7 @@ class DeleteEnvironmentSecretCommand extends AbstractCommand implements LocalPro
     /**
      * {@inheritdoc}
      */
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setName(self::NAME)
@@ -45,7 +45,7 @@ class DeleteEnvironmentSecretCommand extends AbstractCommand implements LocalPro
     /**
      * {@inheritdoc}
      */
-    protected function perform()
+    protected function perform(): void
     {
         $environment = $this->resolve(Environment::class, 'Which <comment>%s</comment> environment would you like to delete a secret from?');
         $secrets = $this->apiClient->getSecrets($this->getProject(), $environment);

@@ -28,7 +28,7 @@ class ListProvidersCommand extends AbstractCommand
     /**
      * {@inheritdoc}
      */
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setName(self::NAME)
@@ -38,7 +38,7 @@ class ListProvidersCommand extends AbstractCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform()
+    protected function perform(): void
     {
         $providers = $this->apiClient->getProviders($this->getTeam());
 

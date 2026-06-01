@@ -67,7 +67,7 @@ class ImportDatabaseCommand extends AbstractDatabaseTunnelCommand
     /**
      * {@inheritdoc}
      */
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setName(self::NAME)
@@ -82,7 +82,7 @@ class ImportDatabaseCommand extends AbstractDatabaseTunnelCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform()
+    protected function perform(): void
     {
         $filename = $this->getFilename();
         $connection = $this->getConnection('Which <comment>%s</comment> database would you like to import the SQL backup to?', 'Which database server would you like to import a database to?');

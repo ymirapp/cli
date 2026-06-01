@@ -41,7 +41,7 @@ class ArtisanCommand extends AbstractCommand implements LocalProjectCommandInter
     /**
      * {@inheritdoc}
      */
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setName(self::NAME)

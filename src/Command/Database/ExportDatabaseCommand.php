@@ -67,7 +67,7 @@ class ExportDatabaseCommand extends AbstractDatabaseTunnelCommand
     /**
      * {@inheritdoc}
      */
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setName(self::NAME)
@@ -82,7 +82,7 @@ class ExportDatabaseCommand extends AbstractDatabaseTunnelCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform()
+    protected function perform(): void
     {
         $compression = $this->input->getStringOption('compression');
 

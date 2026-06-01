@@ -29,7 +29,7 @@ class DeleteProviderCommand extends AbstractCommand
     /**
      * {@inheritdoc}
      */
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setName(self::NAME)
@@ -40,7 +40,7 @@ class DeleteProviderCommand extends AbstractCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform()
+    protected function perform(): void
     {
         $provider = $this->resolve(CloudProvider::class, 'Which cloud provider would you like to delete?');
 

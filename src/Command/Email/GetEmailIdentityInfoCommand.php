@@ -30,7 +30,7 @@ class GetEmailIdentityInfoCommand extends AbstractCommand
     /**
      * {@inheritdoc}
      */
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setName(self::NAME)
@@ -41,7 +41,7 @@ class GetEmailIdentityInfoCommand extends AbstractCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform()
+    protected function perform(): void
     {
         $identity = $this->resolve(EmailIdentity::class, 'Which email identity would you like to get information about?');
 

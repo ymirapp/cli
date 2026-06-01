@@ -34,7 +34,7 @@ class GetEnvironmentInfoCommand extends AbstractCommand
     /**
      * {@inheritdoc}
      */
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setName(self::NAME)
@@ -45,7 +45,7 @@ class GetEnvironmentInfoCommand extends AbstractCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform()
+    protected function perform(): void
     {
         $project = $this->resolve(Project::class, 'Which project would you like to get environment information for?');
         $environmentName = $this->input->getStringArgument('environment');

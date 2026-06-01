@@ -31,7 +31,7 @@ class DeleteEnvironmentCommand extends AbstractCommand implements LocalProjectCo
     /**
      * {@inheritdoc}
      */
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setName(self::NAME)
@@ -43,7 +43,7 @@ class DeleteEnvironmentCommand extends AbstractCommand implements LocalProjectCo
     /**
      * {@inheritdoc}
      */
-    protected function perform()
+    protected function perform(): void
     {
         $environment = $this->resolve(Environment::class, 'Which <comment>%s</comment> environment would you like to delete?');
 

@@ -32,7 +32,7 @@ class ListEnvironmentSecretsCommand extends AbstractCommand implements LocalProj
     /**
      * {@inheritdoc}
      */
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setName(self::NAME)
@@ -43,7 +43,7 @@ class ListEnvironmentSecretsCommand extends AbstractCommand implements LocalProj
     /**
      * {@inheritdoc}
      */
-    protected function perform()
+    protected function perform(): void
     {
         $environment = $this->resolve(Environment::class, 'Which <comment>%s</comment> environment would you like to list the secrets of?');
 

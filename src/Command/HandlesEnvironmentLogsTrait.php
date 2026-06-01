@@ -26,7 +26,7 @@ trait HandlesEnvironmentLogsTrait
     /**
      * Write the logs to the console output.
      */
-    protected function writeLogs(Collection $logs, ?string $timezone = null)
+    protected function writeLogs(Collection $logs, ?string $timezone = null): void
     {
         $logs->each(function (array $log) use ($timezone): void {
             $timestamp = Carbon::createFromTimestamp($log['timestamp'] / 1000);

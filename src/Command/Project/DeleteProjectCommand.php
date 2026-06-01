@@ -36,7 +36,7 @@ class DeleteProjectCommand extends AbstractCommand
     /**
      * {@inheritdoc}
      */
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setName(self::NAME)
@@ -48,7 +48,7 @@ class DeleteProjectCommand extends AbstractCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform()
+    protected function perform(): void
     {
         $project = $this->resolve(Project::class, 'Which project would you like to delete?');
 

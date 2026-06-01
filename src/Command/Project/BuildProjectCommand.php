@@ -62,7 +62,7 @@ class BuildProjectCommand extends AbstractCommand implements LocalProjectCommand
     /**
      * {@inheritdoc}
      */
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setName(self::NAME)
@@ -76,7 +76,7 @@ class BuildProjectCommand extends AbstractCommand implements LocalProjectCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform()
+    protected function perform(): void
     {
         $projectType = $this->getProjectConfiguration()->getProjectType();
         $withMediaOption = $this->input->getBooleanOption('with-media');

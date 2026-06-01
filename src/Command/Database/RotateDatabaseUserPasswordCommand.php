@@ -36,7 +36,7 @@ class RotateDatabaseUserPasswordCommand extends AbstractCommand
     /**
      * {@inheritdoc}
      */
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setName(self::NAME)
@@ -48,7 +48,7 @@ class RotateDatabaseUserPasswordCommand extends AbstractCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform()
+    protected function perform(): void
     {
         $databaseServer = $this->resolve(DatabaseServer::class, 'Which database server would you like to rotate the password of a database user on?');
         $databaseUser = $this->resolve(DatabaseUser::class, 'Which <comment>%s</comment> database user would you like to rotate the password of?', $databaseServer);

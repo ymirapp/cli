@@ -84,7 +84,7 @@ class InitializeProjectCommand extends AbstractCommand
     /**
      * {@inheritdoc}
      */
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setName(self::NAME)
@@ -95,7 +95,7 @@ class InitializeProjectCommand extends AbstractCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform()
+    protected function perform(): void
     {
         if (
             $this->getProjectConfiguration()->exists()

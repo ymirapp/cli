@@ -58,7 +58,7 @@ class DeleteDockerImagesCommand extends AbstractCommand
     /**
      * {@inheritdoc}
      */
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setName(self::NAME)
@@ -70,7 +70,7 @@ class DeleteDockerImagesCommand extends AbstractCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform()
+    protected function perform(): void
     {
         $deletePrompt = 'Are you sure you want to delete <comment>all</comment> local Ymir deployment docker images?';
         $pattern = self::ALL_PATTERN;

@@ -37,7 +37,7 @@ class ChangeDomainCommand extends AbstractCommand implements LocalProjectCommand
     /**
      * {@inheritdoc}
      */
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setName(self::NAME)
@@ -49,7 +49,7 @@ class ChangeDomainCommand extends AbstractCommand implements LocalProjectCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform()
+    protected function perform(): void
     {
         if (!$this->getProjectConfiguration()->getProjectType() instanceof AbstractWordPressProjectType) {
             throw new UnsupportedProjectException('You can only use this command with WordPress, Bedrock or Radicle projects');

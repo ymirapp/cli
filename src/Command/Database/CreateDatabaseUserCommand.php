@@ -33,7 +33,7 @@ class CreateDatabaseUserCommand extends AbstractCommand
     /**
      * {@inheritdoc}
      */
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setName(self::NAME)
@@ -46,7 +46,7 @@ class CreateDatabaseUserCommand extends AbstractCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform()
+    protected function perform(): void
     {
         $databaseServer = $this->resolve(DatabaseServer::class, 'Which database server would you like the database user to be created on?');
         $databaseUser = $this->provision(DatabaseUser::class, [], $databaseServer);

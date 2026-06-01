@@ -68,7 +68,7 @@ class ImportMediaCommand extends AbstractCommand implements LocalProjectCommandI
     /**
      * {@inheritdoc}
      */
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setName(self::NAME)
@@ -82,7 +82,7 @@ class ImportMediaCommand extends AbstractCommand implements LocalProjectCommandI
     /**
      * {@inheritdoc}
      */
-    protected function perform()
+    protected function perform(): void
     {
         $projectType = $this->getProjectConfiguration()->getProjectType();
         $size = (int) $this->input->getNumericOption('size');

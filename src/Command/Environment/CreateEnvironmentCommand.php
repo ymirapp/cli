@@ -32,7 +32,7 @@ class CreateEnvironmentCommand extends AbstractCommand implements LocalProjectCo
     /**
      * {@inheritdoc}
      */
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setName(self::NAME)
@@ -44,7 +44,7 @@ class CreateEnvironmentCommand extends AbstractCommand implements LocalProjectCo
     /**
      * {@inheritdoc}
      */
-    protected function perform()
+    protected function perform(): void
     {
         $environment = $this->provision(Environment::class, [], $this->getProject());
         $projectType = $this->getProjectConfiguration()->getProjectType();

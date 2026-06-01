@@ -60,7 +60,7 @@ class ValidateProjectCommand extends AbstractCommand implements LocalProjectComm
     /**
      * {@inheritdoc}
      */
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setName(self::NAME)
@@ -72,7 +72,7 @@ class ValidateProjectCommand extends AbstractCommand implements LocalProjectComm
     /**
      * {@inheritdoc}
      */
-    protected function perform()
+    protected function perform(): void
     {
         $requestedEnvironments = collect($this->input->getArrayArgument('environments'));
 

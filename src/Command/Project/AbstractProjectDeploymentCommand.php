@@ -64,7 +64,7 @@ abstract class AbstractProjectDeploymentCommand extends AbstractCommand implemen
     /**
      * {@inheritdoc}
      */
-    protected function perform()
+    protected function perform(): void
     {
         $this->environment = $this->resolve(Environment::class, $this->getEnvironmentQuestion());
 

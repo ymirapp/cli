@@ -25,7 +25,7 @@ class InstallIntegrationCommand extends AbstractCommand implements LocalProjectC
     /**
      * {@inheritdoc}
      */
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setName(self::NAME)
@@ -35,7 +35,7 @@ class InstallIntegrationCommand extends AbstractCommand implements LocalProjectC
     /**
      * {@inheritdoc}
      */
-    protected function perform()
+    protected function perform(): void
     {
         $projectType = $this->getProjectConfiguration()->getProjectType();
 

@@ -31,7 +31,7 @@ class CreateDnsZoneCommand extends AbstractCommand
     /**
      * {@inheritdoc}
      */
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setName(self::NAME)
@@ -43,7 +43,7 @@ class CreateDnsZoneCommand extends AbstractCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform()
+    protected function perform(): void
     {
         $name = $this->input->getStringArgument('name');
 

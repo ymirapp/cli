@@ -29,7 +29,7 @@ class UnlockDatabaseServerCommand extends AbstractCommand
     /**
      * {@inheritdoc}
      */
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setName(self::NAME)
@@ -40,7 +40,7 @@ class UnlockDatabaseServerCommand extends AbstractCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform()
+    protected function perform(): void
     {
         $this->apiClient->changeDatabaseServerLock($this->resolve(DatabaseServer::class, 'Which database server would you like to unlock?'), false);
 

@@ -28,7 +28,7 @@ class ListCertificatesCommand extends AbstractCommand
     /**
      * {@inheritdoc}
      */
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setName(self::NAME)
@@ -38,7 +38,7 @@ class ListCertificatesCommand extends AbstractCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform()
+    protected function perform(): void
     {
         $certificates = $this->apiClient->getCertificates($this->getTeam());
 

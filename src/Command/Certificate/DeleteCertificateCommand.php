@@ -29,7 +29,7 @@ class DeleteCertificateCommand extends AbstractCommand
     /**
      * {@inheritdoc}
      */
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setName(self::NAME)
@@ -40,7 +40,7 @@ class DeleteCertificateCommand extends AbstractCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform()
+    protected function perform(): void
     {
         $certificate = $this->resolve(Certificate::class, 'Which SSL certificate would you like to delete?');
 

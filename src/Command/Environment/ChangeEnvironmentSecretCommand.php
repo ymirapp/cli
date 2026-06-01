@@ -30,7 +30,7 @@ class ChangeEnvironmentSecretCommand extends AbstractCommand implements LocalPro
     /**
      * {@inheritdoc}
      */
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setName(self::NAME)
@@ -43,7 +43,7 @@ class ChangeEnvironmentSecretCommand extends AbstractCommand implements LocalPro
     /**
      * {@inheritdoc}
      */
-    protected function perform()
+    protected function perform(): void
     {
         $environment = $this->resolve(Environment::class, 'Which <comment>%s</comment> environment would you like to change a secret of?');
 

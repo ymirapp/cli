@@ -27,7 +27,7 @@ class CurrentTeamCommand extends AbstractCommand
     /**
      * {@inheritdoc}
      */
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setName(self::NAME)
@@ -37,7 +37,7 @@ class CurrentTeamCommand extends AbstractCommand
     /**
      * {@inheritdoc}
      */
-    protected function perform()
+    protected function perform(): void
     {
         $team = $this->getTeam();
         $user = $this->apiClient->getAuthenticatedUser();
