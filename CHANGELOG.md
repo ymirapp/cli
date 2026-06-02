@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.2.0](https://github.com/ymirapp/cli/compare/v2.1.1...v2.2.0) (2026-06-02)
+
+
+### Features
+
+* Support postgresql database servers ([5e4bb9f](https://github.com/ymirapp/cli/commit/5e4bb9f111f440f64c7baf5527930cac5bfa1b53))
+
 ## [2.1.1](https://github.com/ymirapp/cli/compare/v2.1.0...v2.1.1) (2026-03-19)
 
 
