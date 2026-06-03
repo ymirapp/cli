@@ -13,7 +13,7 @@ services:
     autowire: true
     public: false
     bind:
-      iterable $projectTypes: !tagged project_type
+      iterable $projectTypes: !tagged_iterator project_type
       string $assetsDirectory: '%assets_directory%'
       string $baseUrl: '%ymir_api_url%'
       string $buildArchivePath: '%build_archive_path%'
@@ -63,7 +63,7 @@ services:
   Ymir\Cli\Application:
     public: true
     arguments:
-      - !tagged command
+      - !tagged_iterator command
     calls:
       - setDispatcher: ['@Ymir\Cli\EventDispatcher\AutowiredEventDispatcher']
 
@@ -90,12 +90,12 @@ services:
 
   Ymir\Cli\EventDispatcher\AutowiredEventDispatcher:
     arguments:
-      - !tagged subscriber
+      - !tagged_iterator subscriber
 
   Ymir\Cli\Project\Initialization\WordPressConfigurationInitializationStep:
     arguments:
-      $configurationChanges: !tagged wordpress_configuration_change
+      $configurationChanges: !tagged_iterator wordpress_configuration_change
 
   Ymir\Cli\Command\WordPress\ConfigureCommand:
     arguments:
-      $configurationChanges: !tagged wordpress_configuration_change
+      $configurationChanges: !tagged_iterator wordpress_configuration_change
