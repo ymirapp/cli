@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.2.1](https://github.com/ymirapp/cli/compare/v2.2.0...v2.2.1) (2026-06-03)
+
+
+### Bug Fixes
+
+* Replace deprecated symfony `!tagged` service tags ([89756b9](https://github.com/ymirapp/cli/commit/89756b9bcc49ea69291315632d55008b1bc578b2))
+
 ## [2.2.0](https://github.com/ymirapp/cli/compare/v2.1.1...v2.2.0) (2026-06-02)
 
 
