@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.3.0](https://github.com/ymirapp/cli/compare/v2.2.1...v2.3.0) (2026-06-04)
+
+
+### Features
+
+* Prompt for serverless database creation ([c5c12c6](https://github.com/ymirapp/cli/commit/c5c12c67021c6b95cf7cdcc13841bf7c255fb1e3))
+
 ## [2.2.1](https://github.com/ymirapp/cli/compare/v2.2.0...v2.2.1) (2026-06-03)
 
 
