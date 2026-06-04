@@ -29,6 +29,7 @@ use Ymir\Cli\Resource\Requirement\DatabaseServerTypeRequirement;
 use Ymir\Cli\Resource\Requirement\NameSlugRequirement;
 use Ymir\Cli\Resource\Requirement\PrivateDatabaseServerRequirement;
 use Ymir\Cli\Resource\Requirement\ResolveOrProvisionNetworkRequirement;
+use Ymir\Cli\Resource\Requirement\ServerlessDatabaseServerRequirement;
 use Ymir\Cli\Resource\ResourceCollection;
 use Ymir\Cli\Tests\Factory\DatabaseServerFactory;
 use Ymir\Cli\Tests\Factory\NetworkFactory;
@@ -80,10 +81,11 @@ class DatabaseServerDefinitionTest extends TestCase
         $definition = new DatabaseServerDefinition();
         $requirements = $definition->getRequirements();
 
-        $this->assertCount(6, $requirements);
+        $this->assertCount(7, $requirements);
         $this->assertInstanceOf(NameSlugRequirement::class, $requirements['name']);
         $this->assertInstanceOf(ResolveOrProvisionNetworkRequirement::class, $requirements['network']);
         $this->assertInstanceOf(DatabaseServerEngineRequirement::class, $requirements['engine']);
+        $this->assertInstanceOf(ServerlessDatabaseServerRequirement::class, $requirements['serverless']);
         $this->assertInstanceOf(DatabaseServerTypeRequirement::class, $requirements['type']);
         $this->assertInstanceOf(DatabaseServerStorageRequirement::class, $requirements['storage']);
         $this->assertInstanceOf(PrivateDatabaseServerRequirement::class, $requirements['private']);

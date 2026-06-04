@@ -28,6 +28,7 @@ use Ymir\Cli\Resource\Requirement\DatabaseServerTypeRequirement;
 use Ymir\Cli\Resource\Requirement\NameSlugRequirement;
 use Ymir\Cli\Resource\Requirement\PrivateDatabaseServerRequirement;
 use Ymir\Cli\Resource\Requirement\ResolveOrProvisionNetworkRequirement;
+use Ymir\Cli\Resource\Requirement\ServerlessDatabaseServerRequirement;
 
 class DatabaseServerDefinition implements ProvisionableResourceDefinitionInterface, ResolvableResourceDefinitionInterface
 {
@@ -48,6 +49,7 @@ class DatabaseServerDefinition implements ProvisionableResourceDefinitionInterfa
             'name' => new NameSlugRequirement('What is the name of the database server being created?'),
             'network' => new ResolveOrProvisionNetworkRequirement('Which network should the database server be created on?'),
             'engine' => new DatabaseServerEngineRequirement('Which database do you want to create?'),
+            'serverless' => new ServerlessDatabaseServerRequirement('Do you want to create an Aurora serverless database cluster?'),
             'type' => new DatabaseServerTypeRequirement('Which type should the database server be?'),
             'storage' => new DatabaseServerStorageRequirement('How much storage should the database server have?', '50'),
             'private' => new PrivateDatabaseServerRequirement(),

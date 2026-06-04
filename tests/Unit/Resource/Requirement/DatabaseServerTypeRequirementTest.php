@@ -40,7 +40,6 @@ class DatabaseServerTypeRequirementTest extends TestCase
         $context->shouldReceive('getInput')->andReturn($input);
         $context->shouldReceive('getOutput')->andReturn($output);
 
-        $input->shouldReceive('getBooleanOption')->with('serverless')->andReturn(false);
         $input->shouldReceive('getStringOption')->with('type')->andReturn(null);
 
         $apiClient->shouldReceive('getDatabaseServerTypes')->with($network->getProvider())->andReturn(new Collection([
@@ -58,48 +57,46 @@ class DatabaseServerTypeRequirementTest extends TestCase
         $this->assertSame('db.t3.micro', $requirement->fulfill($context, ['engine' => DatabaseServer::ENGINE_MYSQL, 'network' => $network]));
     }
 
-    public function testFulfillReturnsAuroraPostgresqlTypeIfServerlessOptionProvided(): void
+    public function testFulfillIgnoresTypeOptionIfServerlessRequirementFulfilled(): void
     {
         $context = \Mockery::mock(ExecutionContext::class);
         $input = \Mockery::mock(Input::class);
 
         $context->shouldReceive('getInput')->andReturn($input);
 
-        $input->shouldReceive('getBooleanOption')->with('serverless')->andReturn(true);
+        $input->shouldReceive('getStringOption')->with('type')->andReturn(DatabaseServer::AURORA_MYSQL_DATABASE_TYPE);
 
         $requirement = new DatabaseServerTypeRequirement('Which type?');
 
-        $this->assertSame(DatabaseServer::AURORA_POSTGRESQL_DATABASE_TYPE, $requirement->fulfill($context, ['engine' => DatabaseServer::ENGINE_POSTGRESQL]));
+        $this->assertSame(DatabaseServer::AURORA_POSTGRESQL_DATABASE_TYPE, $requirement->fulfill($context, ['engine' => DatabaseServer::ENGINE_POSTGRESQL, 'serverless' => true]));
     }
 
-    public function testFulfillReturnsAuroraTypeFromOptionIfServerlessOptionExists(): void
+    public function testFulfillReturnsAuroraPostgresqlTypeIfServerlessRequirementFulfilled(): void
     {
         $context = \Mockery::mock(ExecutionContext::class);
         $input = \Mockery::mock(Input::class);
 
         $context->shouldReceive('getInput')->andReturn($input);
 
-        $input->shouldReceive('getBooleanOption')->with('serverless')->andReturn(false);
-        $input->shouldReceive('getStringOption')->with('type')->andReturn(DatabaseServer::AURORA_POSTGRESQL_DATABASE_TYPE);
-        $input->shouldReceive('hasOption')->with('serverless')->andReturn(true);
+        $input->shouldReceive('getStringOption')->with('type')->andReturn(null);
 
         $requirement = new DatabaseServerTypeRequirement('Which type?');
 
-        $this->assertSame(DatabaseServer::AURORA_POSTGRESQL_DATABASE_TYPE, $requirement->fulfill($context, ['engine' => DatabaseServer::ENGINE_POSTGRESQL]));
+        $this->assertSame(DatabaseServer::AURORA_POSTGRESQL_DATABASE_TYPE, $requirement->fulfill($context, ['engine' => DatabaseServer::ENGINE_POSTGRESQL, 'serverless' => true]));
     }
 
-    public function testFulfillReturnsAuroraTypeIfServerlessOptionProvided(): void
+    public function testFulfillReturnsAuroraTypeIfServerlessRequirementFulfilled(): void
     {
         $context = \Mockery::mock(ExecutionContext::class);
         $input = \Mockery::mock(Input::class);
 
         $context->shouldReceive('getInput')->andReturn($input);
 
-        $input->shouldReceive('getBooleanOption')->with('serverless')->andReturn(true);
+        $input->shouldReceive('getStringOption')->with('type')->andReturn(null);
 
         $requirement = new DatabaseServerTypeRequirement('Which type?');
 
-        $this->assertSame(DatabaseServer::AURORA_MYSQL_DATABASE_TYPE, $requirement->fulfill($context, ['engine' => DatabaseServer::ENGINE_MYSQL]));
+        $this->assertSame(DatabaseServer::AURORA_MYSQL_DATABASE_TYPE, $requirement->fulfill($context, ['engine' => DatabaseServer::ENGINE_MYSQL, 'serverless' => true]));
     }
 
     public function testFulfillReturnsTypeFromChoice(): void
@@ -115,7 +112,6 @@ class DatabaseServerTypeRequirementTest extends TestCase
         $context->shouldReceive('getInput')->andReturn($input);
         $context->shouldReceive('getOutput')->andReturn($output);
 
-        $input->shouldReceive('getBooleanOption')->with('serverless')->andReturn(false);
         $input->shouldReceive('getStringOption')->with('type')->andReturn(null);
 
         $apiClient->shouldReceive('getDatabaseServerTypes')->with($network->getProvider())->andReturn($types);
@@ -139,7 +135,6 @@ class DatabaseServerTypeRequirementTest extends TestCase
         $context->shouldReceive('getApiClient')->andReturn($apiClient);
         $context->shouldReceive('getInput')->andReturn($input);
 
-        $input->shouldReceive('getBooleanOption')->with('serverless')->andReturn(false);
         $input->shouldReceive('getStringOption')->with('type')->andReturn('db.t3.micro');
 
         $apiClient->shouldReceive('getDatabaseServerTypes')->with($network->getProvider())->andReturn(new Collection(['db.t3.micro' => 'db.t3.micro']));
@@ -159,9 +154,7 @@ class DatabaseServerTypeRequirementTest extends TestCase
 
         $context->shouldReceive('getInput')->andReturn($input);
 
-        $input->shouldReceive('getBooleanOption')->with('serverless')->andReturn(false);
         $input->shouldReceive('getStringOption')->with('type')->andReturn(DatabaseServer::AURORA_MYSQL_DATABASE_TYPE);
-        $input->shouldReceive('hasOption')->with('serverless')->andReturn(true);
 
         $requirement = new DatabaseServerTypeRequirement('Which type?');
         $requirement->fulfill($context, ['engine' => DatabaseServer::ENGINE_POSTGRESQL]);
@@ -177,9 +170,7 @@ class DatabaseServerTypeRequirementTest extends TestCase
 
         $context->shouldReceive('getInput')->andReturn($input);
 
-        $input->shouldReceive('getBooleanOption')->with('serverless')->andReturn(false);
         $input->shouldReceive('getStringOption')->with('type')->andReturn(DatabaseServer::AURORA_MYSQL_DATABASE_TYPE);
-        $input->shouldReceive('hasOption')->with('serverless')->andReturn(false);
 
         $requirement = new DatabaseServerTypeRequirement('Which type?');
         $requirement->fulfill($context, ['engine' => DatabaseServer::ENGINE_MYSQL]);
@@ -209,7 +200,6 @@ class DatabaseServerTypeRequirementTest extends TestCase
         $context->shouldReceive('getApiClient')->andReturn($apiClient);
         $context->shouldReceive('getInput')->andReturn($input);
 
-        $input->shouldReceive('getBooleanOption')->with('serverless')->andReturn(false);
         $input->shouldReceive('getStringOption')->with('type')->andReturn('invalid');
 
         $apiClient->shouldReceive('getDatabaseServerTypes')->with($network->getProvider())->andReturn(new Collection(['db.t3.micro' => 'db.t3.micro']));
@@ -227,7 +217,6 @@ class DatabaseServerTypeRequirementTest extends TestCase
         $this->expectExceptionMessage('"network" must be fulfilled before fulfilling the database server type requirement');
 
         $context->shouldReceive('getInput')->andReturn($input);
-        $input->shouldReceive('getBooleanOption')->with('serverless')->andReturn(false);
         $input->shouldReceive('getStringOption')->with('type')->andReturn(null);
 
         $requirement = new DatabaseServerTypeRequirement('Which type?');
@@ -247,7 +236,6 @@ class DatabaseServerTypeRequirementTest extends TestCase
         $context->shouldReceive('getApiClient')->andReturn($apiClient);
         $context->shouldReceive('getInput')->andReturn($input);
 
-        $input->shouldReceive('getBooleanOption')->with('serverless')->andReturn(false);
         $input->shouldReceive('getStringOption')->with('type')->andReturn(null);
 
         $apiClient->shouldReceive('getDatabaseServerTypes')->with($network->getProvider())->andReturn(new Collection());

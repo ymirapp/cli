@@ -15,6 +15,7 @@ namespace Ymir\Cli\Tests\Integration\Command\Database;
 
 use Symfony\Component\Console\Tester\CommandTester;
 use Ymir\Cli\Command\Database\CreateDatabaseServerCommand;
+use Ymir\Cli\Exception\InvalidInputException;
 use Ymir\Cli\Exception\NonInteractiveRequiredOptionException;
 use Ymir\Cli\Resource\Definition\DatabaseServerDefinition;
 use Ymir\Cli\Resource\Definition\NetworkDefinition;
@@ -55,6 +56,7 @@ class CreateDatabaseServerCommandTest extends TestCase
             'interactive-server', // name
             '1', // network choice
             'mysql', // database choice
+            'n', // serverless
             'db.t3.small', // type choice
             '50', // storage
             'n', // private
@@ -63,6 +65,7 @@ class CreateDatabaseServerCommandTest extends TestCase
         $display = $tester->getDisplay();
 
         $this->assertStringContainsString('What is the name of the database server being created?', $display);
+        $this->assertStringContainsString('Do you want to create an Aurora serverless database cluster?', $display);
         $this->assertStringContainsString('Database server created', $display);
     }
 
@@ -107,6 +110,31 @@ class CreateDatabaseServerCommandTest extends TestCase
         $this->assertStringContainsString('Database server created', $display);
         $this->assertStringContainsString('new-server', $display);
         $this->assertStringContainsString('db.t3.micro', $display);
+    }
+
+    public function testCreatePostgresqlDatabaseServerRejectsMismatchedAuroraTypeOption(): void
+    {
+        $this->expectException(InvalidInputException::class);
+        $this->expectExceptionMessage(sprintf('The type "%s" isn\'t a valid database type', DatabaseServer::AURORA_MYSQL_DATABASE_TYPE));
+
+        $team = $this->setupActiveTeam();
+        $network = NetworkFactory::create(['id' => 1, 'name' => 'my-network']);
+
+        $this->apiClient->shouldReceive('getTeam')->with(1)->andReturn($team);
+        $this->apiClient->shouldReceive('getNetworks')->with($team)->andReturn(new ResourceCollection([$network]));
+
+        $this->bootApplication([new CreateDatabaseServerCommand($this->apiClient, $this->createExecutionContextFactory([
+            DatabaseServer::class => function () { return new DatabaseServerDefinition(); },
+            Network::class => function () { return new NetworkDefinition(); },
+        ]))]);
+
+        $this->executeCommand(CreateDatabaseServerCommand::NAME, [
+            'name' => 'new-server',
+            '--engine' => DatabaseServer::ENGINE_POSTGRESQL,
+            '--network' => '1',
+            '--private' => true,
+            '--type' => DatabaseServer::AURORA_MYSQL_DATABASE_TYPE,
+        ]);
     }
 
     public function testCreatePostgresqlDatabaseServerWithArgumentsAndOptions(): void
@@ -182,7 +210,7 @@ class CreateDatabaseServerCommandTest extends TestCase
         ], ['interactive' => false]);
     }
 
-    public function testCreateServerlessPostgresqlDatabaseServerWithArgumentsAndOptions(): void
+    public function testCreateServerlessPostgresqlDatabaseServerIgnoresTypeOption(): void
     {
         $team = $this->setupActiveTeam();
 
@@ -214,6 +242,7 @@ class CreateDatabaseServerCommandTest extends TestCase
             '--network' => '1',
             '--private' => true,
             '--serverless' => true,
+            '--type' => DatabaseServer::AURORA_MYSQL_DATABASE_TYPE,
         ]);
 
         $display = $tester->getDisplay();
