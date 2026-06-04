@@ -26,7 +26,7 @@ class CacheClusterTypeRequirement extends AbstractRequirement
      */
     public function fulfill(ExecutionContext $context, array $fulfilledRequirements = []): string
     {
-        if (empty($fulfilledRequirements['engine'])) {
+        if (empty($fulfilledRequirements['engine']) || !is_string($fulfilledRequirements['engine'])) {
             throw new RequirementDependencyException('"engine" must be fulfilled before fulfilling the cache cluster type requirement');
         }
 
