@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.3.1](https://github.com/ymirapp/cli/compare/v2.3.0...v2.3.1) (2026-06-16)
+
+
+### Bug Fixes
+
+* Disable buildx attestations via environment variable instead of `--provenance` option ([9a1e587](https://github.com/ymirapp/cli/commit/9a1e587cd1a04fa6071a25c6c7fa763241d6dee8))
+
 ## [2.3.0](https://github.com/ymirapp/cli/compare/v2.2.1...v2.3.0) (2026-06-04)
 
 
