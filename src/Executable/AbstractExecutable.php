@@ -49,13 +49,13 @@ abstract class AbstractExecutable implements ExecutableInterface
     /**
      * Run the executable with the given command and return the Process object used to run it.
      */
-    protected function run(string $command, ?string $cwd = null, ?float $timeout = 60): Process
+    protected function run(string $command, ?string $cwd = null, ?array $env = null, ?float $timeout = 60): Process
     {
         if (!$this->isInstalled()) {
             throw new ExecutableNotDetectedException($this);
         }
 
-        return Process::runShellCommandline(sprintf('%s %s', $this->getExecutable(), $command), $cwd, null, null, $timeout);
+        return Process::runShellCommandline(sprintf('%s %s', $this->getExecutable(), $command), $cwd, $env, null, $timeout);
     }
 
     /**

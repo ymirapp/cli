@@ -90,14 +90,14 @@ class WpCliExecutable extends AbstractExecutable
     /**
      * {@inheritdoc}
      */
-    protected function run(string $command, ?string $cwd = null, ?float $timeout = 60): Process
+    protected function run(string $command, ?string $cwd = null, ?array $env = null, ?float $timeout = 60): Process
     {
         if (function_exists('posix_geteuid') && 0 === posix_geteuid()) {
             throw new WpCliException('WP-CLI commands can only be run as a non-root user');
         }
 
         try {
-            return parent::run($command, $cwd, $timeout);
+            return parent::run($command, $cwd, $env, $timeout);
         } catch (RuntimeException $exception) {
             throw new WpCliException($exception->getMessage(), $exception->getCode(), $exception);
         }

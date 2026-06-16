@@ -29,12 +29,13 @@ class DockerExecutable extends AbstractExecutable
         }
 
         $command = sprintf('build --pull --file=%s --platform=%s --tag=%s', $file, $platform, $tag);
+        $environment = null;
 
         if ('docker' === $this->getExecutable()) {
-            $command .= ' --provenance=false';
+            $environment = ['BUILDX_NO_DEFAULT_ATTESTATIONS' => '1'];
         }
 
-        $this->run(sprintf('%s .', $command), $cwd, null);
+        $this->run(sprintf('%s .', $command), $cwd, $environment, null);
     }
 
     /**
@@ -72,7 +73,7 @@ class DockerExecutable extends AbstractExecutable
      */
     public function push(string $image, ?string $cwd = null): void
     {
-        $this->run(sprintf('push %s', $image), $cwd, null);
+        $this->run(sprintf('push %s', $image), $cwd, null, null);
     }
 
     /**
