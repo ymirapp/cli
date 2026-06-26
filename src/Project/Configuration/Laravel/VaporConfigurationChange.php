@@ -48,6 +48,7 @@ class VaporConfigurationChange implements ConfigurationChangeInterface
 
         $ymirEnvironmentConfiguration = $configuration->toArray();
 
+        $ymirEnvironmentConfiguration = $this->applyBuildCommandsChange($vaporEnvironmentConfiguration, $ymirEnvironmentConfiguration);
         $ymirEnvironmentConfiguration = $this->applyDirectMappings($vaporEnvironmentConfiguration, $ymirEnvironmentConfiguration);
         $ymirEnvironmentConfiguration = $this->applyDeploymentChanges($vaporEnvironmentConfiguration, $ymirEnvironmentConfiguration);
         $ymirEnvironmentConfiguration = $this->applyCronChange($vaporEnvironmentConfiguration, $ymirEnvironmentConfiguration);
@@ -55,6 +56,32 @@ class VaporConfigurationChange implements ConfigurationChangeInterface
         $ymirEnvironmentConfiguration = $this->applyQueueChanges($vaporEnvironmentConfiguration, $ymirEnvironmentConfiguration);
 
         return new EnvironmentConfiguration($configuration->getName(), $ymirEnvironmentConfiguration);
+    }
+
+    /**
+     * Apply build command changes from Vapor.
+     */
+    private function applyBuildCommandsChange(array $vaporEnvironmentConfiguration, array $ymirEnvironmentConfiguration): array
+    {
+        if (!Arr::has($vaporEnvironmentConfiguration, 'build') || null === $vaporEnvironmentConfiguration['build']) {
+            return $ymirEnvironmentConfiguration;
+        }
+
+        $buildConfiguration = Arr::get($ymirEnvironmentConfiguration, 'build');
+
+        if (!is_array($buildConfiguration)) {
+            $buildConfiguration = [];
+        }
+
+        $buildConfiguration = array_filter($buildConfiguration, function ($key): bool {
+            return is_string($key);
+        }, ARRAY_FILTER_USE_KEY);
+
+        $buildConfiguration['commands'] = $vaporEnvironmentConfiguration['build'];
+
+        Arr::set($ymirEnvironmentConfiguration, 'build', $buildConfiguration);
+
+        return $ymirEnvironmentConfiguration;
     }
 
     /**
@@ -98,7 +125,6 @@ class VaporConfigurationChange implements ConfigurationChangeInterface
     private function applyDirectMappings(array $vaporEnvironmentConfiguration, array $ymirEnvironmentConfiguration): array
     {
         $directMappings = [
-            'build.commands' => 'build',
             'console.timeout' => 'cli-timeout',
             'database.server' => 'database',
             'database.user' => 'database-user',

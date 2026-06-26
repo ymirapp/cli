@@ -23,7 +23,6 @@ class VaporConfigurationChangeTest extends TestCase
     public static function provideDirectMappings(): array
     {
         return [
-            ['build', ['npm ci'], ['build' => ['commands' => ['npm ci']]]],
             ['cli-timeout', 120, ['console' => ['timeout' => 120]]],
             ['database', 'server-name', ['database' => ['server' => 'server-name']]],
             ['database-user', 'database-user', ['database' => ['user' => 'database-user']]],
@@ -206,6 +205,26 @@ class VaporConfigurationChangeTest extends TestCase
         ], $environmentConfiguration->toArray());
     }
 
+    public function testApplyMapsBuildCommands(): void
+    {
+        $change = new VaporConfigurationChange([
+            'environments' => [
+                'staging' => [
+                    'build' => ['npm ci'],
+                ],
+            ],
+        ]);
+        $environmentConfiguration = new EnvironmentConfiguration('staging');
+
+        $environmentConfiguration = $change->apply($environmentConfiguration, \Mockery::mock(ProjectTypeInterface::class));
+
+        $this->assertSame([
+            'build' => [
+                'commands' => ['npm ci'],
+            ],
+        ], $environmentConfiguration->toArray());
+    }
+
     /**
      * @dataProvider provideDirectMappings
      */
@@ -306,6 +325,41 @@ class VaporConfigurationChangeTest extends TestCase
 
         $this->assertSame([
             'memory' => 512,
+        ], $environmentConfiguration->toArray());
+    }
+
+    public function testApplyReplacesLegacyBuildCommandsWhenMigratingVaporBuildCommands(): void
+    {
+        $change = new VaporConfigurationChange([
+            'environments' => [
+                'staging' => [
+                    'build' => [
+                        'COMPOSER_MIRROR_PATH_REPOS=1 composer install --no-dev',
+                        'php artisan event:cache',
+                        'npm ci && npm run build && rm -rf node_modules',
+                    ],
+                ],
+            ],
+        ]);
+        $environmentConfiguration = new EnvironmentConfiguration('staging', [
+            'build' => [
+                'COMPOSER_MIRROR_PATH_REPOS=1 composer install',
+                'npm ci && npm run build',
+                'include' => ['public/build'],
+            ],
+        ]);
+
+        $environmentConfiguration = $change->apply($environmentConfiguration, \Mockery::mock(ProjectTypeInterface::class));
+
+        $this->assertSame([
+            'build' => [
+                'include' => ['public/build'],
+                'commands' => [
+                    'COMPOSER_MIRROR_PATH_REPOS=1 composer install --no-dev',
+                    'php artisan event:cache',
+                    'npm ci && npm run build && rm -rf node_modules',
+                ],
+            ],
         ], $environmentConfiguration->toArray());
     }
 
