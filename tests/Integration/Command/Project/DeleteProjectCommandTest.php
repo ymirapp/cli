@@ -41,6 +41,24 @@ class DeleteProjectCommandTest extends TestCase
         $this->assertFalse($this->projectConfiguration->exists());
     }
 
+    public function testPerformDeletesCurrentProjectWhenProjectArgumentNotGiven(): void
+    {
+        $this->setupActiveTeam();
+        $project = $this->setupValidProject(1, 'my-project');
+
+        $this->apiClient->shouldNotReceive('getProjects');
+        $this->apiClient->shouldReceive('deleteProject')->once()->with($project, false);
+
+        $this->bootApplication([new DeleteProjectCommand($this->apiClient, $this->createExecutionContextFactory([
+            Project::class => function () { return new ProjectDefinition(); },
+        ]))]);
+
+        $tester = $this->executeCommand(DeleteProjectCommand::NAME, [], ['yes', 'no']);
+
+        $this->assertStringContainsString('Project deleted', $tester->getDisplay());
+        $this->assertFalse($this->projectConfiguration->exists());
+    }
+
     public function testPerformDeletesProjectWithoutResources(): void
     {
         $this->setupActiveTeam();
