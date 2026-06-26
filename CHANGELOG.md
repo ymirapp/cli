@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.3.2](https://github.com/ymirapp/cli/compare/v2.3.1...v2.3.2) (2026-06-26)
+
+
+### Bug Fixes
+
+* Fix vapor migration build command nesting ([60b2dff](https://github.com/ymirapp/cli/commit/60b2dffbf14cfffe55c36ed7f7a604b94ffe033a))
+* Handle mixed vapor php and docker runtimes ([9f1930b](https://github.com/ymirapp/cli/commit/9f1930bda51c688bdf23988c00a0381da5c992ff))
+
 ## [2.3.1](https://github.com/ymirapp/cli/compare/v2.3.0...v2.3.1) (2026-06-16)
 
 
