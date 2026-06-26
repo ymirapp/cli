@@ -197,20 +197,21 @@ class VaporConfigurationChange implements ConfigurationChangeInterface
             return $ymirEnvironmentConfiguration;
         }
 
-        $deploymentType = Arr::get($ymirEnvironmentConfiguration, 'deployment.type', Arr::get($ymirEnvironmentConfiguration, 'deployment'));
         $runtime = strtolower($vaporEnvironmentConfiguration['runtime']);
-
-        if (is_string($deploymentType)) {
-            $deploymentType = strtolower($deploymentType);
-        }
 
         if (str_ends_with($runtime, '-arm')) {
             Arr::set($ymirEnvironmentConfiguration, 'architecture', 'arm64');
         }
 
-        if ('image' !== $deploymentType && 1 === preg_match('/php-(\d+\.\d+)/', $runtime, $matches)) {
-            Arr::set($ymirEnvironmentConfiguration, 'php', $matches[1]);
+        $phpVersion = 1 === preg_match('/php-(\d+\.\d+)/', $runtime, $matches) ? $matches[1] : null;
+
+        if (empty($phpVersion)) {
+            return $ymirEnvironmentConfiguration;
         }
+
+        $ymirEnvironmentConfiguration = $this->removeImageDeploymentType($ymirEnvironmentConfiguration);
+
+        Arr::set($ymirEnvironmentConfiguration, 'php', $phpVersion);
 
         return $ymirEnvironmentConfiguration;
     }
@@ -267,5 +268,33 @@ class VaporConfigurationChange implements ConfigurationChangeInterface
 
             return [$name => $configuration];
         })->all();
+    }
+
+    /**
+     * Remove an inherited image deployment type without removing deployment commands.
+     */
+    private function removeImageDeploymentType(array $ymirEnvironmentConfiguration): array
+    {
+        $deploymentConfiguration = Arr::get($ymirEnvironmentConfiguration, 'deployment');
+
+        if ('image' === $deploymentConfiguration) {
+            Arr::forget($ymirEnvironmentConfiguration, 'deployment');
+
+            return $ymirEnvironmentConfiguration;
+        }
+
+        if (!is_array($deploymentConfiguration) || 'image' !== Arr::get($deploymentConfiguration, 'type')) {
+            return $ymirEnvironmentConfiguration;
+        }
+
+        Arr::forget($ymirEnvironmentConfiguration, 'deployment.type');
+
+        if (!empty(Arr::get($ymirEnvironmentConfiguration, 'deployment'))) {
+            return $ymirEnvironmentConfiguration;
+        }
+
+        Arr::forget($ymirEnvironmentConfiguration, 'deployment');
+
+        return $ymirEnvironmentConfiguration;
     }
 }

@@ -143,6 +143,68 @@ YAML
         $this->assertStringContainsString('FROM --platform=linux/amd64 ymirapp/php-runtime:php-84', (string) file_get_contents($this->tempDir.'/staging.Dockerfile'));
     }
 
+    public function testPerformMigratesPhpRuntimeWithoutChangingDockerRuntimeEnvironment(): void
+    {
+        $this->setupValidProject(1, 'project', [
+            'staging' => [
+                'architecture' => 'arm64',
+                'build' => [
+                    'COMPOSER_MIRROR_PATH_REPOS=1 composer install',
+                    'npm ci && npm run build',
+                ],
+                'deployment' => [
+                    'type' => 'image',
+                ],
+            ],
+            'production' => [
+                'architecture' => 'arm64',
+                'deployment' => [
+                    'type' => 'image',
+                ],
+            ],
+        ], 'laravel', LaravelProjectType::class);
+
+        $this->filesystem->dumpFile($this->tempDir.'/vapor.yml', <<<'YAML'
+environments:
+  staging:
+    runtime: php-7.4
+    build:
+      - 'COMPOSER_MIRROR_PATH_REPOS=1 composer install --no-dev'
+      - 'php artisan event:cache'
+      - 'npm ci && npm run build && rm -rf node_modules'
+    deploy:
+      - 'php artisan migrate --force'
+  production:
+    runtime: docker-arm
+YAML
+        );
+
+        $this->bootMigrateVaporCommand();
+
+        $tester = $this->executeCommand(MigrateVaporCommand::NAME, [], ['no']);
+        $stagingEnvironmentConfiguration = $this->projectConfiguration->getEnvironmentConfiguration('staging')->toArray();
+        $productionEnvironmentConfiguration = $this->projectConfiguration->getEnvironmentConfiguration('production')->toArray();
+
+        $this->assertStringNotContainsString('Created staging.Dockerfile', $tester->getDisplay());
+        $this->assertStringContainsString('Created production.Dockerfile for PHP 8.3 and arm64 architecture', $tester->getDisplay());
+        $this->assertFileDoesNotExist($this->tempDir.'/staging.Dockerfile');
+        $this->assertFileExists($this->tempDir.'/production.Dockerfile');
+        $this->assertSame('arm64', $stagingEnvironmentConfiguration['architecture']);
+        $this->assertSame('7.4', $stagingEnvironmentConfiguration['php']);
+        $this->assertSame([
+            'commands' => [
+                'COMPOSER_MIRROR_PATH_REPOS=1 composer install --no-dev',
+                'php artisan event:cache',
+                'npm ci && npm run build && rm -rf node_modules',
+            ],
+        ], $stagingEnvironmentConfiguration['build']);
+        $this->assertSame([
+            'commands' => ['php artisan migrate --force'],
+        ], $stagingEnvironmentConfiguration['deployment']);
+        $this->assertSame('arm64', $productionEnvironmentConfiguration['architecture']);
+        $this->assertSame('image', $productionEnvironmentConfiguration['deployment']['type']);
+    }
+
     public function testPerformMigratesVaporConfiguration(): void
     {
         $this->setupValidProject(1, 'project', ['staging' => ['memory' => 512], 'production' => ['memory' => 1024]], 'laravel', LaravelProjectType::class);

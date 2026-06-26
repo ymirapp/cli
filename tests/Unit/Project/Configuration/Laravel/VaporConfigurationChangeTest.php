@@ -178,12 +178,12 @@ class VaporConfigurationChangeTest extends TestCase
         ], $environmentConfiguration->toArray());
     }
 
-    public function testApplyDoesNotSetPhpVersionForImageDeployment(): void
+    public function testApplyDoesNotSetPhpVersionForDockerImageRuntime(): void
     {
         $change = new VaporConfigurationChange([
             'environments' => [
                 'staging' => [
-                    'runtime' => 'php-8.3-arm',
+                    'runtime' => 'docker-arm',
                 ],
             ],
         ]);
@@ -406,6 +406,34 @@ class VaporConfigurationChangeTest extends TestCase
 
         $this->assertSame([
             'cron' => false,
+        ], $environmentConfiguration->toArray());
+    }
+
+    public function testApplySetsPhpRuntimeAndRemovesInheritedImageDeploymentType(): void
+    {
+        $change = new VaporConfigurationChange([
+            'environments' => [
+                'staging' => [
+                    'runtime' => 'php-7.4',
+                    'deploy' => ['php artisan migrate --force'],
+                ],
+            ],
+        ]);
+        $environmentConfiguration = new EnvironmentConfiguration('staging', [
+            'architecture' => 'arm64',
+            'deployment' => [
+                'type' => 'image',
+            ],
+        ]);
+
+        $environmentConfiguration = $change->apply($environmentConfiguration, \Mockery::mock(ProjectTypeInterface::class));
+
+        $this->assertSame([
+            'architecture' => 'arm64',
+            'deployment' => [
+                'commands' => ['php artisan migrate --force'],
+            ],
+            'php' => '7.4',
         ], $environmentConfiguration->toArray());
     }
 
