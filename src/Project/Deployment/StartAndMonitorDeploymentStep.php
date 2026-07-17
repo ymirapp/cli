@@ -60,6 +60,7 @@ class StartAndMonitorDeploymentStep implements DeploymentStepInterface
             }
 
             collect($deployment->getSteps())
+                ->whereInStrict('status', ['running', 'finished'])
                 ->filter(function (array $step) use ($printedStepIds): bool {
                     return isset($step['id'], $step['task']) && !in_array($step['id'], $printedStepIds, true);
                 })
