@@ -194,9 +194,7 @@ class ImportDatabaseCommand extends AbstractDatabaseTunnelCommand
                 }
             });
         } finally {
-            if (is_resource($file)) {
-                $fclose($file);
-            }
+            $fclose($file);
         }
     }
 
@@ -216,9 +214,7 @@ class ImportDatabaseCommand extends AbstractDatabaseTunnelCommand
         try {
             $this->psqlExecutable->import($connection, $file);
         } finally {
-            if (is_resource($file)) {
-                $fclose($file);
-            }
+            $fclose($file);
         }
     }
 }
