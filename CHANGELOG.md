@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.3.3](https://github.com/ymirapp/cli/compare/v2.3.2...v2.3.3) (2026-07-18)
+
+
+### Bug Fixes
+
+* Hide pending deployment steps from progress output ([81100e8](https://github.com/ymirapp/cli/commit/81100e872b82608387855cf265aed00076964904))
+* Remove redundant database import resource checks ([1a11383](https://github.com/ymirapp/cli/commit/1a11383a988adececf53956bdf62a05ff5aa2850))
+
 ## [2.3.2](https://github.com/ymirapp/cli/compare/v2.3.1...v2.3.2) (2026-06-26)
 
 
