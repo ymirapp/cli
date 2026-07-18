@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.3.4](https://github.com/ymirapp/cli/compare/v2.3.3...v2.3.4) (2026-07-18)
+
+
+### Bug Fixes
+
+* Skip integration prompt when already configured ([3e50690](https://github.com/ymirapp/cli/commit/3e506907317c78bcc1fd231b6637685f0f90a94a))
+
 ## [2.3.3](https://github.com/ymirapp/cli/compare/v2.3.2...v2.3.3) (2026-07-18)
 
 
