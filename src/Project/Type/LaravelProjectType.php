@@ -42,6 +42,11 @@ class LaravelProjectType extends AbstractProjectType implements InstallableProje
     ];
 
     /**
+     * The Composer package containing the Ymir integration.
+     */
+    private const INTEGRATION_PACKAGE = 'ymirapp/laravel-bridge';
+
+    /**
      * The Composer executable.
      *
      * @var ComposerExecutable
@@ -148,7 +153,7 @@ class LaravelProjectType extends AbstractProjectType implements InstallableProje
      */
     public function installIntegration(string $directory): void
     {
-        $this->composerExecutable->require('ymirapp/laravel-bridge', $directory);
+        $this->composerExecutable->require(self::INTEGRATION_PACKAGE, $directory);
     }
 
     /**
@@ -170,9 +175,17 @@ class LaravelProjectType extends AbstractProjectType implements InstallableProje
     /**
      * {@inheritdoc}
      */
+    public function isIntegrationConfigured(string $directory): bool
+    {
+        return $this->composerExecutable->requiresPackage(self::INTEGRATION_PACKAGE, $directory);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function isIntegrationInstalled(string $directory): bool
     {
-        return $this->composerExecutable->isPackageInstalled('ymirapp/laravel-bridge', $directory);
+        return $this->composerExecutable->isPackageInstalled(self::INTEGRATION_PACKAGE, $directory);
     }
 
     /**

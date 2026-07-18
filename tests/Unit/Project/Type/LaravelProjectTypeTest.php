@@ -223,6 +223,28 @@ class LaravelProjectTypeTest extends TestCase
         $this->assertTrue((new LaravelProjectType(\Mockery::mock(ComposerExecutable::class), \Mockery::mock(Filesystem::class)))->isEligibleForInstallation($this->tempDirectory));
     }
 
+    public function testIsIntegrationConfiguredReturnsFalseWhenPackageIsNotRequired(): void
+    {
+        $composerExecutable = \Mockery::mock(ComposerExecutable::class);
+
+        $composerExecutable->shouldReceive('requiresPackage')->once()
+                           ->with($this->identicalTo('ymirapp/laravel-bridge'), $this->identicalTo($this->tempDirectory))
+                           ->andReturn(false);
+
+        $this->assertFalse((new LaravelProjectType($composerExecutable, \Mockery::mock(Filesystem::class)))->isIntegrationConfigured($this->tempDirectory));
+    }
+
+    public function testIsIntegrationConfiguredReturnsTrueWhenPackageIsRequired(): void
+    {
+        $composerExecutable = \Mockery::mock(ComposerExecutable::class);
+
+        $composerExecutable->shouldReceive('requiresPackage')->once()
+                           ->with($this->identicalTo('ymirapp/laravel-bridge'), $this->identicalTo($this->tempDirectory))
+                           ->andReturn(true);
+
+        $this->assertTrue((new LaravelProjectType($composerExecutable, \Mockery::mock(Filesystem::class)))->isIntegrationConfigured($this->tempDirectory));
+    }
+
     public function testIsIntegrationInstalledReturnsFalseWhenPackageIsNotInstalled(): void
     {
         $composerExecutable = \Mockery::mock(ComposerExecutable::class);

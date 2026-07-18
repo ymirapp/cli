@@ -79,6 +79,11 @@ interface ProjectTypeInterface
     public function installIntegration(string $directory): void;
 
     /**
+     * Check if the Ymir integration is configured.
+     */
+    public function isIntegrationConfigured(string $directory): bool;
+
+    /**
      * Check if the Ymir integration is installed.
      */
     public function isIntegrationInstalled(string $directory): bool;

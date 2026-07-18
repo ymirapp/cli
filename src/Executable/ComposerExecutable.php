@@ -13,6 +13,8 @@ declare(strict_types=1);
 
 namespace Ymir\Cli\Executable;
 
+use Ymir\Cli\Support\Arr;
+
 class ComposerExecutable extends AbstractExecutable
 {
     /**
@@ -59,5 +61,25 @@ class ComposerExecutable extends AbstractExecutable
     public function require(string $package, ?string $cwd = null): void
     {
         $this->run(sprintf('require %s', $package), $cwd);
+    }
+
+    /**
+     * Check if the project's Composer configuration requires the given package.
+     */
+    public function requiresPackage(string $package, ?string $cwd = null): bool
+    {
+        $composerJsonPath = 'composer.json';
+
+        if (null !== $cwd) {
+            $composerJsonPath = $cwd.'/'.$composerJsonPath;
+        }
+
+        if (!is_readable($composerJsonPath)) {
+            return false;
+        }
+
+        $composerConfiguration = (array) json_decode((string) file_get_contents($composerJsonPath), true);
+
+        return Arr::exists((array) Arr::get($composerConfiguration, 'require', []), $package);
     }
 }

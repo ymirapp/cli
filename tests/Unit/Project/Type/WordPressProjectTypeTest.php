@@ -408,6 +408,15 @@ class WordPressProjectTypeTest extends TestCase
         $this->assertTrue((new WordPressProjectType(\Mockery::mock(Filesystem::class), \Mockery::mock(GitHubClient::class), $wpCliExecutable))->isEligibleForInstallation($this->tempDirectory));
     }
 
+    public function testIsIntegrationConfiguredUsesInstalledState(): void
+    {
+        $projectType = \Mockery::mock(WordPressProjectType::class, [new Filesystem(), \Mockery::mock(GitHubClient::class), \Mockery::mock(WpCliExecutable::class)])->makePartial();
+
+        $projectType->shouldReceive('isIntegrationInstalled')->with($this->tempDirectory)->once()->andReturn(true);
+
+        $this->assertTrue($projectType->isIntegrationConfigured($this->tempDirectory));
+    }
+
     public function testIsIntegrationInstalledReturnsFalseWhenPluginsDirectoryIsMissing(): void
     {
         $this->assertFalse((new WordPressProjectType(new Filesystem(), \Mockery::mock(GitHubClient::class), \Mockery::mock(WpCliExecutable::class)))->isIntegrationInstalled($this->tempDirectory));

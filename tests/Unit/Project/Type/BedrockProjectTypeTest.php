@@ -415,6 +415,28 @@ class BedrockProjectTypeTest extends TestCase
         $this->assertTrue((new BedrockProjectType(\Mockery::mock(ComposerExecutable::class), \Mockery::mock(Filesystem::class)))->isEligibleForInstallation($this->tempDirectory));
     }
 
+    public function testIsIntegrationConfiguredReturnsFalseWhenWordPressPluginIsNotRequired(): void
+    {
+        $composerExecutable = \Mockery::mock(ComposerExecutable::class);
+
+        $composerExecutable->shouldReceive('requiresPackage')->once()
+                           ->with($this->identicalTo('ymirapp/wordpress-plugin'), $this->identicalTo($this->tempDirectory))
+                           ->andReturn(false);
+
+        $this->assertFalse((new BedrockProjectType($composerExecutable, \Mockery::mock(Filesystem::class)))->isIntegrationConfigured($this->tempDirectory));
+    }
+
+    public function testIsIntegrationConfiguredReturnsTrueWhenWordPressPluginIsRequired(): void
+    {
+        $composerExecutable = \Mockery::mock(ComposerExecutable::class);
+
+        $composerExecutable->shouldReceive('requiresPackage')->once()
+                           ->with($this->identicalTo('ymirapp/wordpress-plugin'), $this->identicalTo($this->tempDirectory))
+                           ->andReturn(true);
+
+        $this->assertTrue((new BedrockProjectType($composerExecutable, \Mockery::mock(Filesystem::class)))->isIntegrationConfigured($this->tempDirectory));
+    }
+
     public function testIsIntegrationInstalledReturnsFalseWhenWordPressPluginIsNotInstalled(): void
     {
         $composerExecutable = \Mockery::mock(ComposerExecutable::class);

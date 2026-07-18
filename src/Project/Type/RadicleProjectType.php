@@ -22,6 +22,16 @@ use Ymir\Cli\Support\Arr;
 class RadicleProjectType extends AbstractWordPressProjectType
 {
     /**
+     * The Composer package containing the Laravel Ymir integration.
+     */
+    private const LARAVEL_INTEGRATION_PACKAGE = 'ymirapp/laravel-bridge';
+
+    /**
+     * The Composer package containing the WordPress Ymir integration.
+     */
+    private const WORDPRESS_INTEGRATION_PACKAGE = 'ymirapp/wordpress-plugin';
+
+    /**
      * The Composer executable.
      *
      * @var ComposerExecutable
@@ -85,8 +95,17 @@ class RadicleProjectType extends AbstractWordPressProjectType
      */
     public function installIntegration(string $directory): void
     {
-        $this->composerExecutable->require('ymirapp/wordpress-plugin', $directory);
-        $this->composerExecutable->require('ymirapp/laravel-bridge', $directory);
+        $this->composerExecutable->require(self::WORDPRESS_INTEGRATION_PACKAGE, $directory);
+        $this->composerExecutable->require(self::LARAVEL_INTEGRATION_PACKAGE, $directory);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function isIntegrationConfigured(string $directory): bool
+    {
+        return $this->composerExecutable->requiresPackage(self::LARAVEL_INTEGRATION_PACKAGE, $directory)
+            && $this->composerExecutable->requiresPackage(self::WORDPRESS_INTEGRATION_PACKAGE, $directory);
     }
 
     /**
@@ -94,8 +113,8 @@ class RadicleProjectType extends AbstractWordPressProjectType
      */
     public function isIntegrationInstalled(string $directory): bool
     {
-        return $this->composerExecutable->isPackageInstalled('ymirapp/laravel-bridge', $directory)
-            && $this->composerExecutable->isPackageInstalled('ymirapp/wordpress-plugin', $directory);
+        return $this->composerExecutable->isPackageInstalled(self::LARAVEL_INTEGRATION_PACKAGE, $directory)
+            && $this->composerExecutable->isPackageInstalled(self::WORDPRESS_INTEGRATION_PACKAGE, $directory);
     }
 
     /**

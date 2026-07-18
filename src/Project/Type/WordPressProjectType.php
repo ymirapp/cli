@@ -140,6 +140,14 @@ class WordPressProjectType extends AbstractWordPressProjectType implements Insta
     /**
      * {@inheritdoc}
      */
+    public function isIntegrationConfigured(string $directory): bool
+    {
+        return $this->isIntegrationInstalled($directory);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function isIntegrationInstalled(string $directory): bool
     {
         $pluginsPaths = [

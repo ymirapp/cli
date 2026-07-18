@@ -22,6 +22,11 @@ use Ymir\Cli\Support\Arr;
 class BedrockProjectType extends AbstractWordPressProjectType implements InstallableProjectTypeInterface
 {
     /**
+     * The Composer package containing the Ymir integration.
+     */
+    private const INTEGRATION_PACKAGE = 'ymirapp/wordpress-plugin';
+
+    /**
      * The Composer executable.
      *
      * @var ComposerExecutable
@@ -93,7 +98,7 @@ class BedrockProjectType extends AbstractWordPressProjectType implements Install
      */
     public function installIntegration(string $directory): void
     {
-        $this->composerExecutable->require('ymirapp/wordpress-plugin', $directory);
+        $this->composerExecutable->require(self::INTEGRATION_PACKAGE, $directory);
     }
 
     /**
@@ -115,9 +120,17 @@ class BedrockProjectType extends AbstractWordPressProjectType implements Install
     /**
      * {@inheritdoc}
      */
+    public function isIntegrationConfigured(string $directory): bool
+    {
+        return $this->composerExecutable->requiresPackage(self::INTEGRATION_PACKAGE, $directory);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function isIntegrationInstalled(string $directory): bool
     {
-        return $this->composerExecutable->isPackageInstalled('ymirapp/wordpress-plugin', $directory);
+        return $this->composerExecutable->isPackageInstalled(self::INTEGRATION_PACKAGE, $directory);
     }
 
     /**

@@ -396,6 +396,54 @@ class RadicleProjectTypeTest extends TestCase
         (new RadicleProjectType($composerExecutable, \Mockery::mock(Filesystem::class)))->installIntegration('/path/to/project');
     }
 
+    public function testIsIntegrationConfiguredReturnsFalseWhenLaravelBridgeIsNotRequired(): void
+    {
+        $composerExecutable = \Mockery::mock(ComposerExecutable::class);
+
+        $composerExecutable->shouldReceive('requiresPackage')
+                           ->once()
+                           ->with($this->identicalTo('ymirapp/laravel-bridge'), $this->identicalTo($this->tempDirectory))
+                           ->andReturn(false);
+
+        $this->assertFalse((new RadicleProjectType($composerExecutable, \Mockery::mock(Filesystem::class)))->isIntegrationConfigured($this->tempDirectory));
+    }
+
+    public function testIsIntegrationConfiguredReturnsFalseWhenWordPressPluginIsNotRequired(): void
+    {
+        $composerExecutable = \Mockery::mock(ComposerExecutable::class);
+
+        $composerExecutable->shouldReceive('requiresPackage')
+                           ->once()
+                           ->with('ymirapp/laravel-bridge', $this->tempDirectory)
+                           ->andReturn(true)
+                           ->ordered();
+        $composerExecutable->shouldReceive('requiresPackage')
+                           ->once()
+                           ->with('ymirapp/wordpress-plugin', $this->tempDirectory)
+                           ->andReturn(false)
+                           ->ordered();
+
+        $this->assertFalse((new RadicleProjectType($composerExecutable, \Mockery::mock(Filesystem::class)))->isIntegrationConfigured($this->tempDirectory));
+    }
+
+    public function testIsIntegrationConfiguredReturnsTrueWhenLaravelBridgeAndWordPressPluginAreRequired(): void
+    {
+        $composerExecutable = \Mockery::mock(ComposerExecutable::class);
+
+        $composerExecutable->shouldReceive('requiresPackage')
+                           ->once()
+                           ->with('ymirapp/laravel-bridge', $this->tempDirectory)
+                           ->andReturn(true)
+                           ->ordered();
+        $composerExecutable->shouldReceive('requiresPackage')
+                           ->once()
+                           ->with('ymirapp/wordpress-plugin', $this->tempDirectory)
+                           ->andReturn(true)
+                           ->ordered();
+
+        $this->assertTrue((new RadicleProjectType($composerExecutable, \Mockery::mock(Filesystem::class)))->isIntegrationConfigured($this->tempDirectory));
+    }
+
     public function testIsIntegrationInstalledReturnsFalseWhenLaravelBridgeIsMissing(): void
     {
         $composerExecutable = \Mockery::mock(ComposerExecutable::class);

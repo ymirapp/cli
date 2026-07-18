@@ -44,13 +44,13 @@ class IntegrationInitializationStepTest extends TestCase
         $this->context->shouldReceive('getOutput')->andReturn($this->output);
     }
 
-    public function testPerformDoesNotInstallIntegrationIfAlreadyInstalled(): void
+    public function testPerformDoesNotInstallIntegrationIfAlreadyConfigured(): void
     {
         $projectType = \Mockery::mock(ProjectTypeInterface::class);
         $projectDirectory = '/path/to/project';
 
         $this->context->shouldReceive('getProjectDirectory')->once()->andReturn($projectDirectory);
-        $projectType->shouldReceive('isIntegrationInstalled')->with($projectDirectory)->once()->andReturn(true);
+        $projectType->shouldReceive('isIntegrationConfigured')->with($projectDirectory)->once()->andReturn(true);
         $projectType->shouldNotReceive('installIntegration');
 
         $step = new IntegrationInitializationStep();
@@ -66,7 +66,7 @@ class IntegrationInitializationStepTest extends TestCase
         $projectDirectory = '/path/to/project';
 
         $this->context->shouldReceive('getProjectDirectory')->once()->andReturn($projectDirectory);
-        $projectType->shouldReceive('isIntegrationInstalled')->with($projectDirectory)->once()->andReturn(false);
+        $projectType->shouldReceive('isIntegrationConfigured')->with($projectDirectory)->once()->andReturn(false);
         $projectType->shouldReceive('getName')->andReturn('WordPress');
         $this->output->shouldReceive('confirm')->with('Would you like to install the Ymir integration for <comment>WordPress</comment>?')->once()->andReturn(false);
         $projectType->shouldNotReceive('installIntegration');
@@ -84,7 +84,7 @@ class IntegrationInitializationStepTest extends TestCase
         $projectDirectory = '/path/to/project';
 
         $this->context->shouldReceive('getProjectDirectory')->once()->andReturn($projectDirectory);
-        $projectType->shouldReceive('isIntegrationInstalled')->with($projectDirectory)->once()->andReturn(false);
+        $projectType->shouldReceive('isIntegrationConfigured')->with($projectDirectory)->once()->andReturn(false);
         $projectType->shouldReceive('getName')->andReturn('WordPress');
         $this->output->shouldReceive('confirm')->with('Would you like to install the Ymir integration for <comment>WordPress</comment>?')->once()->andReturn(true);
         $projectType->shouldReceive('installIntegration')->with($projectDirectory)->once();

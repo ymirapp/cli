@@ -32,7 +32,7 @@ class IntegrationInitializationStep implements InitializationStepInterface
         $projectDirectory = $context->getProjectDirectory();
         $projectType = $projectRequirements['type'];
 
-        if (!$projectType->isIntegrationInstalled($projectDirectory) && $output->confirm(sprintf('Would you like to install the Ymir integration for <comment>%s</comment>?', $projectType->getName()))) {
+        if (!$projectType->isIntegrationConfigured($projectDirectory) && $output->confirm(sprintf('Would you like to install the Ymir integration for <comment>%s</comment>?', $projectType->getName()))) {
             $projectType->installIntegration($projectDirectory);
 
             $output->info(sprintf('Ymir <comment>%s</comment> integration installed', $projectType->getName()));
