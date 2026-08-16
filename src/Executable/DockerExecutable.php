@@ -65,7 +65,7 @@ class DockerExecutable extends AbstractExecutable
      */
     public function login(string $username, string $password, string $server, ?string $cwd = null): void
     {
-        $this->run(sprintf('login --username %s --password %s %s', $username, $password, $server), $cwd);
+        $this->runWithArguments(['login', '--username', $username, '--password-stdin', $server], $cwd, null, $password);
     }
 
     /**
