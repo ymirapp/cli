@@ -298,13 +298,14 @@ class DatabaseServerTest extends TestCase
     {
         $user = new User(4, 'owner');
         $team = new Team(3, 'team', $user);
-        $provider = new CloudProvider(2, 'provider', $team);
+        $provider = new CloudProvider(2, 'provider', $team, 'connected');
         $network = Network::fromArray([
             'id' => 5,
             'name' => 'network',
             'region' => 'region',
             'status' => 'status',
             'provider' => [
+                'status' => 'connected',
                 'id' => 2,
                 'name' => 'provider',
                 'team' => [
@@ -342,6 +343,7 @@ class DatabaseServerTest extends TestCase
                 'region' => 'region',
                 'status' => 'status',
                 'provider' => [
+                    'status' => 'connected',
                     'id' => 2,
                     'name' => 'provider',
                     'team' => [
@@ -355,6 +357,7 @@ class DatabaseServerTest extends TestCase
                 ],
             ],
             'provider' => [
+                'status' => 'connected',
                 'id' => 2,
                 'name' => 'provider',
                 'team' => [

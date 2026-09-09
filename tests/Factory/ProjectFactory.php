@@ -24,6 +24,7 @@ class ProjectFactory
             'name' => 'project',
             'region' => 'us-east-1',
             'provider' => [
+                'status' => 'connected',
                 'id' => 1,
                 'name' => 'provider',
                 'type' => 'aws',

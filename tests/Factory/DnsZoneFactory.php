@@ -20,6 +20,7 @@ class DnsZoneFactory
     public static function create(array $data = []): DnsZone
     {
         $defaultProvider = [
+            'status' => 'connected',
             'id' => 1,
             'name' => 'provider',
             'team' => [

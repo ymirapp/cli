@@ -95,7 +95,7 @@ class ProjectTest extends TestCase
     {
         $user = new User(4, 'owner');
         $team = new Team(3, 'team', $user);
-        $provider = new CloudProvider(2, 'provider', $team);
+        $provider = new CloudProvider(2, 'provider', $team, 'connected');
 
         return new Project(1, 'name', 'region', $provider, 'uri');
     }
@@ -107,6 +107,7 @@ class ProjectTest extends TestCase
             'name' => 'name',
             'region' => 'region',
             'provider' => [
+                'status' => 'connected',
                 'id' => 2,
                 'name' => 'provider',
                 'team' => [

@@ -41,6 +41,7 @@ class DatabaseServerTunnelCommandTest extends TestCase
                 'region' => 'us-east-1',
                 'status' => 'active',
                 'provider' => [
+                    'status' => 'connected',
                     'id' => 1,
                     'name' => 'provider',
                     'team' => [
@@ -101,6 +102,7 @@ class DatabaseServerTunnelCommandTest extends TestCase
                 'region' => 'us-east-1',
                 'status' => 'active',
                 'provider' => [
+                    'status' => 'connected',
                     'id' => 1,
                     'name' => 'provider',
                     'team' => [
@@ -162,6 +164,7 @@ class DatabaseServerTunnelCommandTest extends TestCase
                 'region' => 'us-east-1',
                 'status' => 'active',
                 'provider' => [
+                    'status' => 'connected',
                     'id' => 1,
                     'name' => 'provider',
                     'team' => [

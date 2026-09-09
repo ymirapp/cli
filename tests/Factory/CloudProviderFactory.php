@@ -22,6 +22,7 @@ class CloudProviderFactory
         return CloudProvider::fromArray(array_merge([
             'id' => 1,
             'name' => 'name',
+            'status' => 'connected',
             'team' => [
                 'id' => 1,
                 'name' => 'team',

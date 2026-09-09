@@ -114,6 +114,7 @@ class DatabaseUserTest extends TestCase
                 'region' => 'region',
                 'status' => 'status',
                 'provider' => [
+                    'status' => 'connected',
                     'id' => 2,
                     'name' => 'provider',
                     'team' => [
@@ -127,6 +128,7 @@ class DatabaseUserTest extends TestCase
                 ],
             ],
             'provider' => [
+                'status' => 'connected',
                 'id' => 2,
                 'name' => 'provider',
                 'team' => [
@@ -167,6 +169,7 @@ class DatabaseUserTest extends TestCase
                     'region' => 'region',
                     'status' => 'status',
                     'provider' => [
+                        'status' => 'connected',
                         'id' => 2,
                         'name' => 'provider',
                         'team' => [
@@ -180,6 +183,7 @@ class DatabaseUserTest extends TestCase
                     ],
                 ],
                 'provider' => [
+                    'status' => 'connected',
                     'id' => 2,
                     'name' => 'provider',
                     'team' => [

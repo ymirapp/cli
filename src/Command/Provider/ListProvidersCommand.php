@@ -32,7 +32,7 @@ class ListProvidersCommand extends AbstractCommand
     {
         $this
             ->setName(self::NAME)
-            ->setDescription('List the cloud provider accounts connected to the currently active team');
+            ->setDescription('List the cloud provider connections belonging to the currently active team');
     }
 
     /**
@@ -42,14 +42,16 @@ class ListProvidersCommand extends AbstractCommand
     {
         $providers = $this->apiClient->getProviders($this->getTeam());
 
-        $this->output->info('The following cloud providers are connected to your team:');
+        $this->output->info('The following cloud provider connections belong to your team:');
 
         $this->output->table(
-            ['Id', 'Name'],
+            ['Id', 'Name', 'Status', 'Authentication'],
             $providers->map(function (CloudProvider $provider) {
                 return [
                     $provider->getId(),
                     $provider->getName(),
+                    $provider->getStatus(),
+                    $provider->getAuthenticationMethod() ?? 'Unavailable',
                 ];
             })->all()
         );

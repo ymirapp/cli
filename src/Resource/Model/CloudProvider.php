@@ -19,6 +19,20 @@ use Ymir\Cli\Support\Arr;
 final class CloudProvider extends AbstractResourceModel
 {
     /**
+     * The authentication information of the cloud provider.
+     *
+     * @var array
+     */
+    private $authentication;
+
+    /**
+     * The status of the cloud provider.
+     *
+     * @var string
+     */
+    private $status;
+
+    /**
      * The team that the cloud provider belongs to.
      *
      * @var Team
@@ -28,10 +42,12 @@ final class CloudProvider extends AbstractResourceModel
     /**
      * Constructor.
      */
-    public function __construct(int $id, string $name, Team $team)
+    public function __construct(int $id, string $name, Team $team, string $status, array $authentication = [])
     {
         parent::__construct($id, $name);
 
+        $this->authentication = $authentication;
+        $this->status = $status;
         $this->team = $team;
     }
 
@@ -40,15 +56,33 @@ final class CloudProvider extends AbstractResourceModel
      */
     public static function fromArray(array $data): self
     {
-        if (!Arr::has($data, ['id', 'name', 'team'])) {
+        if (!Arr::has($data, ['id', 'name', 'team', 'status'])) {
             throw new InvalidArgumentException('Unable to create a cloud provider using the given array data');
         }
 
         return new self(
             (int) $data['id'],
             (string) $data['name'],
-            Team::fromArray((array) $data['team'])
+            Team::fromArray((array) $data['team']),
+            (string) $data['status'],
+            (array) Arr::get($data, 'authentication', [])
         );
+    }
+
+    /**
+     * Get the authentication method of the cloud provider.
+     */
+    public function getAuthenticationMethod(): ?string
+    {
+        return Arr::get($this->authentication, 'method');
+    }
+
+    /**
+     * Get the status of the cloud provider.
+     */
+    public function getStatus(): string
+    {
+        return $this->status;
     }
 
     /**

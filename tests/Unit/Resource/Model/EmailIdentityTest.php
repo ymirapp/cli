@@ -137,7 +137,7 @@ class EmailIdentityTest extends TestCase
     {
         $user = new User(3, 'owner');
         $team = new Team(2, 'team', $user);
-        $provider = new CloudProvider(1, 'provider', $team);
+        $provider = new CloudProvider(1, 'provider', $team, 'connected');
 
         return new EmailIdentity(1, 'name', 'region', $provider, 'type', true, true, ['record']);
     }
@@ -153,6 +153,7 @@ class EmailIdentityTest extends TestCase
             'managed' => true,
             'dkim_authentication_records' => ['record'],
             'provider' => [
+                'status' => 'connected',
                 'id' => 2,
                 'name' => 'provider',
                 'team' => [

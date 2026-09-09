@@ -90,6 +90,7 @@ class CacheClusterTest extends TestCase
                 'region' => 'region',
                 'status' => 'status',
                 'provider' => [
+                    'status' => 'connected',
                     'id' => 3,
                     'name' => 'provider',
                     'team' => [

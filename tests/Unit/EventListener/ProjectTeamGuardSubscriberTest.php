@@ -107,7 +107,7 @@ class ProjectTeamGuardSubscriberTest extends TestCase
         $team = Team::fromArray(['id' => 42, 'name' => 'team', 'owner' => ['id' => 1, 'name' => 'owner', 'email' => 'foo@bar.com']]);
 
         $projectLocator->shouldReceive('getProject')->once()
-                       ->andReturn($this->getProject(['id' => 1, 'name' => 'foo', 'region' => 'us-east-1', 'provider' => ['id' => 1, 'name' => 'aws', 'team' => ['id' => 42, 'name' => 'team', 'owner' => ['id' => 1, 'name' => 'owner', 'email' => 'foo@bar.com']]]]));
+                       ->andReturn($this->getProject(['id' => 1, 'name' => 'foo', 'region' => 'us-east-1', 'provider' => ['id' => 1, 'name' => 'aws', 'status' => 'connected', 'team' => ['id' => 42, 'name' => 'team', 'owner' => ['id' => 1, 'name' => 'owner', 'email' => 'foo@bar.com']]]]));
 
         $command->shouldReceive('getName')->once()
                 ->andReturn('some-command');
@@ -128,7 +128,7 @@ class ProjectTeamGuardSubscriberTest extends TestCase
         $command = \Mockery::mock(Command::class);
 
         $projectLocator->shouldReceive('getProject')->once()
-                       ->andReturn($this->getProject(['id' => 1, 'name' => 'foo', 'region' => 'us-east-1', 'provider' => ['id' => 1, 'name' => 'aws', 'team' => ['id' => 24, 'name' => 'Project Team', 'owner' => ['id' => 1, 'name' => 'owner', 'email' => 'foo@bar.com']]]]));
+                       ->andReturn($this->getProject(['id' => 1, 'name' => 'foo', 'region' => 'us-east-1', 'provider' => ['id' => 1, 'name' => 'aws', 'status' => 'connected', 'team' => ['id' => 24, 'name' => 'Project Team', 'owner' => ['id' => 1, 'name' => 'owner', 'email' => 'foo@bar.com']]]]));
 
         $command->shouldReceive('getName')->once()
                 ->andReturn('some-command');
@@ -150,7 +150,7 @@ class ProjectTeamGuardSubscriberTest extends TestCase
     private function getProject(array $data = []): Project
     {
         if (empty($data)) {
-            $data = ['id' => 1, 'name' => 'foo', 'region' => 'us-east-1', 'provider' => ['id' => 1, 'name' => 'aws', 'team' => ['id' => 1, 'name' => 'team', 'owner' => ['id' => 1, 'name' => 'owner', 'email' => 'foo@bar.com']]]];
+            $data = ['id' => 1, 'name' => 'foo', 'region' => 'us-east-1', 'provider' => ['id' => 1, 'name' => 'aws', 'status' => 'connected', 'team' => ['id' => 1, 'name' => 'team', 'owner' => ['id' => 1, 'name' => 'owner', 'email' => 'foo@bar.com']]]];
         }
 
         return Project::fromArray($data);

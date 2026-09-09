@@ -67,7 +67,7 @@ class CertificateTest extends TestCase
     {
         $user = new User(3, 'owner');
         $team = new Team(2, 'team', $user);
-        $provider = new CloudProvider(1, 'provider', $team);
+        $provider = new CloudProvider(1, 'provider', $team, 'connected');
         $certificate = new Certificate(1, 'name', 'region', $provider, 'status', true, ['domain.com']);
 
         $this->assertSame(['domain.com'], $certificate->getDomains());
@@ -77,7 +77,7 @@ class CertificateTest extends TestCase
     {
         $user = new User(3, 'owner');
         $team = new Team(2, 'team', $user);
-        $provider = new CloudProvider(1, 'provider', $team);
+        $provider = new CloudProvider(1, 'provider', $team, 'connected');
         $certificate = new Certificate(1, 'name', 'region', $provider, 'status', true, ['domain.com']);
 
         $this->assertSame(1, $certificate->getId());
@@ -87,7 +87,7 @@ class CertificateTest extends TestCase
     {
         $user = new User(3, 'owner');
         $team = new Team(2, 'team', $user);
-        $provider = new CloudProvider(1, 'provider', $team);
+        $provider = new CloudProvider(1, 'provider', $team, 'connected');
         $certificate = new Certificate(1, 'name', 'region', $provider, 'status', true, ['domain.com']);
 
         $this->assertSame('name', $certificate->getName());
@@ -97,7 +97,7 @@ class CertificateTest extends TestCase
     {
         $user = new User(3, 'owner');
         $team = new Team(2, 'team', $user);
-        $provider = new CloudProvider(1, 'provider', $team);
+        $provider = new CloudProvider(1, 'provider', $team, 'connected');
         $certificate = new Certificate(1, 'name', 'region', $provider, 'status', true, ['domain.com']);
 
         $this->assertSame($provider, $certificate->getProvider());
@@ -107,7 +107,7 @@ class CertificateTest extends TestCase
     {
         $user = new User(3, 'owner');
         $team = new Team(2, 'team', $user);
-        $provider = new CloudProvider(1, 'provider', $team);
+        $provider = new CloudProvider(1, 'provider', $team, 'connected');
         $certificate = new Certificate(1, 'name', 'region', $provider, 'status', true, ['domain.com']);
 
         $this->assertSame('region', $certificate->getRegion());
@@ -117,7 +117,7 @@ class CertificateTest extends TestCase
     {
         $user = new User(3, 'owner');
         $team = new Team(2, 'team', $user);
-        $provider = new CloudProvider(1, 'provider', $team);
+        $provider = new CloudProvider(1, 'provider', $team, 'connected');
         $certificate = new Certificate(1, 'name', 'region', $provider, 'status', true, ['domain.com']);
 
         $this->assertSame('status', $certificate->getStatus());
@@ -127,7 +127,7 @@ class CertificateTest extends TestCase
     {
         $user = new User(3, 'owner');
         $team = new Team(2, 'team', $user);
-        $provider = new CloudProvider(1, 'provider', $team);
+        $provider = new CloudProvider(1, 'provider', $team, 'connected');
         $domains = [
             [
                 'managed' => false,
@@ -160,7 +160,7 @@ class CertificateTest extends TestCase
     {
         $user = new User(3, 'owner');
         $team = new Team(2, 'team', $user);
-        $provider = new CloudProvider(1, 'provider', $team);
+        $provider = new CloudProvider(1, 'provider', $team, 'connected');
         $certificate = new Certificate(1, 'name', 'region', $provider, 'status', true, ['domain.com']);
 
         $this->assertTrue($certificate->isInUse());
@@ -175,6 +175,7 @@ class CertificateTest extends TestCase
             'in_use' => true,
             'domains' => ['domain.com'],
             'provider' => [
+                'status' => 'connected',
                 'id' => 2,
                 'name' => 'provider',
                 'team' => [

@@ -58,6 +58,7 @@ class DatabaseFactory
                 'region' => 'us-east-1',
                 'status' => 'active',
                 'provider' => [
+                    'status' => 'connected',
                     'id' => 1,
                     'name' => 'provider',
                     'team' => [
@@ -71,6 +72,7 @@ class DatabaseFactory
                 ],
             ],
             'provider' => [
+                'status' => 'connected',
                 'id' => 1,
                 'name' => 'provider',
                 'team' => [

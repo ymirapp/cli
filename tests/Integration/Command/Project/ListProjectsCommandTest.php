@@ -27,6 +27,7 @@ class ListProjectsCommandTest extends TestCase
             'id' => 1,
             'name' => 'project-1',
             'provider' => [
+                'status' => 'connected',
                 'id' => 1,
                 'name' => 'aws',
                 'team' => [
@@ -41,6 +42,7 @@ class ListProjectsCommandTest extends TestCase
             'id' => 2,
             'name' => 'project-2',
             'provider' => [
+                'status' => 'connected',
                 'id' => 1,
                 'name' => 'aws',
                 'team' => [

@@ -20,6 +20,7 @@ class CertificateFactory
     public static function create(array $data = []): Certificate
     {
         $defaultProvider = [
+            'status' => 'connected',
             'id' => 1,
             'name' => 'provider',
             'team' => [

@@ -24,6 +24,7 @@ class EmailIdentityFactory
             'name' => 'example.com',
             'region' => 'us-east-1',
             'provider' => [
+                'status' => 'connected',
                 'id' => 1,
                 'name' => 'provider',
                 'team' => [

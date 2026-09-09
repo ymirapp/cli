@@ -30,6 +30,7 @@ class GetProjectInfoCommandTest extends TestCase
             'id' => 1,
             'name' => 'my-project',
             'provider' => [
+                'status' => 'connected',
                 'id' => 1,
                 'name' => 'aws',
                 'team' => [
@@ -64,6 +65,7 @@ class GetProjectInfoCommandTest extends TestCase
             'id' => 1,
             'name' => 'my-project',
             'provider' => [
+                'status' => 'connected',
                 'id' => 1,
                 'name' => 'aws',
                 'team' => [

@@ -76,6 +76,7 @@ class NetworkTest extends TestCase
             'status' => 'status',
             'has_nat_gateway' => true,
             'provider' => [
+                'status' => 'connected',
                 'id' => 2,
                 'name' => 'provider',
                 'team' => [

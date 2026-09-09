@@ -52,6 +52,7 @@ class CacheTunnelCommandTest extends TestCase
                 'region' => 'us-east-1',
                 'status' => 'active',
                 'provider' => [
+                    'status' => 'connected',
                     'id' => 1,
                     'name' => 'provider',
                     'type' => 'aws',

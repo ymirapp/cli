@@ -81,7 +81,7 @@ class DnsZoneTest extends TestCase
     {
         $user = new User(3, 'owner');
         $team = new Team(2, 'team', $user);
-        $provider = new CloudProvider(1, 'provider', $team);
+        $provider = new CloudProvider(1, 'provider', $team, 'connected');
 
         return new DnsZone(1, 'domain.com', $provider, ['ns1', 'ns2']);
     }
@@ -93,6 +93,7 @@ class DnsZoneTest extends TestCase
             'domain_name' => 'domain.com',
             'name_servers' => ['ns1', 'ns2'],
             'provider' => [
+                'status' => 'connected',
                 'id' => 2,
                 'name' => 'provider',
                 'team' => [
