@@ -22,7 +22,7 @@ use Ymir\Cli\Exception\Resource\ResourceResolutionException;
 use Ymir\Cli\ExecutionContext;
 use Ymir\Cli\Resource\Model\Network;
 use Ymir\Cli\Resource\Model\ResourceModelInterface;
-use Ymir\Cli\Resource\Requirement\CloudProviderRequirement;
+use Ymir\Cli\Resource\Requirement\ConnectedCloudProviderRequirement;
 use Ymir\Cli\Resource\Requirement\NameSlugRequirement;
 use Ymir\Cli\Resource\Requirement\RegionRequirement;
 
@@ -43,7 +43,7 @@ class NetworkDefinition implements ProvisionableResourceDefinitionInterface, Res
     {
         return [
             'name' => new NameSlugRequirement('What is the name of the network being created?'),
-            'provider' => new CloudProviderRequirement('Which cloud provider should the network be on?'),
+            'provider' => new ConnectedCloudProviderRequirement('Which cloud provider should the network be on?'),
             'region' => new RegionRequirement('Which region should the network be created in?'),
         ];
     }

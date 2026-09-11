@@ -24,7 +24,7 @@ use Ymir\Cli\Project\EnvironmentConfiguration;
 use Ymir\Cli\Project\Type\InstallableProjectTypeInterface;
 use Ymir\Cli\Project\Type\ProjectTypeInterface;
 use Ymir\Cli\Resource\Model\Project;
-use Ymir\Cli\Resource\Requirement\CloudProviderRequirement;
+use Ymir\Cli\Resource\Requirement\ConnectedCloudProviderRequirement;
 use Ymir\Cli\Resource\Requirement\NameSlugRequirement;
 use Ymir\Cli\Resource\Requirement\ProjectTypeRequirement;
 use Ymir\Cli\Resource\Requirement\RegionRequirement;
@@ -126,7 +126,7 @@ class InitializeProjectCommand extends AbstractCommand
         $environments = $this->getBaseEnvironmentsConfiguration($projectType);
 
         $name = $this->fulfill(new NameSlugRequirement('What is the name of the project being created?', basename(getcwd() ?: '') ?: null));
-        $provider = $this->fulfill(new CloudProviderRequirement('Which cloud provider should the project be on?'));
+        $provider = $this->fulfill(new ConnectedCloudProviderRequirement('Which cloud provider should the project be on?'));
         $region = $this->fulfill(new RegionRequirement('Which region should the project be created in?'), ['provider' => $provider]);
 
         $projectRequirements = [

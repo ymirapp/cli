@@ -14,7 +14,9 @@ declare(strict_types=1);
 namespace Ymir\Cli\Tests\Integration\Command\Network;
 
 use Illuminate\Support\Collection;
+use Symfony\Component\Console\Tester\CommandTester;
 use Ymir\Cli\Command\Network\CreateNetworkCommand;
+use Ymir\Cli\Exception\InvalidInputException;
 use Ymir\Cli\Resource\Definition\CloudProviderDefinition;
 use Ymir\Cli\Resource\Definition\NetworkDefinition;
 use Ymir\Cli\Resource\Model\CloudProvider;
@@ -88,5 +90,26 @@ class CreateNetworkCommandTest extends TestCase
         $display = $tester->getDisplay();
 
         $this->assertStringContainsString('Network created', $display);
+    }
+
+    public function testRejectsExplicitDisconnectedProviderWithoutInteraction(): void
+    {
+        $team = $this->setupActiveTeam();
+        $provider = CloudProviderFactory::create(['id' => 123, 'status' => 'disconnected']);
+
+        $this->apiClient->shouldReceive('getProviders')->once()->with($team)->andReturn(new ResourceCollection([$provider]));
+        $this->apiClient->shouldNotReceive('createNetwork');
+        $this->apiClient->shouldNotReceive('getRegions');
+
+        $this->bootApplication([new CreateNetworkCommand($this->apiClient, $this->createExecutionContextFactory([
+            CloudProvider::class => function () { return new CloudProviderDefinition(); },
+            Network::class => function () { return new NetworkDefinition(); },
+        ]))]);
+        $tester = new CommandTester($this->application->find(CreateNetworkCommand::NAME));
+
+        $this->expectException(InvalidInputException::class);
+        $this->expectExceptionMessage('The "name" cloud provider connection (ID: 123) cannot be used for operations because its status is "disconnected"');
+
+        $tester->execute(['name' => 'my-network', '--region' => 'us-east-1', '--provider' => '123'], ['interactive' => false]);
     }
 }

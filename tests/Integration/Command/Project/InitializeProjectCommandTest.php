@@ -16,6 +16,7 @@ namespace Ymir\Cli\Tests\Integration\Command\Project;
 use Symfony\Component\DependencyInjection\ServiceLocator;
 use Symfony\Component\Yaml\Yaml;
 use Ymir\Cli\Command\Project\InitializeProjectCommand;
+use Ymir\Cli\Exception\Resource\NoResourcesFoundException;
 use Ymir\Cli\Project\Configuration\ConfigurationChangeInterface;
 use Ymir\Cli\Project\EnvironmentConfiguration;
 use Ymir\Cli\Project\Initialization\InitializationStepInterface;
@@ -275,5 +276,31 @@ class InitializeProjectCommandTest extends TestCase
 
         $this->assertStringContainsString('Initialized Type project "new-project"', $tester->getDisplay());
         $this->assertStringContainsString('name: new-project', file_get_contents($this->tempDir.'/ymir.yml'));
+    }
+
+    public function testPerformRejectsTeamWithoutConnectedProviders(): void
+    {
+        $team = $this->setupActiveTeam();
+        $provider = CloudProviderFactory::create(['status' => 'pending']);
+
+        $this->apiClient->shouldReceive('getProviders')->once()->with($team)->andReturn(new ResourceCollection([$provider]));
+        $this->apiClient->shouldNotReceive('getRegions');
+        $this->apiClient->shouldNotReceive('createProject');
+
+        $projectType = \Mockery::mock(ProjectTypeInterface::class);
+        $projectType->shouldReceive('getName')->andReturn('Detected type');
+        $projectType->shouldReceive('matchesProject')->andReturn(true);
+        $projectType->shouldReceive('generateEnvironmentConfiguration')->andReturnUsing(function ($environment) {
+            return new EnvironmentConfiguration($environment, []);
+        });
+
+        $this->bootApplication([
+            new InitializeProjectCommand($this->apiClient, $this->createExecutionContextFactory(), new ServiceLocator([]), [$projectType]),
+        ]);
+
+        $this->expectException(NoResourcesFoundException::class);
+        $this->expectExceptionMessage('The currently active team has no connected cloud provider connections, but you can inspect their status with the "provider:list" command');
+
+        $this->executeCommand(InitializeProjectCommand::NAME, [], ['my-project']);
     }
 }

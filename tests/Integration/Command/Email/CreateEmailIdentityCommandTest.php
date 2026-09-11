@@ -14,7 +14,9 @@ declare(strict_types=1);
 namespace Ymir\Cli\Tests\Integration\Command\Email;
 
 use Illuminate\Support\Collection;
+use Symfony\Component\Console\Tester\CommandTester;
 use Ymir\Cli\Command\Email\CreateEmailIdentityCommand;
+use Ymir\Cli\Exception\InvalidInputException;
 use Ymir\Cli\Resource\Definition\CloudProviderDefinition;
 use Ymir\Cli\Resource\Model\CloudProvider;
 use Ymir\Cli\Resource\ResourceCollection;
@@ -127,5 +129,25 @@ class CreateEmailIdentityCommandTest extends TestCase
         $display = $tester->getDisplay();
 
         $this->assertStringContainsString('Email identity created', $display);
+    }
+
+    public function testRejectsExplicitDisconnectedProviderWithoutInteraction(): void
+    {
+        $team = $this->setupActiveTeam();
+        $provider = CloudProviderFactory::create(['id' => 123, 'status' => 'disconnected']);
+
+        $this->apiClient->shouldReceive('getProviders')->once()->with($team)->andReturn(new ResourceCollection([$provider]));
+        $this->apiClient->shouldNotReceive('createEmailIdentity');
+        $this->apiClient->shouldNotReceive('getRegions');
+
+        $this->bootApplication([new CreateEmailIdentityCommand($this->apiClient, $this->createExecutionContextFactory([
+            CloudProvider::class => function () { return new CloudProviderDefinition(); },
+        ]))]);
+        $tester = new CommandTester($this->application->find(CreateEmailIdentityCommand::NAME));
+
+        $this->expectException(InvalidInputException::class);
+        $this->expectExceptionMessage('The "name" cloud provider connection (ID: 123) cannot be used for operations because its status is "disconnected"');
+
+        $tester->execute(['name' => 'example.com', '--region' => 'us-east-1', '--provider' => '123'], ['interactive' => false]);
     }
 }

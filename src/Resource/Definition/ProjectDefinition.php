@@ -22,7 +22,7 @@ use Ymir\Cli\Exception\Resource\ResourceResolutionException;
 use Ymir\Cli\ExecutionContext;
 use Ymir\Cli\Resource\Model\Project;
 use Ymir\Cli\Resource\Model\ResourceModelInterface;
-use Ymir\Cli\Resource\Requirement\CloudProviderRequirement;
+use Ymir\Cli\Resource\Requirement\ConnectedCloudProviderRequirement;
 use Ymir\Cli\Resource\Requirement\EnvironmentsRequirement;
 use Ymir\Cli\Resource\Requirement\NameSlugRequirement;
 use Ymir\Cli\Resource\Requirement\RegionRequirement;
@@ -44,7 +44,7 @@ class ProjectDefinition implements ProvisionableResourceDefinitionInterface, Res
     {
         return [
             'name' => new NameSlugRequirement('What is the name of the project being created?'),
-            'provider' => new CloudProviderRequirement('Which cloud provider should the project be on?'),
+            'provider' => new ConnectedCloudProviderRequirement('Which cloud provider should the project be on?'),
             'region' => new RegionRequirement('Which region should the project be created in?'),
             'environments' => new EnvironmentsRequirement(),
         ];

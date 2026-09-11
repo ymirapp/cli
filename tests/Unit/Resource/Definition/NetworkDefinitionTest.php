@@ -22,7 +22,7 @@ use Ymir\Cli\Exception\Resource\ResourceNotFoundException;
 use Ymir\Cli\Exception\Resource\ResourceResolutionException;
 use Ymir\Cli\ExecutionContext;
 use Ymir\Cli\Resource\Definition\NetworkDefinition;
-use Ymir\Cli\Resource\Requirement\CloudProviderRequirement;
+use Ymir\Cli\Resource\Requirement\ConnectedCloudProviderRequirement;
 use Ymir\Cli\Resource\Requirement\NameSlugRequirement;
 use Ymir\Cli\Resource\Requirement\RegionRequirement;
 use Ymir\Cli\Resource\ResourceCollection;
@@ -77,7 +77,7 @@ class NetworkDefinitionTest extends TestCase
 
         $this->assertCount(3, $requirements);
         $this->assertInstanceOf(NameSlugRequirement::class, $requirements['name']);
-        $this->assertInstanceOf(CloudProviderRequirement::class, $requirements['provider']);
+        $this->assertInstanceOf(ConnectedCloudProviderRequirement::class, $requirements['provider']);
         $this->assertInstanceOf(RegionRequirement::class, $requirements['region']);
     }
 

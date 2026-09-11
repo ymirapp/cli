@@ -16,8 +16,8 @@ namespace Ymir\Cli\Command\Email;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
 use Ymir\Cli\Command\AbstractCommand;
-use Ymir\Cli\Resource\Model\CloudProvider;
 use Ymir\Cli\Resource\Model\EmailIdentity;
+use Ymir\Cli\Resource\Requirement\ConnectedCloudProviderRequirement;
 use Ymir\Cli\Resource\Requirement\RegionRequirement;
 
 class CreateEmailIdentityCommand extends AbstractCommand
@@ -53,7 +53,7 @@ class CreateEmailIdentityCommand extends AbstractCommand
             $name = $this->output->ask('What is the name of the email identity being created?');
         }
 
-        $provider = $this->resolve(CloudProvider::class, 'Which cloud provider would you like to create the email identity on?');
+        $provider = $this->fulfill(new ConnectedCloudProviderRequirement('Which cloud provider would you like to create the email identity on?'));
         $region = $this->fulfill(new RegionRequirement('Which region should the email identity be created in?'), ['provider' => $provider]);
 
         $identity = $this->apiClient->createEmailIdentity($provider, $name, $region);

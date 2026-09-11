@@ -16,7 +16,7 @@ namespace Ymir\Cli\Command\Certificate;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
 use Ymir\Cli\Command\AbstractCommand;
-use Ymir\Cli\Resource\Model\CloudProvider;
+use Ymir\Cli\Resource\Requirement\ConnectedCloudProviderRequirement;
 use Ymir\Cli\Resource\Requirement\RegionRequirement;
 
 class RequestCertificateCommand extends AbstractCommand
@@ -58,7 +58,7 @@ class RequestCertificateCommand extends AbstractCommand
             $domains[] = substr($domains[0], 2);
         }
 
-        $provider = $this->resolve(CloudProvider::class, 'Which cloud provider would you like to request the SSL certificate on?');
+        $provider = $this->fulfill(new ConnectedCloudProviderRequirement('Which cloud provider would you like to request the SSL certificate on?'));
         $region = $this->fulfill(new RegionRequirement('Which region should the SSL certificate be created in?'), ['provider' => $provider]);
 
         $certificate = $this->apiClient->createCertificate($provider, $domains, $region);

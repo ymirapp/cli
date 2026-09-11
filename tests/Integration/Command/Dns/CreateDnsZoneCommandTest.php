@@ -13,7 +13,9 @@ declare(strict_types=1);
 
 namespace Ymir\Cli\Tests\Integration\Command\Dns;
 
+use Symfony\Component\Console\Tester\CommandTester;
 use Ymir\Cli\Command\Dns\CreateDnsZoneCommand;
+use Ymir\Cli\Exception\InvalidInputException;
 use Ymir\Cli\Resource\Definition\CloudProviderDefinition;
 use Ymir\Cli\Resource\Model\CloudProvider;
 use Ymir\Cli\Resource\ResourceCollection;
@@ -94,5 +96,25 @@ class CreateDnsZoneCommandTest extends TestCase
 
         $this->assertStringContainsString('DNS zone created', $tester->getDisplay());
         $this->assertStringContainsString('ns1.example.com', $tester->getDisplay());
+    }
+
+    public function testRejectsExplicitDisconnectedProviderWithoutInteraction(): void
+    {
+        $team = $this->setupActiveTeam();
+        $provider = CloudProviderFactory::create(['id' => 123, 'status' => 'disconnected']);
+
+        $this->apiClient->shouldReceive('getProviders')->once()->with($team)->andReturn(new ResourceCollection([$provider]));
+        $this->apiClient->shouldNotReceive('createDnsZone');
+        $this->apiClient->shouldNotReceive('getRegions');
+
+        $this->bootApplication([new CreateDnsZoneCommand($this->apiClient, $this->createExecutionContextFactory([
+            CloudProvider::class => function () { return new CloudProviderDefinition(); },
+        ]))]);
+        $tester = new CommandTester($this->application->find(CreateDnsZoneCommand::NAME));
+
+        $this->expectException(InvalidInputException::class);
+        $this->expectExceptionMessage('The "name" cloud provider connection (ID: 123) cannot be used for operations because its status is "disconnected"');
+
+        $tester->execute(['name' => 'example.com', '--provider' => '123'], ['interactive' => false]);
     }
 }

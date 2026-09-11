@@ -17,7 +17,7 @@ use Symfony\Component\Console\Helper\TableSeparator;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
 use Ymir\Cli\Command\AbstractCommand;
-use Ymir\Cli\Resource\Model\CloudProvider;
+use Ymir\Cli\Resource\Requirement\ConnectedCloudProviderRequirement;
 
 class CreateDnsZoneCommand extends AbstractCommand
 {
@@ -51,7 +51,7 @@ class CreateDnsZoneCommand extends AbstractCommand
             $name = $this->output->ask('What is the name of the domain that the DNS zone will manage?');
         }
 
-        $provider = $this->resolve(CloudProvider::class, 'Which cloud provider would you like to create the DNS zone on?');
+        $provider = $this->fulfill(new ConnectedCloudProviderRequirement('Which cloud provider would you like to create the DNS zone on?'));
 
         if (!$this->output->confirm('A DNS zone will cost $0.50/month if it isn\'t deleted in the next 12 hours. Would you like to proceed?')) {
             return;

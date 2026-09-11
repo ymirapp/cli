@@ -15,6 +15,7 @@ namespace Ymir\Cli\Resource\Definition;
 
 use Ymir\Cli\ApiClient;
 use Ymir\Cli\Command\Provider\ConnectProviderCommand;
+use Ymir\Cli\Command\Provider\ListProvidersCommand;
 use Ymir\Cli\Exception\InvalidInputException;
 use Ymir\Cli\Exception\Resource\NoResourcesFoundException;
 use Ymir\Cli\Exception\Resource\ResourceNotFoundException;
@@ -71,6 +72,7 @@ class CloudProviderDefinition implements ProvisionableResourceDefinitionInterfac
     {
         $input = $context->getInput();
         $providerId = null;
+        $requiredStatus = $fulfilledRequirements['status'] ?? null;
 
         if ($input->hasArgument('provider')) {
             $providerId = $input->getNumericArgument('provider');
@@ -84,22 +86,34 @@ class CloudProviderDefinition implements ProvisionableResourceDefinitionInterfac
             throw new NoResourcesFoundException(sprintf('The currently active team has no cloud providers, but you can connect one with the "%s" command', ConnectProviderCommand::NAME));
         }
 
-        $resolvedProvider = null;
-
-        if (!empty($providerId)) {
-            $resolvedProvider = $providers->firstWhereId($providerId);
-        }
+        $resolvedProvider = !empty($providerId) ? $providers->firstWhereId($providerId) : null;
 
         if (!empty($providerId) && !$resolvedProvider instanceof CloudProvider) {
             throw new InvalidInputException(sprintf('The given provider "%s" isn\'t available to the currently active team', $providerId));
-        } elseif ($resolvedProvider instanceof CloudProvider) {
+        }
+
+        $project = empty($providerId) ? $context->getProject() : null;
+
+        if ($project instanceof Project) {
+            $resolvedProvider = $project->getProvider();
+        }
+
+        if ($resolvedProvider instanceof CloudProvider && is_string($requiredStatus) && $requiredStatus !== $resolvedProvider->getStatus()) {
+            throw new InvalidInputException(sprintf('The "%s" cloud provider connection (ID: %d) cannot be used for operations because its status is "%s", but you can complete or repair it in Ymir or use the "%s" command to find a connected connection', $resolvedProvider->getName(), $resolvedProvider->getId(), $resolvedProvider->getStatus(), ListProvidersCommand::NAME));
+        }
+
+        if ($resolvedProvider instanceof CloudProvider) {
             return $resolvedProvider;
         }
 
-        $project = $context->getProject();
+        if (!empty($requiredStatus)) {
+            $providers = $providers->filter(function (CloudProvider $provider) use ($requiredStatus): bool {
+                return $requiredStatus === $provider->getStatus();
+            });
+        }
 
-        if ($project instanceof Project) {
-            return $project->getProvider();
+        if ($providers->isEmpty()) {
+            throw new NoResourcesFoundException(sprintf('The currently active team has no connected cloud provider connections, but you can inspect their status with the "%s" command and complete or repair one in Ymir', ListProvidersCommand::NAME));
         }
 
         $providerId = $context->getOutput()->choiceWithId($question, $providers->mapWithKeys(function (CloudProvider $provider) {

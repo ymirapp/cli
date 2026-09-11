@@ -22,6 +22,11 @@ use Ymir\Cli\Tests\Integration\Command\TestCase;
 
 class DeleteProviderCommandTest extends TestCase
 {
+    public static function provideProviderStatuses(): array
+    {
+        return [['pending'], ['connected'], ['disconnected']];
+    }
+
     public function testDeleteProviderCancelled(): void
     {
         $team = $this->setupActiveTeam();
@@ -43,7 +48,10 @@ class DeleteProviderCommandTest extends TestCase
         $this->assertStringNotContainsString('Cloud provider deleted', $tester->getDisplay());
     }
 
-    public function testDeleteProviderSuccessfullyWithChoice(): void
+    /**
+     * @dataProvider provideProviderStatuses
+     */
+    public function testDeleteProviderSuccessfullyWithChoice(string $status): void
     {
         $team = $this->setupActiveTeam();
         $provider1 = CloudProviderFactory::create([
@@ -52,6 +60,7 @@ class DeleteProviderCommandTest extends TestCase
         ]);
 
         $provider2 = CloudProviderFactory::create([
+            'status' => $status,
             'id' => 2,
             'name' => 'AWS 2',
         ]);
@@ -69,10 +78,14 @@ class DeleteProviderCommandTest extends TestCase
         $this->assertStringContainsString('Cloud provider deleted', $tester->getDisplay());
     }
 
-    public function testDeleteProviderSuccessfullyWithId(): void
+    /**
+     * @dataProvider provideProviderStatuses
+     */
+    public function testDeleteProviderSuccessfullyWithId(string $status): void
     {
         $team = $this->setupActiveTeam();
         $provider = CloudProviderFactory::create([
+            'status' => $status,
             'id' => 123,
             'name' => 'AWS',
         ]);

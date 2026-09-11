@@ -22,10 +22,19 @@ use Ymir\Cli\Tests\Integration\Command\TestCase;
 
 class UpdateProviderCommandTest extends TestCase
 {
-    public function testUpdateProviderSuccessfully(): void
+    public static function provideProviderStatuses(): array
+    {
+        return [['pending'], ['connected'], ['disconnected']];
+    }
+
+    /**
+     * @dataProvider provideProviderStatuses
+     */
+    public function testUpdateProviderSuccessfully(string $status): void
     {
         $team = $this->setupActiveTeam();
         $provider = CloudProviderFactory::create([
+            'status' => $status,
             'id' => 123,
             'name' => 'AWS',
         ]);
