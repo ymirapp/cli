@@ -15,9 +15,12 @@ namespace Ymir\Cli\Resource\Definition;
 
 use Ymir\Cli\ApiClient;
 use Ymir\Cli\Command\Provider\ConnectProviderCommand;
+use Ymir\Cli\Command\Provider\DeleteProviderCommand;
 use Ymir\Cli\Command\Provider\ListProvidersCommand;
+use Ymir\Cli\Command\Provider\UpdateProviderCommand;
 use Ymir\Cli\Exception\InvalidInputException;
 use Ymir\Cli\Exception\Resource\NoResourcesFoundException;
+use Ymir\Cli\Exception\Resource\ProvisioningFailedException;
 use Ymir\Cli\Exception\Resource\ResourceNotFoundException;
 use Ymir\Cli\ExecutionContext;
 use Ymir\Cli\Resource\Model\CloudProvider;
@@ -62,7 +65,15 @@ class CloudProviderDefinition implements ProvisionableResourceDefinitionInterfac
      */
     public function provision(ApiClient $apiClient, array $fulfilledRequirements): ?ResourceModelInterface
     {
-        return $apiClient->createProvider($fulfilledRequirements['active_team'], $fulfilledRequirements['name'], $fulfilledRequirements['credentials']);
+        $provider = $apiClient->createProvider($fulfilledRequirements['active_team'], $fulfilledRequirements['name']);
+
+        try {
+            $apiClient->updateProvider($provider, $fulfilledRequirements['credentials']);
+        } catch (\Throwable $exception) {
+            throw new ProvisioningFailedException(sprintf('Failed to connect the pending cloud provider (ID: %1$d): %2$s. Retry with the "%3$s %1$d" command or delete it with the "%4$s %1$d" command', $provider->getId(), $exception->getMessage(), UpdateProviderCommand::NAME, DeleteProviderCommand::NAME), $exception->getCode(), $exception);
+        }
+
+        return $provider;
     }
 
     /**

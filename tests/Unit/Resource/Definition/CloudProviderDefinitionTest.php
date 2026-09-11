@@ -13,12 +13,16 @@ declare(strict_types=1);
 
 namespace Ymir\Cli\Tests\Unit\Resource\Definition;
 
+use GuzzleHttp\Exception\ClientException as GuzzleClientException;
+use GuzzleHttp\Psr7\Request;
+use GuzzleHttp\Psr7\Response;
 use Illuminate\Support\Enumerable;
 use Ymir\Cli\ApiClient;
 use Ymir\Cli\Console\Input;
 use Ymir\Cli\Console\Output;
 use Ymir\Cli\Exception\InvalidInputException;
 use Ymir\Cli\Exception\Resource\NoResourcesFoundException;
+use Ymir\Cli\Exception\Resource\ProvisioningFailedException;
 use Ymir\Cli\Exception\Resource\ResourceNotFoundException;
 use Ymir\Cli\ExecutionContext;
 use Ymir\Cli\Resource\Definition\CloudProviderDefinition;
@@ -31,6 +35,7 @@ use Ymir\Cli\Tests\Factory\CloudProviderFactory;
 use Ymir\Cli\Tests\Factory\ProjectFactory;
 use Ymir\Cli\Tests\Factory\TeamFactory;
 use Ymir\Cli\Tests\TestCase;
+use Ymir\Sdk\Exception\ClientException;
 
 class CloudProviderDefinitionTest extends TestCase
 {
@@ -103,8 +108,12 @@ class CloudProviderDefinitionTest extends TestCase
         $cloudProvider = CloudProviderFactory::create();
 
         $this->apiClient->shouldReceive('createProvider')->once()
-                  ->with($cloudProvider->getTeam(), 'name', ['key' => 'value'])
-                  ->andReturn($cloudProvider);
+                  ->with($cloudProvider->getTeam(), 'name')
+                  ->andReturn($cloudProvider)
+                  ->ordered();
+        $this->apiClient->shouldReceive('updateProvider')->once()
+                  ->with($cloudProvider, ['key' => 'value'])
+                  ->ordered();
 
         $definition = new CloudProviderDefinition();
 
@@ -113,6 +122,38 @@ class CloudProviderDefinitionTest extends TestCase
             'name' => 'name',
             'credentials' => ['key' => 'value'],
         ]));
+    }
+
+    public function testProvisionDoesNotRetryCreationIfCredentialUpdateFails(): void
+    {
+        $cloudProvider = CloudProviderFactory::create(['id' => 123, 'status' => 'pending']);
+        $response = new Response(422, [], '{"errors":{"credentials":["Invalid AWS credentials"]}}');
+        $clientException = new ClientException(new GuzzleClientException('Invalid update', new Request('PATCH', '/providers/123'), $response));
+
+        $this->apiClient->shouldReceive('createProvider')->once()
+                  ->with($cloudProvider->getTeam(), 'name')
+                  ->andReturn($cloudProvider)
+                  ->ordered();
+        $this->apiClient->shouldReceive('updateProvider')->once()
+                  ->with($cloudProvider, ['key' => 'value'])
+                  ->andThrow($clientException)
+                  ->ordered();
+
+        try {
+            (new CloudProviderDefinition())->provision($this->apiClient, [
+                'active_team' => $cloudProvider->getTeam(),
+                'name' => 'name',
+                'credentials' => ['key' => 'value'],
+            ]);
+
+            $this->fail('The failed credential update should stop provisioning');
+        } catch (ProvisioningFailedException $exception) {
+            $this->assertStringContainsString('Failed to connect the pending cloud provider (ID: 123)', $exception->getMessage());
+            $this->assertStringContainsString('Invalid AWS credentials', $exception->getMessage());
+            $this->assertStringContainsString('"provider:update 123"', $exception->getMessage());
+            $this->assertStringContainsString('"provider:delete 123"', $exception->getMessage());
+            $this->assertSame($clientException, $exception->getPrevious());
+        }
     }
 
     public function testResolveDoesNotRetainProviderStatusRequirement(): void

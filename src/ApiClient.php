@@ -213,11 +213,11 @@ class ApiClient
     }
 
     /**
-     * Create a new cloud provider with the given name and credentials.
+     * Create a new pending cloud provider with the given name.
      */
-    public function createProvider(Model\Team $team, string $name, array $credentials): Model\CloudProvider
+    public function createProvider(Model\Team $team, string $name): Model\CloudProvider
     {
-        return Model\CloudProvider::fromArray($this->client->createProvider($team->getId(), $name, $credentials)->all());
+        return Model\CloudProvider::fromArray($this->client->createProvider($team->getId(), $name)->all());
     }
 
     /**
@@ -846,7 +846,7 @@ class ApiClient
     /**
      * Update the given cloud provider.
      */
-    public function updateProvider(Model\CloudProvider $provider, array $credentials, string $name): void
+    public function updateProvider(Model\CloudProvider $provider, ?array $credentials = null, ?string $name = null): void
     {
         $this->client->updateProvider($provider->getId(), $credentials, $name);
     }
