@@ -70,6 +70,30 @@ final class CloudProvider extends AbstractResourceModel
     }
 
     /**
+     * Get the external ID for configuring AssumeRole authentication.
+     */
+    public function getAssumeRoleExternalId(): ?string
+    {
+        return Arr::get($this->authentication, 'assume_role.external_id');
+    }
+
+    /**
+     * Get the required role name for configuring AssumeRole authentication.
+     */
+    public function getAssumeRoleRoleName(): ?string
+    {
+        return Arr::get($this->authentication, 'assume_role.role_name');
+    }
+
+    /**
+     * Get the Ymir AWS account ID for configuring AssumeRole authentication.
+     */
+    public function getAssumeRoleYmirAccountId(): ?string
+    {
+        return Arr::get($this->authentication, 'assume_role.ymir_account_id');
+    }
+
+    /**
      * Get the authentication method of the cloud provider.
      */
     public function getAuthenticationMethod(): ?string

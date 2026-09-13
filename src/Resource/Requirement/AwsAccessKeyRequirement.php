@@ -17,7 +17,7 @@ use Illuminate\Support\Collection;
 use Ymir\Cli\Console\Output;
 use Ymir\Cli\ExecutionContext;
 
-class AwsCredentialsRequirement implements RequirementInterface
+class AwsAccessKeyRequirement implements RequirementInterface
 {
     /**
      * {@inheritdoc}

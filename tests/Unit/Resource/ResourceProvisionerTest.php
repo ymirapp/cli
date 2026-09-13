@@ -17,7 +17,10 @@ use Ymir\Cli\ApiClient;
 use Ymir\Cli\Console\Input;
 use Ymir\Cli\Console\Output;
 use Ymir\Cli\Exception\CommandCancelledException;
+use Ymir\Cli\Exception\LogicException;
+use Ymir\Cli\Exception\Resource\FinalizationFailedException;
 use Ymir\Cli\ExecutionContext;
+use Ymir\Cli\Resource\Definition\FinalizableResourceDefinitionInterface;
 use Ymir\Cli\Resource\Definition\ProvisionableResourceDefinitionInterface;
 use Ymir\Cli\Resource\Requirement\RequirementInterface;
 use Ymir\Cli\Resource\ResourceProvisioner;
@@ -27,6 +30,62 @@ use Ymir\Sdk\Exception\ClientException;
 
 class ResourceProvisionerTest extends TestCase
 {
+    public function testProvisionCancelsWithoutRetryingCreationIfFinalizationFails(): void
+    {
+        $this->expectException(CommandCancelledException::class);
+
+        $apiClient = \Mockery::mock(ApiClient::class);
+        $context = \Mockery::mock(ExecutionContext::class);
+        $definition = \Mockery::mock(FinalizableResourceDefinitionInterface::class);
+        $exception = new FinalizationFailedException('Failed to finalize resource');
+        $input = \Mockery::mock(Input::class);
+        $output = \Mockery::mock(Output::class);
+        $resource = SecretFactory::create();
+
+        $definition->shouldReceive('getRequirements')->once()->andReturn([])->ordered();
+        $context->shouldReceive('getApiClient')->once()->andReturn($apiClient)->ordered();
+        $context->shouldReceive('getOutput')->once()->andReturn($output);
+        $context->shouldReceive('getInput')->once()->andReturn($input);
+        $input->shouldReceive('isInteractive')->once()->andReturn(false);
+        $output->shouldReceive('newLine')->once();
+        $output->shouldReceive('exception')->once()->with($exception);
+        $definition->shouldReceive('provision')->once()->with($apiClient, [])->andReturn($resource)->ordered();
+        $definition->shouldReceive('finalize')->once()->with($context, $resource, [])->andThrow($exception)->ordered();
+
+        (new ResourceProvisioner())->provision($definition, $context);
+    }
+
+    public function testProvisionCannotFinalizeWithoutResource(): void
+    {
+        $this->expectException(LogicException::class);
+        $this->expectExceptionMessage('Initial provisioning must return a resource before it can be finalized');
+
+        $apiClient = \Mockery::mock(ApiClient::class);
+        $context = \Mockery::mock(ExecutionContext::class);
+        $definition = \Mockery::mock(FinalizableResourceDefinitionInterface::class);
+
+        $definition->shouldReceive('getRequirements')->once()->andReturn([])->ordered();
+        $context->shouldReceive('getApiClient')->once()->andReturn($apiClient)->ordered();
+        $definition->shouldReceive('provision')->once()->with($apiClient, [])->andReturnNull()->ordered();
+
+        (new ResourceProvisioner())->provision($definition, $context);
+    }
+
+    public function testProvisionFinalizesResource(): void
+    {
+        $apiClient = \Mockery::mock(ApiClient::class);
+        $context = \Mockery::mock(ExecutionContext::class);
+        $definition = \Mockery::mock(FinalizableResourceDefinitionInterface::class);
+        $resource = SecretFactory::create();
+
+        $definition->shouldReceive('getRequirements')->once()->andReturn([])->ordered();
+        $context->shouldReceive('getApiClient')->once()->andReturn($apiClient)->ordered();
+        $definition->shouldReceive('provision')->once()->with($apiClient, [])->andReturn($resource)->ordered();
+        $definition->shouldReceive('finalize')->once()->with($context, $resource, [])->andReturn($resource)->ordered();
+
+        $this->assertSame($resource, (new ResourceProvisioner())->provision($definition, $context));
+    }
+
     public function testProvisionFulfillsRequirementsAndCallsProvision(): void
     {
         $apiClient = \Mockery::mock(ApiClient::class);
@@ -60,6 +119,32 @@ class ResourceProvisionerTest extends TestCase
         $provisioner = new ResourceProvisioner();
 
         $this->assertSame($resource, $provisioner->provision($definition, $context));
+    }
+
+    public function testProvisionRetriesFinalizationOnFailureIfUserConfirms(): void
+    {
+        $apiClient = \Mockery::mock(ApiClient::class);
+        $context = \Mockery::mock(ExecutionContext::class);
+        $definition = \Mockery::mock(FinalizableResourceDefinitionInterface::class);
+        $exception = new FinalizationFailedException('Failed to finalize resource');
+        $input = \Mockery::mock(Input::class);
+        $output = \Mockery::mock(Output::class);
+        $resource = SecretFactory::create();
+
+        $definition->shouldReceive('getRequirements')->once()->andReturn([])->ordered();
+        $definition->shouldReceive('getResourceName')->once()->andReturn('resource');
+        $context->shouldReceive('getApiClient')->once()->andReturn($apiClient)->ordered();
+        $context->shouldReceive('getOutput')->once()->andReturn($output);
+        $context->shouldReceive('getInput')->once()->andReturn($input);
+        $input->shouldReceive('isInteractive')->once()->andReturn(true);
+        $output->shouldReceive('newLine')->once();
+        $output->shouldReceive('exception')->once()->with($exception);
+        $output->shouldReceive('confirm')->once()->with('Failed to finalize the resource. Do you want to retry?')->andReturn(true);
+        $definition->shouldReceive('provision')->once()->with($apiClient, [])->andReturn($resource)->ordered();
+        $definition->shouldReceive('finalize')->once()->with($context, $resource, [])->andThrow($exception)->ordered();
+        $definition->shouldReceive('finalize')->once()->with($context, $resource, [])->andReturn($resource)->ordered();
+
+        $this->assertSame($resource, (new ResourceProvisioner())->provision($definition, $context));
     }
 
     public function testProvisionRetriesOnFailureIfUserConfirms(): void

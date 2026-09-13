@@ -21,14 +21,15 @@ use Ymir\Cli\ApiClient;
 use Ymir\Cli\Console\Input;
 use Ymir\Cli\Console\Output;
 use Ymir\Cli\Exception\InvalidInputException;
+use Ymir\Cli\Exception\Resource\FinalizationFailedException;
 use Ymir\Cli\Exception\Resource\NoResourcesFoundException;
-use Ymir\Cli\Exception\Resource\ProvisioningFailedException;
 use Ymir\Cli\Exception\Resource\ResourceNotFoundException;
 use Ymir\Cli\ExecutionContext;
 use Ymir\Cli\Resource\Definition\CloudProviderDefinition;
 use Ymir\Cli\Resource\Model\Project;
 use Ymir\Cli\Resource\Requirement\ActiveTeamRequirement;
-use Ymir\Cli\Resource\Requirement\AwsCredentialsRequirement;
+use Ymir\Cli\Resource\Requirement\CloudProviderAuthenticationMethodRequirement;
+use Ymir\Cli\Resource\Requirement\CloudProviderCredentialsRequirement;
 use Ymir\Cli\Resource\Requirement\NameRequirement;
 use Ymir\Cli\Resource\ResourceCollection;
 use Ymir\Cli\Tests\Factory\CloudProviderFactory;
@@ -92,15 +93,57 @@ class CloudProviderDefinitionTest extends TestCase
         return $selections;
     }
 
+    public function testFinalize(): void
+    {
+        $cloudProvider = CloudProviderFactory::create(['id' => 123, 'status' => 'pending']);
+        $fulfilledRequirements = [
+            'authentication_method' => CloudProviderAuthenticationMethodRequirement::ASSUME_ROLE,
+        ];
+        $credentials = ['role_arn' => 'arn:aws:iam::444455556666:role/customer-role'];
+
+        $this->context->shouldReceive('fulfill')->once()->with(\Mockery::type(CloudProviderCredentialsRequirement::class), $fulfilledRequirements)->andReturn($credentials);
+        $this->apiClient->shouldReceive('updateProvider')->once()
+                        ->with($cloudProvider, $credentials);
+
+        $this->assertSame($cloudProvider, (new CloudProviderDefinition())->finalize($this->context, $cloudProvider, $fulfilledRequirements));
+    }
+
+    public function testFinalizeReportsPendingProviderIfUpdateFails(): void
+    {
+        $cloudProvider = CloudProviderFactory::create(['id' => 123, 'status' => 'pending']);
+        $clientException = new ClientException(new GuzzleClientException('Invalid update', new Request('PATCH', '/providers/123'), new Response(422, [], '{"errors":{"credentials":["Invalid AWS role"]}}')));
+        $fulfilledRequirements = [
+            'authentication_method' => CloudProviderAuthenticationMethodRequirement::ASSUME_ROLE,
+        ];
+        $credentials = ['role_arn' => 'arn:aws:iam::444455556666:role/customer-role'];
+
+        $this->context->shouldReceive('fulfill')->once()->with(\Mockery::type(CloudProviderCredentialsRequirement::class), $fulfilledRequirements)->andReturn($credentials);
+        $this->apiClient->shouldReceive('updateProvider')->once()
+                        ->with($cloudProvider, $credentials)
+                        ->andThrow($clientException);
+
+        try {
+            (new CloudProviderDefinition())->finalize($this->context, $cloudProvider, $fulfilledRequirements);
+
+            $this->fail('The failed credential update should stop provisioning');
+        } catch (FinalizationFailedException $exception) {
+            $this->assertStringContainsString('Failed to connect the pending cloud provider (ID: 123)', $exception->getMessage());
+            $this->assertStringContainsString('Invalid AWS role', $exception->getMessage());
+            $this->assertStringContainsString('"provider:update 123"', $exception->getMessage());
+            $this->assertStringContainsString('"provider:delete 123"', $exception->getMessage());
+            $this->assertSame($clientException, $exception->getPrevious());
+        }
+    }
+
     public function testGetRequirements(): void
     {
         $definition = new CloudProviderDefinition();
         $requirements = $definition->getRequirements();
 
-        $this->assertCount(3, $requirements);
+        $this->assertSame(['active_team', 'name', 'authentication_method'], array_keys($requirements));
         $this->assertInstanceOf(ActiveTeamRequirement::class, $requirements['active_team']);
         $this->assertInstanceOf(NameRequirement::class, $requirements['name']);
-        $this->assertInstanceOf(AwsCredentialsRequirement::class, $requirements['credentials']);
+        $this->assertInstanceOf(CloudProviderAuthenticationMethodRequirement::class, $requirements['authentication_method']);
     }
 
     public function testProvision(): void
@@ -109,51 +152,14 @@ class CloudProviderDefinitionTest extends TestCase
 
         $this->apiClient->shouldReceive('createProvider')->once()
                   ->with($cloudProvider->getTeam(), 'name')
-                  ->andReturn($cloudProvider)
-                  ->ordered();
-        $this->apiClient->shouldReceive('updateProvider')->once()
-                  ->with($cloudProvider, ['key' => 'value'])
-                  ->ordered();
+                  ->andReturn($cloudProvider);
 
         $definition = new CloudProviderDefinition();
 
         $this->assertSame($cloudProvider, $definition->provision($this->apiClient, [
             'active_team' => $cloudProvider->getTeam(),
             'name' => 'name',
-            'credentials' => ['key' => 'value'],
         ]));
-    }
-
-    public function testProvisionDoesNotRetryCreationIfCredentialUpdateFails(): void
-    {
-        $cloudProvider = CloudProviderFactory::create(['id' => 123, 'status' => 'pending']);
-        $response = new Response(422, [], '{"errors":{"credentials":["Invalid AWS credentials"]}}');
-        $clientException = new ClientException(new GuzzleClientException('Invalid update', new Request('PATCH', '/providers/123'), $response));
-
-        $this->apiClient->shouldReceive('createProvider')->once()
-                  ->with($cloudProvider->getTeam(), 'name')
-                  ->andReturn($cloudProvider)
-                  ->ordered();
-        $this->apiClient->shouldReceive('updateProvider')->once()
-                  ->with($cloudProvider, ['key' => 'value'])
-                  ->andThrow($clientException)
-                  ->ordered();
-
-        try {
-            (new CloudProviderDefinition())->provision($this->apiClient, [
-                'active_team' => $cloudProvider->getTeam(),
-                'name' => 'name',
-                'credentials' => ['key' => 'value'],
-            ]);
-
-            $this->fail('The failed credential update should stop provisioning');
-        } catch (ProvisioningFailedException $exception) {
-            $this->assertStringContainsString('Failed to connect the pending cloud provider (ID: 123)', $exception->getMessage());
-            $this->assertStringContainsString('Invalid AWS credentials', $exception->getMessage());
-            $this->assertStringContainsString('"provider:update 123"', $exception->getMessage());
-            $this->assertStringContainsString('"provider:delete 123"', $exception->getMessage());
-            $this->assertSame($clientException, $exception->getPrevious());
-        }
     }
 
     public function testResolveDoesNotRetainProviderStatusRequirement(): void

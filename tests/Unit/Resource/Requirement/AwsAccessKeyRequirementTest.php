@@ -15,10 +15,10 @@ namespace Ymir\Cli\Tests\Unit\Resource\Requirement;
 
 use Ymir\Cli\Console\Output;
 use Ymir\Cli\ExecutionContext;
-use Ymir\Cli\Resource\Requirement\AwsCredentialsRequirement;
+use Ymir\Cli\Resource\Requirement\AwsAccessKeyRequirement;
 use Ymir\Cli\Tests\TestCase;
 
-class AwsCredentialsRequirementTest extends TestCase
+class AwsAccessKeyRequirementTest extends TestCase
 {
     /**
      * @var string
@@ -53,7 +53,7 @@ class AwsCredentialsRequirementTest extends TestCase
         $output->shouldReceive('ask')->with('What is your AWS access key ID?')->andReturn('key');
         $output->shouldReceive('askHidden')->with('What is your AWS secret access key?')->andReturn('secret');
 
-        $requirement = new AwsCredentialsRequirement();
+        $requirement = new AwsAccessKeyRequirement();
 
         $this->assertSame(['key' => 'key', 'secret' => 'secret'], $requirement->fulfill($context));
     }
@@ -69,7 +69,7 @@ class AwsCredentialsRequirementTest extends TestCase
         $output->shouldReceive('ask')->with('What is your AWS access key ID?')->andReturn('key');
         $output->shouldReceive('askHidden')->with('What is your AWS secret access key?')->andReturn('secret');
 
-        $requirement = new AwsCredentialsRequirement();
+        $requirement = new AwsAccessKeyRequirement();
 
         $this->assertSame(['key' => 'key', 'secret' => 'secret'], $requirement->fulfill($context));
     }
@@ -92,7 +92,7 @@ class AwsCredentialsRequirementTest extends TestCase
         $output->shouldReceive('ask')->with('What is your AWS access key ID?')->andReturn('manual-key');
         $output->shouldReceive('askHidden')->with('What is your AWS secret access key?')->andReturn('manual-secret');
 
-        $requirement = new AwsCredentialsRequirement();
+        $requirement = new AwsAccessKeyRequirement();
 
         $this->assertSame(['key' => 'manual-key', 'secret' => 'manual-secret'], $requirement->fulfill($context));
     }
@@ -113,7 +113,7 @@ class AwsCredentialsRequirementTest extends TestCase
         }));
         $output->shouldReceive('ask')->with('Which profile name would you like to use? (Press Enter to enter credentials manually)')->andReturn('work');
 
-        $requirement = new AwsCredentialsRequirement();
+        $requirement = new AwsAccessKeyRequirement();
 
         $this->assertSame(['key' => 'key2', 'secret' => 'secret2'], $requirement->fulfill($context));
     }

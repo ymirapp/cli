@@ -19,6 +19,8 @@ use Ymir\Cli\Command\Provider\DeleteProviderCommand;
 use Ymir\Cli\Command\Provider\ListProvidersCommand;
 use Ymir\Cli\Command\Provider\UpdateProviderCommand;
 use Ymir\Cli\Exception\InvalidInputException;
+use Ymir\Cli\Exception\LogicException;
+use Ymir\Cli\Exception\Resource\FinalizationFailedException;
 use Ymir\Cli\Exception\Resource\NoResourcesFoundException;
 use Ymir\Cli\Exception\Resource\ProvisioningFailedException;
 use Ymir\Cli\Exception\Resource\ResourceNotFoundException;
@@ -27,10 +29,11 @@ use Ymir\Cli\Resource\Model\CloudProvider;
 use Ymir\Cli\Resource\Model\Project;
 use Ymir\Cli\Resource\Model\ResourceModelInterface;
 use Ymir\Cli\Resource\Requirement\ActiveTeamRequirement;
-use Ymir\Cli\Resource\Requirement\AwsCredentialsRequirement;
+use Ymir\Cli\Resource\Requirement\CloudProviderAuthenticationMethodRequirement;
+use Ymir\Cli\Resource\Requirement\CloudProviderCredentialsRequirement;
 use Ymir\Cli\Resource\Requirement\NameRequirement;
 
-class CloudProviderDefinition implements ProvisionableResourceDefinitionInterface, ResolvableResourceDefinitionInterface
+class CloudProviderDefinition implements FinalizableResourceDefinitionInterface, ResolvableResourceDefinitionInterface
 {
     /**
      * {@inheritdoc}
@@ -43,12 +46,36 @@ class CloudProviderDefinition implements ProvisionableResourceDefinitionInterfac
     /**
      * {@inheritdoc}
      */
+    public function finalize(ExecutionContext $context, ResourceModelInterface $resource, array $fulfilledRequirements): ResourceModelInterface
+    {
+        if (!$resource instanceof CloudProvider) {
+            throw new LogicException('Cloud provider provisioning must return a cloud provider');
+        }
+
+        try {
+            $credentials = $context->fulfill(new CloudProviderCredentialsRequirement($resource), $fulfilledRequirements);
+        } catch (\Throwable $exception) {
+            throw new ProvisioningFailedException(sprintf('Failed to prepare authentication for the pending cloud provider (ID: %1$d): %2$s. Retry with the "%3$s %1$d" command or delete it with the "%4$s %1$d" command', $resource->getId(), $exception->getMessage(), UpdateProviderCommand::NAME, DeleteProviderCommand::NAME), $exception->getCode(), $exception);
+        }
+
+        try {
+            $context->getApiClient()->updateProvider($resource, $credentials);
+        } catch (\Throwable $exception) {
+            throw new FinalizationFailedException(sprintf('Failed to connect the pending cloud provider (ID: %1$d): %2$s. Retry with the "%3$s %1$d" command or delete it with the "%4$s %1$d" command', $resource->getId(), $exception->getMessage(), UpdateProviderCommand::NAME, DeleteProviderCommand::NAME), $exception->getCode(), $exception);
+        }
+
+        return $resource;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function getRequirements(): array
     {
         return [
             'active_team' => new ActiveTeamRequirement(),
             'name' => new NameRequirement('What is the name of the cloud provider connection being created?', 'AWS'),
-            'credentials' => new AwsCredentialsRequirement(),
+            'authentication_method' => new CloudProviderAuthenticationMethodRequirement('Which authentication method would you like to use?'),
         ];
     }
 
@@ -65,15 +92,7 @@ class CloudProviderDefinition implements ProvisionableResourceDefinitionInterfac
      */
     public function provision(ApiClient $apiClient, array $fulfilledRequirements): ?ResourceModelInterface
     {
-        $provider = $apiClient->createProvider($fulfilledRequirements['active_team'], $fulfilledRequirements['name']);
-
-        try {
-            $apiClient->updateProvider($provider, $fulfilledRequirements['credentials']);
-        } catch (\Throwable $exception) {
-            throw new ProvisioningFailedException(sprintf('Failed to connect the pending cloud provider (ID: %1$d): %2$s. Retry with the "%3$s %1$d" command or delete it with the "%4$s %1$d" command', $provider->getId(), $exception->getMessage(), UpdateProviderCommand::NAME, DeleteProviderCommand::NAME), $exception->getCode(), $exception);
-        }
-
-        return $provider;
+        return $apiClient->createProvider($fulfilledRequirements['active_team'], $fulfilledRequirements['name']);
     }
 
     /**

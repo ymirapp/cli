@@ -14,7 +14,10 @@ declare(strict_types=1);
 namespace Ymir\Cli\Resource;
 
 use Ymir\Cli\Exception\CommandCancelledException;
+use Ymir\Cli\Exception\LogicException;
+use Ymir\Cli\Exception\Resource\FinalizationFailedException;
 use Ymir\Cli\ExecutionContext;
+use Ymir\Cli\Resource\Definition\FinalizableResourceDefinitionInterface;
 use Ymir\Cli\Resource\Definition\ProvisionableResourceDefinitionInterface;
 use Ymir\Cli\Resource\Model\ResourceModelInterface;
 use Ymir\Cli\Resource\Requirement\RequirementInterface;
@@ -25,8 +28,8 @@ class ResourceProvisioner
     /**
      * Provision a new resource by fulfilling the given definition requirements.
      *
-     * This method fulfills all requirements needed by the resource definition, then calls the definition's provision
-     * method with the fulfilled requirements. You can pass some pre-fulfilled requirements.
+     * This method fulfills all requirements needed by the resource definition, then provisions the resource and
+     * finalizes it when supported. You can pass some pre-fulfilled requirements.
      */
     public function provision(ProvisionableResourceDefinitionInterface $definition, ExecutionContext $context, array $fulfilledRequirements = []): ?ResourceModelInterface
     {
@@ -40,7 +43,7 @@ class ResourceProvisioner
                         $workingRequirements[$name] = $requirement->fulfill($context, $workingRequirements);
                     });
 
-                return $definition->provision($context->getApiClient(), $workingRequirements);
+                $resource = $definition->provision($context->getApiClient(), $workingRequirements);
             } catch (ClientException $exception) {
                 $output = $context->getOutput();
 
@@ -48,6 +51,41 @@ class ResourceProvisioner
                 $output->exception($exception);
 
                 if (!$context->getInput()->isInteractive() || !$output->confirm(sprintf('Failed to provision the %s. Do you want to retry?', $definition->getResourceName()))) {
+                    throw new CommandCancelledException();
+                }
+
+                continue;
+            }
+
+            break;
+        }
+
+        if (!$definition instanceof FinalizableResourceDefinitionInterface) {
+            return $resource;
+        }
+
+        if (!$resource instanceof ResourceModelInterface) {
+            throw new LogicException('Initial provisioning must return a resource before it can be finalized');
+        }
+
+        return $this->finalize($definition, $context, $resource, $workingRequirements);
+    }
+
+    /**
+     * Finalize the given provisioned resource.
+     */
+    private function finalize(FinalizableResourceDefinitionInterface $definition, ExecutionContext $context, ResourceModelInterface $resource, array $fulfilledRequirements): ResourceModelInterface
+    {
+        while (true) {
+            try {
+                return $definition->finalize($context, $resource, $fulfilledRequirements);
+            } catch (FinalizationFailedException $exception) {
+                $output = $context->getOutput();
+
+                $output->newLine();
+                $output->exception($exception);
+
+                if (!$context->getInput()->isInteractive() || !$output->confirm(sprintf('Failed to finalize the %s. Do you want to retry?', $definition->getResourceName()))) {
                     throw new CommandCancelledException();
                 }
             }

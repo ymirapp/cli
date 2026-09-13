@@ -55,6 +55,9 @@ class CloudProviderTest extends TestCase
         ]);
 
         $this->assertSame($method, $provider->getAuthenticationMethod());
+        $this->assertSame('012345678901', $provider->getAssumeRoleYmirAccountId());
+        $this->assertSame('ymir-external-id', $provider->getAssumeRoleExternalId());
+        $this->assertSame('ymir-cloud-provider-1', $provider->getAssumeRoleRoleName());
     }
 
     public function testConstructorWithoutAuthentication(): void
@@ -63,6 +66,9 @@ class CloudProviderTest extends TestCase
 
         $this->assertSame('connected', $provider->getStatus());
         $this->assertNull($provider->getAuthenticationMethod());
+        $this->assertNull($provider->getAssumeRoleYmirAccountId());
+        $this->assertNull($provider->getAssumeRoleExternalId());
+        $this->assertNull($provider->getAssumeRoleRoleName());
     }
 
     /**
