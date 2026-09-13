@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Ymir\Cli\Resource\Requirement;
 
+use Ymir\Cli\Exception\Resource\RequirementValidationException;
 use Ymir\Cli\ExecutionContext;
 
 class CloudProviderAuthenticationMethodRequirement extends AbstractRequirement
@@ -42,16 +43,38 @@ class CloudProviderAuthenticationMethodRequirement extends AbstractRequirement
     ];
 
     /**
+     * The default authentication method.
+     *
+     * @var string
+     */
+    private $default;
+
+    /**
+     * Constructor.
+     */
+    public function __construct(string $question, ?string $default = null)
+    {
+        parent::__construct($question);
+
+        $default = $default ?? self::ASSUME_ROLE;
+
+        if (!in_array($default, self::METHODS, true)) {
+            throw new RequirementValidationException(sprintf('The "%s" cloud provider authentication method must be one of: %s', $default, implode(', ', self::METHODS)));
+        }
+
+        $this->default = $default;
+    }
+
+    /**
      * {@inheritdoc}
      */
     public function fulfill(ExecutionContext $context, array $fulfilledRequirements = []): string
     {
         $methods = [
-            'IAM role (recommended)' => self::ASSUME_ROLE,
-            'Access key (legacy, less secure)' => self::ACCESS_KEY,
+            self::ASSUME_ROLE => 'IAM role (recommended)',
+            self::ACCESS_KEY => 'Access key (legacy, less secure)',
         ];
-        $choices = array_keys($methods);
 
-        return $methods[$context->getOutput()->choice($this->question, $choices, $choices[0])];
+        return (string) array_search($context->getOutput()->choice($this->question, array_values($methods), $methods[$this->default]), $methods, true);
     }
 }

@@ -14,13 +14,14 @@ declare(strict_types=1);
 namespace Ymir\Cli\Tests\Unit\Resource\Requirement;
 
 use Ymir\Cli\Console\Output;
+use Ymir\Cli\Exception\Resource\RequirementValidationException;
 use Ymir\Cli\ExecutionContext;
 use Ymir\Cli\Resource\Requirement\CloudProviderAuthenticationMethodRequirement;
 use Ymir\Cli\Tests\TestCase;
 
 class CloudProviderAuthenticationMethodRequirementTest extends TestCase
 {
-    public function testFulfillDefaultsToAssumeRole(): void
+    public function testFulfillDefaultsNullToAssumeRole(): void
     {
         $context = \Mockery::mock(ExecutionContext::class);
         $output = \Mockery::mock(Output::class);
@@ -31,7 +32,7 @@ class CloudProviderAuthenticationMethodRequirementTest extends TestCase
             'Access key (legacy, less secure)',
         ], 'IAM role (recommended)')->andReturn('IAM role (recommended)');
 
-        $requirement = new CloudProviderAuthenticationMethodRequirement('Which authentication method?');
+        $requirement = new CloudProviderAuthenticationMethodRequirement('Which authentication method?', null);
 
         $this->assertSame(CloudProviderAuthenticationMethodRequirement::ASSUME_ROLE, $requirement->fulfill($context));
     }
@@ -47,5 +48,27 @@ class CloudProviderAuthenticationMethodRequirementTest extends TestCase
         $requirement = new CloudProviderAuthenticationMethodRequirement('Which authentication method?');
 
         $this->assertSame(CloudProviderAuthenticationMethodRequirement::ACCESS_KEY, $requirement->fulfill($context));
+    }
+
+    public function testFulfillUsesGivenDefault(): void
+    {
+        $context = \Mockery::mock(ExecutionContext::class);
+        $output = \Mockery::mock(Output::class);
+
+        $context->shouldReceive('getOutput')->andReturn($output);
+        $output->shouldReceive('choice')->with('Which authentication method?', [
+            'IAM role (recommended)',
+            'Access key (legacy, less secure)',
+        ], 'Access key (legacy, less secure)')->andReturn('Access key (legacy, less secure)');
+
+        $this->assertSame(CloudProviderAuthenticationMethodRequirement::ACCESS_KEY, (new CloudProviderAuthenticationMethodRequirement('Which authentication method?', CloudProviderAuthenticationMethodRequirement::ACCESS_KEY))->fulfill($context));
+    }
+
+    public function testRejectsInvalidDefault(): void
+    {
+        $this->expectException(RequirementValidationException::class);
+        $this->expectExceptionMessage('The "invalid" cloud provider authentication method must be one of: assume_role, access_key');
+
+        new CloudProviderAuthenticationMethodRequirement('Which authentication method?', 'invalid');
     }
 }
