@@ -22,7 +22,11 @@ use Ymir\Cli\Exception\Resource\NoResourcesFoundException;
 use Ymir\Cli\Exception\Resource\ResourceNotFoundException;
 use Ymir\Cli\ExecutionContext;
 use Ymir\Cli\Resource\Definition\EmailIdentityDefinition;
+use Ymir\Cli\Resource\Requirement\ConnectedCloudProviderRequirement;
+use Ymir\Cli\Resource\Requirement\NameRequirement;
+use Ymir\Cli\Resource\Requirement\RegionRequirement;
 use Ymir\Cli\Resource\ResourceCollection;
+use Ymir\Cli\Tests\Factory\CloudProviderFactory;
 use Ymir\Cli\Tests\Factory\EmailIdentityFactory;
 use Ymir\Cli\Tests\Factory\TeamFactory;
 use Ymir\Cli\Tests\TestCase;
@@ -65,6 +69,32 @@ class EmailIdentityDefinitionTest extends TestCase
         $this->context->shouldReceive('getInput')->andReturn($this->input);
         $this->context->shouldReceive('getOutput')->andReturn($this->output);
         $this->context->shouldReceive('getTeam')->andReturn(TeamFactory::create());
+    }
+
+    public function testGetRequirements(): void
+    {
+        $requirements = (new EmailIdentityDefinition())->getRequirements();
+
+        $this->assertSame(['name', 'provider', 'region'], array_keys($requirements));
+        $this->assertInstanceOf(NameRequirement::class, $requirements['name']);
+        $this->assertInstanceOf(ConnectedCloudProviderRequirement::class, $requirements['provider']);
+        $this->assertInstanceOf(RegionRequirement::class, $requirements['region']);
+    }
+
+    public function testProvision(): void
+    {
+        $provider = CloudProviderFactory::create();
+        $emailIdentity = EmailIdentityFactory::create();
+
+        $this->apiClient->shouldReceive('createEmailIdentity')->once()
+                        ->with($provider, 'example.com', 'us-east-1')
+                        ->andReturn($emailIdentity);
+
+        $this->assertSame($emailIdentity, (new EmailIdentityDefinition())->provision($this->apiClient, [
+            'name' => 'example.com',
+            'provider' => $provider,
+            'region' => 'us-east-1',
+        ]));
     }
 
     public function testResolveThrowsExceptionIfEmailIdentityNotFound(): void

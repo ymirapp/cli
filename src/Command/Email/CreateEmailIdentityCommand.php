@@ -17,8 +17,6 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
 use Ymir\Cli\Command\AbstractCommand;
 use Ymir\Cli\Resource\Model\EmailIdentity;
-use Ymir\Cli\Resource\Requirement\ConnectedCloudProviderRequirement;
-use Ymir\Cli\Resource\Requirement\RegionRequirement;
 
 class CreateEmailIdentityCommand extends AbstractCommand
 {
@@ -47,50 +45,6 @@ class CreateEmailIdentityCommand extends AbstractCommand
      */
     protected function perform(): void
     {
-        $name = $this->input->getStringArgument('name');
-
-        if (empty($name)) {
-            $name = $this->output->ask('What is the name of the email identity being created?');
-        }
-
-        $provider = $this->fulfill(new ConnectedCloudProviderRequirement('Which cloud provider would you like to create the email identity on?'));
-        $region = $this->fulfill(new RegionRequirement('Which region should the email identity be created in?'), ['provider' => $provider]);
-
-        $identity = $this->apiClient->createEmailIdentity($provider, $name, $region);
-
-        $this->output->info('Email identity created');
-
-        if ('domain' === $identity->getType()) {
-            $this->displayDkimAuthenticationRecords($identity);
-        } elseif ('email' === $identity->getType()) {
-            $this->output->newLine();
-            $this->output->important(sprintf('A verification email was sent to %s to validate the email identity', $identity->getName()));
-        }
-    }
-
-    /**
-     * Display warning about DNS records required to authenticate the DKIM signature and verify it.
-     */
-    private function displayDkimAuthenticationRecords(EmailIdentity $identity): void
-    {
-        $dkimRecords = $identity->getDkimAuthenticationRecords();
-
-        if (empty($dkimRecords) || $identity->isManaged()) {
-            return;
-        }
-
-        $this->output->newLine();
-        $this->output->important('The following DNS records needs to exist on your DNS server at all times to verify the email identity and authenticate its DKIM signature:');
-        $this->output->newLine();
-        $this->output->table(
-            ['Name', 'Type', 'Value'],
-            collect($dkimRecords)->map(function (array $dkimRecord) {
-                return [
-                    $dkimRecord['name'],
-                    strtoupper($dkimRecord['type']),
-                    $dkimRecord['value'],
-                ];
-            })->all()
-        );
+        $this->provision(EmailIdentity::class);
     }
 }

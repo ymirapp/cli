@@ -31,9 +31,12 @@ use Ymir\Cli\Resource\Model\Project;
 use Ymir\Cli\Resource\Model\ResourceModelInterface;
 use Ymir\Cli\Resource\Model\Team;
 use Ymir\Cli\Resource\Requirement\RequirementInterface;
+use Ymir\Cli\Support\WaitsForResultTrait;
 
 abstract class AbstractCommand extends Command
 {
+    use WaitsForResultTrait;
+
     /**
      * The API client that interacts with the Ymir API.
      *
@@ -232,23 +235,6 @@ abstract class AbstractCommand extends Command
     protected function setProject(Project $project): void
     {
         $this->context = $this->getContext()->withProject($project);
-    }
-
-    /**
-     * Wait for the given callable to complete.
-     */
-    protected function wait(callable $callable, int $timeout = 60, int $sleep = 1)
-    {
-        if (0 !== $timeout) {
-            $timeout += time();
-        }
-
-        do {
-            $result = $callable();
-            sleep($sleep);
-        } while (empty($result) && time() < $timeout);
-
-        return $result;
     }
 
     /**

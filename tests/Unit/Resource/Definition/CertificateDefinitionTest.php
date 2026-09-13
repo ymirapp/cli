@@ -17,12 +17,17 @@ use Ymir\Cli\ApiClient;
 use Ymir\Cli\Console\Input;
 use Ymir\Cli\Console\Output;
 use Ymir\Cli\Exception\InvalidInputException;
+use Ymir\Cli\Exception\Resource\FinalizationFailedException;
 use Ymir\Cli\Exception\Resource\NoResourcesFoundException;
 use Ymir\Cli\Exception\Resource\ResourceNotFoundException;
 use Ymir\Cli\ExecutionContext;
 use Ymir\Cli\Resource\Definition\CertificateDefinition;
+use Ymir\Cli\Resource\Requirement\CertificateDomainsRequirement;
+use Ymir\Cli\Resource\Requirement\ConnectedCloudProviderRequirement;
+use Ymir\Cli\Resource\Requirement\RegionRequirement;
 use Ymir\Cli\Resource\ResourceCollection;
 use Ymir\Cli\Tests\Factory\CertificateFactory;
+use Ymir\Cli\Tests\Factory\CloudProviderFactory;
 use Ymir\Cli\Tests\Factory\TeamFactory;
 use Ymir\Cli\Tests\TestCase;
 
@@ -64,6 +69,51 @@ class CertificateDefinitionTest extends TestCase
         $this->context->shouldReceive('getInput')->andReturn($this->input);
         $this->context->shouldReceive('getOutput')->andReturn($this->output);
         $this->context->shouldReceive('getTeam')->andReturn(TeamFactory::create());
+    }
+
+    public function testFinalizeFailsIfValidationRecordsTimeOut(): void
+    {
+        $certificate = CertificateFactory::create([
+            'id' => 10,
+            'domains' => [['domain_name' => 'example.com', 'managed' => false]],
+        ]);
+        $definition = new class extends CertificateDefinition {
+            protected function wait(callable $callable, int $timeout = 60, int $sleep = 1)
+            {
+                return [];
+            }
+        };
+
+        $this->expectException(FinalizationFailedException::class);
+        $this->expectExceptionMessage('Timed out waiting for the DNS validation records for the SSL certificate (ID: 10). You can retrieve them later with the "certificate:info 10" command');
+
+        $definition->finalize($this->context, $certificate, []);
+    }
+
+    public function testGetRequirements(): void
+    {
+        $requirements = (new CertificateDefinition())->getRequirements();
+
+        $this->assertSame(['domains', 'provider', 'region'], array_keys($requirements));
+        $this->assertInstanceOf(CertificateDomainsRequirement::class, $requirements['domains']);
+        $this->assertInstanceOf(ConnectedCloudProviderRequirement::class, $requirements['provider']);
+        $this->assertInstanceOf(RegionRequirement::class, $requirements['region']);
+    }
+
+    public function testProvision(): void
+    {
+        $provider = CloudProviderFactory::create();
+        $certificate = CertificateFactory::create();
+
+        $this->apiClient->shouldReceive('createCertificate')->once()
+                        ->with($provider, ['example.com'], 'us-east-1')
+                        ->andReturn($certificate);
+
+        $this->assertSame($certificate, (new CertificateDefinition())->provision($this->apiClient, [
+            'domains' => ['example.com'],
+            'provider' => $provider,
+            'region' => 'us-east-1',
+        ]));
     }
 
     public function testResolveThrowsExceptionIfCertificateIdIsEmptyAfterChoice(): void
