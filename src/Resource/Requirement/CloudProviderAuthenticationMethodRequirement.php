@@ -70,6 +70,26 @@ class CloudProviderAuthenticationMethodRequirement extends AbstractRequirement
      */
     public function fulfill(ExecutionContext $context, array $fulfilledRequirements = []): string
     {
+        $input = $context->getInput();
+        $awsProfile = $input->getStringOption('aws-profile');
+        $roleArn = $input->getStringOption('role-arn');
+
+        if (null !== $awsProfile && null !== $roleArn) {
+            throw new RequirementValidationException('The "--aws-profile" and "--role-arn" options cannot be used together');
+        }
+
+        if (null !== $awsProfile) {
+            return self::ACCESS_KEY;
+        }
+
+        if (null !== $roleArn) {
+            return self::ASSUME_ROLE;
+        }
+
+        if (!$input->isInteractive()) {
+            throw new RequirementValidationException(sprintf('You must enter the %s option when configuring cloud provider authentication non-interactively', $input->hasOption('role-arn') ? '"--aws-profile" or "--role-arn"' : '"--aws-profile"'));
+        }
+
         $methods = [
             self::ASSUME_ROLE => 'IAM role (recommended)',
             self::ACCESS_KEY => 'Access key (legacy, less secure)',

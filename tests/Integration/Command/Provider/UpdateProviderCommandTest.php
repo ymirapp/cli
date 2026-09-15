@@ -18,6 +18,7 @@ use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Psr7\Response;
 use Symfony\Component\Console\Tester\CommandTester;
 use Ymir\Cli\Command\Provider\UpdateProviderCommand;
+use Ymir\Cli\Exception\Resource\RequirementValidationException;
 use Ymir\Cli\Resource\Definition\CloudProviderDefinition;
 use Ymir\Cli\Resource\Model\CloudProvider;
 use Ymir\Cli\Resource\Requirement\CloudProviderAuthenticationMethodRequirement;
@@ -146,6 +147,80 @@ class UpdateProviderCommandTest extends TestCase
         $this->assertStringContainsString('Cloud provider updated', $tester->getDisplay());
     }
 
+    public function testUpdateProviderAuthenticationNonInteractivelyWithAwsProfile(): void
+    {
+        $team = $this->setupActiveTeam();
+        $provider = CloudProviderFactory::create([
+            'id' => 123,
+            'name' => 'AWS',
+            'authentication' => ['method' => CloudProviderAuthenticationMethodRequirement::ASSUME_ROLE],
+        ]);
+        $detailedProvider = CloudProviderFactory::create([
+            'id' => 123,
+            'name' => 'AWS',
+            'authentication' => ['method' => CloudProviderAuthenticationMethodRequirement::ASSUME_ROLE],
+        ]);
+
+        $this->apiClient->shouldReceive('getProviders')->once()->with($team)->andReturn(new ResourceCollection([$provider]))->ordered();
+        $this->apiClient->shouldReceive('getProvider')->once()->with(123)->andReturn($detailedProvider)->ordered();
+        $this->apiClient->shouldReceive('updateProvider')->once()->with($detailedProvider, ['key' => 'profile-key', 'secret' => 'profile-secret'], null)->ordered();
+
+        $awsDir = $this->homeDir.'/.aws';
+        mkdir($awsDir);
+        file_put_contents($awsDir.'/credentials', "[work]\naws_access_key_id=profile-key\naws_secret_access_key=profile-secret\n");
+
+        $this->bootApplication([new UpdateProviderCommand($this->apiClient, $this->createExecutionContextFactory([
+            CloudProvider::class => function () { return new CloudProviderDefinition(); },
+        ]))]);
+        $tester = new CommandTester($this->application->find(UpdateProviderCommand::NAME));
+        $tester->execute(['provider' => '123', '--aws-profile' => 'work'], ['interactive' => false]);
+
+        $this->assertStringContainsString('Access keys are a legacy, less-secure authentication method', $tester->getDisplay());
+        $this->assertStringContainsString('Cloud provider updated', $tester->getDisplay());
+        $this->assertStringNotContainsString('Would you like to update the authentication method or credentials?', $tester->getDisplay());
+        $this->assertStringNotContainsString('Which authentication method would you like to use?', $tester->getDisplay());
+    }
+
+    public function testUpdateProviderAuthenticationNonInteractivelyWithRoleArn(): void
+    {
+        $team = $this->setupActiveTeam();
+        $provider = CloudProviderFactory::create([
+            'id' => 123,
+            'name' => 'AWS',
+            'authentication' => ['method' => CloudProviderAuthenticationMethodRequirement::ACCESS_KEY],
+        ]);
+        $detailedProvider = CloudProviderFactory::create([
+            'id' => 123,
+            'name' => 'AWS',
+            'authentication' => [
+                'method' => CloudProviderAuthenticationMethodRequirement::ACCESS_KEY,
+                'assume_role' => [
+                    'ymir_account_id' => '111122223333',
+                    'external_id' => 'server-external-id',
+                    'role_name' => 'server-role-name',
+                ],
+            ],
+        ]);
+        $roleArn = 'arn:aws:iam::444455556666:role/customer-role';
+
+        $this->apiClient->shouldReceive('getProviders')->once()->with($team)->andReturn(new ResourceCollection([$provider]))->ordered();
+        $this->apiClient->shouldReceive('getProvider')->once()->with(123)->andReturn($detailedProvider)->ordered();
+        $this->apiClient->shouldReceive('updateProvider')->once()->with($detailedProvider, ['role_arn' => $roleArn], null)->ordered();
+
+        $this->bootApplication([new UpdateProviderCommand($this->apiClient, $this->createExecutionContextFactory([
+            CloudProvider::class => function () { return new CloudProviderDefinition(); },
+        ]))]);
+        $tester = new CommandTester($this->application->find(UpdateProviderCommand::NAME));
+        $tester->execute(['provider' => '123', '--role-arn' => $roleArn], ['interactive' => false]);
+
+        $this->assertStringContainsString('Ymir AWS account ID: 111122223333', $tester->getDisplay());
+        $this->assertStringContainsString('External ID: server-external-id', $tester->getDisplay());
+        $this->assertStringContainsString('Role name: server-role-name', $tester->getDisplay());
+        $this->assertStringContainsString('Cloud provider updated', $tester->getDisplay());
+        $this->assertStringNotContainsString('Would you like to update the authentication method or credentials?', $tester->getDisplay());
+        $this->assertStringNotContainsString('Which authentication method would you like to use?', $tester->getDisplay());
+    }
+
     public function testUpdateProviderNameAndAuthenticationWithAwsProfile(): void
     {
         $team = $this->setupActiveTeam();
@@ -227,6 +302,30 @@ class UpdateProviderCommandTest extends TestCase
         $tester->execute(['provider' => '123', 'name' => 'Updated AWS'], ['interactive' => false]);
 
         $this->assertStringContainsString('Cloud provider updated', $tester->getDisplay());
+    }
+
+    public function testUpdateProviderRejectsBothAuthenticationOptionsNonInteractively(): void
+    {
+        $this->expectException(RequirementValidationException::class);
+        $this->expectExceptionMessage('The "--aws-profile" and "--role-arn" options cannot be used together');
+
+        $team = $this->setupActiveTeam();
+        $provider = CloudProviderFactory::create(['id' => 123, 'name' => 'AWS']);
+        $detailedProvider = CloudProviderFactory::create(['id' => 123, 'name' => 'AWS']);
+
+        $this->apiClient->shouldReceive('getProviders')->once()->with($team)->andReturn(new ResourceCollection([$provider]))->ordered();
+        $this->apiClient->shouldReceive('getProvider')->once()->with(123)->andReturn($detailedProvider)->ordered();
+        $this->apiClient->shouldNotReceive('updateProvider');
+
+        $this->bootApplication([new UpdateProviderCommand($this->apiClient, $this->createExecutionContextFactory([
+            CloudProvider::class => function () { return new CloudProviderDefinition(); },
+        ]))]);
+
+        (new CommandTester($this->application->find(UpdateProviderCommand::NAME)))->execute([
+            'provider' => '123',
+            '--aws-profile' => 'work',
+            '--role-arn' => 'arn:aws:iam::444455556666:role/customer-role',
+        ], ['interactive' => false]);
     }
 
     public function testUpdateProviderWithoutChangesDoesNotSendPatch(): void

@@ -13,6 +13,8 @@ declare(strict_types=1);
 
 namespace Ymir\Cli\Command\Provider;
 
+use Symfony\Component\Console\Input\InputArgument;
+use Symfony\Component\Console\Input\InputOption;
 use Ymir\Cli\Command\AbstractCommand;
 use Ymir\Cli\Resource\Model\CloudProvider;
 
@@ -32,7 +34,9 @@ class ConnectProviderCommand extends AbstractCommand
     {
         $this
             ->setName(self::NAME)
-            ->setDescription('Connect a cloud provider to the currently active team');
+            ->setDescription('Connect a cloud provider to the currently active team')
+            ->addArgument('name', InputArgument::OPTIONAL, 'The name of the cloud provider connection')
+            ->addOption('aws-profile', null, InputOption::VALUE_REQUIRED, 'The AWS credential profile used for access key authentication');
     }
 
     /**

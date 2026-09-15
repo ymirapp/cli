@@ -13,8 +13,8 @@ declare(strict_types=1);
 
 namespace Ymir\Cli\Resource\Requirement;
 
-use Illuminate\Support\Collection;
 use Ymir\Cli\Console\Output;
+use Ymir\Cli\Exception\Resource\RequirementValidationException;
 use Ymir\Cli\ExecutionContext;
 
 class AwsAccessKeyRequirement implements RequirementInterface
@@ -24,17 +24,26 @@ class AwsAccessKeyRequirement implements RequirementInterface
      */
     public function fulfill(ExecutionContext $context, array $fulfilledRequirements = []): array
     {
-        $profiles = null;
         $credentialsFilePath = $context->getHomeDirectory().'/.aws/credentials';
+        $profiles = collect(is_file($credentialsFilePath) ? parse_ini_file($credentialsFilePath, true) : [])->filter(function ($profile): bool {
+            return is_array($profile) && !empty($profile['aws_access_key_id']) && !empty($profile['aws_secret_access_key']);
+        });
         $output = $context->getOutput();
+        $selectedProfile = $context->getInput()->getStringOption('aws-profile');
+        $selectedProfileCredentials = null !== $selectedProfile ? $profiles->get($selectedProfile) : null;
 
-        if (is_file($credentialsFilePath)) {
-            $profiles = collect(parse_ini_file($credentialsFilePath, true))->filter(function ($profile): bool {
-                return is_array($profile) && !empty($profile['aws_access_key_id']) && !empty($profile['aws_secret_access_key']);
-            });
+        if (null !== $selectedProfile && !is_array($selectedProfileCredentials)) {
+            throw new RequirementValidationException(sprintf('The "%s" AWS credential profile isn\'t available in "%s", but you can create it or specify another profile with the "--aws-profile" option', $selectedProfile, $credentialsFilePath));
         }
 
-        if (!$profiles instanceof Collection || $profiles->isEmpty()) {
+        if (is_array($selectedProfileCredentials)) {
+            return [
+                'key' => $selectedProfileCredentials['aws_access_key_id'],
+                'secret' => $selectedProfileCredentials['aws_secret_access_key'],
+            ];
+        }
+
+        if ($profiles->isEmpty()) {
             return $this->askCredentials($output);
         }
 

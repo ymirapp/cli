@@ -21,6 +21,7 @@ use Symfony\Component\Console\Tester\CommandTester;
 use Ymir\Cli\Command\Provider\ConnectProviderCommand;
 use Ymir\Cli\Exception\CommandCancelledException;
 use Ymir\Cli\Exception\Resource\ProvisioningFailedException;
+use Ymir\Cli\Exception\Resource\RequirementValidationException;
 use Ymir\Cli\Resource\Definition\CloudProviderDefinition;
 use Ymir\Cli\Resource\Model\CloudProvider;
 use Ymir\Cli\Tests\Factory\CloudProviderFactory;
@@ -139,6 +140,24 @@ class ConnectProviderCommandTest extends TestCase
         $this->assertStringNotContainsString('Cloud provider connected', $tester->getDisplay());
     }
 
+    public function testConnectProviderRequiresAwsProfileNonInteractively(): void
+    {
+        $this->setupActiveTeam();
+
+        $this->apiClient->shouldNotReceive('updateProvider');
+        $this->apiClient->shouldNotReceive('createProvider');
+
+        $this->bootApplication([new ConnectProviderCommand($this->apiClient, $this->createExecutionContextFactory([
+            CloudProvider::class => function () { return new CloudProviderDefinition(); },
+        ]))]);
+        $tester = new CommandTester($this->application->find(ConnectProviderCommand::NAME));
+
+        $this->expectException(RequirementValidationException::class);
+        $this->expectExceptionMessage('You must enter the "--aws-profile" option when configuring cloud provider authentication non-interactively');
+
+        $tester->execute([], ['interactive' => false]);
+    }
+
     public function testConnectProviderRetriesAssumeRoleUpdateWithoutCreatingAnotherProvider(): void
     {
         $team = $this->setupActiveTeam();
@@ -173,6 +192,29 @@ class ConnectProviderCommandTest extends TestCase
         $this->assertStringContainsString('provider:update 123', $tester->getDisplay());
         $this->assertStringContainsString('Failed to finalize the cloud provider. Do you want to retry?', $tester->getDisplay());
         $this->assertStringContainsString('Cloud provider connected', $tester->getDisplay());
+    }
+
+    public function testConnectProviderSuccessfullyNonInteractivelyWithAwsProfile(): void
+    {
+        $team = $this->setupActiveTeam();
+        $provider = CloudProviderFactory::create(['id' => 123, 'name' => 'Automation AWS', 'status' => 'pending']);
+
+        $this->apiClient->shouldReceive('createProvider')->once()->with($team, 'Automation AWS')->andReturn($provider)->ordered();
+        $this->apiClient->shouldReceive('updateProvider')->once()->with($provider, ['key' => 'profile-key', 'secret' => 'profile-secret'])->ordered();
+
+        $awsDir = $this->homeDir.'/.aws';
+        mkdir($awsDir);
+        file_put_contents($awsDir.'/credentials', "[work]\naws_access_key_id=profile-key\naws_secret_access_key=profile-secret\n");
+
+        $this->bootApplication([new ConnectProviderCommand($this->apiClient, $this->createExecutionContextFactory([
+            CloudProvider::class => function () { return new CloudProviderDefinition(); },
+        ]))]);
+        $tester = new CommandTester($this->application->find(ConnectProviderCommand::NAME));
+        $tester->execute(['name' => 'Automation AWS', '--aws-profile' => 'work'], ['interactive' => false]);
+
+        $this->assertStringContainsString('Access keys are a legacy, less-secure authentication method', $tester->getDisplay());
+        $this->assertStringContainsString('Cloud provider connected', $tester->getDisplay());
+        $this->assertStringNotContainsString('Which authentication method would you like to use?', $tester->getDisplay());
     }
 
     public function testConnectProviderSuccessfullyWithAwsProfile(): void

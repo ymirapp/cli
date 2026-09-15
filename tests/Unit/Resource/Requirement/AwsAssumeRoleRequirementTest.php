@@ -16,6 +16,7 @@ namespace Ymir\Cli\Tests\Unit\Resource\Requirement;
 use Ymir\Cli\Console\Input;
 use Ymir\Cli\Console\Output;
 use Ymir\Cli\Exception\Resource\RequirementFulfillmentException;
+use Ymir\Cli\Exception\Resource\RequirementValidationException;
 use Ymir\Cli\ExecutionContext;
 use Ymir\Cli\Resource\Requirement\AwsAssumeRoleRequirement;
 use Ymir\Cli\Tests\Factory\CloudProviderFactory;
@@ -28,7 +29,40 @@ class AwsAssumeRoleRequirementTest extends TestCase
         $this->expectException(RequirementFulfillmentException::class);
         $this->expectExceptionMessage('Unable to fulfill the requirement: the Ymir API did not return the setup values needed to create the IAM role');
 
-        (new AwsAssumeRoleRequirement(CloudProviderFactory::create(['authentication' => []])))->fulfill(\Mockery::mock(ExecutionContext::class));
+        $context = \Mockery::mock(ExecutionContext::class);
+        $context->shouldReceive('getOutput')->andReturn(\Mockery::mock(Output::class));
+
+        (new AwsAssumeRoleRequirement(CloudProviderFactory::create(['authentication' => []])))->fulfill($context);
+    }
+
+    public function testFulfillRequiresRoleArnOptionValue(): void
+    {
+        $this->expectException(RequirementValidationException::class);
+        $this->expectExceptionMessage('You must provide an AWS IAM role ARN with the "--role-arn" option');
+
+        $provider = CloudProviderFactory::create([
+            'authentication' => [
+                'method' => null,
+                'assume_role' => [
+                    'ymir_account_id' => '111122223333',
+                    'external_id' => 'server-external-id',
+                    'role_name' => 'server-role-name',
+                ],
+            ],
+        ]);
+        $context = \Mockery::mock(ExecutionContext::class);
+        $input = \Mockery::mock(Input::class);
+        $output = \Mockery::mock(Output::class);
+
+        $context->shouldReceive('getInput')->andReturn($input);
+        $context->shouldReceive('getOutput')->andReturn($output);
+        $input->shouldReceive('getStringOption')->once()->with('role-arn')->andReturn(' ');
+        $output->shouldReceive('writeln')->once()->with('Create the AWS IAM role using these values:');
+        $output->shouldReceive('writeln')->once()->with('Ymir AWS account ID: 111122223333');
+        $output->shouldReceive('writeln')->once()->with('External ID: server-external-id');
+        $output->shouldReceive('writeln')->once()->with('Role name: server-role-name');
+
+        (new AwsAssumeRoleRequirement($provider))->fulfill($context);
     }
 
     public function testFulfillReturnsRoleArnAfterDisplayingServerSetupValues(): void
@@ -49,12 +83,40 @@ class AwsAssumeRoleRequirementTest extends TestCase
 
         $context->shouldReceive('getInput')->andReturn($input);
         $context->shouldReceive('getOutput')->andReturn($output);
+        $input->shouldReceive('getStringOption')->once()->with('role-arn')->andReturnNull();
         $input->shouldReceive('hasArgument')->once()->with('role_arn')->andReturn(false);
         $output->shouldReceive('writeln')->once()->with('Create the AWS IAM role using these values:');
         $output->shouldReceive('writeln')->once()->with('Ymir AWS account ID: 111122223333');
         $output->shouldReceive('writeln')->once()->with('External ID: server-external-id');
         $output->shouldReceive('writeln')->once()->with('Role name: server-role-name');
         $output->shouldReceive('ask')->once()->with('What is the AWS IAM role ARN?', null, \Mockery::type('callable'))->andReturn('arn:aws:iam::444455556666:role/customer-role');
+
+        $this->assertSame(['role_arn' => 'arn:aws:iam::444455556666:role/customer-role'], (new AwsAssumeRoleRequirement($provider))->fulfill($context));
+    }
+
+    public function testFulfillReturnsRoleArnOptionAfterDisplayingServerSetupValues(): void
+    {
+        $provider = CloudProviderFactory::create([
+            'authentication' => [
+                'method' => null,
+                'assume_role' => [
+                    'ymir_account_id' => '111122223333',
+                    'external_id' => 'server-external-id',
+                    'role_name' => 'server-role-name',
+                ],
+            ],
+        ]);
+        $context = \Mockery::mock(ExecutionContext::class);
+        $input = \Mockery::mock(Input::class);
+        $output = \Mockery::mock(Output::class);
+
+        $context->shouldReceive('getInput')->andReturn($input);
+        $context->shouldReceive('getOutput')->andReturn($output);
+        $input->shouldReceive('getStringOption')->once()->with('role-arn')->andReturn('arn:aws:iam::444455556666:role/customer-role');
+        $output->shouldReceive('writeln')->once()->with('Create the AWS IAM role using these values:');
+        $output->shouldReceive('writeln')->once()->with('Ymir AWS account ID: 111122223333');
+        $output->shouldReceive('writeln')->once()->with('External ID: server-external-id');
+        $output->shouldReceive('writeln')->once()->with('Role name: server-role-name');
 
         $this->assertSame(['role_arn' => 'arn:aws:iam::444455556666:role/customer-role'], (new AwsAssumeRoleRequirement($provider))->fulfill($context));
     }

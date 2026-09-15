@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Ymir\Cli\Resource\Requirement;
 
 use Ymir\Cli\Exception\Resource\RequirementFulfillmentException;
+use Ymir\Cli\Exception\Resource\RequirementValidationException;
 use Ymir\Cli\ExecutionContext;
 use Ymir\Cli\Resource\Model\CloudProvider;
 
@@ -56,6 +57,12 @@ class AwsAssumeRoleRequirement implements RequirementInterface
             $output->writeln(sprintf('%s: %s', $label, $value));
         });
 
-        return ['role_arn' => (new StringArgumentRequirement('role_arn', 'What is the AWS IAM role ARN?'))->fulfill($context)];
+        $roleArn = trim($context->getInput()->getStringOption('role-arn') ?? (new StringArgumentRequirement('role_arn', 'What is the AWS IAM role ARN?'))->fulfill($context));
+
+        if ('' === $roleArn) {
+            throw new RequirementValidationException('You must provide an AWS IAM role ARN with the "--role-arn" option');
+        }
+
+        return ['role_arn' => $roleArn];
     }
 }

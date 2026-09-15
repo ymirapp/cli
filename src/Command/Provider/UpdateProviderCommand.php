@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Ymir\Cli\Command\Provider;
 
 use Symfony\Component\Console\Input\InputArgument;
+use Symfony\Component\Console\Input\InputOption;
 use Ymir\Cli\Command\AbstractCommand;
 use Ymir\Cli\Resource\Model\CloudProvider;
 use Ymir\Cli\Resource\Requirement\CloudProviderAuthenticationMethodRequirement;
@@ -38,7 +39,9 @@ class UpdateProviderCommand extends AbstractCommand
             ->setName(self::NAME)
             ->setDescription('Update a cloud provider')
             ->addArgument('provider', InputArgument::OPTIONAL, 'The ID or name of the cloud provider to update')
-            ->addArgument('name', InputArgument::OPTIONAL, 'The new name of the cloud provider connection');
+            ->addArgument('name', InputArgument::OPTIONAL, 'The new name of the cloud provider connection')
+            ->addOption('aws-profile', null, InputOption::VALUE_REQUIRED, 'The AWS credential profile used for access key authentication')
+            ->addOption('role-arn', null, InputOption::VALUE_REQUIRED, 'The AWS IAM role ARN used for authentication');
     }
 
     /**
@@ -56,7 +59,7 @@ class UpdateProviderCommand extends AbstractCommand
 
         $credentials = null;
 
-        if ($this->output->confirm('Would you like to update the authentication method or credentials?', false)) {
+        if (null !== $this->input->getStringOption('aws-profile') || null !== $this->input->getStringOption('role-arn') || $this->output->confirm('Would you like to update the authentication method or credentials?', false)) {
             $provider = $this->apiClient->getProvider($provider->getId());
             $credentials = $this->fulfill(new CloudProviderCredentialsRequirement($provider), [
                 'authentication_method' => $this->fulfill(new CloudProviderAuthenticationMethodRequirement('Which authentication method would you like to use?', $provider->getAuthenticationMethod())),

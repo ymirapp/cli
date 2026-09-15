@@ -50,7 +50,7 @@ class StringArgumentRequirementTest extends TestCase
         $context->shouldReceive('getOutput')->andReturn($output);
 
         $input->shouldReceive('hasArgument')->with('arg')->andReturn(true);
-        $input->shouldReceive('getStringArgument')->with('arg')->andReturn('');
+        $input->shouldReceive('getStringArgument')->with('arg', false)->andReturn('');
 
         $output->shouldReceive('ask')->with('Question?', 'default', \Mockery::type('callable'))->andReturn('answer');
 
@@ -67,7 +67,7 @@ class StringArgumentRequirementTest extends TestCase
         $context->shouldReceive('getInput')->andReturn($input);
 
         $input->shouldReceive('hasArgument')->with('arg')->andReturn(true);
-        $input->shouldReceive('getStringArgument')->with('arg')->andReturn('value');
+        $input->shouldReceive('getStringArgument')->with('arg', true)->andReturn('value');
 
         $requirement = new StringArgumentRequirement('arg', 'Question?');
 

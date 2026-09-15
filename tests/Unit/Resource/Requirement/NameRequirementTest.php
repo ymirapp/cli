@@ -33,7 +33,7 @@ class NameRequirementTest extends TestCase
               ->andReturn(true);
 
         $input->shouldReceive('getStringArgument')->once()
-              ->with('name')
+              ->with('name', true)
               ->andReturn('value');
 
         $requirement = new NameRequirement('Question?');
