@@ -48,7 +48,7 @@ class GetEnvironmentInfoCommand extends AbstractCommand
     protected function perform(): void
     {
         $project = $this->resolve(Project::class, 'Which project would you like to get environment information for?');
-        $environmentName = $this->input->getStringArgument('environment');
+        $environmentName = $this->input->getStringArgument('environment', false);
         $environments = $this->apiClient->getEnvironments($project);
 
         if (!empty($environmentName) && !$environments->has($environmentName)) {

@@ -101,13 +101,14 @@ class CloudProviderDefinition implements FinalizableResourceDefinitionInterface,
     public function resolve(ExecutionContext $context, string $question, array $fulfilledRequirements = []): CloudProvider
     {
         $input = $context->getInput();
+        $project = $context->getProject();
         $providerId = null;
         $requiredStatus = $fulfilledRequirements['status'] ?? null;
 
         if ($input->hasArgument('provider')) {
-            $providerId = $input->getNumericArgument('provider');
+            $providerId = $input->getNumericArgument('provider', !$project instanceof Project);
         } elseif ($input->hasOption('provider')) {
-            $providerId = (int) $input->getNumericOption('provider');
+            $providerId = (int) $input->getNumericOption('provider', !$project instanceof Project);
         }
 
         $providers = $context->getApiClient()->getProviders($context->getTeam());
@@ -122,9 +123,7 @@ class CloudProviderDefinition implements FinalizableResourceDefinitionInterface,
             throw new InvalidInputException(sprintf('The given provider "%s" isn\'t available to the currently active team', $providerId));
         }
 
-        $project = empty($providerId) ? $context->getProject() : null;
-
-        if ($project instanceof Project) {
+        if (empty($providerId) && $project instanceof Project) {
             $resolvedProvider = $project->getProvider();
         }
 

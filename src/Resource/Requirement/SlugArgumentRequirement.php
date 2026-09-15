@@ -48,7 +48,7 @@ class SlugArgumentRequirement extends AbstractRequirement
         $value = null;
 
         if ($context->getInput()->hasArgument($this->argument)) {
-            $value = $context->getInput()->getStringArgument($this->argument);
+            $value = $context->getInput()->getStringArgument($this->argument, null === $this->default);
         }
 
         if (empty($value)) {

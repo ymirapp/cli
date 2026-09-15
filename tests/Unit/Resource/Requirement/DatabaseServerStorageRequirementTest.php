@@ -51,7 +51,7 @@ class DatabaseServerStorageRequirementTest extends TestCase
         $context->shouldReceive('getInput')->andReturn($input);
         $context->shouldReceive('getOutput')->andReturn($output);
 
-        $input->shouldReceive('getNumericOption')->with('storage')->andReturn(null);
+        $input->shouldReceive('getNumericOption')->with('storage', false)->andReturn(null);
 
         $output->shouldReceive('ask')->with('Question?', '50', \Mockery::type('callable'))->andReturn(50);
 
@@ -66,7 +66,7 @@ class DatabaseServerStorageRequirementTest extends TestCase
         $input = \Mockery::mock(Input::class);
 
         $context->shouldReceive('getInput')->andReturn($input);
-        $input->shouldReceive('getNumericOption')->with('storage')->andReturn(100);
+        $input->shouldReceive('getNumericOption')->with('storage', true)->andReturn(100);
 
         $requirement = new DatabaseServerStorageRequirement('Question?');
 
@@ -82,7 +82,7 @@ class DatabaseServerStorageRequirementTest extends TestCase
         $this->expectExceptionMessage('The storage value must be a positive integer');
 
         $context->shouldReceive('getInput')->andReturn($input);
-        $input->shouldReceive('getNumericOption')->with('storage')->andReturn(-10);
+        $input->shouldReceive('getNumericOption')->with('storage', true)->andReturn(-10);
 
         $requirement = new DatabaseServerStorageRequirement('Question?');
         $requirement->fulfill($context, ['type' => 'mysql']);

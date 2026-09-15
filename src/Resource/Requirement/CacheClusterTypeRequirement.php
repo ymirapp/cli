@@ -34,7 +34,7 @@ class CacheClusterTypeRequirement extends AbstractRequirement
             throw new RequirementDependencyException('"network" must be fulfilled before fulfilling the cache cluster type requirement');
         }
 
-        $type = $context->getInput()->getStringOption('type');
+        $type = $context->getInput()->getStringOption('type', true);
         $types = $context->getApiClient()->getCacheTypes($fulfilledRequirements['network']->getProvider())->map(function (array $details) use ($fulfilledRequirements) {
             return sprintf('%s vCPU, %sGiB RAM (~$%s/month)', $details['cpu'], $details['ram'], $details['price'][$fulfilledRequirements['engine']]);
         });

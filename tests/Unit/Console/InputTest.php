@@ -42,6 +42,17 @@ class InputTest extends TestCase
         $this->assertSame(['bar'], $input->getArrayArgument('foo'));
     }
 
+    public function testGetArrayArgumentReturnsEmptyArrayIfOptionalAndNonInteractive(): void
+    {
+        $symfonyInput = \Mockery::mock(SymfonyInputInterface::class);
+        $symfonyInput->shouldReceive('getArgument')->once()->with('foo')->andReturn([]);
+        $symfonyInput->shouldNotReceive('isInteractive');
+
+        $input = new Input($symfonyInput);
+
+        $this->assertSame([], $input->getArrayArgument('foo', false));
+    }
+
     public function testGetArrayArgumentThrowsExceptionIfNotArray(): void
     {
         $this->expectException(InvalidInputException::class);
@@ -60,7 +71,7 @@ class InputTest extends TestCase
         $this->expectException(NonInteractiveRequiredArgumentException::class);
 
         $symfonyInput = \Mockery::mock(SymfonyInputInterface::class);
-        $symfonyInput->shouldReceive('getArgument')->once()->with('foo')->andReturn(null);
+        $symfonyInput->shouldReceive('getArgument')->once()->with('foo')->andReturn([]);
         $symfonyInput->shouldReceive('isInteractive')->once()->andReturn(false);
 
         $input = new Input($symfonyInput);
@@ -99,7 +110,7 @@ class InputTest extends TestCase
 
         $symfonyInput = \Mockery::mock(SymfonyInputInterface::class);
         $symfonyInput->shouldReceive('hasOption')->once()->with('foo')->andReturn(true);
-        $symfonyInput->shouldReceive('getOption')->once()->with('foo')->andReturn(null);
+        $symfonyInput->shouldReceive('getOption')->once()->with('foo')->andReturn([]);
         $symfonyInput->shouldReceive('isInteractive')->once()->andReturn(false);
 
         $input = new Input($symfonyInput);

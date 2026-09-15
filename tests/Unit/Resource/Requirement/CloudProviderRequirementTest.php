@@ -38,10 +38,11 @@ class CloudProviderRequirementTest extends TestCase
 
         $context->shouldReceive('getInput')->andReturn($input);
         $context->shouldReceive('getApiClient')->andReturn($apiClient);
+        $context->shouldReceive('getProject')->andReturn(null);
         $context->shouldReceive('getTeam')->andReturn($team);
 
         $input->shouldReceive('hasArgument')->with('provider')->andReturn(true);
-        $input->shouldReceive('getNumericArgument')->with('provider')->andReturn(123);
+        $input->shouldReceive('getNumericArgument')->with('provider', true)->andReturn(123);
 
         $apiClient->shouldReceive('getProviders')->with($team)->andReturn(new ResourceCollection([$provider]));
 
@@ -60,11 +61,12 @@ class CloudProviderRequirementTest extends TestCase
 
         $context->shouldReceive('getInput')->andReturn($input);
         $context->shouldReceive('getApiClient')->andReturn($apiClient);
+        $context->shouldReceive('getProject')->andReturn(null);
         $context->shouldReceive('getTeam')->andReturn($team);
 
         $input->shouldReceive('hasArgument')->with('provider')->andReturn(false);
         $input->shouldReceive('hasOption')->with('provider')->andReturn(true);
-        $input->shouldReceive('getNumericOption')->with('provider')->andReturn(123);
+        $input->shouldReceive('getNumericOption')->with('provider', true)->andReturn(123);
 
         $apiClient->shouldReceive('getProviders')->with($team)->andReturn(new ResourceCollection([$provider]));
 
@@ -137,10 +139,11 @@ class CloudProviderRequirementTest extends TestCase
 
         $context->shouldReceive('getInput')->andReturn($input);
         $context->shouldReceive('getApiClient')->andReturn($apiClient);
+        $context->shouldReceive('getProject')->andReturn(null);
         $context->shouldReceive('getTeam')->andReturn($team);
 
         $input->shouldReceive('hasArgument')->with('provider')->andReturn(true);
-        $input->shouldReceive('getNumericArgument')->with('provider')->andReturn(456);
+        $input->shouldReceive('getNumericArgument')->with('provider', true)->andReturn(456);
 
         $apiClient->shouldReceive('getProviders')->with($team)->andReturn(new ResourceCollection([$provider]));
 
@@ -160,6 +163,7 @@ class CloudProviderRequirementTest extends TestCase
 
         $context->shouldReceive('getInput')->andReturn($input);
         $context->shouldReceive('getApiClient')->andReturn($apiClient);
+        $context->shouldReceive('getProject')->andReturn(null);
         $context->shouldReceive('getTeam')->andReturn($team);
 
         $input->shouldReceive('hasArgument')->with('provider')->andReturn(false);

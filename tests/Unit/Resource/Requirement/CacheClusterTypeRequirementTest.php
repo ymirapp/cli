@@ -39,7 +39,7 @@ class CacheClusterTypeRequirementTest extends TestCase
         $context->shouldReceive('getInput')->andReturn($input);
         $context->shouldReceive('getOutput')->andReturn($output);
 
-        $input->shouldReceive('getStringOption')->with('type')->andReturn(null);
+        $input->shouldReceive('getStringOption')->with('type', true)->andReturn(null);
 
         $apiClient->shouldReceive('getCacheTypes')->with($network->getProvider())->andReturn(new Collection([
             'cache.t3.micro' => ['cpu' => 2, 'ram' => 0.5, 'price' => ['redis' => 10]],
@@ -64,7 +64,7 @@ class CacheClusterTypeRequirementTest extends TestCase
         $context->shouldReceive('getApiClient')->andReturn($apiClient);
         $context->shouldReceive('getInput')->andReturn($input);
 
-        $input->shouldReceive('getStringOption')->with('type')->andReturn('cache.t3.micro');
+        $input->shouldReceive('getStringOption')->with('type', true)->andReturn('cache.t3.micro');
 
         $apiClient->shouldReceive('getCacheTypes')->with($network->getProvider())->andReturn(new Collection([
             'cache.t3.micro' => ['cpu' => 2, 'ram' => 0.5, 'price' => ['redis' => 10]],
@@ -99,7 +99,7 @@ class CacheClusterTypeRequirementTest extends TestCase
         $context->shouldReceive('getApiClient')->andReturn($apiClient);
         $context->shouldReceive('getInput')->andReturn($input);
 
-        $input->shouldReceive('getStringOption')->with('type')->andReturn('invalid');
+        $input->shouldReceive('getStringOption')->with('type', true)->andReturn('invalid');
 
         $apiClient->shouldReceive('getCacheTypes')->with($network->getProvider())->andReturn(new Collection([
             'cache.t3.micro' => ['cpu' => 2, 'ram' => 0.5, 'price' => ['redis' => 10]],
@@ -133,7 +133,7 @@ class CacheClusterTypeRequirementTest extends TestCase
         $context->shouldReceive('getApiClient')->andReturn($apiClient);
         $context->shouldReceive('getInput')->andReturn($input);
 
-        $input->shouldReceive('getStringOption')->with('type')->andReturn(null);
+        $input->shouldReceive('getStringOption')->with('type', true)->andReturn(null);
 
         $apiClient->shouldReceive('getCacheTypes')->with($network->getProvider())->andReturn(new Collection());
 

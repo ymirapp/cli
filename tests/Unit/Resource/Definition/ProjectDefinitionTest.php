@@ -107,7 +107,8 @@ class ProjectDefinitionTest extends TestCase
     public function testResolveReturnsProjectFromContextIfNoArgumentProvided(): void
     {
         $project = ProjectFactory::create();
-        $this->input->shouldReceive('hasArgument')->with('project')->andReturn(false);
+        $this->input->shouldReceive('hasArgument')->with('project')->andReturn(true);
+        $this->input->shouldReceive('getStringArgument')->with('project', false)->andReturn('');
         $this->context->shouldReceive('getProject')->andReturn($project);
 
         $definition = new ProjectDefinition();
@@ -121,7 +122,7 @@ class ProjectDefinitionTest extends TestCase
         $project2 = ProjectFactory::create(['id' => 2, 'name' => 'duplicate']);
 
         $this->input->shouldReceive('hasArgument')->with('project')->andReturn(true);
-        $this->input->shouldReceive('getStringArgument')->with('project')->andReturn('duplicate');
+        $this->input->shouldReceive('getStringArgument')->with('project', true)->andReturn('duplicate');
         $this->context->shouldReceive('getProject')->andReturn(null);
         $this->apiClient->shouldReceive('getProjects')->andReturn(new ResourceCollection([$project1, $project2]));
 
@@ -162,7 +163,7 @@ class ProjectDefinitionTest extends TestCase
     public function testResolveThrowsExceptionIfProjectNotFound(): void
     {
         $this->input->shouldReceive('hasArgument')->with('project')->andReturn(true);
-        $this->input->shouldReceive('getStringArgument')->with('project')->andReturn('non-existent');
+        $this->input->shouldReceive('getStringArgument')->with('project', true)->andReturn('non-existent');
         $this->context->shouldReceive('getProject')->andReturn(null);
         $this->apiClient->shouldReceive('getProjects')->andReturn(new ResourceCollection([ProjectFactory::create(['name' => 'other'])]));
 
@@ -178,7 +179,7 @@ class ProjectDefinitionTest extends TestCase
         $project = ProjectFactory::create(['name' => 'my-project']);
 
         $this->input->shouldReceive('hasArgument')->with('project')->andReturn(true);
-        $this->input->shouldReceive('getStringArgument')->with('project')->andReturn('my-project');
+        $this->input->shouldReceive('getStringArgument')->with('project', true)->andReturn('my-project');
         $this->context->shouldReceive('getProject')->andReturn(null);
         $this->apiClient->shouldReceive('getProjects')->andReturn(new ResourceCollection([$project]));
 

@@ -48,7 +48,7 @@ class DatabaseServerTypeRequirement extends AbstractDatabaseServerRequirement
         }
 
         $input = $context->getInput();
-        $type = $input->getStringOption('type');
+        $type = $input->getStringOption('type', null === $this->default && empty($fulfilledRequirements['serverless']));
 
         if (!empty($fulfilledRequirements['serverless'])) {
             return $this->getAuroraDatabaseTypeForEngine($fulfilledRequirements['engine']);

@@ -48,7 +48,7 @@ class NameSlugRequirementTest extends TestCase
         $context->shouldReceive('getInput')->andReturn($input);
 
         $input->shouldReceive('hasArgument')->with('name')->andReturn(true);
-        $input->shouldReceive('getStringArgument')->with('name')->andReturn('value');
+        $input->shouldReceive('getStringArgument')->with('name', true)->andReturn('value');
 
         $requirement = new NameSlugRequirement('Question?');
 

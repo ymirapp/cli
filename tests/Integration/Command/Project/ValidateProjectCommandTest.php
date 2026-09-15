@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Ymir\Cli\Tests\Integration\Command\Project;
 
+use Symfony\Component\Console\Tester\CommandTester;
 use Ymir\Cli\Command\Project\ValidateProjectCommand;
 use Ymir\Cli\Dockerfile;
 use Ymir\Cli\Exception\InvalidInputException;
@@ -52,7 +53,8 @@ class ValidateProjectCommandTest extends TestCase
 
         $this->bootApplication([new ValidateProjectCommand($this->apiClient, $this->createExecutionContextFactory(), $this->dockerfile)]);
 
-        $tester = $this->executeCommand(ValidateProjectCommand::NAME);
+        $tester = new CommandTester($this->application->find(ValidateProjectCommand::NAME));
+        $tester->execute([], ['interactive' => false]);
 
         $this->assertStringContainsString('Project ymir.yml file is valid', $tester->getDisplay());
     }

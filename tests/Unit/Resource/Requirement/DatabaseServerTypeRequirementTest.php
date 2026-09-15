@@ -40,7 +40,7 @@ class DatabaseServerTypeRequirementTest extends TestCase
         $context->shouldReceive('getInput')->andReturn($input);
         $context->shouldReceive('getOutput')->andReturn($output);
 
-        $input->shouldReceive('getStringOption')->with('type')->andReturn(null);
+        $input->shouldReceive('getStringOption')->with('type', true)->andReturn(null);
 
         $apiClient->shouldReceive('getDatabaseServerTypes')->with($network->getProvider())->andReturn(new Collection([
             'db.t3.micro' => 'db.t3.micro',
@@ -64,7 +64,7 @@ class DatabaseServerTypeRequirementTest extends TestCase
 
         $context->shouldReceive('getInput')->andReturn($input);
 
-        $input->shouldReceive('getStringOption')->with('type')->andReturn(DatabaseServer::AURORA_MYSQL_DATABASE_TYPE);
+        $input->shouldReceive('getStringOption')->with('type', false)->andReturn(DatabaseServer::AURORA_MYSQL_DATABASE_TYPE);
 
         $requirement = new DatabaseServerTypeRequirement('Which type?');
 
@@ -78,7 +78,7 @@ class DatabaseServerTypeRequirementTest extends TestCase
 
         $context->shouldReceive('getInput')->andReturn($input);
 
-        $input->shouldReceive('getStringOption')->with('type')->andReturn(null);
+        $input->shouldReceive('getStringOption')->with('type', false)->andReturn(null);
 
         $requirement = new DatabaseServerTypeRequirement('Which type?');
 
@@ -92,7 +92,7 @@ class DatabaseServerTypeRequirementTest extends TestCase
 
         $context->shouldReceive('getInput')->andReturn($input);
 
-        $input->shouldReceive('getStringOption')->with('type')->andReturn(null);
+        $input->shouldReceive('getStringOption')->with('type', false)->andReturn(null);
 
         $requirement = new DatabaseServerTypeRequirement('Which type?');
 
@@ -112,7 +112,7 @@ class DatabaseServerTypeRequirementTest extends TestCase
         $context->shouldReceive('getInput')->andReturn($input);
         $context->shouldReceive('getOutput')->andReturn($output);
 
-        $input->shouldReceive('getStringOption')->with('type')->andReturn(null);
+        $input->shouldReceive('getStringOption')->with('type', false)->andReturn(null);
 
         $apiClient->shouldReceive('getDatabaseServerTypes')->with($network->getProvider())->andReturn($types);
 
@@ -135,7 +135,7 @@ class DatabaseServerTypeRequirementTest extends TestCase
         $context->shouldReceive('getApiClient')->andReturn($apiClient);
         $context->shouldReceive('getInput')->andReturn($input);
 
-        $input->shouldReceive('getStringOption')->with('type')->andReturn('db.t3.micro');
+        $input->shouldReceive('getStringOption')->with('type', true)->andReturn('db.t3.micro');
 
         $apiClient->shouldReceive('getDatabaseServerTypes')->with($network->getProvider())->andReturn(new Collection(['db.t3.micro' => 'db.t3.micro']));
 
@@ -154,7 +154,7 @@ class DatabaseServerTypeRequirementTest extends TestCase
 
         $context->shouldReceive('getInput')->andReturn($input);
 
-        $input->shouldReceive('getStringOption')->with('type')->andReturn(DatabaseServer::AURORA_MYSQL_DATABASE_TYPE);
+        $input->shouldReceive('getStringOption')->with('type', true)->andReturn(DatabaseServer::AURORA_MYSQL_DATABASE_TYPE);
 
         $requirement = new DatabaseServerTypeRequirement('Which type?');
         $requirement->fulfill($context, ['engine' => DatabaseServer::ENGINE_POSTGRESQL]);
@@ -170,7 +170,7 @@ class DatabaseServerTypeRequirementTest extends TestCase
 
         $context->shouldReceive('getInput')->andReturn($input);
 
-        $input->shouldReceive('getStringOption')->with('type')->andReturn(DatabaseServer::AURORA_MYSQL_DATABASE_TYPE);
+        $input->shouldReceive('getStringOption')->with('type', true)->andReturn(DatabaseServer::AURORA_MYSQL_DATABASE_TYPE);
 
         $requirement = new DatabaseServerTypeRequirement('Which type?');
         $requirement->fulfill($context, ['engine' => DatabaseServer::ENGINE_MYSQL]);
@@ -200,7 +200,7 @@ class DatabaseServerTypeRequirementTest extends TestCase
         $context->shouldReceive('getApiClient')->andReturn($apiClient);
         $context->shouldReceive('getInput')->andReturn($input);
 
-        $input->shouldReceive('getStringOption')->with('type')->andReturn('invalid');
+        $input->shouldReceive('getStringOption')->with('type', true)->andReturn('invalid');
 
         $apiClient->shouldReceive('getDatabaseServerTypes')->with($network->getProvider())->andReturn(new Collection(['db.t3.micro' => 'db.t3.micro']));
 
@@ -217,7 +217,7 @@ class DatabaseServerTypeRequirementTest extends TestCase
         $this->expectExceptionMessage('"network" must be fulfilled before fulfilling the database server type requirement');
 
         $context->shouldReceive('getInput')->andReturn($input);
-        $input->shouldReceive('getStringOption')->with('type')->andReturn(null);
+        $input->shouldReceive('getStringOption')->with('type', true)->andReturn(null);
 
         $requirement = new DatabaseServerTypeRequirement('Which type?');
         $requirement->fulfill($context, ['engine' => DatabaseServer::ENGINE_MYSQL]);
@@ -236,7 +236,7 @@ class DatabaseServerTypeRequirementTest extends TestCase
         $context->shouldReceive('getApiClient')->andReturn($apiClient);
         $context->shouldReceive('getInput')->andReturn($input);
 
-        $input->shouldReceive('getStringOption')->with('type')->andReturn(null);
+        $input->shouldReceive('getStringOption')->with('type', true)->andReturn(null);
 
         $apiClient->shouldReceive('getDatabaseServerTypes')->with($network->getProvider())->andReturn(new Collection());
 

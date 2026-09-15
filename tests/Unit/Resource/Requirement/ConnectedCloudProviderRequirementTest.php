@@ -35,9 +35,10 @@ class ConnectedCloudProviderRequirementTest extends TestCase
 
         $context->shouldReceive('getInput')->andReturn($input);
         $context->shouldReceive('getApiClient')->andReturn($apiClient);
+        $context->shouldReceive('getProject')->andReturn(null);
         $context->shouldReceive('getTeam')->andReturn($team);
         $input->shouldReceive('hasArgument')->with('provider')->andReturn(true);
-        $input->shouldReceive('getNumericArgument')->with('provider')->andReturn(123);
+        $input->shouldReceive('getNumericArgument')->with('provider', true)->andReturn(123);
         $apiClient->shouldReceive('getProviders')->once()->with($team)->andReturn(new ResourceCollection([$provider]));
 
         $this->expectException(InvalidInputException::class);

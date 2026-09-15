@@ -76,7 +76,7 @@ class ProjectDefinition implements ProvisionableResourceDefinitionInterface, Res
         $projectIdOrName = null;
 
         if ($input->hasArgument('project')) {
-            $projectIdOrName = $input->getStringArgument('project');
+            $projectIdOrName = $input->getStringArgument('project', !$project instanceof Project);
         }
 
         if (empty($projectIdOrName) && $project instanceof Project) {

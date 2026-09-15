@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Ymir\Cli\Tests\Integration\Command\Environment;
 
+use Symfony\Component\Console\Tester\CommandTester;
 use Ymir\Cli\Command\Environment\GetEnvironmentInfoCommand;
 use Ymir\Cli\Resource\Definition\EnvironmentDefinition;
 use Ymir\Cli\Resource\Definition\ProjectDefinition;
@@ -61,7 +62,8 @@ class GetEnvironmentInfoCommandTest extends TestCase
             Project::class => function () { return new ProjectDefinition(); },
         ]))]);
 
-        $tester = $this->executeCommand(GetEnvironmentInfoCommand::NAME);
+        $tester = new CommandTester($this->application->find(GetEnvironmentInfoCommand::NAME));
+        $tester->execute([], ['interactive' => false]);
 
         $this->assertStringContainsString('Listing information on all project environments', $tester->getDisplay());
         $this->assertStringContainsString('staging', $tester->getDisplay());

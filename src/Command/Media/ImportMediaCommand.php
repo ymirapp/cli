@@ -101,7 +101,7 @@ class ImportMediaCommand extends AbstractCommand implements LocalProjectCommandI
             return;
         }
 
-        $path = $this->input->getStringArgument('path');
+        $path = $this->input->getStringArgument('path', false);
 
         if (empty($path)) {
             $path = $projectType->getMediaDirectoryPath($path);

@@ -75,6 +75,7 @@ class CloudProviderDefinitionTest extends TestCase
         $this->context->shouldReceive('getApiClient')->andReturn($this->apiClient);
         $this->context->shouldReceive('getInput')->andReturn($this->input);
         $this->context->shouldReceive('getOutput')->andReturn($this->output);
+        $this->context->shouldReceive('getProject')->andReturn(null)->byDefault();
         $this->context->shouldReceive('getTeam')->andReturn(TeamFactory::create());
     }
 
@@ -168,7 +169,7 @@ class CloudProviderDefinitionTest extends TestCase
         $disconnectedProvider = CloudProviderFactory::create(['id' => 456, 'status' => 'disconnected']);
 
         $this->input->shouldReceive('hasArgument')->with('provider')->twice()->andReturn(true);
-        $this->input->shouldReceive('getNumericArgument')->with('provider')->twice()->andReturn(123, 456);
+        $this->input->shouldReceive('getNumericArgument')->with('provider', true)->twice()->andReturn(123, 456);
         $this->apiClient->shouldReceive('getProviders')->twice()->andReturn(
             new ResourceCollection([$connectedProvider]),
             new ResourceCollection([$disconnectedProvider])
@@ -204,8 +205,24 @@ class CloudProviderDefinitionTest extends TestCase
         $cloudProvider = CloudProviderFactory::create();
         $project = ProjectFactory::create();
 
+        $this->input->shouldReceive('hasArgument')->with('provider')->andReturn(true);
+        $this->input->shouldReceive('getNumericArgument')->with('provider', false)->andReturn(0);
+        $this->apiClient->shouldReceive('getProviders')->andReturn(new ResourceCollection([$cloudProvider]));
+        $this->context->shouldReceive('getProject')->andReturn($project);
+
+        $definition = new CloudProviderDefinition();
+
+        $this->assertSame($project->getProvider(), $definition->resolve($this->context, 'question'));
+    }
+
+    public function testResolveReturnsProviderFromProjectIfNoOptionProvided(): void
+    {
+        $cloudProvider = CloudProviderFactory::create();
+        $project = ProjectFactory::create();
+
         $this->input->shouldReceive('hasArgument')->with('provider')->andReturn(false);
-        $this->input->shouldReceive('hasOption')->with('provider')->andReturn(false);
+        $this->input->shouldReceive('hasOption')->with('provider')->andReturn(true);
+        $this->input->shouldReceive('getNumericOption')->with('provider', false)->andReturn(null);
         $this->apiClient->shouldReceive('getProviders')->andReturn(new ResourceCollection([$cloudProvider]));
         $this->context->shouldReceive('getProject')->andReturn($project);
 
@@ -262,7 +279,7 @@ class CloudProviderDefinitionTest extends TestCase
     public function testResolveThrowsExceptionIfProviderNotFoundWhenIdProvided(): void
     {
         $this->input->shouldReceive('hasArgument')->with('provider')->andReturn(true);
-        $this->input->shouldReceive('getNumericArgument')->with('provider')->andReturn(123);
+        $this->input->shouldReceive('getNumericArgument')->with('provider', true)->andReturn(123);
         $this->apiClient->shouldReceive('getProviders')->andReturn(new ResourceCollection([CloudProviderFactory::create(['id' => 456])]));
 
         $this->expectException(InvalidInputException::class);
@@ -280,8 +297,8 @@ class CloudProviderDefinitionTest extends TestCase
         $provider = CloudProviderFactory::create(['id' => 123, 'status' => $status]);
         $this->input->shouldReceive('hasArgument')->with('provider')->andReturn('argument' === $source);
         $this->input->shouldReceive('hasOption')->with('provider')->andReturn('option' === $source);
-        $this->input->shouldReceive('getNumericArgument')->with('provider')->andReturn(123);
-        $this->input->shouldReceive('getNumericOption')->with('provider')->andReturn(123);
+        $this->input->shouldReceive('getNumericArgument')->with('provider', true)->andReturn(123);
+        $this->input->shouldReceive('getNumericOption')->with('provider', true)->andReturn(123);
         $this->apiClient->shouldReceive('getProviders')->once()->with($this->context->getTeam())->andReturn(new ResourceCollection([
             $provider,
             CloudProviderFactory::create(['id' => 456]),
@@ -291,8 +308,6 @@ class CloudProviderDefinitionTest extends TestCase
         if ('project' === $source) {
             $project = new Project(1, 'project', 'us-east-1', $provider);
             $this->context->shouldReceive('getProject')->andReturn($project);
-        } else {
-            $this->context->shouldNotReceive('getProject');
         }
 
         if ($requiresConnectedProvider && 'connected' !== $status) {
@@ -310,7 +325,7 @@ class CloudProviderDefinitionTest extends TestCase
         $cloudProvider = CloudProviderFactory::create(['id' => 123]);
 
         $this->input->shouldReceive('hasArgument')->with('provider')->andReturn(true);
-        $this->input->shouldReceive('getNumericArgument')->with('provider')->andReturn(123);
+        $this->input->shouldReceive('getNumericArgument')->with('provider', true)->andReturn(123);
         $this->apiClient->shouldReceive('getProviders')->andReturn(new ResourceCollection([$cloudProvider]));
 
         $definition = new CloudProviderDefinition();
@@ -339,7 +354,7 @@ class CloudProviderDefinitionTest extends TestCase
 
         $this->input->shouldReceive('hasArgument')->with('provider')->andReturn(false);
         $this->input->shouldReceive('hasOption')->with('provider')->andReturn(true);
-        $this->input->shouldReceive('getNumericOption')->with('provider')->andReturn(123);
+        $this->input->shouldReceive('getNumericOption')->with('provider', true)->andReturn(123);
         $this->apiClient->shouldReceive('getProviders')->andReturn(new ResourceCollection([$cloudProvider]));
 
         $definition = new CloudProviderDefinition();

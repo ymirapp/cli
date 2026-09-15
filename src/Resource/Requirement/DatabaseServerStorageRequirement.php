@@ -52,7 +52,7 @@ class DatabaseServerStorageRequirement extends AbstractDatabaseServerRequirement
             return null;
         }
 
-        $storage = (int) $context->getInput()->getNumericOption('storage');
+        $storage = (int) $context->getInput()->getNumericOption('storage', null === $this->default);
 
         if (empty($storage)) {
             $storage = $context->getOutput()->ask($this->question, $this->default, function ($value): int {

@@ -50,10 +50,12 @@ class Input
     {
         $value = $this->getArgument($argument);
 
-        if (null === $value && $requiredNonInteractive && !$this->isInteractive()) {
-            throw new NonInteractiveRequiredArgumentException($argument);
-        } elseif (null !== $value && !is_array($value)) {
+        if (null !== $value && !is_array($value)) {
             throw new InvalidInputException(sprintf('The "%s" argument must be an array value', $argument));
+        }
+
+        if (empty($value) && $requiredNonInteractive && !$this->isInteractive()) {
+            throw new NonInteractiveRequiredArgumentException($argument);
         }
 
         return (array) $value;
@@ -70,10 +72,12 @@ class Input
             $value = $this->getOption($option);
         }
 
-        if (null === $value && $requiredNonInteractive && !$this->isInteractive()) {
-            throw new NonInteractiveRequiredOptionException($option);
-        } elseif (null !== $value && !is_array($value)) {
+        if (null !== $value && !is_array($value)) {
             throw new InvalidInputException(sprintf('The "--%s" option must be an array', $option));
+        }
+
+        if (empty($value) && $requiredNonInteractive && !$this->isInteractive()) {
+            throw new NonInteractiveRequiredOptionException($option);
         }
 
         return $value;

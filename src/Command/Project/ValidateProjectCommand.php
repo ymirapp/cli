@@ -74,7 +74,7 @@ class ValidateProjectCommand extends AbstractCommand implements LocalProjectComm
      */
     protected function perform(): void
     {
-        $requestedEnvironments = collect($this->input->getArrayArgument('environments'));
+        $requestedEnvironments = collect($this->input->getArrayArgument('environments', false));
 
         $projectEnvironments = $this->getProjectConfiguration()->getEnvironments();
         $missingEnvironments = $requestedEnvironments->diff($projectEnvironments->keys());
