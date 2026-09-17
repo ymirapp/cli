@@ -1,5 +1,24 @@
 # Changelog
 
+## [2.4.0](https://github.com/ymirapp/cli/compare/v2.3.3...v2.4.0) (2026-09-15)
+
+
+### Features
+
+* Add iam role provider connection workflow ([85b75f8](https://github.com/ymirapp/cli/commit/85b75f849b480243ff3874f9bea3728ffb9cb2f2))
+* Show cloud provider status and authentication method in listings ([418692b](https://github.com/ymirapp/cli/commit/418692bbd40d57b39ee59d0bc397f34019878192))
+* Split provider creation from credential submission ([b800cfc](https://github.com/ymirapp/cli/commit/b800cfc5f291f3ef65424a870cd02a007d570a4e))
+* Support non-interactive provider authentication ([9d8034c](https://github.com/ymirapp/cli/commit/9d8034cc6a7a249b140f3932d77dacc32975a1eb))
+* Support provider authentication updates ([ded4899](https://github.com/ymirapp/cli/commit/ded48991fb8b51e6c0419c616733170142b78b3b))
+
+
+### Bug Fixes
+
+* Pass docker registry password through stdin ([83c1365](https://github.com/ymirapp/cli/commit/83c13656d038f75ada53010027436455720447b1))
+* Require connected providers for operational commands ([3213a27](https://github.com/ymirapp/cli/commit/3213a279a519474aac62a0166632ef668a710378))
+* Skip integration prompt when already configured ([3e50690](https://github.com/ymirapp/cli/commit/3e506907317c78bcc1fd231b6637685f0f90a94a))
+* Standardize non-interactive input handling ([b2a26a3](https://github.com/ymirapp/cli/commit/b2a26a37d166134eb1763ec0dbd36e268913d78a))
+
 ## [2.3.3](https://github.com/ymirapp/cli/compare/v2.3.2...v2.3.3) (2026-07-18)
 
 
