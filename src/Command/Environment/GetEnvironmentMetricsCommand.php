@@ -83,17 +83,23 @@ class GetEnvironmentMetricsCommand extends AbstractCommand implements LocalProje
         }
 
         if (!empty($metrics['website'])) {
+            $totalDuration = (float) collect($metrics['website']['duration'])->sum();
+            $totalInvocations = (float) collect($metrics['website']['invocations'])->sum();
+
             $headers = array_merge($headers, [new TableSeparator(), 'Website Lambda function', '', '']);
             $row1 = array_merge($row1, [new TableSeparator(), 'Invocations', 'Duration', 'Avg duration']);
-            $row2 = array_merge($row2, [new TableSeparator(), number_format((float) collect($metrics['website']['invocations'])->sum()), number_format((float) collect($metrics['website']['duration'])->sum() / 1000).'s', number_format((float) collect($metrics['website']['avg_duration'])->avg()).'ms']);
+            $row2 = array_merge($row2, [new TableSeparator(), number_format($totalInvocations), number_format($totalDuration / 1000).'s', $this->formatAverageDuration($totalDuration, $totalInvocations)]);
             $row3 = array_merge($row3, [new TableSeparator(), '$'.number_format($metrics['website']['cost_invocations'], 2), '$'.number_format($metrics['website']['cost_duration'], 2), '-']);
             $total += $metrics['website']['cost_duration'] + $metrics['website']['cost_invocations'];
         }
 
         if (!empty($metrics['console'])) {
+            $totalDuration = (float) collect($metrics['console']['duration'])->sum();
+            $totalInvocations = (float) collect($metrics['console']['invocations'])->sum();
+
             $headers = array_merge($headers, [new TableSeparator(), 'Console Lambda function', '', '']);
             $row1 = array_merge($row1, [new TableSeparator(), 'Invocations', 'Duration', 'Avg duration']);
-            $row2 = array_merge($row2, [new TableSeparator(), number_format((float) collect($metrics['console']['invocations'])->sum()), number_format((float) collect($metrics['console']['duration'])->sum() / 1000).'s', number_format((float) collect($metrics['console']['avg_duration'])->avg()).'ms']);
+            $row2 = array_merge($row2, [new TableSeparator(), number_format($totalInvocations), number_format($totalDuration / 1000).'s', $this->formatAverageDuration($totalDuration, $totalInvocations)]);
             $row3 = array_merge($row3, [new TableSeparator(), '$'.number_format($metrics['console']['cost_invocations'], 2), '$'.number_format($metrics['console']['cost_duration'], 2), '-']);
             $total += $metrics['console']['cost_duration'] + $metrics['console']['cost_invocations'];
         }
@@ -106,5 +112,13 @@ class GetEnvironmentMetricsCommand extends AbstractCommand implements LocalProje
         $this->output->horizontalTable($headers, [$row1, $row2, $row3]);
 
         $this->output->note('This is a partial cost estimate.');
+    }
+
+    /**
+     * Format the invocation-weighted average duration of a Lambda function.
+     */
+    private function formatAverageDuration(float $totalDuration, float $totalInvocations): string
+    {
+        return number_format($totalInvocations > 0 ? $totalDuration / $totalInvocations : 0).'ms';
     }
 }
