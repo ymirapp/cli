@@ -86,10 +86,10 @@ class GetEnvironmentMetricsCommand extends AbstractCommand implements LocalProje
             $totalDuration = (float) collect($metrics['website']['duration'])->sum();
             $totalInvocations = (float) collect($metrics['website']['invocations'])->sum();
 
-            $headers = array_merge($headers, [new TableSeparator(), 'Website Lambda function', '', '']);
-            $row1 = array_merge($row1, [new TableSeparator(), 'Invocations', 'Duration', 'Avg duration']);
-            $row2 = array_merge($row2, [new TableSeparator(), number_format($totalInvocations), number_format($totalDuration / 1000).'s', $this->formatAverageDuration($totalDuration, $totalInvocations)]);
-            $row3 = array_merge($row3, [new TableSeparator(), '$'.number_format($metrics['website']['cost_invocations'], 2), '$'.number_format($metrics['website']['cost_duration'], 2), '-']);
+            $headers = array_merge($headers, [new TableSeparator(), 'Website Lambda function', '', '', '']);
+            $row1 = array_merge($row1, [new TableSeparator(), 'Invocations', 'Duration', 'Avg duration', 'Errors']);
+            $row2 = array_merge($row2, [new TableSeparator(), number_format($totalInvocations), number_format($totalDuration / 1000).'s', $this->formatAverageDuration($totalDuration, $totalInvocations), number_format((float) collect($metrics['website']['errors'])->sum())]);
+            $row3 = array_merge($row3, [new TableSeparator(), '$'.number_format($metrics['website']['cost_invocations'], 2), '$'.number_format($metrics['website']['cost_duration'], 2), '-', '-']);
             $total += $metrics['website']['cost_duration'] + $metrics['website']['cost_invocations'];
         }
 
@@ -97,10 +97,10 @@ class GetEnvironmentMetricsCommand extends AbstractCommand implements LocalProje
             $totalDuration = (float) collect($metrics['console']['duration'])->sum();
             $totalInvocations = (float) collect($metrics['console']['invocations'])->sum();
 
-            $headers = array_merge($headers, [new TableSeparator(), 'Console Lambda function', '', '']);
-            $row1 = array_merge($row1, [new TableSeparator(), 'Invocations', 'Duration', 'Avg duration']);
-            $row2 = array_merge($row2, [new TableSeparator(), number_format($totalInvocations), number_format($totalDuration / 1000).'s', $this->formatAverageDuration($totalDuration, $totalInvocations)]);
-            $row3 = array_merge($row3, [new TableSeparator(), '$'.number_format($metrics['console']['cost_invocations'], 2), '$'.number_format($metrics['console']['cost_duration'], 2), '-']);
+            $headers = array_merge($headers, [new TableSeparator(), 'Console Lambda function', '', '', '']);
+            $row1 = array_merge($row1, [new TableSeparator(), 'Invocations', 'Duration', 'Avg duration', 'Errors']);
+            $row2 = array_merge($row2, [new TableSeparator(), number_format($totalInvocations), number_format($totalDuration / 1000).'s', $this->formatAverageDuration($totalDuration, $totalInvocations), number_format((float) collect($metrics['console']['errors'])->sum())]);
+            $row3 = array_merge($row3, [new TableSeparator(), '$'.number_format($metrics['console']['cost_invocations'], 2), '$'.number_format($metrics['console']['cost_duration'], 2), '-', '-']);
             $total += $metrics['console']['cost_duration'] + $metrics['console']['cost_invocations'];
         }
 

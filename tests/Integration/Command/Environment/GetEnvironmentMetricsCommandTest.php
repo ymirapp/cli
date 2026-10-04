@@ -75,6 +75,7 @@ class GetEnvironmentMetricsCommandTest extends TestCase
                 'invocations' => [3, 1],
                 'duration' => [300, 5000],
                 'avg_duration' => [100, 5000],
+                'errors' => [0, 0],
                 'cost_invocations' => 0,
                 'cost_duration' => 0,
             ],
@@ -93,6 +94,7 @@ class GetEnvironmentMetricsCommandTest extends TestCase
                 'invocations' => [1, 99],
                 'duration' => [100, 99000],
                 'avg_duration' => [100, 1000],
+                'errors' => [0, 0],
                 'cost_invocations' => 0,
                 'cost_duration' => 0,
             ],
@@ -110,6 +112,7 @@ class GetEnvironmentMetricsCommandTest extends TestCase
             'invocations' => [],
             'duration' => [],
             'avg_duration' => [],
+            'errors' => [],
             'cost_invocations' => 0,
             'cost_duration' => 0,
         ];
@@ -118,6 +121,29 @@ class GetEnvironmentMetricsCommandTest extends TestCase
 
         $this->assertSame(0, $tester->getStatusCode());
         $this->assertSame(2, preg_match_all('/\b0ms\b/', $tester->getDisplay()));
+    }
+
+    public function testGetEnvironmentMetricsWithFunctionErrors(): void
+    {
+        $series = [
+            'invocations' => [2000, 3000],
+            'duration' => [100000, 200000],
+            'avg_duration' => [50, 67],
+            'cost_invocations' => 1.25,
+            'cost_duration' => 2.5,
+        ];
+
+        $tester = $this->executeMetricsCommand([
+            'website' => $series + ['errors' => ['2026-10-02T12:34:00+00:00' => 1000, '2026-10-02T12:35:00+00:00' => 234]],
+            'console' => $series + ['errors' => ['2026-10-02T12:34:00+00:00' => 3, '2026-10-02T12:35:00+00:00' => 9]],
+        ]);
+
+        [$website, $console] = explode('Console Lambda function', $tester->getDisplay());
+
+        $this->assertSame(0, $tester->getStatusCode());
+        $this->assertMatchesRegularExpression('/Errors\s+1,234\s+-/', $website);
+        $this->assertMatchesRegularExpression('/Errors\s+12\s+-/', $console);
+        $this->assertMatchesRegularExpression('/Total\s+\$7\.50/', $console);
     }
 
     public function testGetEnvironmentMetricsWithPeriodOption(): void
@@ -138,12 +164,35 @@ class GetEnvironmentMetricsCommandTest extends TestCase
         $this->assertStringContainsString('Environment: staging', $tester->getDisplay());
     }
 
+    public function testGetEnvironmentMetricsWithZeroAndEmptyFunctionErrors(): void
+    {
+        $series = [
+            'invocations' => [10],
+            'duration' => [100],
+            'avg_duration' => [10],
+            'cost_invocations' => 0,
+            'cost_duration' => 0,
+        ];
+
+        $tester = $this->executeMetricsCommand([
+            'website' => $series + ['errors' => []],
+            'console' => $series + ['errors' => ['2026-10-02T12:34:00+00:00' => 0, '2026-10-02T12:35:00+00:00' => 0]],
+        ]);
+
+        [$website, $console] = explode('Console Lambda function', $tester->getDisplay());
+
+        $this->assertSame(0, $tester->getStatusCode());
+        $this->assertMatchesRegularExpression('/Errors\s+0\s+-/', $website);
+        $this->assertMatchesRegularExpression('/Errors\s+0\s+-/', $console);
+    }
+
     public function testGetEnvironmentMetricsWithZeroInvocations(): void
     {
         $series = [
             'invocations' => [0, 0],
             'duration' => [0, 0],
             'avg_duration' => [0, 0],
+            'errors' => [0, 0],
             'cost_invocations' => 0,
             'cost_duration' => 0,
         ];
