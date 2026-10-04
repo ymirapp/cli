@@ -48,6 +48,14 @@
         "rector/rector": "^2.3"
     },
     "config": {
+        "audit": {
+            "ignore": {
+                "PKSA-w9tt-7782-78jx": {
+                    "apply": "block",
+                    "reason": "Retain PHP 7 compatibility: media:import converts paths to UTF-8 before Flysystem, preventing the malformed UTF-8 bypass. Remove when Flysystem 2 is no longer needed."
+                }
+            }
+        },
         "optimize-autoloader": true,
         "preferred-install": "dist",
         "sort-packages": true
