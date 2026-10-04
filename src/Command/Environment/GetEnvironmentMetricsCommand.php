@@ -104,6 +104,18 @@ class GetEnvironmentMetricsCommand extends AbstractCommand implements LocalProje
             $total += $metrics['console']['cost_duration'] + $metrics['console']['cost_invocations'];
         }
 
+        // Queue metrics are keyed by logical queue name. An empty record means the queue function is unavailable.
+        foreach (array_filter($metrics['queues'] ?? []) as $queue => $queueMetrics) {
+            $totalDuration = (float) collect($queueMetrics['duration'])->sum();
+            $totalInvocations = (float) collect($queueMetrics['invocations'])->sum();
+
+            $headers = array_merge($headers, [new TableSeparator(), sprintf('Queue Lambda function (%s)', $queue), '', '', '']);
+            $row1 = array_merge($row1, [new TableSeparator(), 'Invocations', 'Duration', 'Avg duration', 'Errors']);
+            $row2 = array_merge($row2, [new TableSeparator(), number_format($totalInvocations), number_format($totalDuration / 1000).'s', $this->formatAverageDuration($totalDuration, $totalInvocations), number_format((float) collect($queueMetrics['errors'])->sum())]);
+            $row3 = array_merge($row3, [new TableSeparator(), '$'.number_format($queueMetrics['cost_invocations'], 2), '$'.number_format($queueMetrics['cost_duration'], 2), '-', '-']);
+            $total += $queueMetrics['cost_duration'] + $queueMetrics['cost_invocations'];
+        }
+
         $headers = array_merge($headers, [new TableSeparator(), '<comment>Total</comment>']);
         $row1 = array_merge($row1, [new TableSeparator(), '']);
         $row2 = array_merge($row2, [new TableSeparator(), '']);

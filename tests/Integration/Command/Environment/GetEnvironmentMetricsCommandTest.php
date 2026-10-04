@@ -164,6 +164,76 @@ class GetEnvironmentMetricsCommandTest extends TestCase
         $this->assertStringContainsString('Environment: staging', $tester->getDisplay());
     }
 
+    public function testGetEnvironmentMetricsWithQueueFunctionEmptySeries(): void
+    {
+        $tester = $this->executeMetricsCommand([
+            'queues' => [
+                'default' => [
+                    'invocations' => [],
+                    'duration' => [],
+                    'avg_duration' => [],
+                    'errors' => [],
+                    'cost_invocations' => 0,
+                    'cost_duration' => 0,
+                ],
+            ],
+        ]);
+
+        $this->assertSame(0, $tester->getStatusCode());
+        $this->assertMatchesRegularExpression('/Queue Lambda function \(default\)\s+Invocations\s+0\s+\$0\.00/', $tester->getDisplay());
+        $this->assertMatchesRegularExpression('/Duration\s+0s\s+\$0\.00/', $tester->getDisplay());
+        $this->assertMatchesRegularExpression('/Avg duration\s+0ms\s+-/', $tester->getDisplay());
+        $this->assertMatchesRegularExpression('/Errors\s+0\s+-/', $tester->getDisplay());
+    }
+
+    public function testGetEnvironmentMetricsWithQueueFunctions(): void
+    {
+        $tester = $this->executeMetricsCommand([
+            'website' => [
+                'invocations' => [10],
+                'duration' => [1000],
+                'avg_duration' => [100],
+                'errors' => [0],
+                'cost_invocations' => 1,
+                'cost_duration' => 2,
+            ],
+            'queues' => [
+                'default' => [
+                    'invocations' => [1, 99],
+                    'duration' => [100, 99000],
+                    'avg_duration' => [100, 1000],
+                    'errors' => [1, 2],
+                    'cost_invocations' => 0.25,
+                    'cost_duration' => 0.5,
+                ],
+                'emails' => [
+                    'invocations' => [3, 1],
+                    'duration' => [300, 5000],
+                    'avg_duration' => [100, 5000],
+                    'errors' => [0, 7],
+                    'cost_invocations' => 0.1,
+                    'cost_duration' => 0.2,
+                ],
+                'unavailable' => [],
+            ],
+        ]);
+
+        [, $default] = explode('Queue Lambda function (default)', $tester->getDisplay());
+        [$default, $emails] = explode('Queue Lambda function (emails)', $default);
+
+        $this->assertSame(0, $tester->getStatusCode());
+        $this->assertMatchesRegularExpression('/Invocations\s+100\s+\$0\.25/', $default);
+        $this->assertMatchesRegularExpression('/Duration\s+99s\s+\$0\.50/', $default);
+        $this->assertMatchesRegularExpression('/Avg duration\s+991ms\s+-/', $default);
+        $this->assertMatchesRegularExpression('/Errors\s+3\s+-/', $default);
+        $this->assertMatchesRegularExpression('/Invocations\s+4\s+\$0\.10/', $emails);
+        $this->assertMatchesRegularExpression('/Duration\s+5s\s+\$0\.20/', $emails);
+        $this->assertMatchesRegularExpression('/Avg duration\s+1,325ms\s+-/', $emails);
+        $this->assertMatchesRegularExpression('/Errors\s+7\s+-/', $emails);
+        $this->assertMatchesRegularExpression('/Total\s+\$4\.05/', $emails);
+        $this->assertStringNotContainsString('unavailable', $tester->getDisplay());
+    }
+
     public function testGetEnvironmentMetricsWithZeroAndEmptyFunctionErrors(): void
     {
         $series = [
