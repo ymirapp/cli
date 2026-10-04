@@ -16,6 +16,7 @@ namespace Ymir\Cli;
 use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Pool;
 use GuzzleHttp\Psr7\Request;
+use GuzzleHttp\Psr7\Utils;
 use Illuminate\Support\Enumerable;
 use Symfony\Component\Console\Helper\ProgressBar;
 use Ymir\Cli\Exception\SystemException;
@@ -87,6 +88,8 @@ class FileUploader
             throw new SystemException(sprintf('Cannot open the "%s" file', $filePath));
         }
 
+        $file = Utils::streamFor($file);
+
         if ($progressBar instanceof ProgressBar) {
             $progressBar->start((int) round(filesize($filePath) / 1024));
 
@@ -107,9 +110,7 @@ class FileUploader
             $progressBar->finish();
         }
 
-        if (is_resource($file)) {
-            fclose($file);
-        }
+        $file->close();
     }
 
     /**
