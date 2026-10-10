@@ -71,6 +71,16 @@ services:
     arguments:
       $configurationFilePath: '%cli_configuration_filepath%'
 
+  Ymir\Cli\Command\Environment\EnvironmentDownCommand:
+    arguments:
+      $deploymentSteps:
+        - '@Ymir\Cli\Project\Deployment\StartAndMonitorDeploymentStep'
+
+  Ymir\Cli\Command\Environment\EnvironmentUpCommand:
+    arguments:
+      $deploymentSteps:
+        - '@Ymir\Cli\Project\Deployment\StartAndMonitorDeploymentStep'
+
   Ymir\Cli\Command\Project\DeployProjectCommand:
     arguments:
       $deploymentSteps:
