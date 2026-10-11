@@ -220,4 +220,12 @@ final class Deployment extends AbstractResourceModel
     {
         return in_array($this->status, ['finished', 'failed', 'cancelled']);
     }
+
+    /**
+     * Check if the deployment is cancelled.
+     */
+    public function isCancelled(): bool
+    {
+        return 'cancelled' === $this->status;
+    }
 }

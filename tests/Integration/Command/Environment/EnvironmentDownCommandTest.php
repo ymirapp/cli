@@ -16,6 +16,8 @@ namespace Ymir\Cli\Tests\Integration\Command\Environment;
 use GuzzleHttp\Exception\ClientException as GuzzleClientException;
 use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Psr7\Response;
+use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Tester\ApplicationTester;
 use Symfony\Component\Console\Tester\CommandTester;
 use Ymir\Cli\Command\Environment\EnvironmentDownCommand;
 use Ymir\Cli\Exception\NonInteractiveRequiredArgumentException;
@@ -92,6 +94,19 @@ class EnvironmentDownCommandTest extends TestCase
         $this->assertStringNotContainsString('Environment redeployed after requesting maintenance mode', $tester->getDisplay());
         $this->assertSame($configuration, file_get_contents($this->tempDir.'/ymir.yml'));
         $this->assertDirectoryDoesNotExist($this->tempDir.'/.ymir');
+    }
+
+    public function testPerformDoesNotReportSuccessWhenRedeploymentIsCancelled(): void
+    {
+        $this->expectRedeployment(1, 'cancelled');
+
+        $tester = new ApplicationTester($this->application);
+        $tester->run(['command' => EnvironmentDownCommand::NAME, 'environment' => 'staging'], ['interactive' => false, 'verbosity' => OutputInterface::VERBOSITY_VERBOSE]);
+
+        $this->assertSame(130, $tester->getStatusCode());
+        $this->assertStringEndsWith('Redeployment cancelled'.PHP_EOL, $tester->getDisplay());
+        $this->assertStringNotContainsString('Exception trace', $tester->getDisplay());
+        $this->assertStringNotContainsString('Environment redeployed after requesting maintenance mode', $tester->getDisplay());
     }
 
     public function testPerformPromptsForEnvironmentIfNoneProvided(): void

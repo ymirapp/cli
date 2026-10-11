@@ -15,6 +15,7 @@ namespace Ymir\Cli\Project\Deployment;
 
 use Ymir\Cli\ApiClient;
 use Ymir\Cli\Exception\LogicException;
+use Ymir\Cli\Exception\Project\DeploymentCancelledException;
 use Ymir\Cli\Exception\Project\DeploymentFailedException;
 use Ymir\Cli\ExecutionContext;
 use Ymir\Cli\Resource\Model\Deployment;
@@ -129,18 +130,14 @@ class StartAndMonitorDeploymentStep implements DeploymentStepInterface
 
             $context->getApiClient()->cancelDeployment($deployment);
 
-            $deployment = $this->waitForDeploymentToTerminate($context->getApiClient(), $deployment);
-
-            $output->info(sprintf('%s cancelled', ucfirst($deployment->getType())));
-
-            exit;
+            $this->waitForDeploymentToTerminate($context->getApiClient(), $deployment);
         });
     }
 
     /**
      * Wait for the deployment to reach a terminal status.
      */
-    private function waitForDeploymentToTerminate(ApiClient $apiClient, Deployment $deployment, ?callable $onPoll = null, int $sleep = 2, ?int $timeout = 600): Deployment
+    private function waitForDeploymentToTerminate(ApiClient $apiClient, Deployment $deployment, ?callable $onPoll = null, int $sleep = 2, ?int $timeout = 600): void
     {
         $startTime = time();
 
@@ -151,7 +148,7 @@ class StartAndMonitorDeploymentStep implements DeploymentStepInterface
 
             $deployment = $apiClient->getDeployment($deployment->getId());
 
-            if (is_callable($onPoll)) {
+            if (is_callable($onPoll) && !$deployment->isCancelled()) {
                 $onPoll($deployment);
             }
 
@@ -160,6 +157,8 @@ class StartAndMonitorDeploymentStep implements DeploymentStepInterface
             }
         }
 
-        return $deployment;
+        if ($deployment->isCancelled()) {
+            throw new DeploymentCancelledException(sprintf('%s cancelled', ucfirst($deployment->getType())));
+        }
     }
 }

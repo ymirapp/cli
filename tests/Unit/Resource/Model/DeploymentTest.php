@@ -229,6 +229,22 @@ class DeploymentTest extends TestCase
         $this->assertTrue($deployment->hasTerminated());
     }
 
+    public function testIsCancelledReturnsFalseWhenStatusNotCancelled(): void
+    {
+        foreach (['pending', 'running', 'cancelling', 'finished', 'failed'] as $status) {
+            $deployment = new Deployment(1, 'uuid', $status, 'created_at', [], 'type', []);
+
+            $this->assertFalse($deployment->isCancelled());
+        }
+    }
+
+    public function testIsCancelledReturnsTrueWhenStatusCancelled(): void
+    {
+        $deployment = new Deployment(1, 'uuid', 'cancelled', 'created_at', [], 'type', []);
+
+        $this->assertTrue($deployment->isCancelled());
+    }
+
     private function createDeploymentModel(): Deployment
     {
         return new Deployment(1, 'uuid', 'status', 'created_at', ['config'], 'type', ['domain'], ['steps'], new User(2, 'initiator'), 'failed', 'hash');

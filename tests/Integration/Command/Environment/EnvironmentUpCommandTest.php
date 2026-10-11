@@ -13,6 +13,8 @@ declare(strict_types=1);
 
 namespace Ymir\Cli\Tests\Integration\Command\Environment;
 
+use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Tester\ApplicationTester;
 use Symfony\Component\Console\Tester\CommandTester;
 use Ymir\Cli\Command\Environment\EnvironmentUpCommand;
 use Ymir\Cli\Exception\NonInteractiveRequiredArgumentException;
@@ -89,6 +91,19 @@ class EnvironmentUpCommandTest extends TestCase
         $this->assertDirectoryDoesNotExist($this->tempDir.'/.ymir');
     }
 
+    public function testPerformDoesNotReportSuccessWhenRedeploymentIsCancelled(): void
+    {
+        $this->expectRedeployment('cancelled');
+
+        $tester = new ApplicationTester($this->application);
+        $tester->run(['command' => EnvironmentUpCommand::NAME, 'environment' => 'staging'], ['interactive' => false, 'verbosity' => OutputInterface::VERBOSITY_VERBOSE]);
+
+        $this->assertSame(130, $tester->getStatusCode());
+        $this->assertStringEndsWith('Redeployment cancelled'.PHP_EOL, $tester->getDisplay());
+        $this->assertStringNotContainsString('Exception trace', $tester->getDisplay());
+        $this->assertStringNotContainsString('Environment redeployed after requesting maintenance mode removal', $tester->getDisplay());
+    }
+
     public function testPerformPromptsForEnvironmentIfNoneProvided(): void
     {
         $this->expectRedeployment();
@@ -141,7 +156,7 @@ class EnvironmentUpCommandTest extends TestCase
         $this->assertStringNotContainsString('Environment redeployed after requesting maintenance mode removal', $tester->getDisplay());
     }
 
-    private function expectRedeployment(): void
+    private function expectRedeployment(string $status = 'finished'): void
     {
         $redeployment = DeploymentFactory::create(['id' => 1, 'status' => 'pending', 'type' => 'redeployment']);
 
@@ -150,7 +165,7 @@ class EnvironmentUpCommandTest extends TestCase
         $this->apiClient->shouldReceive('startDeployment')->once()->with($redeployment)->ordered();
         $this->apiClient->shouldReceive('getDeployment')->with(1)->andReturn(DeploymentFactory::create([
             'id' => 1,
-            'status' => 'finished',
+            'status' => $status,
             'type' => 'redeployment',
             'steps' => [
                 ['id' => 1, 'task' => 'UpdateFunctionsTask', 'status' => 'finished'],

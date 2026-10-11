@@ -14,10 +14,12 @@ declare(strict_types=1);
 namespace Ymir\Cli;
 
 use Symfony\Component\Console\Application as BaseApplication;
+use Symfony\Component\Console\Formatter\OutputFormatter;
 use Symfony\Component\Console\Input\InputDefinition;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Ymir\Cli\Exception\CommandCancelledException;
+use Ymir\Cli\Exception\WarningExceptionInterface;
 
 class Application extends BaseApplication
 {
@@ -39,6 +41,12 @@ class Application extends BaseApplication
     public function renderThrowable(\Throwable $exception, OutputInterface $output): void
     {
         if ($exception instanceof CommandCancelledException) {
+            return;
+        }
+
+        if ($exception instanceof WarningExceptionInterface) {
+            $output->writeln(sprintf('<comment>%s</comment>', OutputFormatter::escape($exception->getMessage())), OutputInterface::VERBOSITY_QUIET);
+
             return;
         }
 
