@@ -15,7 +15,7 @@ return RectorConfig::configure()
         \Rector\CodingStyle\Rector\Stmt\NewlineAfterStatementRector::class,
         \Rector\TypeDeclaration\Rector\ClassMethod\AddVoidReturnTypeWhereNoReturnRector::class,
     ])
-    ->withPhp72Sets()
+    ->withPhpSets()
     ->withCodeQualityLevel(10)
     ->withDeadCodeLevel(10)
     ->withTypeCoverageLevel(10)
