@@ -15,6 +15,7 @@ namespace Ymir\Cli\Project\Configuration;
 
 use Ymir\Cli\Project\EnvironmentConfiguration;
 use Ymir\Cli\Project\Type\ProjectTypeInterface;
+use Ymir\Cli\Support\Arr;
 
 class ImageDeploymentConfigurationChange implements ConfigurationChangeInterface
 {
@@ -23,6 +24,8 @@ class ImageDeploymentConfigurationChange implements ConfigurationChangeInterface
      */
     public function apply(EnvironmentConfiguration $configuration, ProjectTypeInterface $projectType): EnvironmentConfiguration
     {
-        return $configuration->without('php')->with(['deployment' => 'image']);
+        $deployment = Arr::get($configuration->toArray(), 'deployment');
+
+        return $configuration->without('php')->with(['deployment' => is_array($deployment) ? array_merge($deployment, ['type' => 'image']) : 'image']);
     }
 }

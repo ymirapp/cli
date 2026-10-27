@@ -124,6 +124,7 @@ abstract class AbstractProjectType implements ProjectTypeInterface
     {
         $configuration = array_merge([
             'architecture' => 'arm64',
+            'deployment' => ['healthcheck' => true],
             'gateway' => false,
             'php' => $this->getDefaultPhpVersion(),
         ], $baseConfiguration);

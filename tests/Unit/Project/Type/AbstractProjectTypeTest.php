@@ -42,6 +42,7 @@ class AbstractProjectTypeTest extends TestCase
 
         $this->assertSame([
             'architecture' => 'arm64',
+            'deployment' => ['healthcheck' => true],
             'gateway' => false,
             'php' => '7.4',
             'foo' => 'bar',
@@ -55,6 +56,7 @@ class AbstractProjectTypeTest extends TestCase
 
         $this->assertSame([
             'architecture' => 'arm64',
+            'deployment' => ['healthcheck' => true],
             'gateway' => false,
             'php' => '7.4',
             'foo' => 'bar',

@@ -77,6 +77,7 @@ class WordPressProjectTypeTest extends TestCase
 
         $this->assertSame([
             'architecture' => 'arm64',
+            'deployment' => ['healthcheck' => true],
             'gateway' => false,
             'php' => '8.2',
             'foo' => 'bar',
@@ -89,6 +90,7 @@ class WordPressProjectTypeTest extends TestCase
 
         $this->assertSame([
             'architecture' => 'arm64',
+            'deployment' => ['healthcheck' => true],
             'gateway' => false,
             'php' => '8.2',
             'foo' => 'bar',

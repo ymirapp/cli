@@ -47,6 +47,7 @@ class LaravelProjectTypeTest extends TestCase
 
         $this->assertSame([
             'architecture' => 'arm64',
+            'deployment' => ['healthcheck' => true],
             'gateway' => false,
             'php' => '8.3',
             'foo' => 'bar',
@@ -75,6 +76,7 @@ class LaravelProjectTypeTest extends TestCase
 
         $this->assertSame([
             'architecture' => 'arm64',
+            'deployment' => ['healthcheck' => true],
             'gateway' => false,
             'php' => '8.3',
             'foo' => 'bar',
