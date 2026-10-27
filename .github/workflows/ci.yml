@@ -6,6 +6,8 @@ on:
       - 'src/**'
       - 'tests/**'
       - 'composer.json'
+      - 'config/**'
+      - 'rector.php'
 
 jobs:
   code-quality:
