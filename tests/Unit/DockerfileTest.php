@@ -43,6 +43,21 @@ class DockerfileTest extends TestCase
         parent::tearDown();
     }
 
+    public static function provideGetPhpVersionDockerfiles(): array
+    {
+        return [
+            'x86 runtime with platform' => ["FROM --platform=linux/amd64 ymirapp/php-runtime:php-74\n\nCOPY . /var/task\n", '7.4'],
+            'arm runtime with platform' => ["FROM --platform=linux/arm64 ymirapp/arm-php-runtime:php-74\n", '7.4'],
+            'runtime without platform' => ["FROM ymirapp/php-runtime:php-83\n", '8.3'],
+            'runtime with stage name' => ["FROM ymirapp/php-runtime:php-80 AS runtime\n", '8.0'],
+            'arg tag' => ["ARG PHP=php-74\nFROM ymirapp/php-runtime:\${PHP}\n", null],
+            'multi-stage' => ["FROM composer:2 AS vendor\nFROM ymirapp/php-runtime:php-74\n", null],
+            'custom repository' => ["FROM example/php-runtime:php-74\n", null],
+            'digest' => ["FROM ymirapp/php-runtime:php-74@sha256:abc\n", null],
+            'unrecognized tag' => ["FROM ymirapp/php-runtime:8.1\n", null],
+        ];
+    }
+
     public function testConstructorThrowsExceptionIfStubNotFound(): void
     {
         $this->expectException(SystemException::class);
@@ -106,6 +121,75 @@ class DockerfileTest extends TestCase
 
         $dockerfile = new Dockerfile($this->filesystem, $this->projectDir, $this->stubDir);
         $this->assertTrue($dockerfile->exists('staging'));
+    }
+
+    /**
+     * @dataProvider provideGetPhpVersionDockerfiles
+     */
+    public function testGetPhpVersion(string $content, ?string $expected): void
+    {
+        $tempProjectDir = sys_get_temp_dir().'/ymir-project-'.uniqid();
+        mkdir($tempProjectDir);
+        file_put_contents($tempProjectDir.'/Dockerfile', $content);
+
+        $filesystem = new Filesystem();
+        $stubDir = sys_get_temp_dir().'/ymir-stub-'.uniqid();
+        mkdir($stubDir);
+        touch($stubDir.'/Dockerfile');
+
+        try {
+            $this->assertSame($expected, (new Dockerfile($filesystem, $tempProjectDir, $stubDir))->getPhpVersion('staging'));
+        } finally {
+            $filesystem->remove([$tempProjectDir, $stubDir]);
+        }
+    }
+
+    public function testGetPhpVersionReturnsNullIfDockerfileCannotBeRead(): void
+    {
+        $tempProjectDir = sys_get_temp_dir().'/ymir-project-'.uniqid();
+        mkdir($tempProjectDir.'/Dockerfile', 0777, true);
+
+        $filesystem = new Filesystem();
+        $stubDir = sys_get_temp_dir().'/ymir-stub-'.uniqid();
+        mkdir($stubDir);
+        touch($stubDir.'/Dockerfile');
+
+        try {
+            $this->assertNull((new Dockerfile($filesystem, $tempProjectDir, $stubDir))->getPhpVersion('staging'));
+        } finally {
+            $filesystem->remove([$tempProjectDir, $stubDir]);
+        }
+    }
+
+    public function testGetPhpVersionReturnsNullIfDockerfileNotFound(): void
+    {
+        $this->filesystem->shouldReceive('exists')->with($this->stubDir.'/Dockerfile')->andReturn(true);
+        $this->filesystem->shouldReceive('exists')->with($this->projectDir.'/Dockerfile')->andReturn(false);
+        $this->filesystem->shouldReceive('exists')->with($this->projectDir.'/staging.Dockerfile')->andReturn(false);
+
+        $this->assertNull((new Dockerfile($this->filesystem, $this->projectDir, $this->stubDir))->getPhpVersion('staging'));
+    }
+
+    public function testGetPhpVersionUsesEnvironmentSpecificDockerfile(): void
+    {
+        $tempProjectDir = sys_get_temp_dir().'/ymir-project-'.uniqid();
+        mkdir($tempProjectDir);
+        file_put_contents($tempProjectDir.'/Dockerfile', "FROM ymirapp/php-runtime:php-83\n");
+        file_put_contents($tempProjectDir.'/staging.Dockerfile', "FROM ymirapp/php-runtime:php-74\n");
+
+        $filesystem = new Filesystem();
+        $stubDir = sys_get_temp_dir().'/ymir-stub-'.uniqid();
+        mkdir($stubDir);
+        touch($stubDir.'/Dockerfile');
+
+        $dockerfile = new Dockerfile($filesystem, $tempProjectDir, $stubDir);
+
+        try {
+            $this->assertSame('7.4', $dockerfile->getPhpVersion('staging'));
+            $this->assertSame('8.3', $dockerfile->getPhpVersion('production'));
+        } finally {
+            $filesystem->remove([$tempProjectDir, $stubDir]);
+        }
     }
 
     public function testValidatePassesIfArchitectureAndImageMatch(): void

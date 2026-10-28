@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Ymir\Cli\Tests\Integration\Command\Project;
 
+use Symfony\Component\Console\Tester\CommandTester;
 use Symfony\Component\DependencyInjection\ServiceLocator;
 use Ymir\Cli\Command\Environment\GetEnvironmentUrlCommand;
 use Ymir\Cli\Command\Media\ImportMediaCommand;
@@ -25,6 +26,8 @@ use Ymir\Cli\FileUploader;
 use Ymir\Cli\Project\Build\BuildStepInterface;
 use Ymir\Cli\Project\Build\BuildZipArchiveStep;
 use Ymir\Cli\Project\Build\CopyMediaDirectoryStep;
+use Ymir\Cli\Project\Deployment\StartAndMonitorDeploymentStep;
+use Ymir\Cli\Project\Deployment\WarnEndOfLifePhpVersionStep;
 use Ymir\Cli\Resource\Definition\EnvironmentDefinition;
 use Ymir\Cli\Resource\Model\Environment;
 use Ymir\Cli\Resource\Model\Project;
@@ -61,7 +64,17 @@ class DeployProjectCommandTest extends TestCase
         $this->setupActiveTeam();
         $this->setupValidProject(1, 'my-project', ['production' => []]);
         $environment = EnvironmentFactory::create(['name' => 'production', 'vanity_domain_name' => 'vanity.ymir.com']);
-        $deployment = DeploymentFactory::create(['id' => 1, 'status' => 'pending', 'type' => 'zip']);
+        $configuration = ['environments' => ['production' => ['php' => '7.4']]];
+        $deployment = DeploymentFactory::create(['id' => 1, 'status' => 'pending', 'type' => 'deployment', 'configuration' => $configuration]);
+        $finishedDeployment = DeploymentFactory::create([
+            'id' => 1,
+            'status' => 'finished',
+            'type' => 'deployment',
+            'configuration' => $configuration,
+            'steps' => [
+                ['id' => 1, 'task' => 'UpdateLambdaFunctionJob', 'status' => 'finished'],
+            ],
+        ]);
 
         $assetsDir = $this->tempDir.'/.ymir/build/assets';
         $this->filesystem->mkdir($assetsDir);
@@ -72,7 +85,8 @@ class DeployProjectCommandTest extends TestCase
         $this->apiClient->shouldReceive('createDeployment')->once()
                         ->with(\Mockery::type(Project::class), $environment, \Mockery::type('array'), \Mockery::type('string'))
                         ->andReturn($deployment);
-        $this->apiClient->shouldReceive('getDeployment')->andReturn($deployment);
+        $this->apiClient->shouldReceive('startDeployment')->once()->with($deployment);
+        $this->apiClient->shouldReceive('getDeployment')->with(1)->andReturn($finishedDeployment);
         $this->apiClient->shouldReceive('getEnvironmentUrl')->andReturn('https://vanity.ymir.com');
 
         $this->projectTypeMock->shouldReceive('getBuildSteps')->andReturn([]);
@@ -88,14 +102,20 @@ class DeployProjectCommandTest extends TestCase
         $contextFactory = $this->createExecutionContextFactoryWithEnvironment();
 
         $this->bootApplication([
-            new DeployProjectCommand($this->apiClient, $assetsDir, $contextFactory, $this->tempDir),
+            new DeployProjectCommand($this->apiClient, $assetsDir, $contextFactory, $this->tempDir, [new WarnEndOfLifePhpVersionStep($this->dockerfile), new StartAndMonitorDeploymentStep()]),
             new ValidateProjectCommand($this->apiClient, $contextFactory, $this->dockerfile),
             new BuildProjectCommand($this->apiClient, $buildStepLocator, $contextFactory),
             new GetEnvironmentUrlCommand($this->apiClient, $contextFactory),
         ]);
 
-        $tester = $this->executeCommand(DeployProjectCommand::NAME, ['environment' => 'production']);
+        $tester = new CommandTester($this->application->find(DeployProjectCommand::NAME));
+        $tester->execute(['environment' => 'production'], ['interactive' => false]);
 
+        $this->assertSame(0, $tester->getStatusCode());
+        $this->assertSame(1, substr_count($tester->getDisplay(), 'upstream end of life'));
+        $this->assertStringContainsString('Warning: The "production" environment uses PHP 7.4 which reached its upstream end of life on 2022-11-28.', $tester->getDisplay());
+        $this->assertStringContainsString('Deploying my-project to production', $tester->getDisplay());
+        $this->assertStringContainsString('Updating lambda function', $tester->getDisplay());
         $this->assertStringContainsString('Project deployed successfully', $tester->getDisplay());
     }
 

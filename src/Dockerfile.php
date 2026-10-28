@@ -82,6 +82,32 @@ class Dockerfile
     }
 
     /**
+     * Get the PHP branch from a single literal Ymir runtime base.
+     */
+    public function getPhpVersion(string $environment = ''): ?string
+    {
+        if (!$this->exists($environment)) {
+            return null;
+        }
+
+        $lines = @file($this->getDockerfilePath($environment));
+
+        if (false === $lines) {
+            return null;
+        }
+
+        $fromLines = collect($lines)->filter(function (string $line): bool {
+            return 1 === preg_match('/^\s*FROM\s/i', $line);
+        });
+
+        if (1 !== $fromLines->count() || 1 !== preg_match('/^\s*FROM\s+(?:--platform=\S+\s+)?ymirapp\/(?:arm-)?php-runtime:php-(\d)(\d)(?:\s|$)/i', (string) $fromLines->first(), $matches)) {
+            return null;
+        }
+
+        return sprintf('%s.%s', $matches[1], $matches[2]);
+    }
+
+    /**
      * Validate the Dockerfile.
      */
     public function validate(string $environment, string $architecture = ''): void

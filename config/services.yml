@@ -84,6 +84,7 @@ services:
   Ymir\Cli\Command\Project\DeployProjectCommand:
     arguments:
       $deploymentSteps:
+        - '@Ymir\Cli\Project\Deployment\WarnEndOfLifePhpVersionStep'
         - '@Ymir\Cli\Project\Deployment\UploadFunctionCodeStep'
         - '@Ymir\Cli\Project\Deployment\ProcessAssetsStep'
         - '@Ymir\Cli\Project\Deployment\StartAndMonitorDeploymentStep'
@@ -91,12 +92,20 @@ services:
   Ymir\Cli\Command\Project\RedeployProjectCommand:
     arguments:
       $deploymentSteps:
+        - '@Ymir\Cli\Project\Deployment\WarnEndOfLifePhpVersionStep'
         - '@Ymir\Cli\Project\Deployment\StartAndMonitorDeploymentStep'
 
   Ymir\Cli\Command\Project\RollbackProjectCommand:
     arguments:
       $deploymentSteps:
+        - '@Ymir\Cli\Project\Deployment\WarnEndOfLifePhpVersionStep'
         - '@Ymir\Cli\Project\Deployment\StartAndMonitorDeploymentStep'
+
+  Ymir\Cli\Project\Deployment\WarnEndOfLifePhpVersionStep:
+    arguments:
+      $dockerfile: !service
+        class: Ymir\Cli\Dockerfile
+        arguments: ['@Symfony\Component\Filesystem\Filesystem', '%build_directory%', '%stub_directory%']
 
   Ymir\Cli\EventDispatcher\AutowiredEventDispatcher:
     arguments:
