@@ -250,7 +250,7 @@ class DeployProjectCommandTest extends TestCase
         $step = \Mockery::mock(\Ymir\Cli\Project\Deployment\DeploymentStepInterface::class);
         $step->shouldReceive('perform')->once()->withArgs(function ($context) {
             return true === $context->getInput()->getBooleanOption('force-assets');
-        }, $deployment, $environment);
+        });
 
         $contextFactory = $this->createExecutionContextFactoryWithEnvironment();
 
