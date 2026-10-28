@@ -1,5 +1,24 @@
 # Changelog
 
+## [2.5.0](https://github.com/ymirapp/cli/compare/v2.4.0...v2.5.0) (2026-10-28)
+
+
+### Features
+
+* Add environment maintenance mode commands ([4cf5c0e](https://github.com/ymirapp/cli/commit/4cf5c0e67627757eccd1c08088dd4df9dc406bac))
+* Display lambda error counts in environment metrics ([8774775](https://github.com/ymirapp/cli/commit/87747754ef536f2b33ddf9d4bd6b8266c407db6b))
+* Display per-queue lambda metrics in environment metrics ([861c891](https://github.com/ymirapp/cli/commit/861c891c4210ce68f6cac1e5e36f179a8be54127))
+* Enable health checks for new environments ([f41435b](https://github.com/ymirapp/cli/commit/f41435b1b6247a40d503432aa628642f5553b888))
+* Warn when deploying end-of-life PHP versions ([4cbc546](https://github.com/ymirapp/cli/commit/4cbc546a9fce1f75c4d3b922a4a546358cf73e9c))
+
+
+### Bug Fixes
+
+* Clean up upload streams safely ([f06de86](https://github.com/ymirapp/cli/commit/f06de86358b9830f69b9bf5e4161a57844b42b0c))
+* Retain php 7 flysystem dependency resolution ([d37e8b4](https://github.com/ymirapp/cli/commit/d37e8b4f0088e5fcd12db4d3488540606bfa9a62))
+* Stop treating cancelled deployments as successful ([8360d12](https://github.com/ymirapp/cli/commit/8360d1227a141cfd1136ade11b4cbf949ec4d6db))
+* Weight average lambda duration by invocations ([78298b1](https://github.com/ymirapp/cli/commit/78298b152a2536fc3842272e7337fb165509cbea))
+
 ## [2.4.0](https://github.com/ymirapp/cli/compare/v2.3.3...v2.4.0) (2026-09-15)
 
 
