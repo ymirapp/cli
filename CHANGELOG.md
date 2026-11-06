@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.5.1](https://github.com/ymirapp/cli/compare/v2.5.0...v2.5.1) (2026-11-06)
+
+
+### Bug Fixes
+
+* Link IAM role setup guide ([cb3e3f6](https://github.com/ymirapp/cli/commit/cb3e3f68ffaebe19e49438cba6df17cae7ceba2d))
+
 ## [2.5.0](https://github.com/ymirapp/cli/compare/v2.4.0...v2.5.0) (2026-10-28)
 
 
