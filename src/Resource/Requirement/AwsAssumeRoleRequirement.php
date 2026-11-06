@@ -51,6 +51,7 @@ class AwsAssumeRoleRequirement implements RequirementInterface
         }
 
         $output = $context->getOutput();
+        $output->writeln('Setup guide: https://docs.ymirapp.com/getting-started#connecting-with-an-iam-role');
         $output->writeln('Create the AWS IAM role using these values:');
 
         $setupValues->each(function (string $value, string $label) use ($output): void {

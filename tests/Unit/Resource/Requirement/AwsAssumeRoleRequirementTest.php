@@ -57,6 +57,7 @@ class AwsAssumeRoleRequirementTest extends TestCase
         $context->shouldReceive('getInput')->andReturn($input);
         $context->shouldReceive('getOutput')->andReturn($output);
         $input->shouldReceive('getStringOption')->once()->with('role-arn')->andReturn(' ');
+        $output->shouldReceive('writeln')->once()->with('Setup guide: https://docs.ymirapp.com/getting-started#connecting-with-an-iam-role');
         $output->shouldReceive('writeln')->once()->with('Create the AWS IAM role using these values:');
         $output->shouldReceive('writeln')->once()->with('Ymir AWS account ID: 111122223333');
         $output->shouldReceive('writeln')->once()->with('External ID: server-external-id');
@@ -85,6 +86,7 @@ class AwsAssumeRoleRequirementTest extends TestCase
         $context->shouldReceive('getOutput')->andReturn($output);
         $input->shouldReceive('getStringOption')->once()->with('role-arn')->andReturnNull();
         $input->shouldReceive('hasArgument')->once()->with('role_arn')->andReturn(false);
+        $output->shouldReceive('writeln')->once()->with('Setup guide: https://docs.ymirapp.com/getting-started#connecting-with-an-iam-role');
         $output->shouldReceive('writeln')->once()->with('Create the AWS IAM role using these values:');
         $output->shouldReceive('writeln')->once()->with('Ymir AWS account ID: 111122223333');
         $output->shouldReceive('writeln')->once()->with('External ID: server-external-id');
@@ -113,6 +115,7 @@ class AwsAssumeRoleRequirementTest extends TestCase
         $context->shouldReceive('getInput')->andReturn($input);
         $context->shouldReceive('getOutput')->andReturn($output);
         $input->shouldReceive('getStringOption')->once()->with('role-arn')->andReturn('arn:aws:iam::444455556666:role/customer-role');
+        $output->shouldReceive('writeln')->once()->with('Setup guide: https://docs.ymirapp.com/getting-started#connecting-with-an-iam-role');
         $output->shouldReceive('writeln')->once()->with('Create the AWS IAM role using these values:');
         $output->shouldReceive('writeln')->once()->with('Ymir AWS account ID: 111122223333');
         $output->shouldReceive('writeln')->once()->with('External ID: server-external-id');

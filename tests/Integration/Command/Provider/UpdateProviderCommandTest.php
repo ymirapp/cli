@@ -137,8 +137,10 @@ class UpdateProviderCommandTest extends TestCase
         $tester = $this->executeCommand(UpdateProviderCommand::NAME, ['provider' => '123'], $inputs);
 
         if (CloudProviderAuthenticationMethodRequirement::ACCESS_KEY === $selectedMethod) {
+            $this->assertStringNotContainsString('https://docs.ymirapp.com/getting-started#connecting-with-an-iam-role', $tester->getDisplay());
             $this->assertStringContainsString('Access keys are a legacy, less-secure authentication method', $tester->getDisplay());
         } else {
+            $this->assertStringContainsString('Setup guide: https://docs.ymirapp.com/getting-started#connecting-with-an-iam-role', $tester->getDisplay());
             $this->assertStringContainsString('Ymir AWS account ID: 111122223333', $tester->getDisplay());
             $this->assertStringContainsString('External ID: server-external-id', $tester->getDisplay());
             $this->assertStringContainsString('Role name: server-role-name', $tester->getDisplay());
@@ -213,6 +215,7 @@ class UpdateProviderCommandTest extends TestCase
         $tester = new CommandTester($this->application->find(UpdateProviderCommand::NAME));
         $tester->execute(['provider' => '123', '--role-arn' => $roleArn], ['interactive' => false]);
 
+        $this->assertStringContainsString('Setup guide: https://docs.ymirapp.com/getting-started#connecting-with-an-iam-role', $tester->getDisplay());
         $this->assertStringContainsString('Ymir AWS account ID: 111122223333', $tester->getDisplay());
         $this->assertStringContainsString('External ID: server-external-id', $tester->getDisplay());
         $this->assertStringContainsString('Role name: server-role-name', $tester->getDisplay());

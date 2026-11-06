@@ -284,6 +284,7 @@ class ConnectProviderCommandTest extends TestCase
         $this->bootApplication([new ConnectProviderCommand($this->apiClient, $contextFactory)]);
         $tester = $this->executeCommand(ConnectProviderCommand::NAME, [], ['', '', 'arn:aws:iam::444455556666:role/customer-role']);
 
+        $this->assertStringContainsString('Setup guide: https://docs.ymirapp.com/getting-started#connecting-with-an-iam-role', $tester->getDisplay());
         $this->assertStringContainsString('IAM role (recommended)', $tester->getDisplay());
         $this->assertStringContainsString('Access key (legacy, less secure)', $tester->getDisplay());
         $this->assertStringContainsString('Ymir AWS account ID: 111122223333', $tester->getDisplay());
