@@ -7,6 +7,10 @@ on:
       - 'tests/**'
       - 'composer.json'
       - 'config/**'
+      - '.php-cs-fixer.dist.php'
+      - 'phpstan.neon'
+      - 'phpstan-baseline.neon'
+      - 'phpunit.xml.dist'
       - 'rector.php'
 
 jobs:
