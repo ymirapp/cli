@@ -13,10 +13,12 @@ declare(strict_types=1);
 
 namespace Ymir\Cli\EventListener;
 
+use GuzzleHttp\Exception\GuzzleException;
 use Symfony\Component\Console\ConsoleEvents;
 use Symfony\Component\Console\Event\ConsoleCommandEvent;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Ymir\Cli\CliConfiguration;
+use Ymir\Cli\Exception\SystemException;
 use Ymir\Cli\GitHubClient;
 
 class VersionCheckSubscriber implements EventSubscriberInterface
@@ -74,8 +76,12 @@ class VersionCheckSubscriber implements EventSubscriberInterface
         $time = time();
 
         if ($time - $this->cliConfiguration->getGitHubLastCheckedTimestamp() > 3600) {
-            $this->cliConfiguration->setGitHubCliVersion(ltrim($this->gitHubClient->getTags('ymirapp/cli')->pluck('name')->first(), 'v'));
             $this->cliConfiguration->setGitHubLastCheckedTimestamp($time);
+
+            try {
+                $this->cliConfiguration->setGitHubCliVersion(ltrim($this->gitHubClient->getTags('ymirapp/cli')->pluck('name')->first(), 'v'));
+            } catch (GuzzleException|SystemException $exception) {
+            }
         }
 
         $latestVersion = $this->cliConfiguration->getGitHubCliVersion();
